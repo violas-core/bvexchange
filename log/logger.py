@@ -6,9 +6,9 @@ import log.config
 def __init__():
     print("logger.__init__")
 
-def getLogger():
+def getLogger(name):
     logging.config.dictConfig(log.config.config)
-    logger = logging.getLogger("bvelog")
+    logger = logging.getLogger(name)
 
     return logger
 

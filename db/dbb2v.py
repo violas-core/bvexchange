@@ -16,7 +16,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime, UniqueConstraint, Index, String
 
 #load logging
-logger = log.logger.getLogger() 
+logger = log.logger.getLogger("dblog") 
 
 class dbb2v:
     __base = declarative_base()
