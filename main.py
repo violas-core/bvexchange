@@ -21,12 +21,14 @@ class works:
     __work_b2v_looping = 1
     __work_v2b_looping = 1
     __work_comm_looping = 1
-    def __init__(self):
+    __traceback_limit = 0
+    def __init__(self, traceback_limit):
         logger.debug("works __init__")
         self.__work_b2v_looping = 1
         self.__work_v2b_looping = 1
         self.__work_comm_looping = 1
         self.__threads = []
+        self.__traceback_limit = traceback_limit
 
     def __del__(self):
         logger.debug("works __del__")
@@ -39,7 +41,7 @@ class works:
                 logger.debug("looping: b2v")
                 sleep(nsec)
         except Exception as e:
-            logger.error(traceback.format_exc(limit=1, file=sys.stdout))
+            logger.error(traceback.format_exc(limit=self.__traceback_limit))
         finally:
             logger.critical("stop: b2v")
     
@@ -50,7 +52,7 @@ class works:
                 logger.debug("looping: v2b")
                 sleep(nsec)
         except Exception as e:
-            logger.error(traceback.format_exc(limit=1, file=sys.stdout))
+            logger.error(traceback.format_exc(limit=self.__traceback_limit))
         finally:
             logger.critical("stop: v2b")
     
@@ -61,7 +63,7 @@ class works:
                 logger.debug("looping: comm")
                 sleep(nsec)
         except Exception as e:
-            logger.error(traceback.format_exc(limit=1, file=sys.stdout))
+            logger.error(traceback.format_exc(limit=self.__traceback_limit))
         finally:
             logger.critical("stop: comm")
     
@@ -89,7 +91,7 @@ class works:
             b2v = self.work_thread(work, threadId, name, nsec)
             self.__threads.append(b2v)
         except Exception as e:
-            logger.error(traceback.format_exc(limit=2, file=sys.stdout))
+            logger.error(traceback.format_exc(limit=self.__traceback_limit))
         finally:
             logger.debug("thread_append")
 
@@ -105,7 +107,7 @@ class works:
                 work.start() #start work
 
         except Exception as e:
-            logger.error(traceback.format_exc(limit=2, file=sys.stdout))
+            logger.error(traceback.format_exc(limit=self.__traceback_limit))
         finally:
             logger.critical("start end")
 
@@ -116,7 +118,7 @@ class works:
             for work in self.__threads:
                 work.join() # work finish
         except Exception as e:
-            logger.error(traceback.format_exc(limit=2, file=sys.stdout))
+            logger.error(traceback.format_exc(limit=self.__traceback_limit))
         finally:
             logger.critical("end join")
     
@@ -126,14 +128,14 @@ class works:
         self.__work_v2b_looping = 0
         self.__work_comm_looping = 0
 
-work_manage = works()
+work_manage = works(setting.traceback_limit)
 def signal_stop(signal, frame):
     try:
         logger.debug("start signal : %i", signal )
         global work_manage
         work_manage.stop()
     except Exception as e:
-        logger.error(traceback.format_exc(limit=2, file=sys.stdout))
+        logger.error(traceback.format_exc(limit=setting.traceback_limit))
     finally:
         logger.debug("end signal")
 
@@ -146,7 +148,7 @@ def main():
         work_manage.start()
         work_manage.join()
     except Exception as e:
-        logger.error(traceback.format_exc(limit=2, file=sys.stdout))
+        logger.error(traceback.format_exc(limit=setting.traceback_limit))
     finally:
         logger.critical("main end")
 
