@@ -13,3 +13,5 @@ v2b_sleep = 2
 
 #communication thread loop time
 comm_sleep = 1
+
+traceback_limit = 1
