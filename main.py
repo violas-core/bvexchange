@@ -14,7 +14,7 @@ import threading
 import setting
 from time import sleep, ctime
 
-logger = log.logger.getLogger()
+logger = log.logger.getLogger("bvelog")
 
 class works:
     __threads = []
