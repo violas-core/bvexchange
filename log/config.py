@@ -25,11 +25,11 @@ config = {
        # 其他的 handler
        },
    'loggers':{
-       'StreamLogger': {
-           'handlers': ['console'],
-           'level': 'DEBUG',
-           },
-       'FileLogger': {
+       #'StreamLogger': {
+       #    'handlers': ['console'],
+       #    'level': 'DEBUG',
+       #    },
+       'bvelog': {
            # 既有 console Handler，还有 file Handler
            'handlers': ['console', 'file'],
            'level': 'DEBUG',

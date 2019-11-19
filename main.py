@@ -8,6 +8,7 @@ import traceback
 import log
 import log.logger
 import threading
+import setting
 from time import sleep, ctime
 '''
 '''
@@ -67,42 +68,39 @@ class works:
     class work_thread(threading.Thread):
         __name = ""
         __threadId = 0
-        __type = ""
-        __nsec = 1;
-        __works = ""
-        def __init__(self, works, threadId, name, type, nsec):
-            logger.debug("work thread __init__: " + name)
+        __nsec = 1
+        __work = ""
+        def __init__(self, work, threadId, name, nsec):
+            logger.debug("work thread __init__: name = %s  nsec = %i" ,name, nsec)
             threading.Thread.__init__(self)
             self.__threadId = threadId
             self.__name = name
-            self.__type = type
             self.__nsec = nsec
-            self.__works = works
+            self.__work = work
     
         def __del__(self):
             logger.debug("work thread __del__: %s", self.__name)
         def run(self):
             logger.debug("work thread run")
-            if self.__type == "b2v":
-                self.__works.work_b2v(self.__nsec)
-            elif self.__type == "v2b":
-                self.__works.work_v2b(self.__nsec)
-            elif self.__type == "comm":
-                self.__works.work_comm(self.__nsec)
+            self.__work(self.__nsec)
+            
+    def thread_append(self, work, threadId, name, nsec):
+        try:
+            b2v = self.work_thread(work, threadId, name, nsec)
+            self.__threads.append(b2v)
+        except Exception as e:
+            logger.error(traceback.format_exc(limit=2, file=sys.stdout))
+        finally:
+            logger.debug("thread_append")
 
     def start(self):
         try:
             logger.debug("start works")
     
-            b2v = self.work_thread(self, 1, "b2v_thread", "b2v", 2)
-            self.__threads.append(b2v)
-    
-            v2b = self.work_thread(self, 2, "v2b_thread", "v2b", 5)
-            self.__threads.append(v2b)
-    
-            comm = self.work_thread(self, 3, "comm_thread", "comm", 7)
-            self.__threads.append(comm)
-
+            self.thread_append(self.work_b2v, 1, "b2v", setting.b2v_sleep)
+            self.thread_append(self.work_v2b, 2, "v2b", setting.v2b_sleep)
+            self.thread_append(self.work_comm, 3, "comm", setting.comm_sleep)
+            
             for work in self.__threads:
                 work.start() #start work
         except Exception as e:
