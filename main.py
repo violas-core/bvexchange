@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 # coding default python2.x : ascii   python3.x :UTF-8
 # -*- coding: UTF-8 -*-
+'''
+btc and vbtc exchange main
+'''
 import operator
 import signal
 import sys
@@ -10,11 +13,8 @@ import log.logger
 import threading
 import setting
 from time import sleep, ctime
-'''
-'''
+
 logger = log.logger.getLogger()
-
-
 
 class works:
     __threads = []
@@ -103,6 +103,7 @@ class works:
             
             for work in self.__threads:
                 work.start() #start work
+
         except Exception as e:
             logger.error(traceback.format_exc(limit=2, file=sys.stdout))
         finally:
