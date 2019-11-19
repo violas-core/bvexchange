@@ -8,7 +8,7 @@ def __init__():
 
 def getLogger():
     logging.config.dictConfig(log.config.config)
-    logger = logging.getLogger("FileLogger")
+    logger = logging.getLogger("bvelog")
 
     return logger
 
