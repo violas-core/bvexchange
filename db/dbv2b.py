@@ -11,6 +11,7 @@ import traceback
 import datetime
 import sqlalchemy
 import setting
+import random
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
@@ -23,7 +24,7 @@ from enum import Enum
 name="dbv2b"
 
 #load logging
-logger = log.logger.getLogger("dblog") 
+logger = log.logger.getLogger(name) 
 
 class dbv2b:
     __base = declarative_base()
@@ -133,6 +134,17 @@ class dbv2b:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
         return proofs 
 
+    def has_v2binfo(self, vaddress, sequence):
+        try:
+            logger.debug("start query_v2binfo %s %i", vaddress, sequence)
+            filter_vaddr = (self.v2binfo.vaddress==vaddress)
+            filter_seq = (self.v2binfo.sequence==sequence)
+            return (self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).count() > 0)
+        except Exception as e:
+            logger.error(traceback.format_exc(limit=self.__traceback_limit))
+        return true
+
+
     def __query_v2binfo_state(self, state):
         proofs = []
         try:
@@ -194,14 +206,18 @@ class dbv2b:
 
 dbfile = "bve_v2b.db"
 traceback_limit = setting.traceback_limit
+max_seq = 100000
 def test_dbv2b_insert():
     v2b = dbv2b(dbfile, traceback_limit)
+    sequence = random.randint(0,max_seq)
+    if v2b.has_v2binfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence):
+        return
     v2b.insert_v2binfo("0000000000000000000000000000000000000000000000000000000000000001", \
                 "2NFMbhLACujsHKa45X4P2fZupVrgB268pbo", \
                 "2NFMbhLACujsHKa45X4P2fZupVrgB268pbo", \
                 1, \
                 "c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", \
-                2, #sequence 
+                sequence, #sequence 
                 0, \
                 "0000000000000000000000000000000000000000000000000000000000000000", \
                 "e36d8ad4f1ab2ecbaf63d14ac150d464d81ef0fdf45ad0df8c27efaf8a10410d"
@@ -212,7 +228,8 @@ def test_dbv2b_query():
     try:
         logger.debug("*****************************************start test_dbv2b_query*****************************************")
         v2b = dbv2b(dbfile, traceback_limit)
-        proofs = v2b.query_v2binfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", 2)
+        sequence = random.randint(0, max_seq)
+        proofs = v2b.query_v2binfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
 
         if(len(proofs) == 0):
             logger.debug("not fount proof")
@@ -277,7 +294,8 @@ def test_dbv2b_update():
     try:
         logger.debug("*****************************************start t_dbv2b_update***************************************")
         v2b = dbv2b(dbfile, traceback_limit)
-        v2b.update_v2binfo_to_succeed_commit("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", 2)
+        sequence = random.randint(0, max_seq)
+        v2b.update_v2binfo_to_succeed_commit("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 
