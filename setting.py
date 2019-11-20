@@ -15,3 +15,6 @@ v2b_sleep = 2
 comm_sleep = 1
 
 traceback_limit = 1
+
+#db logging echo(False, True) default: False
+db_echo=False
