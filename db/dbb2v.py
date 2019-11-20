@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 '''
+btc exchange vbtc db
 '''
 import operator
 import sys
@@ -17,6 +18,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime, UniqueConstraint, Index, String
 
 from enum import Enum
+
+#module name
+name="dbb2v"
 
 #load logging
 logger = log.logger.getLogger("dblog") 
@@ -68,8 +72,10 @@ class dbb2v:
     def __init_db(self, dbfile):
         logger.debug("start __init_db")
         db_echo = False
+
         if setting.db_echo:
             db_echo = setting.db_echo
+
         self.__engine = create_engine('sqlite:///%s?check_same_thread=False' % dbfile, echo=db_echo)
         #self.b2vinfo.__table__
         self.__base.metadata.create_all(self.__engine)
@@ -84,6 +90,7 @@ class dbb2v:
             logger.debug("start insert_b2vinfo (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vupdateblock, vstate),  \
                     value(%s, %s, %s, %i, %s %i, %i, %s, %s, %s, %s)" % \
                     (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vupdateblock, self.state.START.name))
+
             b2vi = self.b2vinfo(txid=vtxid, fromaddress=vfromaddress, toaddress=vtoaddress, bamount=vbamount, vaddress=vvaddress, sequence=vsequence, \
                 vamount=vvamount, vbtc=vvbtc, createblock=vcreateblock, updateblock=vupdateblock, state=self.state.START.value)
             self.__session.add(b2vi)
