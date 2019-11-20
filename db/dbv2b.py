@@ -20,12 +20,12 @@ from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime, UniqueConstr
 from enum import Enum
 
 #module name
-name="dbb2v"
+name="dbv2b"
 
 #load logging
 logger = log.logger.getLogger("dblog") 
 
-class dbb2v:
+class dbv2b:
     __base = declarative_base()
     __engine = ""
     __session = ""
@@ -47,27 +47,26 @@ class dbb2v:
         SUCCEED = 1
         FAILED = 2
     
-    #exc_traceback_objle : b2vinfo
-    class b2vinfo(__base):
-        __tablename__='b2vinfo'
+    #exc_traceback_objle : v2binfo
+    class v2binfo(__base):
+        __tablename__='v2binfo'
         txid        = Column(String(64), index=True, nullable=False)
         fromaddress = Column(String(64), index=True, nullable=False)
         toaddress   = Column(String(64), index=True, nullable=False)
         bamount     = Column(Integer, nullable=False)
         vaddress    = Column(String(64), index=True, nullable=False, primary_key=True)
         sequence    = Column(Integer, index=True, nullable=False, primary_key=True)
-        vamount     = Column(Integer)
+        vamount     = Column(Integer, nullable=False)
         vbtc        = Column(String(64), nullable=False)
         createblock = Column(String(64), index=True, nullable=False)
-        updateblock = Column(String(64), index=True)
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
     
         def __repr__(self):
-            return "<b2vinfo(txid=%s,fromaddress = %s, toaddress = %s, bamount = %i, vaddress = %s, sequence=%i, \
-                    vamount = %i, vbtc = %s, createblock = %s, updateblock = %s, state = %i)>" % (
+            return "<v2binfo(txid=%s,fromaddress = %s, toaddress = %s, bamount = %i, vaddress = %s, sequence=%i, \
+                    vamount = %i, vbtc = %s, createblock = %s, state = %i)>" % (
                     self.txid, self.fromaddress, self.toaddress, self.bamount, self.vaddres, self.sequence, \
-                    self.vamount, self.vbt, self.createblock, self.updateblock, self.state)
+                    self.vamount, self.vbt, self.createblock, self.state)
     
     def __init_db(self, dbfile):
         logger.debug("start __init_db")
@@ -77,7 +76,7 @@ class dbb2v:
             db_echo = setting.db_echo
 
         self.__engine = create_engine('sqlite:///%s?check_same_thread=False' % dbfile, echo=db_echo)
-        #self.b2vinfo.__table__
+        #self.v2binfo.__table__
         self.__base.metadata.create_all(self.__engine)
         Session = sessionmaker(bind=self.__engine)
         self.__session = Session()
@@ -85,28 +84,27 @@ class dbb2v:
     def __uninit_db(self):
         logger.debug("start __uninit_db")
         
-    def insert_b2vinfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vupdateblock):
+    def insert_v2binfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock):
         try:
-            logger.debug("start insert_b2vinfo (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vupdateblock, vstate),  \
-                    value(%s, %s, %s, %i, %s %i, %i, %s, %s, %s, %s)" % \
-                    (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vupdateblock, self.state.START.name))
+            logger.debug("start insert_v2binfo (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vstate),  \
+                    value(%s, %s, %s, %i, %s %i, %i, %s, %s, %s)" % \
+                    (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, self.state.START.name))
 
-            b2vi = self.b2vinfo(txid=vtxid, fromaddress=vfromaddress, toaddress=vtoaddress, bamount=vbamount, vaddress=vvaddress, sequence=vsequence, \
-                vamount=vvamount, vbtc=vvbtc, createblock=vcreateblock, updateblock=vupdateblock, state=self.state.START.value)
-            self.__session.add(b2vi)
+            v2bi = self.v2binfo(txid=vtxid, fromaddress=vfromaddress, toaddress=vtoaddress, bamount=vbamount, vaddress=vvaddress, sequence=vsequence, \
+                vamount=vvamount, vbtc=vvbtc, createblock=vcreateblock, state=self.state.START.value)
+            self.__session.add(v2bi)
 
             return True
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
         return False
 
-    def insert_b2vinfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vupdateblock, vstate):
+    def insert_v2binfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vstate):
         try:
-            logger.debug("start insert_b2vinfo_commit")
-            result = self.insert_b2vinfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vupdateblock, vstate)
+            logger.debug("start insert_v2binfo_commit")
+            result = self.insert_v2binfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vstate)
             if result == False:
                 return False
-            self.__session.flush()
             return self.commit()
             
         except Exception as e:
@@ -116,65 +114,66 @@ class dbb2v:
     def commit(self):
         try:
             logger.debug("start commit")
+            self.__session.flush()
             self.__session.commit()
             return True
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
         return False
 
-    def query_b2vinfo(self, vaddress, sequence):
+    def query_v2binfo(self, vaddress, sequence):
         proofs = []
         try:
-            logger.debug("start query_b2vinfo %s %i", vaddress, sequence)
-            filter_vaddr = (self.b2vinfo.vaddress==vaddress)
-            filter_seq = (self.b2vinfo.sequence==sequence)
-            proofs = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).all()
+            logger.debug("start query_v2binfo %s %i", vaddress, sequence)
+            filter_vaddr = (self.v2binfo.vaddress==vaddress)
+            filter_seq = (self.v2binfo.sequence==sequence)
+            proofs = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).all()
             return proofs 
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
         return proofs 
 
-    def __query_b2vinfo_state(self, state):
+    def __query_v2binfo_state(self, state):
         proofs = []
         try:
-            logger.debug("start query_b2vinfo state is %s ", state.name)
-            filter_state = (self.b2vinfo.state==state.value)
-            proofs = self.__session.query(self.b2vinfo).filter(filter_state).all()
+            logger.debug("start query_v2binfo state is %s ", state.name)
+            filter_state = (self.v2binfo.state==state.value)
+            proofs = self.__session.query(self.v2binfo).filter(filter_state).all()
             return proofs 
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
         return proofs 
 
-    def query_b2vinfo_is_start(self):
-        return self.__query_b2vinfo_state(self.state.START)
+    def query_v2binfo_is_start(self):
+        return self.__query_v2binfo_state(self.state.START)
 
-    def query_b2vinfo_is_succeed(self):
-        return self.__query_b2vinfo_state(self.state.SUCCEED)
+    def query_v2binfo_is_succeed(self):
+        return self.__query_v2binfo_state(self.state.SUCCEED)
 
-    def query_b2vinfo_is_failed(self):
-        return self.__query_b2vinfo_state(self.state.FAILED)
+    def query_v2binfo_is_failed(self):
+        return self.__query_v2binfo_state(self.state.FAILED)
 
-    def update_b2vinfo(self, vaddress, sequence, state):
+    def update_v2binfo(self, vaddress, sequence, state):
         try:
-            logger.debug("start update_b2vinfo state to %s filter(vaddress, sequence) %s %i", state.name, vaddress, sequence)
-            filter_vaddr = (self.b2vinfo.vaddress==vaddress)
-            filter_seq = (self.b2vinfo.sequence==sequence)
-            result = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.state:state.value})
+            logger.debug("start update_v2binfo state to %s filter(vaddress, sequence) %s %i", state.name, vaddress, sequence)
+            filter_vaddr = (self.v2binfo.vaddress==vaddress)
+            filter_seq = (self.v2binfo.sequence==sequence)
+            result = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).update({self.v2binfo.state:state.value})
             return True
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
         return False
 
-    def update_b2vinfo_to_succeed(self, vaddress, sequence, state):
-        return self.update_b2vinfo(vaddress, sequence, self.state.SUCCEED)
+    def update_v2binfo_to_succeed(self, vaddress, sequence, state):
+        return self.update_v2binfo(vaddress, sequence, self.state.SUCCEED)
 
-    def update_b2vinfo_to_failed(self, vaddress, sequence, state):
-        return self.pdate_b2vinfo(vaddress, sequence, self.state.FAILED)
+    def update_v2binfo_to_failed(self, vaddress, sequence, state):
+        return self.pdate_v2binfo(vaddress, sequence, self.state.FAILED)
 
-    def __update_b2vinfo_commit(self, vaddress, sequence, state):
+    def __update_v2binfo_commit(self, vaddress, sequence, state):
         try:
-            logger.debug("start query_b2vinfo_commit")
-            result = self.update_b2vinfo(vaddress, sequence, state)
+            logger.debug("start query_v2binfo_commit")
+            result = self.update_v2binfo(vaddress, sequence, state)
             if result == False:
                 return False
 
@@ -183,21 +182,21 @@ class dbb2v:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
         return False
 
-    def update_b2vinfo_to_start_commit(self, vaddress, sequence):
-        return self.__update_b2vinfo_commit(vaddress, sequence, self.state.START)
+    def update_v2binfo_to_start_commit(self, vaddress, sequence):
+        return self.__update_v2binfo_commit(vaddress, sequence, self.state.START)
 
-    def update_b2vinfo_to_succeed_commit(self, vaddress, sequence):
-        return self.__update_b2vinfo_commit(vaddress, sequence, self.state.SUCCEED)
+    def update_v2binfo_to_succeed_commit(self, vaddress, sequence):
+        return self.__update_v2binfo_commit(vaddress, sequence, self.state.SUCCEED)
 
-    def update_b2vinfo_to_failed_commit(self, vaddress, sequence):
-        return self.__update_b2vinfo_commit(vaddress, sequence, self.state.FAILED)
+    def update_v2binfo_to_failed_commit(self, vaddress, sequence):
+        return self.__update_v2binfo_commit(vaddress, sequence, self.state.FAILED)
 
 
-dbfile = "bve_b2v.db"
+dbfile = "bve_v2b.db"
 traceback_limit = setting.traceback_limit
-def test_dbb2v_insert():
-    b2v = dbb2v(dbfile, traceback_limit)
-    b2v.insert_b2vinfo("0000000000000000000000000000000000000000000000000000000000000001", \
+def test_dbv2b_insert():
+    v2b = dbv2b(dbfile, traceback_limit)
+    v2b.insert_v2binfo("0000000000000000000000000000000000000000000000000000000000000001", \
                 "2NFMbhLACujsHKa45X4P2fZupVrgB268pbo", \
                 "2NFMbhLACujsHKa45X4P2fZupVrgB268pbo", \
                 1, \
@@ -205,16 +204,15 @@ def test_dbb2v_insert():
                 2, #sequence 
                 0, \
                 "0000000000000000000000000000000000000000000000000000000000000000", \
-                "e36d8ad4f1ab2ecbaf63d14ac150d464d81ef0fdf45ad0df8c27efaf8a10410d", \
                 "e36d8ad4f1ab2ecbaf63d14ac150d464d81ef0fdf45ad0df8c27efaf8a10410d"
                 )
-    b2v.commit()
+    v2b.commit()
 
-def test_dbb2v_query():
+def test_dbv2b_query():
     try:
-        logger.debug("*****************************************start test_dbb2v_query*****************************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        proofs = b2v.query_b2vinfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", 2)
+        logger.debug("*****************************************start test_dbv2b_query*****************************************")
+        v2b = dbv2b(dbfile, traceback_limit)
+        proofs = v2b.query_v2binfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", 2)
 
         if(len(proofs) == 0):
             logger.debug("not fount proof")
@@ -226,11 +224,11 @@ def test_dbb2v_query():
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 
-def test_dbb2v_query_state_start():
+def test_dbv2b_query_state_start():
     try:
-        logger.debug("*****************************************start test_dbb2v_query_state_start****************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        proofs = b2v.query_b2vinfo_is_start()
+        logger.debug("*****************************************start test_dbv2b_query_state_start****************************")
+        v2b = dbv2b(dbfile, traceback_limit)
+        proofs = v2b.query_v2binfo_is_start()
 
         if(len(proofs) == 0):
             logger.debug("not fount proof")
@@ -242,11 +240,11 @@ def test_dbb2v_query_state_start():
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 
-def test_dbb2v_query_state_succeed():
+def test_dbv2b_query_state_succeed():
     try:
-        logger.debug("*****************************************start test_dbb2v_query_state_succeed*************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        proofs = b2v.query_b2vinfo_is_succeed()
+        logger.debug("*****************************************start test_dbv2b_query_state_succeed*************************")
+        v2b = dbv2b(dbfile, traceback_limit)
+        proofs = v2b.query_v2binfo_is_succeed()
 
         if(len(proofs) == 0):
             logger.debug("not fount proof")
@@ -258,11 +256,11 @@ def test_dbb2v_query_state_succeed():
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 
-def test_dbb2v_query_state_failed():
+def test_dbv2b_query_state_failed():
     try:
-        logger.debug("*****************************************start test_dbb2v_query_state_failed*************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        proofs = b2v.query_b2vinfo_is_failed()
+        logger.debug("*****************************************start test_dbv2b_query_state_failed*************************")
+        v2b = dbv2b(dbfile, traceback_limit)
+        proofs = v2b.query_v2binfo_is_failed()
 
         if(len(proofs) == 0):
             logger.debug("not fount proof")
@@ -275,23 +273,23 @@ def test_dbb2v_query_state_failed():
         logger.error(traceback.format_exc(limit=traceback_limit))
 
 
-def test_dbb2v_update():
+def test_dbv2b_update():
     try:
-        logger.debug("*****************************************start t_dbb2v_update***************************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        b2v.update_b2vinfo_to_succeed_commit("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", 2)
+        logger.debug("*****************************************start t_dbv2b_update***************************************")
+        v2b = dbv2b(dbfile, traceback_limit)
+        v2b.update_v2binfo_to_succeed_commit("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", 2)
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 
 def test():
     try:
-        test_dbb2v_insert()
-        test_dbb2v_query()
-        test_dbb2v_update()
-        test_dbb2v_query()
-        test_dbb2v_query_state_start()
-        test_dbb2v_query_state_succeed()
-        test_dbb2v_query_state_failed()
+        test_dbv2b_insert()
+        test_dbv2b_query()
+        test_dbv2b_update()
+        test_dbv2b_query()
+        test_dbv2b_query_state_start()
+        test_dbv2b_query_state_succeed()
+        test_dbv2b_query_state_failed()
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 
