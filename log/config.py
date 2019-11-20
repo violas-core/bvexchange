@@ -25,37 +25,23 @@ config = {
        # 其他的 handler
        },
    'loggers':{
-       #'StreamLogger': {
-       #    'handlers': ['console'],
-       #    'level': 'DEBUG',
-       #    },
-       'deflog': {
-           # 既有 console Handler，还有 file Handler
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
        
        'bvelog': {
            # 既有 console Handler，还有 file Handler
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-        'dblog': {
+       'b2vlog': {
            # 既有 console Handler，还有 file Handler
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-        'btclog': {
+       'v2blog': {
            # 既有 console Handler，还有 file Handler
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-        'vbtclog': {
-           # 既有 console Handler，还有 file Handler
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
-       
+        
        # 其他的 Logger
        }
 }

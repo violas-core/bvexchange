@@ -8,7 +8,15 @@ def __init__():
 
 def getLogger(name):
     logging.config.dictConfig(log.config.config)
-    logger = logging.getLogger(name)
+
+    logger_name = "bvelog"
+
+    if name == "dbb2v":
+        logger_name = "b2vlog"
+    elif name == "dbv2b":
+        logger_name = "v2blog"
+
+    logger = logging.getLogger(logger_name)
 
     return logger
 

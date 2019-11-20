@@ -11,6 +11,7 @@ import traceback
 import datetime
 import sqlalchemy
 import setting
+import random
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
@@ -23,7 +24,7 @@ from enum import Enum
 name="dbb2v"
 
 #load logging
-logger = log.logger.getLogger("dblog") 
+logger = log.logger.getLogger(name) 
 
 class dbb2v:
     __base = declarative_base()
@@ -134,6 +135,16 @@ class dbb2v:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
         return proofs 
 
+    def has_b2vinfo(self, vaddress, sequence):
+        try:
+            logger.debug("start query_b2vinfo %s %i", vaddress, sequence)
+            filter_vaddr = (self.b2vinfo.vaddress==vaddress)
+            filter_seq = (self.b2vinfo.sequence==sequence)
+            return (self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).count() > 0)
+        except Exception as e:
+            logger.error(traceback.format_exc(limit=self.__traceback_limit))
+        return true
+
     def __query_b2vinfo_state(self, state):
         proofs = []
         try:
@@ -195,14 +206,18 @@ class dbb2v:
 
 dbfile = "bve_b2v.db"
 traceback_limit = setting.traceback_limit
+max_seq=10000
 def test_dbb2v_insert():
     b2v = dbb2v(dbfile, traceback_limit)
+    sequence = random.randint(0, max_seq)
+    if b2v.has_b2vinfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence):
+        return
     b2v.insert_b2vinfo("0000000000000000000000000000000000000000000000000000000000000001", \
                 "2NFMbhLACujsHKa45X4P2fZupVrgB268pbo", \
                 "2NFMbhLACujsHKa45X4P2fZupVrgB268pbo", \
                 1, \
                 "c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", \
-                2, #sequence 
+                sequence, #sequence 
                 0, \
                 "0000000000000000000000000000000000000000000000000000000000000000", \
                 "e36d8ad4f1ab2ecbaf63d14ac150d464d81ef0fdf45ad0df8c27efaf8a10410d", \
@@ -214,7 +229,8 @@ def test_dbb2v_query():
     try:
         logger.debug("*****************************************start test_dbb2v_query*****************************************")
         b2v = dbb2v(dbfile, traceback_limit)
-        proofs = b2v.query_b2vinfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", 2)
+        sequence = random.randint(0, max_seq)
+        proofs = b2v.query_b2vinfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
 
         if(len(proofs) == 0):
             logger.debug("not fount proof")
@@ -279,7 +295,8 @@ def test_dbb2v_update():
     try:
         logger.debug("*****************************************start t_dbb2v_update***************************************")
         b2v = dbb2v(dbfile, traceback_limit)
-        b2v.update_b2vinfo_to_succeed_commit("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", 2)
+        sequence = random.randint(0, max_seq)
+        b2v.update_b2vinfo_to_succeed_commit("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 
