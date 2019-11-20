@@ -6,6 +6,9 @@ __pycache__/
 
 tags
 
+# db file
+*.db
+
 # C extensions
 *.so
 
