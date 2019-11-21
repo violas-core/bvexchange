@@ -45,9 +45,10 @@ class dbb2v:
 
     #btc exchange vbtc state
     class state(Enum):
-        START = 0
-        SUCCEED = 1
-        FAILED = 2
+        START       = 0 #start exchange 
+        SUCCEED     = 1 #exchange succeed, but btc blockchain not changed state
+        FAILED      = 2 #exchange failed
+        COMPELETE   = 3 #exchange succeed and btc blockchain changed state
     
     #exc_traceback_objle : b2vinfo
     class b2vinfo(__base):
@@ -168,6 +169,9 @@ class dbb2v:
     def query_b2vinfo_is_failed(self):
         return self.__query_b2vinfo_state(self.state.FAILED)
 
+    def query_b2vinfo_is_complete(self):
+        return self.__query_b2vinfo_state(self.state.COMPELETE)
+
     def update_b2vinfo(self, vaddress, sequence, state):
         try:
             logger.debug("start update_b2vinfo state to %s filter(vaddress, sequence) %s %i", state.name, vaddress, sequence)
@@ -180,11 +184,14 @@ class dbb2v:
             ret = result(error.EXCEPT, e, "")
         return ret
 
-    def update_b2vinfo_to_succeed(self, vaddress, sequence, state):
+    def update_b2vinfo_to_succeed(self, vaddress, sequence):
         return self.update_b2vinfo(vaddress, sequence, self.state.SUCCEED)
 
-    def update_b2vinfo_to_failed(self, vaddress, sequence, state):
+    def update_b2vinfo_to_failed(self, vaddress, sequence):
         return self.pdate_b2vinfo(vaddress, sequence, self.state.FAILED)
+
+    def update_b2vinfo_to_complete(self, vaddress, sequence):
+        return self.pdate_b2vinfo(vaddress, sequence, self.state.COMPELETE)
 
     def __update_b2vinfo_commit(self, vaddress, sequence, state):
         try:
@@ -208,6 +215,8 @@ class dbb2v:
     def update_b2vinfo_to_failed_commit(self, vaddress, sequence):
         return self.__update_b2vinfo_commit(vaddress, sequence, self.state.FAILED)
 
+    def update_b2vinfo_to_complete_commit(self, vaddress, sequence):
+        return self.__update_b2vinfo_commit(vaddress, sequence, self.state.COMPELETE)
 
 dbfile = "bve_b2v.db"
 traceback_limit = setting.traceback_limit
@@ -307,6 +316,24 @@ def test_dbb2v_query_state_failed():
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 
+def test_dbb2v_query_state_complete():
+    try:
+        logger.debug("*****************************************start test_dbb2v_query_state_complete*************************")
+        b2v = dbb2v(dbfile, traceback_limit)
+        ret = b2v.query_b2vinfo_is_complete()
+
+        if ret.state != error.SUCCEED:
+            return
+        
+        if (len(ret.datas) == 0):
+            logger.debug("not fount proof")
+
+        for proof in ret.datas:
+            logger.info("vaddress: %s" % (proof.vaddress))
+            logger.info("sequence: %s" % (proof.sequence))
+            logger.info("state : %i" % (proof.state))
+    except Exception as e:
+        logger.error(traceback.format_exc(limit=traceback_limit))
 
 def test_dbb2v_update():
     try:

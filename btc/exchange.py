@@ -14,6 +14,7 @@ import comm.error
 import comm.result
 from comm.result import result
 from comm.error import error
+from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 #from .models import BtcRpc
 from enum import Enum
@@ -60,7 +61,7 @@ class exchange:
 
     def __listexproofforstate(self, state, receiver):
         try:
-            logger.debug("start listexproofforstate (state=%s receiver=%s)"%(state, receiver))
+            logger.debug("start __listexproofforstate (state=%s receiver=%s)"%(state, receiver))
             if(len(receiver) == 0):
                 return result(error.ARG_INVALID, error.argument_invalid, "")
                 
@@ -70,6 +71,20 @@ class exchange:
         except Exception as e:
             logger.error(traceback.format_exc(self.__traceback_limit))
             ret = result(error.EXCEPT, "", datas)
+        return ret
+
+    def isexproofcomplete(self, state, address, sequence):
+        try:
+            logger.debug("start isexproofcomplete (address = %s sequence=%i)"%(address, sequence))
+            if(len(address) != 64 or sequence < 0):
+                return result(error.ARG_INVALID, error.argument_invalid, "")
+                
+            datas = self.__rpc_connection.violas_isexproofcomplete(state)
+            return result(error.SUCCEED, "", datas)
+
+        except Exception as e:
+            logger.error(traceback.format_exc(self.__traceback_limit))
+            ret = result(error.EXCEPT, "", "")
         return ret
 
     def listexproofforstart(self, receiver):
@@ -85,7 +100,18 @@ exg = exchange(setting.traceback_limit)
 
 def works():
     try:
+        exg = exchange(setting.traceback_limit)
         logger.debug("start works")
+        #search db state is succeed
+        scddatas = dbb2v.query_b2vinfo_is_succeed()
+        if(scddatas.state != error.SUCCEED):
+            return scddatas
+
+        for proof in scddatas.datas:
+            address  = proof["address"]
+            sequence = int(proof["sequence"])
+            ret = exg.isexproofcomplete(address, sequence)
+
         ret = exg.listexproofforstart()
         if ret.state == error.SUCCEED and ret.datas:
             for data in ret.datas:
