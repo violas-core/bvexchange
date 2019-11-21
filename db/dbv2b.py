@@ -12,6 +12,8 @@ import datetime
 import sqlalchemy
 import setting
 import random
+from comm.error import error
+from comm.result import result
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
@@ -95,32 +97,36 @@ class dbv2b:
                 vamount=vvamount, vbtc=vvbtc, createblock=vcreateblock, state=self.state.START.value)
             self.__session.add(v2bi)
 
-            return True
+            ret = result(error.SUCCEED, "", "")
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return False
+            ret = result(error.FAILED, e, "")
+        return ret
 
     def insert_v2binfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vstate):
         try:
             logger.debug("start insert_v2binfo_commit")
-            result = self.insert_v2binfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vstate)
-            if result == False:
+            ret = self.insert_v2binfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vstate)
+            if ret.state != error.SUCCEED:
                 return False
-            return self.commit()
+            ret = self.commit()
             
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return False
+            ret = result(error.FAILED, e, "")
+        return ret
 
     def commit(self):
         try:
             logger.debug("start commit")
             self.__session.flush()
             self.__session.commit()
-            return True
+
+            ret = result(error.SUCCEED, "", "")
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return False
+            ret = result(error.FAILED, e, "")
+        return ret
 
     def query_v2binfo(self, vaddress, sequence):
         proofs = []
@@ -129,10 +135,11 @@ class dbv2b:
             filter_vaddr = (self.v2binfo.vaddress==vaddress)
             filter_seq = (self.v2binfo.sequence==sequence)
             proofs = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).all()
-            return proofs 
+            ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return proofs 
+            ret = result(error.FAILED, e, "")
+        return ret
 
     def has_v2binfo(self, vaddress, sequence):
         try:
@@ -151,10 +158,11 @@ class dbv2b:
             logger.debug("start query_v2binfo state is %s ", state.name)
             filter_state = (self.v2binfo.state==state.value)
             proofs = self.__session.query(self.v2binfo).filter(filter_state).all()
-            return proofs 
+            ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return proofs 
+            ret = result(error.FAILED, e, "")
+        return ret
 
     def query_v2binfo_is_start(self):
         return self.__query_v2binfo_state(self.state.START)
@@ -170,10 +178,11 @@ class dbv2b:
             logger.debug("start update_v2binfo state to %s filter(vaddress, sequence) %s %i", state.name, vaddress, sequence)
             filter_vaddr = (self.v2binfo.vaddress==vaddress)
             filter_seq = (self.v2binfo.sequence==sequence)
-            result = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).update({self.v2binfo.state:state.value})
-            return True
+            datas = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).update({self.v2binfo.state:state.value})
+            ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
+            ret = result(error.FAILED, e, "")
         return False
 
     def update_v2binfo_to_succeed(self, vaddress, sequence, state):
@@ -185,14 +194,15 @@ class dbv2b:
     def __update_v2binfo_commit(self, vaddress, sequence, state):
         try:
             logger.debug("start query_v2binfo_commit")
-            result = self.update_v2binfo(vaddress, sequence, state)
-            if result == False:
-                return False
+            ret = self.update_v2binfo(vaddress, sequence, state)
+            if ret != error.SUCCEED:
+                return ret
 
-            return self.commit()
+            ret = self.commit()
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return False
+            ret = result(error.FAILED, e, "")
+        return ret
 
     def update_v2binfo_to_start_commit(self, vaddress, sequence):
         return self.__update_v2binfo_commit(vaddress, sequence, self.state.START)
@@ -229,12 +239,15 @@ def test_dbv2b_query():
         logger.debug("*****************************************start test_dbv2b_query*****************************************")
         v2b = dbv2b(dbfile, traceback_limit)
         sequence = random.randint(0, max_seq)
-        proofs = v2b.query_v2binfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
+        ret = v2b.query_v2binfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
 
-        if(len(proofs) == 0):
+        if ret.state != error.SUCCEED:
+            return
+
+        if(len(ret.datas) == 0):
             logger.debug("not fount proof")
 
-        for proof in proofs:
+        for proof in ret.datas:
             logger.info("vaddress: %s" % (proof.vaddress))
             logger.info("sequence: %s" % (proof.sequence))
             logger.info("state : %i" % (proof.state))
@@ -245,12 +258,15 @@ def test_dbv2b_query_state_start():
     try:
         logger.debug("*****************************************start test_dbv2b_query_state_start****************************")
         v2b = dbv2b(dbfile, traceback_limit)
-        proofs = v2b.query_v2binfo_is_start()
+        ret = v2b.query_v2binfo_is_start()
 
-        if(len(proofs) == 0):
+        if ret.state != error.SUCCEED:
+            return
+
+        if(len(ret.datas) == 0):
             logger.debug("not fount proof")
 
-        for proof in proofs:
+        for proof in ret.datas:
             logger.info("vaddress: %s" % (proof.vaddress))
             logger.info("sequence: %s" % (proof.sequence))
             logger.info("state : %i" % (proof.state))
@@ -261,12 +277,15 @@ def test_dbv2b_query_state_succeed():
     try:
         logger.debug("*****************************************start test_dbv2b_query_state_succeed*************************")
         v2b = dbv2b(dbfile, traceback_limit)
-        proofs = v2b.query_v2binfo_is_succeed()
+        ret = v2b.query_v2binfo_is_succeed()
 
-        if(len(proofs) == 0):
+        if ret.state != error.SUCCEED:
+            return
+
+        if(len(ret.datas) == 0):
             logger.debug("not fount proof")
 
-        for proof in proofs:
+        for proof in ret.datas:
             logger.info("vaddress: %s" % (proof.vaddress))
             logger.info("sequence: %s" % (proof.sequence))
             logger.info("state : %i" % (proof.state))
@@ -277,12 +296,15 @@ def test_dbv2b_query_state_failed():
     try:
         logger.debug("*****************************************start test_dbv2b_query_state_failed*************************")
         v2b = dbv2b(dbfile, traceback_limit)
-        proofs = v2b.query_v2binfo_is_failed()
+        ret = v2b.query_v2binfo_is_failed()
 
-        if(len(proofs) == 0):
+        if ret.state != error.SUCCEED:
+            return
+
+        if(len(ret.datas) == 0):
             logger.debug("not fount proof")
 
-        for proof in proofs:
+        for proof in ret.datas:
             logger.info("vaddress: %s" % (proof.vaddress))
             logger.info("sequence: %s" % (proof.sequence))
             logger.info("state : %i" % (proof.state))

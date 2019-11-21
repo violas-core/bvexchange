@@ -12,12 +12,13 @@ import datetime
 import sqlalchemy
 import setting
 import random
+from comm.error import error
+from comm.result import result
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime, UniqueConstraint, Index, String
-
 from enum import Enum
 
 #module name
@@ -96,10 +97,11 @@ class dbb2v:
                 vamount=vvamount, vbtc=vvbtc, createblock=vcreateblock, updateblock=vupdateblock, state=self.state.START.value)
             self.__session.add(b2vi)
 
-            return True
+            ret = result(error.SUCCEED, "", "")
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return False
+            ret = result(error.EXCEPT, e, "")
+        return ret
 
     def insert_b2vinfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vupdateblock, vstate):
         try:
@@ -108,32 +110,33 @@ class dbb2v:
             if result == False:
                 return False
             self.__session.flush()
-            return self.commit()
-            
+            ret = self.commit()
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return False
+            ret = result(error.EXCEPT, e, "")
+        return ret
 
     def commit(self):
         try:
             logger.debug("start commit")
             self.__session.commit()
-            return True
+            ret = result(error.SUCCEED, "", "")
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return False
+            ret = result(error.EXCEPT, e, "")
+        return ret
 
     def query_b2vinfo(self, vaddress, sequence):
-        proofs = []
         try:
             logger.debug("start query_b2vinfo %s %i", vaddress, sequence)
             filter_vaddr = (self.b2vinfo.vaddress==vaddress)
             filter_seq = (self.b2vinfo.sequence==sequence)
             proofs = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).all()
-            return proofs 
+            ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return proofs 
+            ret = result(error.EXCEPT, e, "")
+        return ret
 
     def has_b2vinfo(self, vaddress, sequence):
         try:
@@ -143,18 +146,18 @@ class dbb2v:
             return (self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).count() > 0)
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return true
+        return True
 
     def __query_b2vinfo_state(self, state):
-        proofs = []
         try:
             logger.debug("start query_b2vinfo state is %s ", state.name)
             filter_state = (self.b2vinfo.state==state.value)
             proofs = self.__session.query(self.b2vinfo).filter(filter_state).all()
-            return proofs 
+            ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return proofs 
+            ret = result(error.EXCEPT, e, "")
+        return ret
 
     def query_b2vinfo_is_start(self):
         return self.__query_b2vinfo_state(self.state.START)
@@ -170,11 +173,12 @@ class dbb2v:
             logger.debug("start update_b2vinfo state to %s filter(vaddress, sequence) %s %i", state.name, vaddress, sequence)
             filter_vaddr = (self.b2vinfo.vaddress==vaddress)
             filter_seq = (self.b2vinfo.sequence==sequence)
-            result = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.state:state.value})
-            return True
+            self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.state:state.value})
+            ret = result(error.SUCCEED, "", "")
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return False
+            ret = result(error.EXCEPT, e, "")
+        return ret
 
     def update_b2vinfo_to_succeed(self, vaddress, sequence, state):
         return self.update_b2vinfo(vaddress, sequence, self.state.SUCCEED)
@@ -185,14 +189,15 @@ class dbb2v:
     def __update_b2vinfo_commit(self, vaddress, sequence, state):
         try:
             logger.debug("start query_b2vinfo_commit")
-            result = self.update_b2vinfo(vaddress, sequence, state)
-            if result == False:
-                return False
+            ret = self.update_b2vinfo(vaddress, sequence, state)
+            if ret != error.SUCCEED:
+                return ret
 
-            return self.commit()
+            ret = self.commit()
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return False
+            ret = result(error.EXCEPT, e, "")
+        return ret
 
     def update_b2vinfo_to_start_commit(self, vaddress, sequence):
         return self.__update_b2vinfo_commit(vaddress, sequence, self.state.START)
@@ -230,12 +235,15 @@ def test_dbb2v_query():
         logger.debug("*****************************************start test_dbb2v_query*****************************************")
         b2v = dbb2v(dbfile, traceback_limit)
         sequence = random.randint(0, max_seq)
-        proofs = b2v.query_b2vinfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
+        ret = b2v.query_b2vinfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
 
-        if(len(proofs) == 0):
+        if ret.state != error.SUCCEED:
+            return
+        
+        if (len(ret.datas) == 0):
             logger.debug("not fount proof")
 
-        for proof in proofs:
+        for proof in ret.datas:
             logger.info("vaddress: %s" % (proof.vaddress))
             logger.info("sequence: %s" % (proof.sequence))
             logger.info("state : %i" % (proof.state))
@@ -246,12 +254,15 @@ def test_dbb2v_query_state_start():
     try:
         logger.debug("*****************************************start test_dbb2v_query_state_start****************************")
         b2v = dbb2v(dbfile, traceback_limit)
-        proofs = b2v.query_b2vinfo_is_start()
+        ret = b2v.query_b2vinfo_is_start()
 
-        if(len(proofs) == 0):
+        if ret.state != error.SUCCEED:
+            return
+        
+        if (len(ret.datas) == 0):
             logger.debug("not fount proof")
 
-        for proof in proofs:
+        for proof in ret.datas:
             logger.info("vaddress: %s" % (proof.vaddress))
             logger.info("sequence: %s" % (proof.sequence))
             logger.info("state : %i" % (proof.state))
@@ -262,12 +273,15 @@ def test_dbb2v_query_state_succeed():
     try:
         logger.debug("*****************************************start test_dbb2v_query_state_succeed*************************")
         b2v = dbb2v(dbfile, traceback_limit)
-        proofs = b2v.query_b2vinfo_is_succeed()
+        ret = b2v.query_b2vinfo_is_succeed()
 
-        if(len(proofs) == 0):
+        if ret.state != error.SUCCEED:
+            return
+        
+        if (len(ret.datas) == 0):
             logger.debug("not fount proof")
 
-        for proof in proofs:
+        for proof in ret.datas:
             logger.info("vaddress: %s" % (proof.vaddress))
             logger.info("sequence: %s" % (proof.sequence))
             logger.info("state : %i" % (proof.state))
@@ -278,12 +292,15 @@ def test_dbb2v_query_state_failed():
     try:
         logger.debug("*****************************************start test_dbb2v_query_state_failed*************************")
         b2v = dbb2v(dbfile, traceback_limit)
-        proofs = b2v.query_b2vinfo_is_failed()
+        ret = b2v.query_b2vinfo_is_failed()
 
-        if(len(proofs) == 0):
+        if ret.state != error.SUCCEED:
+            return
+        
+        if (len(ret.datas) == 0):
             logger.debug("not fount proof")
 
-        for proof in proofs:
+        for proof in ret.datas:
             logger.info("vaddress: %s" % (proof.vaddress))
             logger.info("sequence: %s" % (proof.sequence))
             logger.info("state : %i" % (proof.state))
