@@ -48,7 +48,8 @@ class dbb2v:
         START       = 0 #start exchange 
         SUCCEED     = 1 #exchange succeed, but btc blockchain not changed state
         FAILED      = 2 #exchange failed
-        COMPELETE   = 3 #exchange succeed and btc blockchain changed state
+        FAILED_BTC  = 3 #exchange failed
+        COMPELETE   = 4 #exchange succeed and btc blockchain changed state
     
     #exc_traceback_objle : b2vinfo
     class b2vinfo(__base):
@@ -66,6 +67,8 @@ class dbb2v:
         updateblock = Column(String(64), index=True)
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
+        detail      = Column(String(256))
+
     
         def __repr__(self):
             return "<b2vinfo(txid=%s,fromaddress = %s, toaddress = %s, bamount = %i, vaddress = %s, sequence=%i, \
@@ -121,6 +124,7 @@ class dbb2v:
     def commit(self):
         try:
             logger.debug("start commit")
+            self.__session.flush()
             self.__session.commit()
             ret = result(error.SUCCEED, "", "")
         except Exception as e:
@@ -173,34 +177,31 @@ class dbb2v:
     def query_b2vinfo_is_complete(self):
         return self.__query_b2vinfo_state(self.state.COMPELETE)
 
+    def query_b2vinfo_is_btcfailed(self):
+        return self.__query_b2vinfo_state(self.state.FAILED_BTC)
+
     def update_b2vinfo(self, vaddress, sequence, state, height):
         try:
             logger.debug("start update_b2vinfo state to %s filter(vaddress, sequence) %s %i", state.name, vaddress, sequence)
             filter_vaddr = (self.b2vinfo.vaddress==vaddress)
             filter_seq = (self.b2vinfo.sequence==sequence)
             if height >= 0:
-                self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.state:state.value, self.b2vinfo.height:height})
+                upn = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.state:state.value, self.b2vinfo.height:height})
             else:
-                self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.state:state.value})
+                upn = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.state:state.value})
 
-            ret = result(error.SUCCEED, "", "")
+            self.__session.flush()
+            self.__session.commit()
+
+            ret = result(error.SUCCEED, "", upn)
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
             ret = result(error.EXCEPT, e, "")
         return ret
 
-    def update_b2vinfo_to_succeed(self, vaddress, sequence, height):
-        return self.update_b2vinfo(vaddress, sequence, self.state.SUCCEED, height)
-
-    def update_b2vinfo_to_failed(self, vaddress, sequence):
-        return self.pdate_b2vinfo(vaddress, sequence, self.state.FAILED, -1)
-
-    def update_b2vinfo_to_complete(self, vaddress, sequence):
-        return self.pdate_b2vinfo(vaddress, sequence, self.state.COMPELETE, -1)
-
     def __update_b2vinfo_commit(self, vaddress, sequence, state, height):
         try:
-            logger.debug("start query_b2vinfo_commit")
+            logger.debug("start __update_b2vinfo_commit")
             ret = self.update_b2vinfo(vaddress, sequence, state, height)
             if ret != error.SUCCEED:
                 return ret
@@ -222,6 +223,9 @@ class dbb2v:
 
     def update_b2vinfo_to_complete_commit(self, vaddress, sequence):
         return self.__update_b2vinfo_commit(vaddress, sequence, self.state.COMPELETE, -1)
+
+    def update_b2vinfo_to_btcfailed_commit(self, vaddress, sequence):
+        return self.__update_b2vinfo_commit(vaddress, sequence, self.state.FAILED_BTC, -1)
 
 dbfile = "bve_b2v.db"
 traceback_limit = setting.traceback_limit
@@ -340,6 +344,25 @@ def test_dbb2v_query_state_complete():
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 
+def test_dbb2v_query_state_btcfailed():
+    try:
+        logger.debug("*****************************************start test_dbb2v_query_state_btcfailed*************************")
+        b2v = dbb2v(dbfile, traceback_limit)
+        ret = b2v.query_b2vinfo_is_btcfailed()
+
+        if ret.state != error.SUCCEED:
+            return
+        
+        if (len(ret.datas) == 0):
+            logger.debug("not fount proof")
+
+        for proof in ret.datas:
+            logger.info("vaddress: %s" % (proof.vaddress))
+            logger.info("sequence: %s" % (proof.sequence))
+            logger.info("state : %i" % (proof.state))
+    except Exception as e:
+        logger.error(traceback.format_exc(limit=traceback_limit))
+
 def test_dbb2v_update():
     try:
         logger.debug("*****************************************start t_dbb2v_update***************************************")
@@ -352,13 +375,15 @@ def test_dbb2v_update():
 
 def test():
     try:
-        test_dbb2v_insert()
-        test_dbb2v_query()
-        test_dbb2v_update()
-        test_dbb2v_query()
+        #test_dbb2v_insert()
+        #test_dbb2v_query()
+        #test_dbb2v_update()
+        #test_dbb2v_query()
         test_dbb2v_query_state_start()
         test_dbb2v_query_state_succeed()
         test_dbb2v_query_state_failed()
+        test_dbb2v_query_state_complete()
+        test_dbb2v_query_state_btcfailed()
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 

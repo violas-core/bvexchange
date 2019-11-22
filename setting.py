@@ -26,5 +26,6 @@ btc_conn = {'rpcuser':'btc',
         'rpcport':9409}
 
 #btc receiver address
-receivers =['2NBtsptghCrd5b2RNbgDnkh6AFuQ46K5WUa', 
-        '2MzG6Lxs3ATwiMuovVLPQsyejCDdgyYyF1F']
+receivers =['2NGQjMnVhwVVzw1Sq7vjAz9Rf7Z1Fv8LFsV']
+
+combineaddress='2N8qe3KogEF3DjWNsDGr2qLQGgQD3g9oTnc'

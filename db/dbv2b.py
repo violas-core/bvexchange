@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-btc exchange vbtc db
+btc exchange vtoken db
 '''
 import operator
 import sys
@@ -44,7 +44,7 @@ class dbv2b:
         logger.debug("start __del__")
         self.__uninit_db()
 
-    #btc exchange vbtc state
+    #btc exchange vtoken state
     class state(Enum):
         START = 0
         SUCCEED = 1
@@ -60,14 +60,14 @@ class dbv2b:
         vaddress    = Column(String(64), index=True, nullable=False, primary_key=True)
         sequence    = Column(Integer, index=True, nullable=False, primary_key=True)
         vamount     = Column(Integer, nullable=False)
-        vbtc        = Column(String(64), nullable=False)
+        vtoken        = Column(String(64), nullable=False)
         createblock = Column(String(64), index=True, nullable=False)
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
     
         def __repr__(self):
             return "<v2binfo(txid=%s,fromaddress = %s, toaddress = %s, bamount = %i, vaddress = %s, sequence=%i, \
-                    vamount = %i, vbtc = %s, createblock = %s, state = %i)>" % (
+                    vamount = %i, vtoken = %s, createblock = %s, state = %i)>" % (
                     self.txid, self.fromaddress, self.toaddress, self.bamount, self.vaddres, self.sequence, \
                     self.vamount, self.vbt, self.createblock, self.state)
     
@@ -87,14 +87,14 @@ class dbv2b:
     def __uninit_db(self):
         logger.debug("start __uninit_db")
         
-    def insert_v2binfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock):
+    def insert_v2binfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock):
         try:
-            logger.debug("start insert_v2binfo (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vstate),  \
+            logger.debug("start insert_v2binfo (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vstate),  \
                     value(%s, %s, %s, %i, %s %i, %i, %s, %s, %s)" % \
-                    (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, self.state.START.name))
+                    (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, self.state.START.name))
 
             v2bi = self.v2binfo(txid=vtxid, fromaddress=vfromaddress, toaddress=vtoaddress, bamount=vbamount, vaddress=vvaddress, sequence=vsequence, \
-                vamount=vvamount, vbtc=vvbtc, createblock=vcreateblock, state=self.state.START.value)
+                vamount=vvamount, vtoken=vvtoken, createblock=vcreateblock, state=self.state.START.value)
             self.__session.add(v2bi)
 
             ret = result(error.SUCCEED, "", "")
@@ -103,10 +103,10 @@ class dbv2b:
             ret = result(error.FAILED, e, "")
         return ret
 
-    def insert_v2binfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vstate):
+    def insert_v2binfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vstate):
         try:
             logger.debug("start insert_v2binfo_commit")
-            ret = self.insert_v2binfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvbtc, vcreateblock, vstate)
+            ret = self.insert_v2binfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vstate)
             if ret.state != error.SUCCEED:
                 return False
             ret = self.commit()
