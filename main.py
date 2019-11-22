@@ -16,6 +16,8 @@ from time import sleep, ctime
 import db
 import db.dbb2v
 import db.dbv2b
+import btc
+import btc.exchange
 name="main"
 logger = log.logger.getLogger(name)
 class works:
@@ -41,7 +43,7 @@ class works:
             logger.debug("start: b2v")
             while (self.__work_b2v_looping):
                 logger.debug("looping: b2v")
-                db.dbb2v.test()
+                btc.exchange.works()
                 sleep(nsec)
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
@@ -53,7 +55,7 @@ class works:
             logger.debug("start: v2b")
             while (self.__work_v2b_looping):
                 logger.debug("looping: v2b")
-                db.dbv2b.test()
+                #db.dbv2b.test()
                 sleep(nsec)
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))
