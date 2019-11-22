@@ -100,7 +100,19 @@ class exchange:
     def listexproofforcancel(self, receiver, excluded):
         return self.__listexproofforstate(self.proofstate.CANCEL.value, receiver, excluded)
 
-
+    def sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, height):
+        try:
+            logger.debug("start sendexproofend (fromaddress, toaddress, vaddress, sequence, amount, height),(%s,%s,%s,%i,%s,%i)"%(fromaddress, toaddress, vaddress, sequence, amount, height))
+            if(len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) == 0 
+                    or sequence < 0 or height < 0):
+                return result(error.ARG_INVALID, "len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) == 0 or sequence < 0 or height < 0", "")
+            datas = self.__rpc_connection.violas_sendexproofend(fromaddress, toaddress, vaddress, sequence, amount, height)
+            return result(error.SUCCEED, "", datas)
+        except Exception as e:
+            logger.error(traceback.format_exc(self.__traceback_limit))
+            ret = result(error.EXCEPT, "", "")
+        return ret
+    
 def merge_proof_to_rpcparams(rpcparams, dbinfos):
     try:
         logger.debug("start merge_proof_to_rpcparams")
@@ -120,36 +132,15 @@ def grant_vtoken(btcinfo):
     try:
         return result(error.SUCCEED, "", "") 
     except Exception as e:
-        logger.error(traceback.format_exc(self.__traceback_limit))
+        logger.error(traceback.format_exc(setting.traceback_limit))
         ret = result(error.EXCEPT, e, "")
     return ret
 
-def works():
-
+def get_excluded(b2v):
     try:
-        logger.debug("start works")
-        #btc rpc 
-        exg = exchange(setting.traceback_limit, setting.btc_conn)
-        b2v = dbb2v("bve_b2v.db", setting.traceback_limit)
-        #search db state is succeed
-        scddatas = b2v.query_b2vinfo_is_succeed()
-        if(scddatas.state != error.SUCCEED):
-            return scddatas
-
-        #excluded btc blockchain state is not start,update dbb2v state to complete
-        #dbb2v state is complete, that means  btc blockchain state is cancel or succeed
-        for row in scddatas.datas:
-            vaddress  = row.vaddress
-            sequence = row.sequence
-            ret = exg.isexproofcomplete(vaddress, sequence)
-            if(ret.state == error.SUCCEED and ret.datas["result"] == "true"):
-                b2v.update_b2vinfo_to_complete(vaddress, sequence)
-                
-
-        #Proof that integration should be excluded(dbb2v.db)
         rpcparams = {}
+        #Proof that integration should be excluded(dbb2v.db)
         ## succeed
-        del scddatas
         scddatas = b2v.query_b2vinfo_is_succeed()
         if(scddatas.state != error.SUCCEED):
             return scddatas
@@ -175,11 +166,61 @@ def works():
         ret = merge_proof_to_rpcparams(rpcparams, flddatas.datas)
         if(ret.state != error.SUCCEED):
             return ret
+
+        ## btcfailed 
+        bflddatas = b2v.query_b2vinfo_is_btcfailed()
+        if(bflddatas.state != error.SUCCEED):
+            return bflddatas
+
+        ret = merge_proof_to_rpcparams(rpcparams, bflddatas.datas)
+        if(ret.state != error.SUCCEED):
+            return ret
+
+        del scddatas
+        del stdatas
+        del flddatas
+        del bflddatas
+
+    except Exception as e:
+        logger.error(traceback.format_exc(setting.traceback_limit))
+        ret = result(error.EXCEPT, e, "")
+    return ret
+
+def works():
+
+    try:
+        logger.debug("start works")
+        #btc rpc 
+        exg = exchange(setting.traceback_limit, setting.btc_conn)
+        b2v = dbb2v("bve_b2v.db", setting.traceback_limit)
+        combineaddress = setting.combineaddress
+
+        #update db state by proof state
+        ##search db state is succeed
+        scddatas = b2v.query_b2vinfo_is_succeed()
+        if(scddatas.state != error.SUCCEED):
+            return scddatas
+
+        ##excluded btc blockchain state is not start,update dbb2v state to complete
+        ##dbb2v state is complete, that means  btc blockchain state is cancel or succeed
+        for row in scddatas.datas:
+            vaddress  = row.vaddress
+            sequence = row.sequence
+            ret = exg.isexproofcomplete(vaddress, sequence)
+            if(ret.state == error.SUCCEED and ret.datas["result"] == "true"):
+                b2v.update_b2vinfo_to_complete_commit(vaddress, sequence)
+        del scddatas
+
+        #get all excluded info from db
+        rpcparams = {}
+        ret = get_excluded(b2v)
+        if(ret.state != error.SUCCEED):
+            return ret
         rpcparams = ret.datas
 
-
         #set receiver: get it from setting or get it from blockchain
-        receivers = setting.receivers
+        receivers = list(set(setting.receivers))
+        logger.debug(receivers)
 
         #modulti receiver, one-by-one
         for receiver in receivers:
@@ -201,7 +242,8 @@ def works():
 
                     ##send vbtc to vaddress, vtoken and amount
                     ret = grant_vtoken(data)
-                    height = 10 #from data import
+                    height = 10 #from grant_vtoken ret import
+                    vamount = int(data["amount"]) # from grant_vtoken import
 
                     ##failed: dbb2v state = failed
                     ##succeed:dbb2v state = succeed
@@ -209,10 +251,14 @@ def works():
                         logger.debug("grant_vtoken error")
                         ret = b2v.update_b2vinfo_to_failed_commit(data["address"], int(data["sequence"]))
                     else:
-                        ret =b2v.update_b2vinfo_to_succeed_commit(data["address"], int(data["sequence"]), height)
+                        ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), str(vamount), height)
+                        if ret.state != error.SUCCEED:
+                            b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
+                            continue
 
-                    if(ret.state != error.SUCCEED):
-                        return ret
+                        ret =b2v.update_b2vinfo_to_succeed_commit(data["address"], int(data["sequence"]), height)
+                        if(ret.state != error.SUCCEED):
+                            return ret
 
         ret = result(error.SUCCEED, "", "") 
 
