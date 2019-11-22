@@ -60,7 +60,7 @@ class dbv2b:
         vaddress    = Column(String(64), index=True, nullable=False, primary_key=True)
         sequence    = Column(Integer, index=True, nullable=False, primary_key=True)
         vamount     = Column(Integer, nullable=False)
-        vtoken        = Column(String(64), nullable=False)
+        vtoken      = Column(String(64), nullable=False)
         createblock = Column(String(64), index=True, nullable=False)
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
@@ -69,7 +69,7 @@ class dbv2b:
             return "<v2binfo(txid=%s,fromaddress = %s, toaddress = %s, bamount = %i, vaddress = %s, sequence=%i, \
                     vamount = %i, vtoken = %s, createblock = %s, state = %i)>" % (
                     self.txid, self.fromaddress, self.toaddress, self.bamount, self.vaddres, self.sequence, \
-                    self.vamount, self.vbt, self.createblock, self.state)
+                    self.vamount, self.vtoken, self.createblock, self.state)
     
     def __init_db(self, dbfile):
         logger.debug("start __init_db")
