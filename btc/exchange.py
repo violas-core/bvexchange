@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import operator
 import sys
+import json
 sys.path.append("..")
 import log
 import log.logger
@@ -42,9 +43,8 @@ class exchange:
         END     = "end"
         CANCEL  ="cancel"
 
-    def __init__(self, traceback_limit):
+    def __init__(self, traceback_limit, btc_conn):
         self.__traceback_limit = traceback_limit
-        btc_conn = setting.btc_conn 
         if btc_conn :
             if btc_conn["rpcuser"]:
                 self.__rpcuser = btc_conn["rpcuser"]
@@ -59,27 +59,31 @@ class exchange:
     def __del__(self):
         logger.debug("start __del__")
 
-    def __listexproofforstate(self, state, receiver):
+    def __listexproofforstate(self, state, receiver, excluded):
         try:
-            logger.debug("start __listexproofforstate (state=%s receiver=%s)"%(state, receiver))
+            logger.debug("start __listexproofforstate (state=%s receiver=%s excluded=%s)"%(state, receiver, excluded))
             if(len(receiver) == 0):
                 return result(error.ARG_INVALID, error.argument_invalid, "")
-                
-            datas = self.__rpc_connection.violas_listexproofforstate(state)
+            
+            if len(excluded) == 0:
+                datas = self.__rpc_connection.violas_listexproofforstate(state, receiver)
+            else:
+                datas = self.__rpc_connection.violas_listexproofforstate(state, receiver, excluded)
+
             return result(error.SUCCEED, "", datas)
 
         except Exception as e:
             logger.error(traceback.format_exc(self.__traceback_limit))
-            ret = result(error.EXCEPT, "", datas)
+            ret = result(error.EXCEPT, e, "")
         return ret
 
-    def isexproofcomplete(self, state, address, sequence):
+    def isexproofcomplete(self, address, sequence):
         try:
             logger.debug("start isexproofcomplete (address = %s sequence=%i)"%(address, sequence))
             if(len(address) != 64 or sequence < 0):
                 return result(error.ARG_INVALID, error.argument_invalid, "")
                 
-            datas = self.__rpc_connection.violas_isexproofcomplete(state)
+            datas = self.__rpc_connection.violas_isexproofcomplete(address, sequence)
             return result(error.SUCCEED, "", datas)
 
         except Exception as e:
@@ -87,46 +91,144 @@ class exchange:
             ret = result(error.EXCEPT, "", "")
         return ret
 
-    def listexproofforstart(self, receiver):
-        return self.__listexproofforstate(self.proofstate.START.value, receiver)
+    def listexproofforstart(self, receiver, excluded):
+        return self.__listexproofforstate(self.proofstate.START.value, receiver, excluded)
 
-    def listexproofforend(self, receiver):
-        return self.__listexproofforstate(self.proofstate.END.value, receiver)
+    def listexproofforend(self, receiver, excluded):
+        return self.__listexproofforstate(self.proofstate.END.value, receiver, excluded)
 
-    def listexproofforcancel(self, receiver):
-        return self.__listexproofforstate(self.proofstate.CANCEL.value, receiver)
+    def listexproofforcancel(self, receiver, excluded):
+        return self.__listexproofforstate(self.proofstate.CANCEL.value, receiver, excluded)
 
-exg = exchange(setting.traceback_limit)
+
+def merge_proof_to_rpcparams(rpcparams, dbinfos):
+    try:
+        logger.debug("start merge_proof_to_rpcparams")
+        for info in dbinfos:
+            if info.toaddress in rpcparams:
+                rpcparams[info.toaddress].append({"address":"%s"%(info.vaddress), "sequence":info.sequence})
+            else:
+                rpcparams[info.toaddress] = [{"address":"%s"%(info.vaddress), "sequence":info.sequence}]
+
+        return result(error.SUCCEED, "", rpcparams)
+    except Exception as e:
+        logger.error(traceback.format_exc(setting.traceback_limit))
+        ret = result(error.EXCEPT, e, "")
+    return ret
+
+def grant_vtoken(btcinfo):
+    try:
+        return result(error.SUCCEED, "", "") 
+    except Exception as e:
+        logger.error(traceback.format_exc(self.__traceback_limit))
+        ret = result(error.EXCEPT, e, "")
+    return ret
 
 def works():
+
     try:
-        exg = exchange(setting.traceback_limit)
         logger.debug("start works")
+        #btc rpc 
+        exg = exchange(setting.traceback_limit, setting.btc_conn)
+        b2v = dbb2v("bve_b2v.db", setting.traceback_limit)
         #search db state is succeed
-        scddatas = dbb2v.query_b2vinfo_is_succeed()
+        scddatas = b2v.query_b2vinfo_is_succeed()
         if(scddatas.state != error.SUCCEED):
             return scddatas
 
-        for proof in scddatas.datas:
-            address  = proof["address"]
-            sequence = int(proof["sequence"])
-            ret = exg.isexproofcomplete(address, sequence)
+        #excluded btc blockchain state is not start,update dbb2v state to complete
+        #dbb2v state is complete, that means  btc blockchain state is cancel or succeed
+        for row in scddatas.datas:
+            vaddress  = row.vaddress
+            sequence = row.sequence
+            ret = exg.isexproofcomplete(vaddress, sequence)
+            if(ret.state == error.SUCCEED and ret.datas["result"] == "true"):
+                b2v.update_b2vinfo_to_complete(vaddress, sequence)
+                
 
-        ret = exg.listexproofforstart()
-        if ret.state == error.SUCCEED and ret.datas:
-            for data in ret.datas:
-                logger.info(data)
+        #Proof that integration should be excluded(dbb2v.db)
+        rpcparams = {}
+        ## succeed
+        del scddatas
+        scddatas = b2v.query_b2vinfo_is_succeed()
+        if(scddatas.state != error.SUCCEED):
+            return scddatas
 
-        return result(error.SUCCEED, "", "")
+        ret = merge_proof_to_rpcparams(rpcparams, scddatas.datas)
+        if(ret.state != error.SUCCEED):
+            return ret
+
+        ## start 
+        stdatas = b2v.query_b2vinfo_is_start()
+        if(stdatas.state != error.SUCCEED):
+            return sddatas
+
+        ret = merge_proof_to_rpcparams(rpcparams, stdatas.datas)
+        if(ret.state != error.SUCCEED):
+            return ret
+
+        ## failed 
+        flddatas = b2v.query_b2vinfo_is_failed()
+        if(flddatas.state != error.SUCCEED):
+            return flddatas
+
+        ret = merge_proof_to_rpcparams(rpcparams, flddatas.datas)
+        if(ret.state != error.SUCCEED):
+            return ret
+        rpcparams = ret.datas
+
+
+        #set receiver: get it from setting or get it from blockchain
+        receivers = setting.receivers
+
+        #modulti receiver, one-by-one
+        for receiver in receivers:
+            excluded = []
+            if receiver in rpcparams:
+                excluded = rpcparams[receiver]
+
+            logger.debug("check receiver=%s excluded=%s"%(receiver, excluded))
+            ret = exg.listexproofforstart(receiver, excluded)
+            if ret.state == error.SUCCEED and len(ret.datas) > 0:
+                for data in ret.datas:
+                    #grant vbtc 
+                    ##create new row to db. state = start 
+                    ret = b2v.insert_b2vinfo_commit(data["txid"], data["issuer"], data["receiver"], int(data["amount"]), 
+                            data["address"], int(data["sequence"]), 0, data["vtoken"], data["creation_block"], data["update_block"])
+
+                    if(ret.state != error.SUCCEED):
+                        return ret
+
+                    ##send vbtc to vaddress, vtoken and amount
+                    ret = grant_vtoken(data)
+                    height = 10 #from data import
+
+                    ##failed: dbb2v state = failed
+                    ##succeed:dbb2v state = succeed
+                    if ret.state != error.SUCCEED:
+                        logger.debug("grant_vtoken error")
+                        ret = b2v.update_b2vinfo_to_failed_commit(data["address"], int(data["sequence"]))
+                    else:
+                        ret =b2v.update_b2vinfo_to_succeed_commit(data["address"], int(data["sequence"]), height)
+
+                    if(ret.state != error.SUCCEED):
+                        return ret
+
+        ret = result(error.SUCCEED, "", "") 
 
     except Exception as e:
-        logger.error(traceback.format_exc(self.traceback_limit))
+        logger.error(traceback.format_exc(setting.traceback_limit))
+        ret = result(error.EXCEPT, "", "") 
     finally:
         logger.info("works end.")
 
+    return ret
+
+
+exg = exchange(setting.traceback_limit, setting.btc_conn)
 def test_conn():
     logger.debug("start test_conn")
-    ret = exg.listexproofforstart(setting.receivers[0])
+    ret = exg.listexproofforstart(setting.receivers[0], "")
     if ret.state == error.SUCCEED and ret.datas:
         for data in ret.datas:
             logger.info(data)
@@ -134,12 +236,12 @@ def test_conn():
     if(ret.state != error.SUCCEED):
         raise Exception(ret)
 
-    ret = exg.listexproofforstart(setting.receivers[0])
+    ret = exg.listexproofforend(setting.receivers[0], "")
     if ret.state == error.SUCCEED and ret.datas:
         for data in ret.datas:
             logger.info(data)
 
-    ret = exg.listexproofforcancel(setting.receivers[0])
+    ret = exg.listexproofforcancel(setting.receivers[0], "")
     if ret.state == error.SUCCEED and ret.datas:
         for data in ret.datas:
             logger.info(data)
@@ -147,7 +249,10 @@ def test_conn():
 def main():
     try:
        logger.debug("start main")
-       test_conn()
+       #test_conn()
+       ret = works()
+       if ret.state != error.SUCCEED:
+           logger.error(ret.message)
     except Exception as e:
         logger.error(traceback.format_exc(setting.traceback_limit))
     finally:
