@@ -18,8 +18,17 @@ import db.dbb2v
 import db.dbv2b
 import btc
 import btc.exchange
-name="main"
+import subprocess
+
+name="bvexchange"
 logger = log.logger.getLogger(name)
+
+def checkrerun():
+    proc = subprocess.Popen(["pgrep", "-f", __file__], stdout=subprocess.PIPE)
+    std = proc.communicate()
+    if len(std[0].decode().split()) > 1:
+        exit("already running")
+
 class works:
     __threads = []
     __work_b2v_looping = 1
@@ -134,7 +143,7 @@ class works:
         self.__work_v2b_looping = 0
         self.__work_comm_looping = 0
 
-work_manage = works(setting.traceback_limit)
+work_manage = ""
 def signal_stop(signal, frame):
     try:
         logger.debug("start signal : %i", signal )
@@ -147,8 +156,9 @@ def signal_stop(signal, frame):
 
 def main():
     try:
-        logger.debug("start main")
         global work_manage
+        work_manage = works(setting.traceback_limit)
+        logger.debug("start main")
         signal.signal(signal.SIGINT, signal_stop)
         signal.signal(signal.SIGTSTP, signal_stop)
         work_manage.start()
@@ -159,4 +169,5 @@ def main():
         logger.critical("main end")
 
 if __name__ == '__main__':
+    checkrerun()
     main()
