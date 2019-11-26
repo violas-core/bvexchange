@@ -190,6 +190,7 @@ def works():
     return ret
 
 def test_libra():
+    print(sys.path)
     wallet = WalletLibrary.new()
     a1 = wallet.new_account()
     a2 = wallet.new_account()
