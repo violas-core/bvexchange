@@ -3,6 +3,10 @@ import operator
 import sys
 import json
 sys.path.append("..")
+import libra
+from libra import Client
+from libra import WalletLibrary
+from libra.json_print import json_print
 import log
 import log.logger
 import traceback
@@ -16,6 +20,7 @@ import comm.result
 from comm.result import result
 from comm.error import error
 from db.dbb2v import dbb2v
+from btc.btcclient import btcclient
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 #from .models import BtcRpc
 from enum import Enum
@@ -26,92 +31,6 @@ name="exchangeb2v"
 #load logging
 logger = log.logger.getLogger(name) 
 
-#btc_url = "http://%s:%s@%s:%i"
-
-
-class exchange:
-    __traceback_limit       = 0
-    __btc_url               = "http://%s:%s@%s:%i"
-    __rpcuser               = "btc"
-    __rpcpassword           = "btc"
-    __rpcip                 = "127.0.0.1"
-    __rpcport               = 9409
-    __rpc_connection        = ""
-
-    class proofstate(Enum):
-        START   = "start"
-        END     = "end"
-        CANCEL  ="cancel"
-
-    def __init__(self, traceback_limit, btc_conn):
-        self.__traceback_limit = traceback_limit
-        if btc_conn :
-            if btc_conn["rpcuser"]:
-                self.__rpcuser = btc_conn["rpcuser"]
-            if btc_conn["rpcpassword"]:
-                self.__rpcpassword = btc_conn["rpcpassword"]
-            if btc_conn["rpcip"]:
-                self.__rpcip = btc_conn["rpcip"]
-            if btc_conn["rpcport"]:
-                self.__rpcport = btc_conn["rpcport"]
-        self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__rpcuser, self.__rpcpassword, self.__rpcip, self.__rpcport))
-
-    def __del__(self):
-        logger.debug("start __del__")
-
-    def __listexproofforstate(self, state, receiver, excluded):
-        try:
-            logger.debug("start __listexproofforstate (state=%s receiver=%s excluded=%s)"%(state, receiver, excluded))
-            if(len(receiver) == 0):
-                return result(error.ARG_INVALID, error.argument_invalid, "")
-            
-            if len(excluded) == 0:
-                datas = self.__rpc_connection.violas_listexproofforstate(state, receiver)
-            else:
-                datas = self.__rpc_connection.violas_listexproofforstate(state, receiver, excluded)
-
-            return result(error.SUCCEED, "", datas)
-
-        except Exception as e:
-            logger.error(traceback.format_exc(self.__traceback_limit))
-            ret = result(error.EXCEPT, e, "")
-        return ret
-
-    def isexproofcomplete(self, address, sequence):
-        try:
-            logger.debug("start isexproofcomplete (address = %s sequence=%i)"%(address, sequence))
-            if(len(address) != 64 or sequence < 0):
-                return result(error.ARG_INVALID, error.argument_invalid, "")
-                
-            datas = self.__rpc_connection.violas_isexproofcomplete(address, sequence)
-            return result(error.SUCCEED, "", datas)
-
-        except Exception as e:
-            logger.error(traceback.format_exc(self.__traceback_limit))
-            ret = result(error.EXCEPT, "", "")
-        return ret
-
-    def listexproofforstart(self, receiver, excluded):
-        return self.__listexproofforstate(self.proofstate.START.value, receiver, excluded)
-
-    def listexproofforend(self, receiver, excluded):
-        return self.__listexproofforstate(self.proofstate.END.value, receiver, excluded)
-
-    def listexproofforcancel(self, receiver, excluded):
-        return self.__listexproofforstate(self.proofstate.CANCEL.value, receiver, excluded)
-
-    def sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, height):
-        try:
-            logger.debug("start sendexproofend (fromaddress, toaddress, vaddress, sequence, amount, height),(%s,%s,%s,%i,%s,%i)"%(fromaddress, toaddress, vaddress, sequence, amount, height))
-            if(len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) == 0 
-                    or sequence < 0 or height < 0):
-                return result(error.ARG_INVALID, "len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) == 0 or sequence < 0 or height < 0", "")
-            datas = self.__rpc_connection.violas_sendexproofend(fromaddress, toaddress, vaddress, sequence, amount, height)
-            return result(error.SUCCEED, "", datas)
-        except Exception as e:
-            logger.error(traceback.format_exc(self.__traceback_limit))
-            ret = result(error.EXCEPT, "", "")
-        return ret
     
 def merge_proof_to_rpcparams(rpcparams, dbinfos):
     try:
@@ -191,7 +110,7 @@ def works():
     try:
         logger.debug("start works")
         #btc rpc 
-        exg = exchange(setting.traceback_limit, setting.btc_conn)
+        exg = btcclient(setting.traceback_limit, setting.btc_conn)
         b2v = dbb2v("bve_b2v.db", setting.traceback_limit)
         combineaddress = setting.combineaddress
 
@@ -270,39 +189,37 @@ def works():
 
     return ret
 
+def test_libra():
+    wallet = WalletLibrary.new()
+    a1 = wallet.new_account()
+    a2 = wallet.new_account()
+    client = Client.new('18.220.66.235',40001, "./violas_config/consensus_peers.config.toml", "./violas_config/temp_faucet_keys")
+    client.mint_coins(a1.address, 100, True)
+    client.mint_coins(a2.address, 100, True)
 
-exg = exchange(setting.traceback_limit, setting.btc_conn)
-def test_conn():
-    logger.debug("start test_conn")
-    ret = exg.listexproofforstart(setting.receivers[0], "")
-    if ret.state == error.SUCCEED and ret.datas:
-        for data in ret.datas:
-            logger.info(data)
+    client.violas_publish(a1, True)
+    client.violas_init(a1, a1.address, True)
+    client.violas_init(a2, a1.address, True)
+    client.violas_mint_coin(a1.address, 100, a1, True)
+    print("before............")
+    print("libra balance:", "a1=", client.get_balance(a1.address), "a2=", client.get_balance(a2.address))
+    print("violas balance:", "a1=", client.violas_get_balance(a1.address, a1.address), "a2=", client.violas_get_balance(a2.address, a1.address))
 
-    if(ret.state != error.SUCCEED):
-        raise Exception(ret)
-
-    ret = exg.listexproofforend(setting.receivers[0], "")
-    if ret.state == error.SUCCEED and ret.datas:
-        for data in ret.datas:
-            logger.info(data)
-
-    ret = exg.listexproofforcancel(setting.receivers[0], "")
-    if ret.state == error.SUCCEED and ret.datas:
-        for data in ret.datas:
-            logger.info(data)
-
+    print("before:", client.violas_get_balance(a1.address, a1.address), client.violas_get_balance(a2.address, a1.address))
+    client.violas_transfer_coin(a1, a2.address, 20, a1.address, is_blocking=True)
+    print("after:", client.violas_get_balance(a1.address, a1.address), client.violas_get_balance(a2.address, a1.address))
 def main():
     try:
        logger.debug("start main")
-       #test_conn()
-       ret = works()
-       if ret.state != error.SUCCEED:
-           logger.error(ret.message)
+       #ret = works()
+       #if ret.state != error.SUCCEED:
+       #    logger.error(ret.message)
+       test_libra()
     except Exception as e:
         logger.error(traceback.format_exc(setting.traceback_limit))
     finally:
         logger.info("end main")
 
 if __name__ == "__main__":
-    main()
+    #main()
+    test_libra()
