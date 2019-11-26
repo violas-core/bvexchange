@@ -15,6 +15,12 @@ def getLogger(name):
         logger_name = "b2vlog"
     elif name == "dbv2b":
         logger_name = "v2blog"
+    elif name == "btcclient":
+        logger_name = "b2vlog"
+    elif name == "violasclient":
+        logger_name = "v2blog"
+    elif name == "exchangeb2v":
+        logger_name = "b2vlog"
 
     logger = logging.getLogger(logger_name)
 
