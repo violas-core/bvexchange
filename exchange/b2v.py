@@ -66,7 +66,7 @@ def get_excluded(b2v):
         ret = merge_proof_to_rpcparams(rpcparams, scddatas.datas)
         if(ret.state != error.SUCCEED):
             return ret
-
+        '''
         ## start 
         stdatas = b2v.query_b2vinfo_is_start()
         if(stdatas.state != error.SUCCEED):
@@ -75,6 +75,7 @@ def get_excluded(b2v):
         ret = merge_proof_to_rpcparams(rpcparams, stdatas.datas)
         if(ret.state != error.SUCCEED):
             return ret
+        '''
 
         ## failed 
         flddatas = b2v.query_b2vinfo_is_failed()
@@ -93,11 +94,6 @@ def get_excluded(b2v):
         ret = merge_proof_to_rpcparams(rpcparams, bflddatas.datas)
         if(ret.state != error.SUCCEED):
             return ret
-
-        del scddatas
-        del stdatas
-        del flddatas
-        del bflddatas
 
         ret = result(error.SUCCEED, "", rpcparams)
     except Exception as e:
@@ -189,13 +185,18 @@ def works():
                         continue
 
                     ##create new row to db. state = start 
-                    ret = b2v.insert_b2vinfo_commit(data["txid"], data["issuer"], data["receiver"], int(float(data["amount"] * COINS)), 
-                            data["address"], int(data["sequence"]), 0, data["vtoken"], data["creation_block"], data["update_block"])
-                    assert (ret.state == error.SUCCEED), "insert_b2vinfo_commit error"
+                    ret = b2v.has_b2vinfo(data["address"], data["sequence"])
+                    assert (ret.state == error.SUCCEED), "db error"
 
+                    if ret.datas == False:
+                        ret = b2v.insert_b2vinfo_commit(data["txid"], data["issuer"], data["receiver"], int(float(data["amount"] * COINS)), 
+                                data["address"], int(data["sequence"]), 0, data["vtoken"], data["creation_block"], data["update_block"])
+                        assert (ret.state == error.SUCCEED), "db error"
 
                     ##send vbtc to vaddress, vtoken and amount
-                    ret = vclient.send_coins(vsender, to_address, vamount, to_module_address)
+                    ret = vclient.send_coins(vsender, bytes.fromhex(to_address), vamount, bytes.fromhex(to_module_address))
+                    if ret.state != error.SUCCEED:
+                        continue
 
                     rettmp = client.get_address_sequence(vsender.address.hex())
                     height = -1
@@ -208,14 +209,19 @@ def works():
                     if ret.state != error.SUCCEED:
                         logger.debug("grant_vtoken error")
                         ret = b2v.update_b2vinfo_to_failed_commit(data["address"], int(data["sequence"]))
+                        assert (ret.state == error.SUCCEED), "db error"
                     else:
-                        ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), str(vamount), height)
-                        if ret.state != error.SUCCEED:
-                            b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
-                            continue
                         ret =b2v.update_b2vinfo_to_succeed_commit(data["address"], int(data["sequence"]), height)
-                        if(ret.state != error.SUCCEED):
-                            return ret
+                        assert (ret.state == error.SUCCEED), "db error"
+                    
+                    ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), str(vamount), height)
+                    if ret.state != error.SUCCEED:
+                        b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
+                        assert (ret.state == error.SUCCEED), "db error"
+                    else:
+                        b2v.update_b2vinfo_to_btcsucceed_commit(data["address"], int(data["sequence"]))
+                        assert (ret.state == error.SUCCEED), "db error"
+
 
         ret = result(error.SUCCEED, "", "") 
 

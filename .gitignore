@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 
+*.address
 vwallet_std
 vwallet
 *.rotate
