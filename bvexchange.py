@@ -7,6 +7,7 @@ btc and vbtc exchange main
 import operator
 import signal
 import sys
+sys.path.append("./packages")
 import traceback
 import log
 import log.logger

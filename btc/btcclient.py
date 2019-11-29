@@ -138,8 +138,6 @@ def main():
     try:
        logger.debug("start main")
        test_conn()
-       if ret.state != error.SUCCEED:
-           logger.error(ret.message)
     except Exception as e:
         logger.error(traceback.format_exc(setting.traceback_limit))
     finally:

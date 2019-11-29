@@ -8,5 +8,8 @@ class error(Enum):
     FAILED  = "failed"
     EXCEPT  = "except"
     ARG_INVALID = "argument invalid"
+    SETTING_INVALID = "setting invalid"
+    WALLET_INVALID = "wallet invalid"
+
 
 

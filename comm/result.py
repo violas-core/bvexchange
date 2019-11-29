@@ -10,7 +10,7 @@ class result:
         message = ""
         datas = ""
         
-        def __init__(self, state, message, datas):
+        def __init__(self, state, message = None, datas = None):
             self.state = state 
             self.message = message
             self.datas = datas
