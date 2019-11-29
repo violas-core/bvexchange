@@ -4,6 +4,11 @@ __pycache__/
 *$py.class
 
 
+vwallet_std
+vwallet
+*.rotate
+consensus_peers.config.toml
+temp_faucet_keys
 tags
 
 # db file

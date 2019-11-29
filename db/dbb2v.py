@@ -9,11 +9,11 @@ import log
 import log.logger
 import traceback
 import datetime
-import sqlalchemy
 import setting
 import random
 from comm.error import error
 from comm.result import result
+import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
@@ -83,7 +83,7 @@ class dbb2v:
         if setting.db_echo:
             db_echo = setting.db_echo
 
-        self.__engine = create_engine('sqlite:///%s?check_same_thread=False' % dbfile, echo=db_echo)
+        self.__engine = create_engine('sqlite:///{}?check_same_thread=False'.format(dbfile), echo=db_echo)
         #self.b2vinfo.__table__
         self.__base.metadata.create_all(self.__engine)
         Session = sessionmaker(bind=self.__engine)

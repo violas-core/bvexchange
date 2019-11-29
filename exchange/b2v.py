@@ -3,10 +3,6 @@ import operator
 import sys
 import json
 sys.path.append("..")
-import libra
-from libra import Client
-from libra import WalletLibrary
-from libra.json_print import json_print
 import log
 import log.logger
 import traceback
@@ -21,6 +17,8 @@ from comm.result import result
 from comm.error import error
 from db.dbb2v import dbb2v
 from btc.btcclient import btcclient
+import violas.violasclient
+from violas.violasclient import violasclient, violaswallet
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 #from .models import BtcRpc
 from enum import Enum
@@ -28,6 +26,7 @@ from enum import Enum
 #module name
 name="exchangeb2v"
 
+COINS = 1000000000
 #load logging
 logger = log.logger.getLogger(name) 
 
@@ -47,9 +46,9 @@ def merge_proof_to_rpcparams(rpcparams, dbinfos):
         ret = result(error.EXCEPT, e, "")
     return ret
 
-def grant_vtoken(btcinfo):
+def grant_vbtc(vclient, from_account, to_address, amount, module_address):
     try:
-        return result(error.SUCCEED, "", "") 
+        ret = vclient.send_coins(from_account, to_address, amount, module_address)
     except Exception as e:
         logger.error(traceback.format_exc(setting.traceback_limit))
         ret = result(error.EXCEPT, e, "")
@@ -100,18 +99,44 @@ def get_excluded(b2v):
         del flddatas
         del bflddatas
 
+        ret = result(error.SUCCEED, "", rpcparams)
     except Exception as e:
         logger.error(traceback.format_exc(setting.traceback_limit))
         ret = result(error.EXCEPT, e, "")
     return ret
+def checks():
+    assert (len(setting.btc_conn) == 4), "btc_conn is invalid."
+    assert (len(setting.violas_recever) == 64 ), "violas_recever is invalid."
+    assert (len(setting.violas_sender) == 64 ), "violas_sender is invalid."
+    assert (len(setting.module_address) == 64), "module_address is invalid"
+    assert (len(setting.violas_nodes) > 0 and len(setting.violas_nodes[0]) > 1), "violas_nodes is invalid."
 
 def works():
 
     try:
         logger.debug("start works")
-        #btc rpc 
+        dbb2v_name = "bve_b2v.db"
+        dbv2b_name = "bve_v2b.db"
+        wallet_name = "vwallet"
+
+        #requirement checks
+        checks()
+
+        #btc init
         exg = btcclient(setting.traceback_limit, setting.btc_conn)
-        b2v = dbb2v("bve_b2v.db", setting.traceback_limit)
+        b2v = dbb2v(dbb2v_name, setting.traceback_limit)
+
+        #violas init
+        vclient = violasclient(setting.traceback_limit, setting.violas_nodes)
+        vwallet = violaswallet(setting.traceback_limit, wallet_name)
+        ret = vwallet.get_account(setting.violas_sender)
+        if ret.state != error.SUCCEED:
+            return result(error.FAILED, "not fount violas sender account({}".format(setting.violas_sender)) 
+
+        #violas sender, grant vbtc
+        vsender = ret.datas
+        module_address = setting.module_address
+         
         combineaddress = setting.combineaddress
 
         #update db state by proof state
@@ -152,20 +177,34 @@ def works():
             if ret.state == error.SUCCEED and len(ret.datas) > 0:
                 for data in ret.datas:
                     #grant vbtc 
-                    ##create new row to db. state = start 
-                    ret = b2v.insert_b2vinfo_commit(data["txid"], data["issuer"], data["receiver"], int(data["amount"]), 
-                            data["address"], int(data["sequence"]), 0, data["vtoken"], data["creation_block"], data["update_block"])
+                    ##check 
+                    to_address = data["address"]
+                    to_module_address = data["vtoken"]
+                    vamount = int(float(data["amount"]) * COINS)
+                    if (len(module_address) != 64 or module_address != to_module_address):
+                       logger.warning("vtoken({}) is invalid.".format(to_module_address))
+                       continue
+                    if vamount <= 0:
+                        logger.warning("amount({}) is invalid.".format(vamount))
+                        continue
 
-                    if(ret.state != error.SUCCEED):
-                        return ret
+                    ##create new row to db. state = start 
+                    ret = b2v.insert_b2vinfo_commit(data["txid"], data["issuer"], data["receiver"], int(float(data["amount"] * COINS)), 
+                            data["address"], int(data["sequence"]), 0, data["vtoken"], data["creation_block"], data["update_block"])
+                    assert (ret.state == error.SUCCEED), "insert_b2vinfo_commit error"
+
 
                     ##send vbtc to vaddress, vtoken and amount
-                    ret = grant_vtoken(data)
-                    height = 10 #from grant_vtoken ret import
-                    vamount = int(data["amount"]) # from grant_vtoken import
+                    ret = vclient.send_coins(vsender, to_address, vamount, to_module_address)
 
-                    ##failed: dbb2v state = failed
-                    ##succeed:dbb2v state = succeed
+                    rettmp = client.get_address_sequence(vsender.address.hex())
+                    height = -1
+                    if rettmp.state == error.SUCCEED:
+                        height = ret.datas
+
+                    ##update db 
+                    ###failed: dbb2v state = failed
+                    ###succeed:dbb2v state = succeed
                     if ret.state != error.SUCCEED:
                         logger.debug("grant_vtoken error")
                         ret = b2v.update_b2vinfo_to_failed_commit(data["address"], int(data["sequence"]))
@@ -174,7 +213,6 @@ def works():
                         if ret.state != error.SUCCEED:
                             b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
                             continue
-
                         ret =b2v.update_b2vinfo_to_succeed_commit(data["address"], int(data["sequence"]), height)
                         if(ret.state != error.SUCCEED):
                             return ret
@@ -189,38 +227,11 @@ def works():
 
     return ret
 
-def test_libra():
-    print(sys.path)
-    wallet = WalletLibrary.new()
-    a1 = wallet.new_account()
-    a2 = wallet.new_account()
-    client = Client.new('18.220.66.235',40001, "./violas_config/consensus_peers.config.toml", "./violas_config/temp_faucet_keys")
-    client.mint_coins(a1.address, 100, True)
-    client.mint_coins(a2.address, 100, True)
-
-    client.violas_publish(a1, True)
-    client.violas_init(a1, a1.address, True)
-    client.violas_init(a2, a1.address, True)
-    client.violas_mint_coin(a1.address, 100, a1, True)
-    print("before............")
-    print("libra balance:", "a1=", client.get_balance(a1.address), "a2=", client.get_balance(a2.address))
-    print("violas balance:", "a1=", client.violas_get_balance(a1.address, a1.address), "a2=", client.violas_get_balance(a2.address, a1.address))
-
-    print("before:", client.violas_get_balance(a1.address, a1.address), client.violas_get_balance(a2.address, a1.address))
-    client.violas_transfer_coin(a1, a2.address, 20, a1.address, is_blocking=True)
-    print("after:", client.violas_get_balance(a1.address, a1.address), client.violas_get_balance(a2.address, a1.address))
 def main():
-    try:
        logger.debug("start main")
-       #ret = works()
-       #if ret.state != error.SUCCEED:
-       #    logger.error(ret.message)
-       test_libra()
-    except Exception as e:
-        logger.error(traceback.format_exc(setting.traceback_limit))
-    finally:
-        logger.info("end main")
+       ret = works()
+       if ret.state != error.SUCCEED:
+           logger.error(ret.message)
 
 if __name__ == "__main__":
-    #main()
-    test_libra()
+    main()
