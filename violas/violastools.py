@@ -116,12 +116,15 @@ def mint_platform_coin(address, amount):
     json_print(client.get_account_state(address).to_json())
 
 def mint_violas_coin(address, amount, module):
-    logger.debug("start mcreate_violas_coin otform_coin = {} amount={}".format(address, address))
+    logger.debug("start mcreate_violas_coin otform_coin = {} amount={} module={}".format(address, amount, module))
     global wallet_name
     client = violasclient(setting.traceback_limit, setting.violas_nodes)
     wallet = violaswallet(setting.traceback_limit, wallet_name)
     ret = wallet.get_account(module)
-    assert ret.state == error.SUCCEED, "get_account failed."
+    if ret.state != error.SUCCEED:
+        logger.error(ret.datas)
+        return
+
     module_account = ret.datas
 
     ret = client.mint_violas_coin(address, amount, module_account)
@@ -156,7 +159,7 @@ def bind_module(address, module):
         logger.debug("get account failed")
     account = ret.datas
 
-    ret = client.bind_module(account, moudule)
+    ret = client.bind_module(account, module)
     assert ret.state == error.SUCCEED
     json_print(client.get_account_state(account.address).to_json())
 
@@ -168,6 +171,7 @@ def send_coins(from_address, to_address, amount, module):
         logger.debug("get account failed")
     account = ret.datas
 
+    client = violasclient(setting.traceback_limit, setting.violas_nodes)
     client.send_coins(account, to_address, amount, module)
     json_print(client.get_account_state(account.address).to_json())
 
@@ -362,11 +366,13 @@ def run(argc, argv):
     for opt, arg in opts:
         if len(arg) > 0:
             arg_list = "{}".format(arg).split(",")
+            
+            arg_list = [sub.strip() for sub in arg_list]
+
             show_arg_info("opt = {}, arg = {}".format(opt, arg_list))
         if opt in ( "--help"):
             show_args()
             sys.exit(2)
-
         elif opt in ("--create_violas_coin"):
             if len(arg_list) != 1:
                 show_arg_info(args["{}-".format(opt.replace('--', ''))])
@@ -387,7 +393,7 @@ def run(argc, argv):
         elif opt in ("--send_coins"):
             if len(arg_list) != 4:
                 exit_error_arg_list(opt)
-            ret = mint_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list(3))
+            ret = send_coins(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3])
         elif opt in ("--get_account"):
             if len(arg_list) != 1:
                 exit_error_arg_list(opt)
@@ -403,7 +409,6 @@ def run(argc, argv):
         elif opt in ("--new_account"):
             if len(arg) != 0:
                 exit_error_arg_list(opt)
-            new_account()
             ret = new_account()
         elif opt in ("--get_violas_balance"):
             if len(arg_list) != 2:

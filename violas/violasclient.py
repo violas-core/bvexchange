@@ -194,7 +194,7 @@ class violasclient:
 
     def bind_module(self, account, module_address, is_blocking=True):
         try:
-            logger.debug("start bind_module account:{} module_address:{}".format(account, module_address))
+            logger.debug("start bind_module account:{} module_address:{}".format(account.address.hex(), module_address))
             self.__client.violas_init(account, module_address, is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
