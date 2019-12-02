@@ -194,7 +194,7 @@ class violasclient:
 
     def bind_module(self, account, module_address, is_blocking=True):
         try:
-            logger.debug("start bind_module")
+            logger.debug("start bind_module account:{} module_address:{}".format(account, module_address))
             self.__client.violas_init(account, module_address, is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
@@ -232,7 +232,7 @@ class violasclient:
             ret = result(error.EXCEPT, e, "")
         return ret
 
-    def get_balance(self, account_address, module_address):
+    def get_violas_balance(self, account_address, module_address):
         try:
             logger.debug("get_balance")
             balance = self.__client.violas_get_balance(account_address, module_address)

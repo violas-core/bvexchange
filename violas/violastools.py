@@ -65,11 +65,12 @@ def test_client():
 
     client.send_coins(vbtc, account.address, 10, vbtc.address)
 
-    ret = client.get_balance(vbtc.address, vbtc.address)
+    ret = client.get_violas_balance(vbtc.address, vbtc.address)
     logger.debug("balance: {0}".format(ret.datas)) 
 
     logger.debug("account.address({0}): {1}".format(type(account.address), account.address.hex()))
     json_print(client.get_account_state(account.address).to_json())
+
 
 def test_wallet():
     global wallet_name
@@ -93,6 +94,10 @@ def test_wallet():
         logger.debug("found address:{}".format(target_address_hex))
     else:
         logger.debug("not found address:{}".format(target_address_hex))
+def get_balance(address):
+    client = violasclient(setting.traceback_limit, setting.nodes)
+    ret = client.get_balance(vbtc.address, vbtc.address)
+    logger.debug("balance: {0}".format(ret.datas)) 
 
 def new_account():
     global wallet_name
@@ -124,8 +129,8 @@ def mint_violas_coin(address, amount, module):
 
     json_print(client.get_account_state(address).to_json())
 
-def create_violas_coin(module, amount):
-    logger.debug("start create_violas_coin module = {} amount={}".format(module, amount))
+def create_violas_coin(module):
+    logger.debug("start create_violas_coin module = {}".format(module))
     global wallet_name
     wallet = violaswallet(setting.traceback_limit, wallet_name)
     ret = wallet.get_account(module)
@@ -140,6 +145,38 @@ def create_violas_coin(module, amount):
         return
 
     json_print(client.get_account_state(account.address).to_json())
+
+def bind_module(address, module):
+    logger.debug("start bind_module address= {} module = {}".format(address, module))
+    global wallet_name
+    wallet = violaswallet(setting.traceback_limit, wallet_name)
+    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    ret = wallet.get_account(address)
+    if ret.state != error.SUCCEED:
+        logger.debug("get account failed")
+    account = ret.datas
+
+    ret = client.bind_module(account, moudule)
+    assert ret.state == error.SUCCEED
+    json_print(client.get_account_state(account.address).to_json())
+
+def send_coins(from_address, to_address, amount, module):
+    global wallet_name
+    wallet = violaswallet(setting.traceback_limit, wallet_name)
+    ret = wallet.get_account(from_address)
+    if ret.state != error.SUCCEED:
+        logger.debug("get account failed")
+    account = ret.datas
+
+    client.send_coins(account, to_address, amount, module)
+    json_print(client.get_account_state(account.address).to_json())
+
+def get_balance(address, module):
+    logger.debug("start get_balance address= {} module = {}".format(address, module))
+    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    ret = client.get_balance(address, module)
+    logger.debug("balance: {0}".format(ret.datas))
+
 
 def test_bind_one():    
     global wallet_name
@@ -189,10 +226,7 @@ def test_bind():
     global moudule
     wallet = violaswallet(setting.traceback_limit, wallet_name)
     moudule = bytes.fromhex("cd0476e85ecc5fa71b61d84b9cf2f7fd524689a4f870c46d6a5d901b5ac1fdb2")
-    client = violasclient(setting.traceback_limit)
-    ret = client.conn_node(setting.violas_nodes)
-    if(ret.state != error.SUCCEED):
-        return
+    client = violasclient(setting.traceback_limit, setting.violas_nodes)
 
     client.mint_platform_coin(moudule, 10000000)
 
@@ -223,6 +257,17 @@ def show_accounts():
         account = ret.datas
         logger.debug("account.address({0}): {1}".format(i, account.address.hex()))
         i += 1
+
+def get_account(address):
+    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    json_print(client.get_account_state(address).to_json())
+
+def has_account(address):
+    global wallet_name
+    wallet = violaswallet(setting.traceback_limit, wallet_name)
+    return wallet.has_account_by_address(address).datas
+
+
 
 def test_libra():
     print(sys.path)
@@ -258,21 +303,34 @@ def main(argc, argv):
        #test_new_coin()
        test_mint_violas_coin()
 
-args = {"help":"",
-        "mint_platform_coin-":" mint_platform_coin address amount",
-        "create_violas_coin-":"",
-        "bind_module-":"",
-        "mint_violas_coin-":"",
-        "mint_platform_coin-":"",
-        "get_account-":"",
-        "has_account-":"",
-        "show_accounts":"",
-        "new_account":"",
-        "get_violas_balance-":"",
-        "get_platform_balance-":"",
+args = {"help"                  :   "dest: show arg list. format: --help",
+        "mint_platform_coin-"   :   "dest: mint vtoken(amount) to target address.format: --mint_platform_coin \"address, amount\"",
+        "create_violas_coin-"   :   "dest: create new token(module) in violas blockchain. format: --create_violas_coin \"module\"",
+        "bind_module-"          :   "dest: bind address to module. format: --bind_module \"address, module\"",
+        "mint_violas_coin-"     :   "dest: mint some(amount) token(module) to target address. format: --mint_violas_coin \"address, amount, module\" ",
+        "send_coins-"           :   "dest: send token(coin) to target address. format: --send_coin \"form_address, to_address, amount, module\" ",
+        "new_account"           :   "dest: new account and save to local wallet. format: --new_account",
+        "get_account-"          :   "dest: show account info. format: --get_account \"address\"",
+        "has_account-"          :   "dest: has target account in wallet. format: --has_account \"address\"",
+        "show_accounts"         :   "dest: show all counts address list(local wallet).  foramt: --show_accounts",
+        "get_violas_balance-"   :   "dest: get address's token(module) amount. format: --get_violas_balance \"address\"",
+        "get_platform_balance-" :   "dest: get address's platform coin amount. fromat: --get_platform_balance \"address, module\"",
         }
 args_info = {
         }
+
+def show_args():
+    global args
+    for key in args.keys():
+        print("{}{} \n\t\t\t\t{}".format("--", key.replace('-', ''), args[key].replace('\n', '')))
+
+def exit_error_arg_list(arg):
+    print(args["{}-".format(arg.replace('--', ''))])
+    sys.exit(2)
+
+def show_arg_info(info):
+    print(info)
+
 def run(argc, argv):
     global args, args_info
     try:
@@ -280,9 +338,16 @@ def run(argc, argv):
 
         logger.debug("start violas.main")
         if argc == 0:
-            logger.error([arg.replace('-', '') for arg in argfmt])
+            show_args()
             sys.exit(2)
-        opts, args = getopt.getopt(argv, "ha:b:s", [arg.replace('-', "=") for arg in argfmt])
+        if argv[0] == "help" and argc == 2:
+            if argv[1] in argfmt:
+                show_arg_info("--{} \n\t{}".format(argv[1], args[argv[1]].replace("format:", "\n\tformat:")))
+            else:
+                show_arg_info("--{} \n\t{}".format(argv[1], args["{}-".format(argv[1])].replace("format:", "\n\tformat:")))
+            sys.exit(2)
+
+        opts, err_args = getopt.getopt(argv, "ha:b:s", [arg.replace('-', "=") for arg in argfmt])
     except getopt.GetoptError as e:
         logger.error(e)
         sys.exit(2)
@@ -290,41 +355,64 @@ def run(argc, argv):
         logger.error(e)
         sys.exit(2)
 
-    if len(args) > 0:
-        logger.error("arguments format is invalid. {}".format([ "--" + arg.replace('-', "--") for arg in argfmt]))
+    #argument start for --
+    if len(err_args) > 0:
+        show_arg_info("arguments format is invalid. {}".format([ "--" + arg.replace('-', "") for arg in argfmt]))
+
     for opt, arg in opts:
         if len(arg) > 0:
             arg_list = "{}".format(arg).split(",")
-            logger.debug("opt = {}, arg = {}".format(opt, arg_list))
-        if opt in  ('-h', "--help"):
-            logger.info("")
+            show_arg_info("opt = {}, arg = {}".format(opt, arg_list))
+        if opt in ( "--help"):
+            show_args()
+            sys.exit(2)
+
         elif opt in ("--create_violas_coin"):
-            if len(arg_list) != 2:
-                logger.error(args["create_violas_coin-"])
+            if len(arg_list) != 1:
+                show_arg_info(args["{}-".format(opt.replace('--', ''))])
                 sys.exit(2)
-            ret = create_violas_coin(arg_list[0], int(arg_list[1]))
+            ret = create_violas_coin(arg_list[0])
         elif opt in ("--bind_module"):
-            logger.debug(arg)
+            if len(arg_list) != 2:
+                exit_error_arg_list(opt)
+            ret = bind_module(arg_list[0], arg_list[1])
         elif opt in ("--mint_platform_coin"):
             if len(arg_list) != 2:
-                logger.error(args["mint_platform_coin-"])
-                sys.exit(2)
+                exit_error_arg_list(opt)
             ret = mint_platform_coin(arg_list[0], int(arg_list[1]))
         elif opt in ("--mint_violas_coin"):
             if len(arg_list) != 3:
-                logger.error(args["mint_violas_coin-"])
-                sys.exit(2)
+                exit_error_arg_list(opt)
             ret = mint_violas_coin(arg_list[0], int(arg_list[1]), arg_list[2])
+        elif opt in ("--send_coins"):
+            if len(arg_list) != 4:
+                exit_error_arg_list(opt)
+            ret = mint_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list(3))
         elif opt in ("--get_account"):
-            logger.debug(arg)
+            if len(arg_list) != 1:
+                exit_error_arg_list(opt)
+            get_account(arg)
         elif opt in ("--has_account"):
-            logger.debug(arg)
+            if len(arg_list) != 1:
+                exit_error_arg_list(opt)
+            has_account(arg)
         elif opt in ("--show_accounts"):
+            if len(arg) != 0:
+                exit_error_arg_list(opt)
             show_accounts()
         elif opt in ("--new_account"):
+            if len(arg) != 0:
+                exit_error_arg_list(opt)
+            new_account()
             ret = new_account()
-        elif opt in ("--get_balance"):
-            logger.debug(arg)
+        elif opt in ("--get_violas_balance"):
+            if len(arg_list) != 2:
+                exit_error_arg_list(opt)
+            get_violas_balance(arg_list[0], arg_list[1])
+        elif opt in ("--get_platform_balance"):
+            if len(arg_list) != 1:
+                exit_error_arg_list(opt)
+            get_plat_balance(arg)
         elif opt == '-s':
             logger.debug(arg)
     logger.debug("end manage.main")
