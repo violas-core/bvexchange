@@ -99,8 +99,9 @@ class dbv2b:
 
             ret = result(error.SUCCEED, "", "")
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
-            ret = result(error.FAILED, e, "")
+            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
+            logger.error(e.message)
+            ret = result(error.FAILED, e.message, e) 
         return ret
 
     def insert_v2binfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vstate):
@@ -108,12 +109,12 @@ class dbv2b:
             logger.debug("start insert_v2binfo_commit")
             ret = self.insert_v2binfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vstate)
             if ret.state != error.SUCCEED:
-                return False
+                return ret 
             ret = self.commit()
-            
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
-            ret = result(error.FAILED, e, "")
+            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
+            logger.error(e.message)
+            ret = result(error.FAILED, e.message, e) 
         return ret
 
     def commit(self):
@@ -124,8 +125,9 @@ class dbv2b:
 
             ret = result(error.SUCCEED, "", "")
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
-            ret = result(error.FAILED, e, "")
+            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
+            logger.error(e.message)
+            ret = result(error.FAILED, e.message, e) 
         return ret
 
     def query_v2binfo(self, vaddress, sequence):
@@ -137,8 +139,9 @@ class dbv2b:
             proofs = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).all()
             ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
-            ret = result(error.FAILED, e, "")
+            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
+            logger.error(e.message)
+            ret = result(error.FAILED, e.message, e) 
         return ret
 
     def has_v2binfo(self, vaddress, sequence):
@@ -146,10 +149,13 @@ class dbv2b:
             logger.debug("start query_v2binfo %s %i", vaddress, sequence)
             filter_vaddr = (self.v2binfo.vaddress==vaddress)
             filter_seq = (self.v2binfo.sequence==sequence)
-            return (self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).count() > 0)
+            state = (self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).count() > 0)
+            ret = result(error.SUCCEED, "", State) 
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
-        return true
+            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
+            logger.error(e.message)
+            ret = result(error.FAILED, e.message, e) 
+        return ret
 
 
     def __query_v2binfo_state(self, state):
@@ -160,8 +166,9 @@ class dbv2b:
             proofs = self.__session.query(self.v2binfo).filter(filter_state).all()
             ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
-            ret = result(error.FAILED, e, "")
+            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
+            logger.error(e.message)
+            ret = result(error.FAILED, e.message, e) 
         return ret
 
     def query_v2binfo_is_start(self):
@@ -181,9 +188,10 @@ class dbv2b:
             datas = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).update({self.v2binfo.state:state.value})
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
-            ret = result(error.FAILED, e, "")
-        return False
+            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
+            logger.error(e.message)
+            ret = result(error.FAILED, e.message, e) 
+        return ret
 
     def update_v2binfo_to_succeed(self, vaddress, sequence, state):
         return self.update_v2binfo(vaddress, sequence, self.state.SUCCEED)
@@ -200,8 +208,9 @@ class dbv2b:
 
             ret = self.commit()
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
-            ret = result(error.FAILED, e, "")
+            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
+            logger.error(e.message)
+            ret = result(error.FAILED, e.message, e) 
         return ret
 
     def update_v2binfo_to_start_commit(self, vaddress, sequence):

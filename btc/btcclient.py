@@ -70,8 +70,9 @@ class btcclient:
             return result(error.SUCCEED, "", datas)
 
         except Exception as e:
-            logger.error(traceback.format_exc(self.__traceback_limit))
-            ret = result(error.EXCEPT, e, "")
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(e.message)
+            ret = result(error.EXCEPT, e.message, e) 
         return ret
 
     def isexproofcomplete(self, address, sequence):
@@ -81,11 +82,12 @@ class btcclient:
                 return result(error.ARG_INVALID, error.argument_invalid, "")
                 
             datas = self.__rpc_connection.violas_isexproofcomplete(address, sequence)
-            return result(error.SUCCEED, "", datas)
+            ret = result(error.SUCCEED, "", datas)
 
         except Exception as e:
-            logger.error(traceback.format_exc(self.__traceback_limit))
-            ret = result(error.EXCEPT, "", "")
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(e.message)
+            ret = result(error.EXCEPT, e.message, e) 
         return ret
 
     def listexproofforstart(self, receiver, excluded):
@@ -104,10 +106,11 @@ class btcclient:
                     or sequence < 0 or height < 0):
                 return result(error.ARG_INVALID, "len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) == 0 or sequence < 0 or height < 0", "")
             datas = self.__rpc_connection.violas_sendexproofend(fromaddress, toaddress, vaddress, sequence, amount, height)
-            return result(error.SUCCEED, "", datas)
+            ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.error(traceback.format_exc(self.__traceback_limit))
-            ret = result(error.EXCEPT, "", "")
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(e.message)
+            ret = result(error.EXCEPT, e.message, e) 
         return ret
    
 def test_conn():

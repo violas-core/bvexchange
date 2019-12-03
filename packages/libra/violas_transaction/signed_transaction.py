@@ -15,7 +15,7 @@ class ViolasSignedTransaction(ViolasBase):
         self.signature = int_list_to_hex(transaction.signature)
         self.events = [ ViolasContractEvent(e)for e in events ]
         self.info = ViolasTransactionInfo(info)
-        self.success = True if len(events) or self.get_type() in ("violas_module", "rotate_authentication_key") else False
+        self.success = info.major_status == 4001
 
     def get_version(self):
         return self.version

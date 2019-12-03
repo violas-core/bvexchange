@@ -26,7 +26,7 @@ from enum import Enum
 #module name
 name="exchangeb2v"
 
-COINS = 1000000000
+COINS = 100000000
 #load logging
 logger = log.logger.getLogger(name) 
 
@@ -42,16 +42,9 @@ def merge_proof_to_rpcparams(rpcparams, dbinfos):
 
         return result(error.SUCCEED, "", rpcparams)
     except Exception as e:
-        logger.error(traceback.format_exc(setting.traceback_limit))
-        ret = result(error.EXCEPT, e, "")
-    return ret
-
-def grant_vbtc(vclient, from_account, to_address, amount, module_address):
-    try:
-        ret = vclient.send_coins(from_account, to_address, amount, module_address)
-    except Exception as e:
-        logger.error(traceback.format_exc(setting.traceback_limit))
-        ret = result(error.EXCEPT, e, "")
+        logger.debug(traceback.format_exc(setting.traceback_limit))
+        logger.error(e.message)
+        ret = result(error.EXCEPT, e.message, e)
     return ret
 
 def get_excluded(b2v):
@@ -87,8 +80,9 @@ def get_excluded(b2v):
 
         ret = result(error.SUCCEED, "", rpcparams)
     except Exception as e:
-        logger.error(traceback.format_exc(setting.traceback_limit))
-        ret = result(error.EXCEPT, e, "")
+        logger.debug(traceback.format_exc(setting.traceback_limit))
+        logger.error(e.message)
+        ret = result(error.EXCEPT, e.message, e)
     return ret
 def checks():
     assert (len(setting.btc_conn) == 4), "btc_conn is invalid."
@@ -174,9 +168,9 @@ def works():
                         logger.warning("amount({}) is invalid.".format(vamount))
                         continue
 
-                    logger.debug("start new btc -> vbtc(address={}, amount={}, module={})".format(to_address, vamount, to_module_address))
+                    logger.debug("start new btc -> vbtc(address={}, sequence={} amount={}, module={})".format(to_address, int(data["sequence"]), vamount, to_module_address))
                     ##send vbtc to vaddress, vtoken and amount
-                    ret = vclient.send_coins(vsender, to_address, vamount, to_module_address)
+                    ret = vclient.send_coin(vsender, to_address, vamount, to_module_address, data="btctxid:{}".format(data["txid"]))
                     if ret.state != error.SUCCEED:
                         continue
                     
@@ -198,7 +192,7 @@ def works():
                         ret =b2v.update_b2vinfo_to_succeed_commit(data["address"], int(data["sequence"]), height)
                         assert (ret.state == error.SUCCEED), "db error"
                     
-                    ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), str(vamount), height)
+                    ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), str(vamount/COINS), height)
                     if ret.state != error.SUCCEED:
                         ret = b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
                         assert (ret.state == error.SUCCEED), "db error"
@@ -209,8 +203,9 @@ def works():
         ret = result(error.SUCCEED) 
 
     except Exception as e:
-        logger.error(traceback.format_exc(setting.traceback_limit))
-        ret = result(error.EXCEPT) 
+        logger.debug(traceback.format_exc(setting.traceback_limit))
+        logger.error(str(e))
+        ret = result(error.EXCEPT, str(e), e) 
     finally:
         logger.info("works end.")
 

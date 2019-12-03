@@ -182,7 +182,6 @@ def gen_events_resp_idxs(seq_num_upper_bound, req_start_seq_num, req_ascending, 
         bottom = cursor + 1 - req_limit
         return [x for x in range(cursor, bottom-1, -1)] #Descending and hitting limit.
 
-
 def verify_get_txns_resp(ledger_info, start_version, limit, fetch_events, txn_list_with_proof):
     if limit == 0 or start_version > ledger_info.version:
         if txn_list_with_proof.SerializeToString() != b'':
