@@ -120,7 +120,7 @@ def verify_sparse_merkle_element(
     else:
         current_hash = bytes(SPARSE_MERKLE_PLACEHOLDER_HASH)
     iter_bits = bytes_to_bits(element_key)[0:len(siblings)]
-    zipped = zip(reversed(siblings), reversed(iter_bits))
+    zipped = zip(siblings, reversed(iter_bits))
     for sibling_hash, bit in zipped:
         hasher = SparseMerkleInternalHasher()
         if bit == '1':
@@ -189,8 +189,6 @@ def verify_transaction_list(txn_list_with_proof, ledger_info):
         first_idx //= 2
     assert len(hashes) == 1
     assert hashes[0] == bytes(ledger_info.transaction_accumulator_hash)
-
-
 
 
 def check_txn_list_sig_with_infos(txn_list_with_proof):

@@ -46,10 +46,25 @@ class TransactionNotExistError(LibraError):
 class TransactionIllegalError(LibraError):
     pass
 
+class VMError(TransactionIllegalError):
+    @property
+    def error_code(self):
+        code, _ = self.args
+        return code
+
+    @property
+    def error_msg(self):
+        _, msg = self.args
+        return msg
+
+
 class TransactionTimeoutError(LibraError):
     pass
 
 class LibraNetError(LibraError):
+    pass
+
+class TransactionNoEventError(LibraError):
     pass
 
 class Client:
@@ -192,7 +207,6 @@ class Client:
         item.get_transactions_request.fetch_events = fetch_events
         return (request, self.update_to_latest_ledger(request))
 
-    #Not exist raise TransactionError
     def get_transactions_proto(self, start_version, limit=1, fetch_events=False):
         request, resp = self._get_txs(start_version, limit, fetch_events)
         txnp = resp.response_items[0].get_transactions_response.txn_list_with_proof
@@ -237,7 +251,6 @@ class Client:
         transaction = resp.response_items[0].get_account_transaction_by_sequence_number_response
         return (transaction.transaction_with_proof, usecs)
 
-    #Not exist raise AcccountError
     def get_account_transaction(self, address, sequence_number, fetch_event=False):
         if fetch_event:
             version = self.get_transaction_version(address, sequence_number)
@@ -248,15 +261,12 @@ class Client:
         info = TransactionInfo.from_proto(signed_transaction_with_proof.proof.transaction_info)
         return ViolasSignedTransaction(Transaction.deserialize(signed_transaction_with_proof.transaction.transaction).value, signed_transaction_with_proof.version, info)
 
-    #Not exist raise TransactionError
     def get_transaction_info(self, start_version):
         return self.get_transaction(start_version).get_info()
 
-    #Not exist raise AcccountError
     def get_account_transaction_info(self, address, sequence_number):
         return  self.get_account_transaction(address, sequence_number).get_info()
 
-    #Not exist raise AcccountError
     def get_transaction_version(self, address, sequence_number):
         return self.get_account_transaction(address, sequence_number).version
 
@@ -284,7 +294,6 @@ class Client:
             self.wait_for_transaction(AccountConfig.association_address(), sequence_number)
         return sequence_number
 
-    #Not wait raise TransactionTimeoutError
     def wait_for_transaction(self, address, sequence_number):
         max_iterations = 50
         if self.verbose:
@@ -302,14 +311,11 @@ class Client:
                     continue
             try:
                 tx = self.get_transaction(version, True)
-                if len(tx.events):
-                    if self.verbose:
-                        print("transaction is stored!")
+                if tx.success:
                     return True
                 else:
-                    if self.verbose:
-                        print("no events emitted")
-                    return False
+                    raise TransactionIllegalError(f"Status code: {tx.info.major_status}")
+
             except TransactionNotExistError:
                 if self.verbose:
                     print(".", end='', flush=True)
@@ -337,20 +343,12 @@ class Client:
                                    max_gas=140_000, unit_price=0, txn_expiration=100):
         script = Script.gen_transfer_script(receiver_address, micro_libra)
         payload = TransactionPayload('Script', script)
-
         sequence_number = self.get_sequence_number(sender_account.address)
         raw_tx = RawTransaction.new_tx(sender_account.address, sequence_number,
                                        payload, max_gas, unit_price, txn_expiration)
         signed_txn = SignedTransaction.gen_from_raw_txn(raw_tx, sender_account)
         return signed_txn.serialize().hex()
 
-    #not valid raise TransactionError
-    def submit_signed_txn(self,signed_txn, is_blocking=False):
-        request = SubmitTransactionRequest()
-        request.transaction.txn_bytes = bytes.fromhex(signed_txn)
-        if is_blocking:
-            return self.submit_transaction(request, SignedTransaction.deserialize(bytes.fromhex(signed_txn)), is_blocking=True)
-        return self.submit_transaction(request, None, is_blocking)
 
     #not valid raise TransactionError
     def submit_payload(self, sender_account, payload,
@@ -360,14 +358,18 @@ class Client:
         raw_tx = RawTransaction.new_tx(sender_account.address, sequence_number,
             payload, max_gas, unit_price, txn_expiration)
         signed_txn = SignedTransaction.gen_from_raw_txn(raw_tx, sender_account)
-        request = SubmitTransactionRequest()
-        request.transaction.txn_bytes = signed_txn.serialize()
-        self.submit_transaction(request, raw_tx, is_blocking)
+        self.submit_signed_txn(signed_txn, is_blocking)
         return signed_txn
 
-    def submit_transaction(self, request, raw_tx, is_blocking=False):
+    def submit_signed_txn(self, signed_txn, is_blocking=False):
+        request = SubmitTransactionRequest()
+        request.transaction.txn_bytes = signed_txn.serialize()
+        return self.submit_transaction(request, signed_txn, is_blocking)
+
+    def submit_transaction(self, request, signed_txn, is_blocking=False):
         resp = self.submit_transaction_non_block(request)
         if is_blocking:
+            raw_tx = signed_txn.raw_txn
             address = bytes(raw_tx.sender)
             sequence_number = raw_tx.sequence_number
             self.wait_for_transaction(address, sequence_number)
@@ -383,7 +385,9 @@ class Client:
             else:
                 raise TransactionIllegalError(f"Status code: {resp.ac_status.code}")
         elif status == 'vm_status':
-            raise TransactionIllegalError(resp.vm_status.__str__())
+            from libra.vm_error import VMStatus
+            vms = VMStatus.from_proto(resp.vm_status)
+            raise VMError(vms.major_status, vms.err_msg())
         elif status == 'mempool_status':
             raise TransactionIllegalError(resp.mempool_status.__str__())
         else:
@@ -451,10 +455,10 @@ class Client:
         payload = TransactionPayload('Script', script)
         return self.submit_payload(sender_account, payload, is_blocking=is_blocking)
 
-    def violas_mint_coin(self, receiver_address, micro_violas, sender_account, is_blocking=False):
-        script = Script.gen_violas_mint_script(receiver_address, micro_violas, sender_account.address)
+    def violas_mint_coin(self, receiver_address, micro_violas, module_account, is_blocking=False):
+        script = Script.gen_violas_mint_script(receiver_address, micro_violas, module_account.address)
         payload = TransactionPayload('Script', script)
-        return self.submit_payload(sender_account, payload, is_blocking=is_blocking)
+        return self.submit_payload(module_account, payload, is_blocking=is_blocking)
 
     def violas_transfer_coin(self, sender_account, receiver_address, micro_libra, module_address, data=None,
         max_gas=140_000, unit_price=0, is_blocking=False, txn_expiration=100):
@@ -531,4 +535,16 @@ class Client:
         data = {"type": "wd_ex", "ver": version}
         return self.violas_transfer_coin(sender_account, receiver_address, 0, module_address, json.dumps(data)
                                          ,max_gas, unit_price, is_blocking, txn_expiration)
+
+    def violas_exchange_btc(self, sender_account, receiver_address, source_amount, source_module_address, btc_address,
+        max_gas=140_000, unit_price=0, is_blocking=False, txn_expiration=100):
+        if isinstance(btc_address, bytes):
+            btc_address = btc_address.hex()
+        data = {
+            "type": "ex_btc",
+            "addr": btc_address
+        }
+        return self.violas_transfer_coin(sender_account, receiver_address, source_amount, source_module_address, json.dumps(data)
+                                         , max_gas, unit_price, is_blocking, txn_expiration)
+
 

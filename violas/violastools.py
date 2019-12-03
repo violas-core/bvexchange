@@ -102,7 +102,7 @@ def bind_module(address, module):
     assert ret.state == error.SUCCEED
     json_print(client.get_account_state(account.address).datas.to_json())
 
-def send_coins(from_address, to_address, amount, module):
+def send_coin(from_address, to_address, amount, module):
     global wallet_name
     wallet = violaswallet(setting.traceback_limit, wallet_name)
     ret = wallet.get_account(from_address)
@@ -111,7 +111,7 @@ def send_coins(from_address, to_address, amount, module):
     account = ret.datas
 
     client = violasclient(setting.traceback_limit, setting.violas_nodes)
-    client.send_coins(account, to_address, amount, module)
+    client.send_coin(account, to_address, amount, module)
     json_print(client.get_account_state(account.address).datas.to_json())
 
 def get_balance(address, module):
@@ -147,7 +147,7 @@ args = {"help"                  :   "dest: show arg list. format: --help",
         "create_violas_coin-"   :   "dest: create new token(module) in violas blockchain. format: --create_violas_coin \"module\"",
         "bind_module-"          :   "dest: bind address to module. format: --bind_module \"address, module\"",
         "mint_violas_coin-"     :   "dest: mint some(amount) token(module) to target address. format: --mint_violas_coin \"address, amount, module\" ",
-        "send_coins-"           :   "dest: send token(coin) to target address. format: --send_coin \"form_address, to_address, amount, module\" ",
+        "send_coin-"           :   "dest: send token(coin) to target address. format: --send_coin \"form_address, to_address, amount, module\" ",
         "new_account"           :   "dest: new account and save to local wallet. format: --new_account",
         "get_account-"          :   "dest: show account info. format: --get_account \"address\"",
         "has_account-"          :   "dest: has target account in wallet. format: --has_account \"address\"",
@@ -225,10 +225,10 @@ def run(argc, argv):
             if len(arg_list) != 3:
                 exit_error_arg_list(opt)
             ret = mint_violas_coin(arg_list[0], int(arg_list[1]), arg_list[2])
-        elif opt in ("--send_coins"):
+        elif opt in ("--send_coin"):
             if len(arg_list) != 4:
                 exit_error_arg_list(opt)
-            ret = send_coins(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3])
+            ret = send_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3])
         elif opt in ("--get_account"):
             if len(arg_list) != 1:
                 exit_error_arg_list(opt)
