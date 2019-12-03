@@ -52,7 +52,7 @@ def mint_platform_coin(address, amount):
     ret = client.mint_platform_coin(address, amount)
     assert ret.state == error.SUCCEED, "mint_platform_coin failed."
 
-    json_print(client.get_account_state(address).to_json())
+    json_print(client.get_account_state(address).datas.to_json())
 
 def mint_violas_coin(address, amount, module):
     logger.debug("start mcreate_violas_coin otform_coin = {} amount={} module={}".format(address, amount, module))
@@ -69,7 +69,7 @@ def mint_violas_coin(address, amount, module):
     ret = client.mint_violas_coin(address, amount, module_account)
     assert ret.state == error.SUCCEED, "mint_platform_coin failed."
 
-    json_print(client.get_account_state(address).to_json())
+    json_print(client.get_account_state(address).datas.to_json())
 
 def create_violas_coin(module):
     logger.debug("start create_violas_coin module = {}".format(module))
@@ -86,7 +86,7 @@ def create_violas_coin(module):
     if(ret.state != error.SUCCEED):
         return
 
-    json_print(client.get_account_state(account.address).to_json())
+    json_print(client.get_account_state(account.address).datas.to_json())
 
 def bind_module(address, module):
     logger.debug("start bind_module address= {} module = {}".format(address, module))
@@ -100,7 +100,7 @@ def bind_module(address, module):
 
     ret = client.bind_module(account, module)
     assert ret.state == error.SUCCEED
-    json_print(client.get_account_state(account.address).to_json())
+    json_print(client.get_account_state(account.address).datas.to_json())
 
 def send_coins(from_address, to_address, amount, module):
     global wallet_name
@@ -112,7 +112,7 @@ def send_coins(from_address, to_address, amount, module):
 
     client = violasclient(setting.traceback_limit, setting.violas_nodes)
     client.send_coins(account, to_address, amount, module)
-    json_print(client.get_account_state(account.address).to_json())
+    json_print(client.get_account_state(account.address).datas.to_json())
 
 def get_balance(address, module):
     logger.debug("start get_balance address= {} module = {}".format(address, module))
@@ -135,7 +135,7 @@ def show_accounts():
 
 def get_account(address):
     client = violasclient(setting.traceback_limit, setting.violas_nodes)
-    json_print(client.get_account_state(address).to_json())
+    json_print(client.get_account_state(address).datas.to_json())
 
 def has_account(address):
     global wallet_name

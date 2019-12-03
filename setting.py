@@ -31,11 +31,11 @@ receivers =['2NGQjMnVhwVVzw1Sq7vjAz9Rf7Z1Fv8LFsV']
 combineaddress='2N8qe3KogEF3DjWNsDGr2qLQGgQD3g9oTnc'
 
 violas_nodes=[
-        #{'ip':'51.140.241.96', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'temp_faucet_keys'},
+        {'ip':'51.140.241.96', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'temp_faucet_keys'},
         {'ip':'18.220.66.235', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'temp_faucet_keys'},
-        #{'ip':'47.91.104.150', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'temp_faucet_keys'},
-        #{'ip':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'temp_faucet_keys'},
-        #{'ip':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'temp_faucet_keys'}
+        {'ip':'47.91.104.150', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'temp_faucet_keys'},
+        {'ip':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'temp_faucet_keys'},
+        {'ip':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'temp_faucet_keys'}
         ]
 
 #receiver address 

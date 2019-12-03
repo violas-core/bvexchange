@@ -17,7 +17,7 @@ config = {
        'file': {
            'class': 'logging.handlers.RotatingFileHandler',
            'filename': 'bvexchange.log',
-           'level': 'ERROR',
+           'level': 'DEBUG',
            'formatter': 'simple',
            'backupCount' : 3,
            'maxBytes' : 1000000 #1M

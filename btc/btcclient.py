@@ -41,7 +41,7 @@ class btcclient:
     class proofstate(Enum):
         START   = "start"
         END     = "end"
-        CANCEL  ="cancel"
+        CANCEL  = "cancel"
 
     def __init__(self, traceback_limit, btc_conn):
         self.__traceback_limit = traceback_limit
@@ -55,9 +55,6 @@ class btcclient:
             if btc_conn["rpcport"]:
                 self.__rpcport = btc_conn["rpcport"]
         self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__rpcuser, self.__rpcpassword, self.__rpcip, self.__rpcport))
-
-    def __del__(self):
-        logger.debug("start __del__")
 
     def __listexproofforstate(self, state, receiver, excluded):
         try:
@@ -113,8 +110,8 @@ class btcclient:
             ret = result(error.EXCEPT, "", "")
         return ret
    
-exg = btcclient(setting.traceback_limit, setting.btc_conn)
 def test_conn():
+    exg = btcclient(setting.traceback_limit, setting.btc_conn)
     logger.debug("start test_conn")
     ret = exg.listexproofforstart(setting.receivers[0], "")
     if ret.state == error.SUCCEED and ret.datas:

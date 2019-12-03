@@ -41,7 +41,7 @@ class dbv2b:
         self.__init_db(dbfile)
 
     def __del__(self):
-        logger.debug("start __del__")
+        logger.debug("start dbb2b.__del__")
         self.__uninit_db()
 
     #btc exchange vtoken state
