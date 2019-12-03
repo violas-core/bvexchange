@@ -66,32 +66,22 @@ def get_excluded(b2v):
         ret = merge_proof_to_rpcparams(rpcparams, scddatas.datas)
         if(ret.state != error.SUCCEED):
             return ret
-        '''
-        ## start 
-        stdatas = b2v.query_b2vinfo_is_start()
-        if(stdatas.state != error.SUCCEED):
-            return sddatas
-
-        ret = merge_proof_to_rpcparams(rpcparams, stdatas.datas)
-        if(ret.state != error.SUCCEED):
-            return ret
-        '''
-
-        ## failed 
-        flddatas = b2v.query_b2vinfo_is_failed()
-        if(flddatas.state != error.SUCCEED):
-            return flddatas
-
-        ret = merge_proof_to_rpcparams(rpcparams, flddatas.datas)
-        if(ret.state != error.SUCCEED):
-            return ret
-
+        
         ## btcfailed 
         bflddatas = b2v.query_b2vinfo_is_btcfailed()
         if(bflddatas.state != error.SUCCEED):
             return bflddatas
 
         ret = merge_proof_to_rpcparams(rpcparams, bflddatas.datas)
+        if(ret.state != error.SUCCEED):
+            return ret
+
+        ## btcsucceed
+        btcscddatas = b2v.query_b2vinfo_is_btcsucceed()
+        if(btcscddatas.state != error.SUCCEED):
+            return bflddatas
+
+        ret = merge_proof_to_rpcparams(rpcparams, btcscddatas.datas)
         if(ret.state != error.SUCCEED):
             return ret
 
@@ -137,7 +127,7 @@ def works():
 
         #update db state by proof state
         ##search db state is succeed
-        scddatas = b2v.query_b2vinfo_is_succeed()
+        scddatas = b2v.query_b2vinfo_is_btcsucceed()
         if(scddatas.state != error.SUCCEED):
             return scddatas
 
@@ -184,6 +174,12 @@ def works():
                         logger.warning("amount({}) is invalid.".format(vamount))
                         continue
 
+                    logger.debug("start new btc -> vbtc(address={}, amount={}, module={})".format(to_address, vamount, to_module_address))
+                    ##send vbtc to vaddress, vtoken and amount
+                    ret = vclient.send_coins(vsender, to_address, vamount, to_module_address)
+                    if ret.state != error.SUCCEED:
+                        continue
+                    
                     ##create new row to db. state = start 
                     ret = b2v.has_b2vinfo(data["address"], data["sequence"])
                     assert (ret.state == error.SUCCEED), "db error"
@@ -193,41 +189,28 @@ def works():
                                 data["address"], int(data["sequence"]), 0, data["vtoken"], data["creation_block"], data["update_block"])
                         assert (ret.state == error.SUCCEED), "db error"
 
-                    ##send vbtc to vaddress, vtoken and amount
-                    ret = vclient.send_coins(vsender, bytes.fromhex(to_address), vamount, bytes.fromhex(to_module_address))
-                    if ret.state != error.SUCCEED:
-                        continue
-
-                    rettmp = client.get_address_sequence(vsender.address.hex())
+                    rettmp = vclient.get_address_sequence(vsender.address.hex())
                     height = -1
-                    if rettmp.state == error.SUCCEED:
-                        height = ret.datas
-
                     ##update db 
-                    ###failed: dbb2v state = failed
                     ###succeed:dbb2v state = succeed
-                    if ret.state != error.SUCCEED:
-                        logger.debug("grant_vtoken error")
-                        ret = b2v.update_b2vinfo_to_failed_commit(data["address"], int(data["sequence"]))
-                        assert (ret.state == error.SUCCEED), "db error"
-                    else:
+                    if rettmp.state == error.SUCCEED:
+                        height =  rettmp.datas
                         ret =b2v.update_b2vinfo_to_succeed_commit(data["address"], int(data["sequence"]), height)
                         assert (ret.state == error.SUCCEED), "db error"
                     
                     ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), str(vamount), height)
                     if ret.state != error.SUCCEED:
-                        b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
+                        ret = b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
                         assert (ret.state == error.SUCCEED), "db error"
                     else:
-                        b2v.update_b2vinfo_to_btcsucceed_commit(data["address"], int(data["sequence"]))
+                        ret = b2v.update_b2vinfo_to_btcsucceed_commit(data["address"], int(data["sequence"]))
                         assert (ret.state == error.SUCCEED), "db error"
 
-
-        ret = result(error.SUCCEED, "", "") 
+        ret = result(error.SUCCEED) 
 
     except Exception as e:
         logger.error(traceback.format_exc(setting.traceback_limit))
-        ret = result(error.EXCEPT, "", "") 
+        ret = result(error.EXCEPT) 
     finally:
         logger.info("works end.")
 

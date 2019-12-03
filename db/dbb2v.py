@@ -40,7 +40,7 @@ class dbb2v:
         self.__init_db(dbfile)
 
     def __del__(self):
-        logger.debug("start __del__")
+        logger.debug("start dbb2v.__del__")
         self.__uninit_db()
 
     #btc exchange vbtc state
@@ -100,7 +100,7 @@ class dbb2v:
                     (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock, self.state.START.name))
 
             b2vi = self.b2vinfo(txid=vtxid, fromaddress=vfromaddress, toaddress=vtoaddress, bamount=vbamount, vaddress=vvaddress, sequence=vsequence, \
-                vamount=vvamount, vtoken=vvtoken, createblock=vcreateblock, updateblock=vupdateblock, state=self.state.START.value, height=0)
+                vamount=vvamount, vtoken=vvtoken, createblock=vcreateblock, updateblock=vupdateblock, state=self.state.SUCCEED.value, height=0)
             self.__session.add(b2vi)
 
             ret = result(error.SUCCEED, "", "")
@@ -394,6 +394,7 @@ def test():
         test_dbb2v_query_state_failed()
         test_dbb2v_query_state_complete()
         test_dbb2v_query_state_btcfailed()
+        test_dbb2v_query_state_btcsucceed()
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 

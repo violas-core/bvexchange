@@ -21,7 +21,6 @@ from exchange import b2v
 import subprocess
 
 name="bvexchange"
-logger = log.logger.getLogger(name)
 
 def checkrerun():
     proc = subprocess.Popen(["pgrep", "-f", __file__], stdout=subprocess.PIPE)
@@ -44,7 +43,6 @@ class works:
         self.__traceback_limit = traceback_limit
 
     def __del__(self):
-        logger.debug("works __del__")
         del self.__threads
 
     def work_b2v(self, nsec):
@@ -94,9 +92,7 @@ class works:
             self.__name = name
             self.__nsec = nsec
             self.__work = work
-    
-        def __del__(self):
-            logger.debug("work thread __del__: %s", self.__name)
+
         def run(self):
             logger.debug("work thread run")
             self.__work(self.__nsec)
@@ -143,7 +139,9 @@ class works:
         self.__work_v2b_looping = 0
         self.__work_comm_looping = 0
 
-work_manage = ""
+
+logger = log.logger.getLogger(name)
+work_manage = works(setting.traceback_limit)
 def signal_stop(signal, frame):
     try:
         logger.debug("start signal : %i", signal )
@@ -157,7 +155,6 @@ def signal_stop(signal, frame):
 def main():
     try:
         global work_manage
-        work_manage = works(setting.traceback_limit)
         logger.debug("start main")
         signal.signal(signal.SIGINT, signal_stop)
         signal.signal(signal.SIGTSTP, signal_stop)
