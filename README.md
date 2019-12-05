@@ -1,12 +1,12 @@
-# exchangebv
+# btc and vbtc exchange server 
 btc violas token exchange
 
-#depends
+## depends
 bvlscore: [https://github.com/palliums-developers/bvlscore.git]
-violas nodes
+violas nodes:[]
 violas server: [https://github.com/palliums-developers/violas-webservice.git]
 
-# install
+## install
 apt install python3.6 sqlite3
 python3.6 -m pip install --upgrade pip
 pip3 install python-bitcoinrpc sqlalchemy
@@ -16,37 +16,36 @@ git clone https://github.com/palliums-developers/bvexchange.git
 cd bvexchange
 ./bvexchnge.py  or python3 bvexchange.py
 
-
-#catalog
-##bvexchange.py
+# catalog
+### bvexchange.py
     work main file
 
-##btc
+### btc
     connect to bvlscore node and call rpc to work
 
-##comm
+### comm
     Definition of shared class
 
-##db
+### db
     Database definition, operation
 
-##exchange
+### exchange
     btc exchange vbtc, vbtc exchange btc operation
 
-##log
+### log
     Log configuration and output classification
 
-##packages
+### packages
     Dependent libraries(libra)
 
-##setting.py
+### setting.py
     Main configuration file
 
-##test
+### test
     test 
 
-##violas
+### violas
     violas related operations. violas client、server、wallet
 
-#vwallet
+### vwallet
     violas wallet file
