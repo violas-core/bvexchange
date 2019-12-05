@@ -112,7 +112,41 @@ class btcclient:
             logger.error(e.message)
             ret = result(error.EXCEPT, e.message, e) 
         return ret
+
+    def sendtoaddress(self, address, amount):
+        try:
+            logger.debug("start sendtoaddress(address={}, amount={})".format(address, amount))
+            datas = self.__rpc_connection.sendtoaddress(address, amount)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
    
+    def sendbtcproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, amount, name):
+        try:
+            logger.debug("start sendbtcproofmark(fromaddress={}, toaddress={}, toamount={}, vaddress={}, sequence={}, amount={}, name={})".format(
+                fromaddress, toaddress, toamount, vaddress, sequence, amount, name))
+            datas = self.__rpc_connection.violas_sendbtcproofmark(fromaddress, toaddress, toamount, vaddress, sequence, amount, name)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
+
+    def generatetoaddress(self, count, address):
+        try:
+            logger.debug("start generatetoaddress(count={}, address={})".format(count, address))
+            datas = self.__rpc_connection.generatetoaddress(count, address)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
+
 def test_conn():
     exg = btcclient(setting.traceback_limit, setting.btc_conn)
     logger.debug("start test_conn")

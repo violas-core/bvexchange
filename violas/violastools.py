@@ -23,11 +23,11 @@ from comm.result import result
 from comm.error import error
 from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
-from violasclient import violasclient, violaswallet
+from violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
 
 #module name
-name="violasclient"
+name="violastools"
 
 #load logging
 logger = log.logger.getLogger(name) 
@@ -140,8 +140,13 @@ def get_account(address):
 def has_account(address):
     global wallet_name
     wallet = violaswallet(setting.traceback_limit, wallet_name)
-    return wallet.has_account_by_address(address).datas
+    logger.debug(wallet.has_account_by_address(address).datas)
 
+def get_transactions(address, module, start):
+    logger.debug("start get_balance address= {} module = {}, start={}".format(address, module, start))
+    server = violasserver(setting.traceback_limit, setting.violas_servers)
+    logger.debug(server.get_transactions(address, module, start).datas)
+    
 args = {"help"                  :   "dest: show arg list. format: --help",
         "mint_platform_coin-"   :   "dest: mint vtoken(amount) to target address.format: --mint_platform_coin \"address, amount\"",
         "create_violas_coin-"   :   "dest: create new token(module) in violas blockchain. format: --create_violas_coin \"module\"",
@@ -154,6 +159,7 @@ args = {"help"                  :   "dest: show arg list. format: --help",
         "show_accounts"         :   "dest: show all counts address list(local wallet).  foramt: --show_accounts",
         "get_violas_balance-"   :   "dest: get address's token(module) amount. format: --get_violas_balance \"address\"",
         "get_platform_balance-" :   "dest: get address's platform coin amount. fromat: --get_platform_balance \"address, module\"",
+        "get_transactions-"          :   "dest: get transactions from violas server. format: --get_transactions \"address, module, start\"",
         }
 args_info = {
         }
@@ -253,6 +259,10 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 exit_error_arg_list(opt)
             get_plat_balance(arg)
+        elif opt in ("--get_transactions"):
+            if len(arg_list) != 3:
+                exit_error_arg_list(opt)
+            get_transactions(arg_list[0], arg_list[1], int(arg_list[2]))
         elif opt == '-s':
             logger.debug(arg)
     logger.debug("end manage.main")
