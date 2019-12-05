@@ -16,6 +16,7 @@ import datetime
 import sqlalchemy
 import setting
 import requests
+import random
 import comm
 import comm.error
 import comm.result
@@ -35,17 +36,18 @@ class violaswallet:
     __traceback_limit       = 0
     __wallet_name           = "vwallet"
     
-    def __init__(self, traceback_limit, wallet_name = None):
+    def __init__(self, traceback_limit, wallet_name):
         self.__traceback_limit = traceback_limit
+        assert wallet_name is None, "wallet_name is None"
         if wallet_name is not None:
-            ret = self.load_wallet(wallet_name)
+            ret = self.__load_wallet(wallet_name)
             if ret.state != error.SUCCEED:
                 raise Exception("load wallet failed.")
 
     def __del__(self):
         self.dump_wallet()
 
-    def load_wallet(self, wallet_name):
+    def __load_wallet(self, wallet_name):
         try:
             logger.debug("start load_wallet({})".format(wallet_name))
             self.__wallet_name = wallet_name
@@ -113,7 +115,7 @@ class violaswallet:
             ret = result(error.EXCEPT, str(e), e)
         return ret
 
-    def has_account_by(self):
+    def has_account(self):
         try:
             logger.debug("start has_account_by_address")
             self.__wallet.get_account_by_address_or_refid(0)
@@ -126,9 +128,11 @@ class violaswallet:
             ret = result(error.SUCCEED, "", False)
         return ret
 
+
+
 class violasclient:
     __node = None
-    def __init__(self, traceback_limit, nodes = None):
+    def __init__(self, traceback_limit, nodes):
         self.__traceback_limit = traceback_limit
         self.__client = None
         if nodes is not None:
@@ -279,4 +283,108 @@ class violasclient:
             ret = result(error.EXCEPT, str(e), e)
         return ret
 
+    def get_latest_transaction_version(self):
+        try:
+            logger.debug("start has_account_by_address")
+            datas = self.__client.get_latest_transaction_version()
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
+
+
+class violasserver:
+    __node = None
+    def __init__(self, traceback_limit, nodes):
+        self.__traceback_limit = traceback_limit
+        self.__server= None
+        assert nodes is not None, "nodes is None"
+        if nodes is not None:
+            ret = self.conn_node(nodes)
+            if ret.state != error.SUCCEED:
+                raise Exception("connect violas servier failed.")
+
+    def __del__(self):
+        self.disconn_node()
+
+    def conn_node(self, nodes):
+        try:
+            logger.debug("conn_server")
+            if nodes is None or len(nodes) == 0:
+                return result(error.ARG_INVALID, repr(nodes), "")
+            
+            for node in nodes:
+                try:
+                    server = ""
+                    #server = Client.new(node["ip"], node["port"], node["user"], node["password"])
+                    logger.debug("connect violas server: ip = {} port = {} user={} password={}".format( \
+                            node["ip"], node["port"], node["user"], node["password"]))
+                    self.__node = node
+                except Exception as e:
+                    logger.debug(traceback.format_exc(self.__traceback_limit))
+                    logger.error(str(e))
+                else:
+                    self.__server = server 
+                    self.__node = node
+                    return result(error.SUCCEED, "", "")
+
+            #not connect any violas node
+            ret = result(error.FAILED,  "connect violas node failed.", "")
+        except:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
+    
+    def disconn_node(self):
+        try:
+            if self.__node is not None:
+                del self.__node
+                self.__node = None
+
+            if self.__server is not None:
+                del self.__server
+                self.__server = None
+            ret = result(error.SUCCEED) 
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
+   
+    def get_transactions(self, address, module, start):
+        try:
+            sequence = random.randint(1, 10000)
+            version = random.randint(1, 9999999)
+            #datas = [{"address": "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6", "amount":10000, "sequence":sequence,  "version":version, "baddress":"2N8qe3KogEF3DjWNsDGr2qLQGgQD3g9oTnc"}]
+            url = "http://{}:{}/1.0/violas/vbtc/transaction?receiver_address={}&module_address={}&start_version={}".format(self.__node["ip"], self.__node["port"], address, module, start)
+            response = requests.get(url)
+
+            ret = result(error.FAILED, "", "")
+            logger.debug(url)
+            logger.debug(response.json())
+            if response is None:
+                ret = result(error.FAILED, "", "")
+            else:
+                jret = response.json()
+                code = jret["code"]
+                message = jret["message"]
+                if code != 2000:
+                    return result(error.FAILED, message)
+                
+                for data in jret["data"]:
+                    version     = int(data["version"])
+                    address     = data["address"]
+                    amount      = int(data["amount"])
+                    sequence    = data["sequence_number"]
+                    baddress    = data["btc_address"]
+                    datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "baddress":baddress})
+                ret = result(error.SUCCEED, message, datas)
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
 
