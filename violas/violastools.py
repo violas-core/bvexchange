@@ -147,6 +147,11 @@ def get_transactions(address, module, start):
     server = violasserver(setting.traceback_limit, setting.violas_servers)
     logger.debug(server.get_transactions(address, module, start).datas)
     
+def has_transaction(address, module, baddress, sequence, amount, version):
+    logger.debug("start has_transaction address= {} module = {}, baddress={}, sequence={}, amount={}, version={}".format(address, module, baddress, sequence, amount, version))
+    server = violasserver(setting.traceback_limit, setting.violas_servers)
+    logger.debug(server.has_transaction(address, module, baddress, sequence, amount, version).datas)
+    
 args = {"help"                  :   "dest: show arg list. format: --help",
         "mint_platform_coin-"   :   "dest: mint vtoken(amount) to target address.format: --mint_platform_coin \"address, amount\"",
         "create_violas_coin-"   :   "dest: create new token(module) in violas blockchain. format: --create_violas_coin \"module\"",
@@ -159,7 +164,8 @@ args = {"help"                  :   "dest: show arg list. format: --help",
         "show_accounts"         :   "dest: show all counts address list(local wallet).  foramt: --show_accounts",
         "get_violas_balance-"   :   "dest: get address's token(module) amount. format: --get_violas_balance \"address\"",
         "get_platform_balance-" :   "dest: get address's platform coin amount. fromat: --get_platform_balance \"address, module\"",
-        "get_transactions-"          :   "dest: get transactions from violas server. format: --get_transactions \"address, module, start\"",
+        "get_transactions-"     :   "dest: get transactions from violas server. format: --get_transactions \"address, module, start\"",
+        "has_transaction-"     :   "dest: check transaction is valid from violas server. format: --get_transaction \"address, module, btcaddress, sequence, amount, version\"",
         }
 args_info = {
         }
@@ -263,6 +269,10 @@ def run(argc, argv):
             if len(arg_list) != 3:
                 exit_error_arg_list(opt)
             get_transactions(arg_list[0], arg_list[1], int(arg_list[2]))
+        elif opt in ("--has_transaction"):
+            if len(arg_list) != 6:
+                exit_error_arg_list(opt)
+            has_transaction(arg_list[0], arg_list[1], arg_list[2], int(arg_list[3]), int(arg_list[4]), int(arg_list[5]))
         elif opt == '-s':
             logger.debug(arg)
     logger.debug("end manage.main")

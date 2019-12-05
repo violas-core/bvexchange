@@ -17,7 +17,7 @@ from time import sleep, ctime
 import db
 import db.dbb2v
 import db.dbv2b
-from exchange import b2v
+from exchange import b2v, v2b
 import subprocess
 
 name="bvexchange"
@@ -62,7 +62,7 @@ class works:
             logger.debug("start: v2b")
             while (self.__work_v2b_looping):
                 logger.debug("looping: v2b")
-                #db.dbv2b.test()
+                v2b.works()
                 sleep(nsec)
         except Exception as e:
             logger.error(traceback.format_exc(limit=self.__traceback_limit))

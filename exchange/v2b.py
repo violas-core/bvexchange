@@ -119,20 +119,49 @@ def works():
         receivers = list(set(setting.violas_receivers))
         #modulti receiver, one-by-one
         for receiver in receivers:
-
             ret = v2b.query_latest_version(receiver, module_address)
             assert ret.state == error.SUCCEED, "get latest version error"
             latest_version = ret.datas + 1
+            logger.debug("latest version = {}".format(latest_version - 1))
             max_version = 0
+
+            #get old transaction from db, check transaction. version and receiver is current value
+            failed = rpcparams.get(receiver)
+            if failed is not None:
+                for data in failed:
+                    vaddress = data.vaddress
+                    vamount = data.vamount
+                    fmtamount = data.vamount / COINS
+                    sequence = data.sequence
+                    version = data.version
+                    baddress = data.toaddress
+                    module_old = data.vtoken
+
+                    #check version
+                    if version >= (latest_version - 1):
+                        continue
+
+                    #not found , process next
+                    ret = vserver.has_transaction(vaddress, module_old, baddress, sequence, vamount, version)
+                    if ret.state != error.SUCCEED or ret.datas != True:
+                        continue
+
+                    ret = exg.sendbtcproofmark(sender, baddress, str(fmtamount), vaddress, sequence, str(fmtamount), str(sequence))
+                    txid = ret.datas
+                    #update db state
+                    if ret.state == error.SUCCEED:
+                        ret = v2b.update_v2binfo_to_succeed_commit(vaddress, sequence, txid)
+                        assert (ret.state == error.SUCCEED), "db error"
+
+            #get new transaction from violas server
             ret = vserver.get_transactions(receiver, module_address, latest_version)
             if ret.state == error.SUCCEED and len(ret.datas) > 0:
                 for data in ret.datas:
                     #grant vbtc 
                     ##check 
                     vaddress = data["address"]
-                    amount = int(data["amount"])
                     vamount = int(data["amount"]) 
-                    bamount = float(data["amount"]) / COINS
+                    fmtamount = float(vamount) / COINS
                     sequence = data["sequence"] 
                     version = data["version"]
                     baddress = data["baddress"]
@@ -144,19 +173,19 @@ def works():
                         logger.error("found transaction(vaddress={}, sequence={}) in db. ignore it and process next.".format(vaddress, sequence))
                         continue
 
-                    ##update db 
-                    ret = exg.sendbtcproofmark(sender, baddress, str(bamount), vaddress, sequence, str(bamount), str(sequence))
+                    ##send btc transaction and mark to OP_RETURN
+                    ret = exg.sendbtcproofmark(sender, baddress, str(fmtamount), vaddress, sequence, str(fmtamount), str(sequence))
                     txid = ret.datas
                     logger.debug(txid)
+                    #save db amount is satoshi, so db value's violas's amount == btc's amount 
                     if ret.state != error.SUCCEED:
-
-                        ret = v2b.insert_v2binfo_commit("", sender, baddress, int(bamount * COINS), vaddress, sequence, vamount, module_address, version, dbv2b.state.FAILED)
+                        ret = v2b.insert_v2binfo_commit("", sender, baddress, vamount, vaddress, sequence, vamount, module_address, version, dbv2b.state.FAILED)
                         assert (ret.state == error.SUCCEED), "db error"
                     else:
                         ret = v2b.update_or_insert_version_commit(receiver, module_address, max_version)
                         assert (ret.state == error.SUCCEED), "db error"
 
-                        ret = v2b.insert_v2binfo_commit(txid, sender, baddress, int(bamount * COINS), vaddress, sequence, vamount, module_address, version, dbv2b.state.SUCCEED)
+                        ret = v2b.insert_v2binfo_commit(txid, sender, baddress, vamount, vaddress, sequence, vamount, module_address, version, dbv2b.state.SUCCEED)
                         assert (ret.state == error.SUCCEED), "db error"
 
         ret = result(error.SUCCEED) 
