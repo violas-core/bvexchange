@@ -38,7 +38,7 @@ class violaswallet:
     
     def __init__(self, traceback_limit, wallet_name):
         self.__traceback_limit = traceback_limit
-        assert wallet_name is None, "wallet_name is None"
+        assert wallet_name is not None, "wallet_name is None"
         if wallet_name is not None:
             ret = self.__load_wallet(wallet_name)
             if ret.state != error.SUCCEED:
@@ -358,6 +358,7 @@ class violasserver:
         try:
             sequence = random.randint(1, 10000)
             version = random.randint(1, 9999999)
+            datas = []
             #datas = [{"address": "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6", "amount":10000, "sequence":sequence,  "version":version, "baddress":"2N8qe3KogEF3DjWNsDGr2qLQGgQD3g9oTnc"}]
             url = "http://{}:{}/1.0/violas/vbtc/transaction?receiver_address={}&module_address={}&start_version={}".format(self.__node["ip"], self.__node["port"], address, module, start)
             response = requests.get(url)
@@ -382,6 +383,34 @@ class violasserver:
                     baddress    = data["btc_address"]
                     datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "baddress":baddress})
                 ret = result(error.SUCCEED, message, datas)
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
+    def has_transaction(self, address, module, baddress, sequence, amount, version):
+        try:
+            logger.debug("start has_transaction()")
+            ret = result(error.FAILED, "", "")
+            data = {
+                    "version":version,
+                    "sender_address":address,
+                    "sequence_number":sequence,
+                    "amount":amount,
+                    "btc_address":baddress,
+                    "module":module
+                    }
+            url = "http://{}:{}/1.0/violas/vbtc/transaction".format(self.__node["ip"], self.__node["port"])
+            logger.debug(url)
+            headers = headers = {'Content-Type':'application/json'}
+            response = requests.post(url,  data = data)
+
+            if response is not None:
+                jret = json.loads(response.text)
+                if jret["code"] == 2000:
+                    ret = result(error.SUCCEED, jret["message"], True)
+                else:
+                    ret = result(error.SUCCEED, jret["message"], False)
         except Exception as e:
             logger.debug(traceback.format_exc(self.__traceback_limit))
             logger.error(str(e))

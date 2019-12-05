@@ -41,6 +41,26 @@ config = {
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
+       'dbv2blog': {
+           # 既有 console Handler，还有 file Handler
+           'handlers': ['console', 'file'],
+           'level': 'DEBUG',
+           },
+       'dbb2vlog': {
+           # 既有 console Handler，还有 file Handler
+           'handlers': ['console', 'file'],
+           'level': 'DEBUG',
+           },
+       'bloglog': {
+           # 既有 console Handler，还有 file Handler
+           'handlers': ['console', 'file'],
+           'level': 'DEBUG',
+           },
+       'vbloglog': {
+           # 既有 console Handler，还有 file Handler
+           'handlers': ['console', 'file'],
+           'level': 'DEBUG',
+           },
         
        # 其他的 Logger
        }

@@ -86,7 +86,6 @@ def get_excluded(b2v):
     return ret
 def checks():
     assert (len(setting.btc_conn) == 4), "btc_conn is invalid."
-    assert (len(setting.violas_recever) == 64 ), "violas_recever is invalid."
     assert (len(setting.violas_sender) == 64 ), "violas_sender is invalid."
     assert (len(setting.module_address) == 64), "module_address is invalid"
     assert (len(setting.violas_nodes) > 0 and len(setting.violas_nodes[0]) > 1), "violas_nodes is invalid."
