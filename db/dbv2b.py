@@ -66,10 +66,9 @@ class dbv2b:
         created     = Column(DateTime, default=datetime.datetime.now)
     
         def __repr__(self):
-            return "<v2binfo(txid=%s,fromaddress = %s, toaddress = %s, bamount = %i, vaddress = %s, sequence=%i, \
-                    vamount = %i, vtoken = %s, state = %i, version=%i)>" % (
-                    self.txid, self.fromaddress, self.toaddress, self.bamount, self.vaddres, self.sequence, \
-                    self.vamount, self.vtoken, self.state, self.version)
+            return "<v2binfo(txid=%s,fromaddress={}, toaddress={}, bamount={}, vaddress={}, sequence={}, \
+                    vamount={}, vtoken={}, state={}, version={})>".format(self.txid, self.fromaddress, self.toaddress, \
+                    self.bamount, self.vaddres, self.sequence, self.vamount, self.vtoken, self.state, self.version)
     
     class versions(__base):
         __tablename__='versions'
@@ -98,9 +97,9 @@ class dbv2b:
         
     def insert_v2binfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, version, state):
         try:
-            logger.debug("start insert_v2binfo (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, state, version),  \
-                    value(%s, %s, %s, %i, %s, %i, %i, %s, %s, %i)" % \
-                    (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, state.name, version))
+            logger.debug("start insert_v2binfo (vtxid={}, vfromaddress={}, vtoaddress={}, vbamount={}, \
+                    vvaddress={}, vsequence={}, vvamount={}, vvtoken={}, state={}, version={})" \
+                    .format(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, state.name, version))
 
             v2bi = self.v2binfo(txid=vtxid, fromaddress=vfromaddress, toaddress=vtoaddress, bamount=vbamount, vaddress=vvaddress, sequence=vsequence, \
                 vamount=vvamount, vtoken=vvtoken, state=state.value, version=version)
@@ -115,8 +114,6 @@ class dbv2b:
 
     def insert_v2binfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, version, state):
         try:
-            logger.debug("start insert_v2binfo_commit(vtxid={}, vfromaddress={}, vtoaddress={}, vbamount={}, vvaddress={}, \
-                    vsequence={}, vvamount={}, vvtoken={}, version={}, state={})".format(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, version, state.name))
             ret = self.insert_v2binfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, version, state)
             if ret.state != error.SUCCEED:
                 return ret 
@@ -211,7 +208,6 @@ class dbv2b:
 
     def __update_v2binfo_commit(self, vaddress, sequence, state, txid = None):
         try:
-            logger.debug("start __query_v2binfo_commit(vaddress={}, sequence={}, state={})".format(vaddress, sequence, state))
             ret = self.update_v2binfo(vaddress, sequence, state)
             if ret != error.SUCCEED:
                 return ret

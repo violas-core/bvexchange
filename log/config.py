@@ -51,12 +51,12 @@ config = {
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-       'bloglog': {
+       'blog': {
            # 既有 console Handler，还有 file Handler
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-       'vbloglog': {
+       'vlog': {
            # 既有 console Handler，还有 file Handler
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
