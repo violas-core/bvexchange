@@ -340,6 +340,7 @@ class violasserver:
     
     def disconn_node(self):
         try:
+            logger.debug("start disconn_node")
             if self.__node is not None:
                 del self.__node
                 self.__node = None
@@ -356,11 +357,13 @@ class violasserver:
    
     def get_transactions(self, address, module, start):
         try:
-            sequence = random.randint(1, 10000)
-            version = random.randint(1, 9999999)
+            logger.debug("start get_transactions(address={}, module={}, start={})".format(address, module, start))
             datas = []
+            #sequence = random.randint(1, 10000)
+            #version = random.randint(1, 9999999)
             #datas = [{"address": "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6", "amount":10000, "sequence":sequence,  "version":version, "baddress":"2N8qe3KogEF3DjWNsDGr2qLQGgQD3g9oTnc"}]
-            url = "http://{}:{}/1.0/violas/vbtc/transaction?receiver_address={}&module_address={}&start_version={}".format(self.__node["ip"], self.__node["port"], address, module, start)
+            url = "http://{}:{}/1.0/violas/vbtc/transaction?receiver_address={}&module_address={}&start_version={}"\
+                    .format(self.__node["ip"], self.__node["port"], address, module, start)
             response = requests.get(url)
 
             ret = result(error.FAILED, "", "")
@@ -377,9 +380,9 @@ class violasserver:
                 
                 for data in jret["data"]:
                     version     = int(data["version"])
-                    address     = data["address"]
+                    address     = data["sender_address"]
                     amount      = int(data["amount"])
-                    sequence    = data["sequence_number"]
+                    sequence    = int(data["sequence_number"])
                     baddress    = data["btc_address"]
                     datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "baddress":baddress})
                 ret = result(error.SUCCEED, message, datas)
@@ -390,7 +393,8 @@ class violasserver:
         return ret
     def has_transaction(self, address, module, baddress, sequence, amount, version):
         try:
-            logger.debug("start has_transaction()")
+            logger.debug("start has_transaction(address={}, module={}, baddress={}, sequence={}, amount={}, version={})"\
+                    .format(address, module, baddress, sequence, amount, version))
             ret = result(error.FAILED, "", "")
             data = {
                     "version":version,

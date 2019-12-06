@@ -31,9 +31,9 @@ COINS = comm.values.COINS
 #load logging
 logger = log.logger.getLogger(name) 
     
-def merge_proof_to_rpcparams(rpcparams, dbinfos):
+def merge_v2b_to_rpcparams(rpcparams, dbinfos):
     try:
-        logger.debug("start merge_proof_to_rpcparams")
+        logger.debug("start merge_v2b_to_rpcparams")
         for info in dbinfos:
             if info.toaddress in rpcparams:
                 rpcparams[info.toaddress].append({"address":"%s"%(info.vaddress), "sequence":info.sequence, "module":info.vtoken, "version":info.version})
@@ -57,7 +57,7 @@ def get_reexchange(v2b):
         if(bflddatas.state != error.SUCCEED):
             return bflddatas
 
-        ret = merge_proof_to_rpcparams(rpcparams, bflddatas.datas)
+        ret = merge_v2b_to_rpcparams(rpcparams, bflddatas.datas)
         if(ret.state != error.SUCCEED):
             return ret
         
@@ -122,12 +122,15 @@ def works():
             ret = v2b.query_latest_version(receiver, module_address)
             assert ret.state == error.SUCCEED, "get latest version error"
             latest_version = ret.datas + 1
-            logger.debug("latest version = {}".format(latest_version - 1))
             max_version = 0
 
+            logger.debug("start exchange v2b. receiver = {}, latest version = {}".format(receiver, latest_version - 1))
+
             #get old transaction from db, check transaction. version and receiver is current value
-            failed = rpcparams.get(receiver)
+            failed = None#rpcparams.get(receiver)
             if failed is not None:
+                logger.debug("start exchange failed datas from db. receiver={}".format(receiver))
+
                 for data in failed:
                     vaddress = data.vaddress
                     vamount = data.vamount
@@ -137,9 +140,9 @@ def works():
                     baddress = data.toaddress
                     module_old = data.vtoken
 
-                    #check version
-                    if version >= (latest_version - 1):
-                        continue
+                    #check version, get transaction list is ordered?
+                    #if version >= (latest_version - 1):
+                    #    continue
 
                     #not found , process next
                     ret = vserver.has_transaction(vaddress, module_old, baddress, sequence, vamount, version)
@@ -156,6 +159,7 @@ def works():
             #get new transaction from violas server
             ret = vserver.get_transactions(receiver, module_address, latest_version)
             if ret.state == error.SUCCEED and len(ret.datas) > 0:
+                logger.debug("start exchange datas from violas server. receiver={}".format(receiver))
                 for data in ret.datas:
                     #grant vbtc 
                     ##check 
@@ -168,7 +172,7 @@ def works():
 
                     max_version = max(version, max_version)
                     ret = v2b.has_v2binfo(vaddress, sequence)
-                    assert ret.state == error.SUCCEED, "has_v2binfoi(vaddress={}, sequence={}) failed.".format(vaddress, sequence)
+                    assert ret.state == error.SUCCEED, "has_v2binfo(vaddress={}, sequence={}) failed.".format(vaddress, sequence)
                     if ret.datas == True:
                         logger.error("found transaction(vaddress={}, sequence={}) in db. ignore it and process next.".format(vaddress, sequence))
                         continue
