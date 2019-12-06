@@ -13,6 +13,7 @@ import requests
 import comm
 import comm.error
 import comm.result
+import comm.values
 from comm.result import result
 from comm.error import error
 from db.dbb2v import dbb2v
@@ -26,7 +27,7 @@ from enum import Enum
 #module name
 name="exchangeb2v"
 
-COINS = 100000000
+COINS = comm.values.COINS
 #load logging
 logger = log.logger.getLogger(name) 
 
