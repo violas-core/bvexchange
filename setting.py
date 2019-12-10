@@ -23,7 +23,7 @@ db_echo=False
 btc_conn = {'rpcuser':'btc', 
         'rpcpassword':'btc', 
         'rpcip':'192.168.1.196', 
-        'rpcport':9409}
+        'rpcport':18332}
 
 #btc receiver address, btc exchange vbtc's valid receiving address, filter btc proofs
 receivers =['2NGQjMnVhwVVzw1Sq7vjAz9Rf7Z1Fv8LFsV']
