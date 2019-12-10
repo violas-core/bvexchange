@@ -44,10 +44,18 @@ def generatetoaddress(count, address):
     assert ret.state == error.SUCCEED, " sendtoaddress failed"
     print(ret.datas)
     
+def listunspent(minconf, maxconf, addresses, include_unsafe, query_options):
+    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    ret = client.listunspent(minconf, maxconf, addresses, include_unsafe, query_options)
+    assert ret.state == error.SUCCEED, " listunspent failed"
+    for data in ret.datas:
+        print(data)
+
 args = {"help"                  :   "dest: show arg list. format: --help",
         "sendtoaddress-"        :   "dest: send to address.format: --sendtoaddress \"address, amount\"",
         "sendbtcproofmark-"     :   "dest: create new btc mark proof. format: --endbtcproofmark \"fromaddress, toaddress, toamount, vaddress, sequence, amount, name\"",
         "generatetoaddress-"    :   "dest: generate new block to address. format: --generatetoaddress \"count, address\"",
+        "listunspent-"          :   "dest: returns array of unspent transaction outputs. format: --listunspent\"minconf, maxconf, addresses, include_unsafe, query_options\"",
         }
 args_info = {
         }
@@ -116,6 +124,12 @@ def run(argc, argv):
                 show_arg_info(args["{}-".format(opt.replace('--', ''))])
                 sys.exit(2)
             ret = generatetoaddress(int(arg_list[0]), arg_list[1])
+        elif opt in ("--listunspent"):
+            if len(arg_list) != 5:
+                show_arg_info(args["{}-".format(opt.replace('--', ''))])
+                sys.exit(2)
+            ret = listunspent(int(arg_list[0]), int(arg_list[1]), arg_list[2], arg_list[3], arg_list[4])
+
     logger.debug("end manage.main")
 
 if __name__ == "__main__":
