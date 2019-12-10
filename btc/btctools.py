@@ -51,11 +51,18 @@ def listunspent(minconf, maxconf, addresses, include_unsafe, query_options):
     for data in ret.datas:
         print(data)
 
+def btchelp():
+    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    ret = client.help()
+    assert ret.state == error.SUCCEED, " btchelp failed"
+    print(ret.datas)
+
 args = {"help"                  :   "dest: show arg list. format: --help",
         "sendtoaddress-"        :   "dest: send to address.format: --sendtoaddress \"address, amount\"",
         "sendbtcproofmark-"     :   "dest: create new btc mark proof. format: --endbtcproofmark \"fromaddress, toaddress, toamount, vaddress, sequence, amount, name\"",
         "generatetoaddress-"    :   "dest: generate new block to address. format: --generatetoaddress \"count, address\"",
         "listunspent-"          :   "dest: returns array of unspent transaction outputs. format: --listunspent\"minconf, maxconf, addresses, include_unsafe, query_options\"",
+        "btchelp"               :   "dest: returns bitcoin-cli help. format: --btchelp",
         }
 args_info = {
         }
@@ -129,6 +136,9 @@ def run(argc, argv):
                 show_arg_info(args["{}-".format(opt.replace('--', ''))])
                 sys.exit(2)
             ret = listunspent(int(arg_list[0]), int(arg_list[1]), arg_list[2], arg_list[3], arg_list[4])
+        elif opt in ("--btchelp"):
+            ret = btchelp()
+            pass
 
     logger.debug("end manage.main")
 

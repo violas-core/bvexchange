@@ -159,6 +159,17 @@ class btcclient:
             ret = result(error.EXCEPT, str(e), e)
         return ret
 
+    def help(self):
+        try:
+            logger.debug("start help")
+            datas = self.__rpc_connection.help()
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
+
 def test_conn():
     exg = btcclient(setting.traceback_limit, setting.btc_conn)
     logger.debug("start test_conn")
