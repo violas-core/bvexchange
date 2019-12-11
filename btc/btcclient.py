@@ -170,6 +170,34 @@ class btcclient:
             ret = result(error.EXCEPT, str(e), e)
         return ret
 
+    def getwalletbalance(self):
+        try:
+            logger.debug("start getwalletbalance")
+            walletinfo = self.__rpc_connection.getwalletinfo()
+            balance = walletinfo.get("balance", 0)
+            ret = result(error.SUCCEED, "", balance)
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
+
+    def getwalletaddressbalance(self, address):
+        try:
+            logger.debug("start getwalletaddressbalance({})".format(address))
+            addresses = [address]
+            datas = self.__rpc_connection.listunspent(1, 999999999, addresses)
+            balance = 0
+            for data in datas:
+                balance += data.get("amount", 0)
+
+            ret = result(error.SUCCEED, "", balance)
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
+
 def test_conn():
     exg = btcclient(setting.traceback_limit, setting.btc_conn)
     logger.debug("start test_conn")

@@ -52,4 +52,4 @@ violas_receivers=['cd0476e85ecc5fa71b61d84b9cf2f7fd524689a4f870c46d6a5d901b5ac1f
 #violas sendor address, btc exchange vbtc use. from violas_sender send vbtc to target address. (must has privkey)
 violas_sender='210a283f13e42a37b7fb2dec50d8c2b28d6cc7e4f041fbdfa4998aa1b5663b89'
 #btc module address(vbtc module address)
-module_address='cd0476e85ecc5fa71b61d84b9cf2f7fd524689a4f870c46d6a5d901b5ac1fdb2'
+module_address='cd0476e85ecc5fa71b61d84b9cf2f7fd524689a4f870c46d6a5d901b5ac1fdb3'

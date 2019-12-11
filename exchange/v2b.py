@@ -43,8 +43,8 @@ def merge_v2b_to_rpcparams(rpcparams, dbinfos):
         return result(error.SUCCEED, "", rpcparams)
     except Exception as e:
         logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(e.message)
-        ret = result(error.EXCEPT, e.message, e)
+        logger.error(str(e))
+        ret = result(error.EXCEPT, str(e), e)
     return ret
 
 def get_reexchange(v2b):
@@ -64,8 +64,8 @@ def get_reexchange(v2b):
         ret = result(error.SUCCEED, "", rpcparams)
     except Exception as e:
         logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(e.message)
-        ret = result(error.EXCEPT, e.message, e)
+        logger.error(str(e))
+        ret = result(error.EXCEPT, str(e), e)
     return ret
 def checks():
     assert (len(setting.btc_conn) == 4), "btc_conn is invalid."
@@ -76,6 +76,23 @@ def checks():
     for violas_receiver in setting.violas_receivers:
         assert len(violas_receiver) == 64, "violas receiver({}) is invalid".format(violas_receiver)
 
+def hasbtcbanlance(btcclient, address, vamount, gas = 1000):
+    try:
+        ret = btcclient.getwalletaddressbalance(address)
+        if ret.state != error.SUCCEED:
+            return ret
+
+        #change bitcoin unit to satoshi and check amount is sufficient
+        wbalance = int(ret.datas * COINS)
+        if wbalance <= (vamount + gas): #need some gas, so wbalance > vamount
+            ret = result(error.SUCCEED, "", False)
+        else:
+            ret = result(error.SUCCEED, "", True)
+    except Exception as e:
+        logger.debug(traceback.format_exc(setting.traceback_limit))
+        logger.error(str(e))
+        ret = result(error.EXCEPT, str(e), e)
+    return ret
 def works():
 
     try:
@@ -146,9 +163,19 @@ def works():
 
                     #not found , process next
                     ret = vserver.has_transaction(vaddress, module_old, baddress, sequence, vamount, version)
-                    if ret.state != error.SUCCEED or ret.datas != True:
+                    if ret.state != error.SUCCEED:
                         continue
 
+                    #check btc amount
+                    gas = 1000
+                    ret = hasbtcbanlance(exg, sender, vamount, gas)
+                    if ret.state != error.SUCCEED or ret.datas != True:
+                        continue
+                    if ret.datas != True:
+                        logger.info("{} not enough btc coins(vamount = {}, gas ={})". format(sender, fmtamount, float(gas)/COINS))
+                        continue
+
+                    #send btc and mark it in OP_RETURN
                     ret = exg.sendbtcproofmark(sender, baddress, str(fmtamount), vaddress, sequence, str(fmtamount), str(sequence))
                     txid = ret.datas
                     #update db state
@@ -175,6 +202,16 @@ def works():
                     assert ret.state == error.SUCCEED, "has_v2binfo(vaddress={}, sequence={}) failed.".format(vaddress, sequence)
                     if ret.datas == True:
                         logger.error("found transaction(vaddress={}, sequence={}) in db. ignore it and process next.".format(vaddress, sequence))
+                        continue
+
+                    #check btc amount
+                    gas = 1000
+                    ret = hasbtcbanlance(exg, sender, vamount, gas)
+                    if ret.state != error.SUCCEED:
+                        continue
+
+                    if ret.datas != True:
+                        logger.info("{} not enough btc coins(vamount = {}, gas ={})". format(sender,  fmtamount, float(gas)/COINS))
                         continue
 
                     ##send btc transaction and mark to OP_RETURN

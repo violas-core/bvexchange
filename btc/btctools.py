@@ -57,12 +57,26 @@ def btchelp():
     assert ret.state == error.SUCCEED, " btchelp failed"
     print(ret.datas)
 
+def getwalletbalance():
+    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    ret = client.getwalletbalance()
+    assert ret.state == error.SUCCEED, "getwalletbalance failed"
+    print("wallet balance:{}".format(ret.datas))
+
+def getwalletaddressbalance(address):
+    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    ret = client.getwalletaddressbalance(address)
+    assert ret.state == error.SUCCEED, " getwalletaddressbalance failed"
+    print("wallet balance:{}".format(ret.datas))
+
 args = {"help"                  :   "dest: show arg list. format: --help",
         "sendtoaddress-"        :   "dest: send to address.format: --sendtoaddress \"address, amount\"",
         "sendbtcproofmark-"     :   "dest: create new btc mark proof. format: --endbtcproofmark \"fromaddress, toaddress, toamount, vaddress, sequence, amount, name\"",
         "generatetoaddress-"    :   "dest: generate new block to address. format: --generatetoaddress \"count, address\"",
         "listunspent-"          :   "dest: returns array of unspent transaction outputs. format: --listunspent\"minconf, maxconf, addresses, include_unsafe, query_options\"",
         "btchelp"               :   "dest: returns bitcoin-cli help. format: --btchelp",
+        "getwalletbalance"      :   "dest: returns wallet balance. format: --getwalletbalance",
+        "getwalletaddressbalance-"      :   "dest: returns wallet target address's balance. format: --getwalletaddressbalance \"address\"",
         }
 args_info = {
         }
@@ -138,7 +152,13 @@ def run(argc, argv):
             ret = listunspent(int(arg_list[0]), int(arg_list[1]), arg_list[2], arg_list[3], arg_list[4])
         elif opt in ("--btchelp"):
             ret = btchelp()
-            pass
+        elif opt in ("--getwalletbalance"):
+            ret = getwalletbalance()
+        elif opt in ("--getwalletaddressbalance"):
+            if len(arg_list) != 1:
+                show_arg_info(args["{}-".format(opt.replace('--', ''))])
+                sys.exit(2)
+            ret = getwalletaddressbalance(arg_list[0])
 
     logger.debug("end manage.main")
 
