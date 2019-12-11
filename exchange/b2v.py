@@ -44,8 +44,8 @@ def merge_proof_to_rpcparams(rpcparams, dbinfos):
         return result(error.SUCCEED, "", rpcparams)
     except Exception as e:
         logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(e.message)
-        ret = result(error.EXCEPT, e.message, e)
+        logger.error(str(e))
+        ret = result(error.EXCEPT, str(e), e)
     return ret
 
 def get_excluded(b2v):
@@ -82,8 +82,8 @@ def get_excluded(b2v):
         ret = result(error.SUCCEED, "", rpcparams)
     except Exception as e:
         logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(e.message)
-        ret = result(error.EXCEPT, e.message, e)
+        logger.error(str(e))
+        ret = result(error.EXCEPT, str(e), e)
     return ret
 def checks():
     assert (len(setting.btc_conn) == 4), "btc_conn is invalid."
@@ -91,12 +91,42 @@ def checks():
     assert (len(setting.module_address) == 64), "module_address is invalid"
     assert (len(setting.violas_nodes) > 0 and len(setting.violas_nodes[0]) > 1), "violas_nodes is invalid."
 
-def works():
+def hasplatformbalance(vclient, address, vamount = 0):
+    try:
+        ret = vclient.get_platform_balance(address, module)
+        if ret.state != error.SUCCEED:
+            return ret
 
+        balance = ret.datas
+        if balance >= vamount:
+            ret = result(error.SUCCEED, "", True)
+        else:
+            ret = result(error.SUCCEED, "", False)
+    except Exception as e:
+        logger.debug(traceback.format_exc(setting.traceback_limit))
+        logger.error(str(e))
+        ret = result(error.EXCEPT, str(e), e)
+
+def hasviolasbalance(vclient, address, module, vamount):
+    try:
+        ret = vclient.get_violas_balance(address, module)
+        if ret.state != error.SUCCEED:
+            return ret
+
+        balance = ret.datas
+        if balance >= vamount:
+            ret = result(error.SUCCEED, "", True)
+        else:
+            ret = result(error.SUCCEED, "", False)
+    except Exception as e:
+        logger.debug(traceback.format_exc(setting.traceback_limit))
+        logger.error(str(e))
+        ret = result(error.EXCEPT, str(e), e)
+
+def works():
     try:
         logger.debug("start works")
         dbb2v_name = "bve_b2v.db"
-        dbv2b_name = "bve_v2b.db"
         wallet_name = "vwallet"
 
         #requirement checks
@@ -111,19 +141,33 @@ def works():
         vwallet = violaswallet(setting.traceback_limit, wallet_name)
         ret = vwallet.get_account(setting.violas_sender)
         if ret.state != error.SUCCEED:
-            return result(error.FAILED, "not fount violas sender account({}".format(setting.violas_sender)) 
+            logger.error("not fount violas sender account({}".format(setting.violas_sender)) 
+            return result(error.FAILED)
 
         #violas sender, grant vbtc
         vsender = ret.datas
+        vsender_address = setting.violas_sender
         module_address = setting.module_address
-         
         combineaddress = setting.combineaddress
+
+        #make sure sender address is binded module
+        ret = vclient.account_has_violas_module(vsender_address, module_address)
+        if ret.state != error.SUCCEED:
+            logger.error("violas client error")
+            return result(error.FAILED)
+
+        if ret.datas != True:
+            logger.error("sender account {} not bind module {}".format(vsender_address, module_address))
+            return result(error.FAILED)
+
 
         #update db state by proof state
         ##search db state is succeed
         scddatas = b2v.query_b2vinfo_is_btcsucceed()
-        if(scddatas.state != error.SUCCEED):
-            return scddatas
+        if scddatas.state != error.SUCCEED:
+            logger.error("db error")
+            return result(error.FAILED)
+
 
         ##excluded btc blockchain state is not start,update dbb2v state to complete
         ##dbb2v state is complete, that means  btc blockchain state is cancel or succeed
@@ -138,9 +182,12 @@ def works():
         #get all excluded info from db
         rpcparams = {}
         ret = get_excluded(b2v)
-        if(ret.state != error.SUCCEED):
-            return ret
+        if ret.state != error.SUCCEED:
+            logger.error("db error")
+            return result(error.FAILED)
+
         rpcparams = ret.datas
+        min_gas = 1000
 
         #set receiver: get it from setting or get it from blockchain
         receivers = list(set(setting.receivers))
@@ -162,10 +209,37 @@ def works():
                     to_module_address = data["vtoken"]
                     vamount = int(float(data["amount"]) * COINS)
                     if (len(module_address) != 64 or module_address != to_module_address):
-                       logger.warning("vtoken({}) is invalid.".format(to_module_address))
-                       continue
+                        logger.warning("vtoken({}) is invalid.".format(to_module_address))
+                        continue
+
                     if vamount <= 0:
                         logger.warning("amount({}) is invalid.".format(vamount))
+                        continue
+                    
+                    #make sure receiver address is binded module
+                    ret = vclient.account_has_violas_module(to_address, to_module_address)
+                    if ret.state != error.SUCCEED:
+                        continue
+
+                    if ret.datas != True:
+                        logger.info("account {} not bind module {}".format(to_address, to_module_address))
+                        continue
+
+                    #make sure sender address has enough platform coins
+                    ret = hasplatformbalance(vclient, vsender_address, min_gas)
+                    if ret.state != error.SUCCEED:
+                        break 
+                    if ret.datas != True:
+                        logger.info("{} not enough platform coins {}".format(vsender_address, min_gas))
+                        break
+
+                    #make sure sender address has enough violas coins
+                    ret = hasviolasbalance(vclient, vsender_address, to_module_address, vamount)
+                    if ret.state != error.SUCCEED:
+                        continue
+                       
+                    if ret.datas != True:
+                        logger.info("{} not enough {} coins {}".format(vsender_address, to_module_address, vamount))
                         continue
 
                     logger.debug("start new btc -> vbtc(address={}, sequence={} amount={}, module={})".format(to_address, int(data["sequence"]), vamount, to_module_address))
@@ -183,7 +257,7 @@ def works():
                                 data["address"], int(data["sequence"]), 0, data["vtoken"], data["creation_block"], data["update_block"])
                         assert (ret.state == error.SUCCEED), "db error"
 
-                    rettmp = vclient.get_address_sequence(vsender.address.hex())
+                    rettmp = vclient.get_address_sequence(vsender_address)
                     height = -1
                     ##update db 
                     ###succeed:dbb2v state = succeed
@@ -207,6 +281,8 @@ def works():
         logger.error(str(e))
         ret = result(error.EXCEPT, str(e), e) 
     finally:
+        vclient.disconn_node()
+        vwallet.dump_wallet()
         logger.info("works end.")
 
     return ret

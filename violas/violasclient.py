@@ -92,7 +92,6 @@ class violaswallet:
 
     def get_account(self, addressorid):
         try:
-            logger.debug("get_account(addressorid = {})".format(addressorid))
             account = self.__wallet.get_account_by_address_or_refid(addressorid)
             ret = result(error.SUCCEED, "", account)
         except Exception as e:
@@ -103,7 +102,6 @@ class violaswallet:
 
     def has_account_by_address(self, address):
         try:
-            logger.debug("start has_account_by_address(address = {})".format(address))
             (index, account) = self.__wallet.find_account_by_address_hex(address)
             if account is None:
                 ret = result(error.SUCCEED, "", True)
@@ -117,7 +115,6 @@ class violaswallet:
 
     def has_account(self):
         try:
-            logger.debug("start has_account_by_address")
             self.__wallet.get_account_by_address_or_refid(0)
             ret = result(error.SUCCEED, "", True)
         except Exception as e:
@@ -265,6 +262,7 @@ class violasclient:
 
     def get_account_state(self, address):
         try:
+            logger.debug("start get_account_state(address={})".format(address))
             state =  self.__client.get_account_state(address)
             ret = result(error.SUCCEED, "", state)
         except Exception as e:
@@ -275,6 +273,7 @@ class violasclient:
 
     def get_address_sequence(self, address):
         try:
+            logger.debug("start get_address_sequence(address={})".format(address))
             num = self.__client.get_sequence_number(address)
             ret = result(error.SUCCEED, "", num)
         except Exception as e:
@@ -285,9 +284,23 @@ class violasclient:
 
     def get_latest_transaction_version(self):
         try:
-            logger.debug("start has_account_by_address")
+            logger.debug("start get_latest_transaction_version")
             datas = self.__client.get_latest_transaction_version()
             ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
+
+    def account_has_violas_module(self, address, module):
+        try:
+            logger.debug("start account_has_violas_module(address={}, module={})".format(address, module))
+            vres = self.__client.violas_get_info(address)
+            if vres is not None and module in vres.keys():
+                ret = result(error.SUCCEED, "", True)
+            else:
+                ret = result(error.SUCCEED, "", False)
         except Exception as e:
             logger.debug(traceback.format_exc(self.__traceback_limit))
             logger.error(str(e))
@@ -367,8 +380,6 @@ class violasserver:
             response = requests.get(url)
 
             ret = result(error.FAILED, "", "")
-            logger.debug(url)
-            logger.debug(response.json())
             if response is None:
                 ret = result(error.FAILED, "", "")
             else:
