@@ -3,21 +3,20 @@ import sys, getopt
 import log 
 import json
 import log.logger
-
+import daemon
 
 name = "bvelog"
 logger = log.logger.getLogger(name)
 params = ["-h ",
-          "-a",
-          "-b",
-          "-s"
+          "-d debug model",
+          "-s service model",
         ]
 def main(argc, argv):
     try:
         logger.debug("start manage.main")
         if argc == 0:
             logger.critical(json.dumps(params))
-        opts, args = getopt.getopt(argv, "ha:b:s")
+        opts, args = getopt.getopt(argv, "hds")
     except getopt.GetoptError as e:
         logger.error(json.dumps(params))
         sys.exit(2)
@@ -31,12 +30,10 @@ def main(argc, argv):
     for opt, arg in opts:
         if opt == '-h':
             logger.info(json.dumps(params))
-        elif opt == '-a':
-            logger.debug(arg)
-        elif opt == '-b':
-            logger.debug(arg)
+        elif opt == '-d':
+            logger.debug("debug")
         elif opt == '-s':
-            logger.debug(arg)
+            logger.debug("service")
     logger.debug("end manage.main")
 
 if __name__ == '__main__':
