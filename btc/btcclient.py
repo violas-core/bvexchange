@@ -54,6 +54,7 @@ class btcclient:
                 self.__rpcip = btc_conn["rpcip"]
             if btc_conn["rpcport"]:
                 self.__rpcport = btc_conn["rpcport"]
+        logger.info("connect btc server(rpcuser={}, rpcpassword={}, rpcip={}, rpcport={})".format(btc_conn["rpcuser"], btc_conn["rpcpassword"], btc_conn["rpcip"], btc_conn["rpcport"]))
         self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__rpcuser, self.__rpcpassword, self.__rpcip, self.__rpcport))
 
     def __listexproofforstate(self, state, receiver, excluded):
