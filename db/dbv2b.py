@@ -256,7 +256,7 @@ class dbv2b:
     def query_latest_version(self, address, vtoken):
         proofs = []
         try:
-            logger.debug("start __query_latest_version(address={}, vtoken={})".format(address, vtoken))
+            logger.debug("start query_latest_version(address={}, vtoken={})".format(address, vtoken))
             filter_address = (self.versions.address==address)
             filter_vtoken = (self.versions.vtoken==vtoken)
             info = self.__session.query(self.versions).filter(filter_address).filter(filter_vtoken).all()
