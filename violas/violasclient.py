@@ -151,9 +151,9 @@ class violasclient:
             
             for node in nodes:
                 try:
-                    client = Client.new(node["ip"], node["port"], node["validator"], node["faucet"])
+                    client = Client.new(node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
                     logger.debug("connect violas node : ip = {} port = {} validator={} faucet ={}".format( \
-                            node["ip"], node["port"], node["validator"], node["faucet"]))
+                            node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
                 except Exception as e:
                     logger.debug(traceback.format_exc(self.__traceback_limit))
                     logger.error(str(e))
