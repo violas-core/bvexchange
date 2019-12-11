@@ -188,6 +188,9 @@ class btcclient:
             addresses = [address]
             datas = self.__rpc_connection.listunspent(1, 999999999, addresses)
             balance = 0
+            if len(datas) == 0:
+                logger.debug("not found address({})".format(address))
+                return result(error.FAILED)
             for data in datas:
                 balance += data.get("amount", 0)
 
