@@ -56,6 +56,7 @@ def get_reexchange(v2b):
         bflddatas = v2b.query_v2binfo_is_failed()
         if(bflddatas.state != error.SUCCEED):
             return bflddatas
+        logger.debug("get count = {}".format(len(bflddatas.datas)))
 
         ret = merge_v2b_to_rpcparams(rpcparams, bflddatas.datas)
         if(ret.state != error.SUCCEED):
@@ -176,7 +177,7 @@ def works():
                         continue
 
                     #send btc and mark it in OP_RETURN
-                    ret = exg.sendbtcproofmark(sender, baddress, str(fmtamount), vaddress, sequence, str(fmtamount), str(sequence))
+                    ret = exg.sendbtcproofmark(sender, baddress, "%.8f"%(fmtamount), vaddress, sequence, "%.8f"%(fmtamount), str(sequence))
                     txid = ret.datas
                     #update db state
                     if ret.state == error.SUCCEED:
@@ -215,7 +216,7 @@ def works():
                         continue
 
                     ##send btc transaction and mark to OP_RETURN
-                    ret = exg.sendbtcproofmark(sender, baddress, str(fmtamount), vaddress, sequence, str(fmtamount), str(sequence))
+                    ret = exg.sendbtcproofmark(sender, baddress, "%.8f"%(fmtamount), vaddress, sequence, "%.8f"%(fmtamount), str(sequence))
                     txid = ret.datas
                     logger.debug(txid)
                     #save db amount is satoshi, so db value's violas's amount == btc's amount 

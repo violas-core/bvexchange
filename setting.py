@@ -26,11 +26,11 @@ btc_conn = {'rpcuser':'btc',
         'rpcport':18332}
 
 #btc receiver address, btc exchange vbtc's valid receiving address, filter btc proofs
-receivers =['2NGQjMnVhwVVzw1Sq7vjAz9Rf7Z1Fv8LFsV']
+receivers =['2MxBZG7295wfsXaUj69quf8vucFzwG35UWh']
 # receiver address  state change to "end", combineaddress not in receivers 
-combineaddress='2N8qe3KogEF3DjWNsDGr2qLQGgQD3g9oTnc'
+combineaddress='2N9gZbqRiLKAhYCBFu3PquZwmqCBEwu1ien'
 #btc send address. vbtc exchange btc use. from sender send btc to target address. (must has privkey)
-sender='2NGQjMnVhwVVzw1Sq7vjAz9Rf7Z1Fv8LFsV'
+sender='2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB'
 
 #violas node list, to connect one
 violas_nodes=[

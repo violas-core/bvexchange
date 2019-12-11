@@ -56,6 +56,7 @@ def get_excluded(b2v):
         scddatas = b2v.query_b2vinfo_is_succeed()
         if(scddatas.state != error.SUCCEED):
             return scddatas
+        logger.debug("get count = {}".format(len(scddatas.datas)))
 
         ret = merge_proof_to_rpcparams(rpcparams, scddatas.datas)
         if(ret.state != error.SUCCEED):
@@ -65,6 +66,7 @@ def get_excluded(b2v):
         bflddatas = b2v.query_b2vinfo_is_btcfailed()
         if(bflddatas.state != error.SUCCEED):
             return bflddatas
+        logger.debug("get count = {}".format(len(bflddatas.datas)))
 
         ret = merge_proof_to_rpcparams(rpcparams, bflddatas.datas)
         if(ret.state != error.SUCCEED):
@@ -74,6 +76,7 @@ def get_excluded(b2v):
         btcscddatas = b2v.query_b2vinfo_is_btcsucceed()
         if(btcscddatas.state != error.SUCCEED):
             return bflddatas
+        logger.debug("get count = {}".format(len(btcscddatas.datas)))
 
         ret = merge_proof_to_rpcparams(rpcparams, btcscddatas.datas)
         if(ret.state != error.SUCCEED):
@@ -85,6 +88,7 @@ def get_excluded(b2v):
         logger.error(str(e))
         ret = result(error.EXCEPT, str(e), e)
     return ret
+
 def checks():
     assert (len(setting.btc_conn) == 4), "btc_conn is invalid."
     assert (len(setting.violas_sender) == 64 ), "violas_sender is invalid."
@@ -93,7 +97,7 @@ def checks():
 
 def hasplatformbalance(vclient, address, vamount = 0):
     try:
-        ret = vclient.get_platform_balance(address, module)
+        ret = vclient.get_platform_balance(address)
         if ret.state != error.SUCCEED:
             return ret
 
@@ -106,6 +110,7 @@ def hasplatformbalance(vclient, address, vamount = 0):
         logger.debug(traceback.format_exc(setting.traceback_limit))
         logger.error(str(e))
         ret = result(error.EXCEPT, str(e), e)
+    return ret
 
 def hasviolasbalance(vclient, address, module, vamount):
     try:
@@ -122,10 +127,11 @@ def hasviolasbalance(vclient, address, module, vamount):
         logger.debug(traceback.format_exc(setting.traceback_limit))
         logger.error(str(e))
         ret = result(error.EXCEPT, str(e), e)
+    return ret
 
 def works():
     try:
-        logger.debug("start works")
+        logger.debug("start b2v work")
         dbb2v_name = "bve_b2v.db"
         wallet_name = "vwallet"
 
@@ -266,7 +272,7 @@ def works():
                         ret =b2v.update_b2vinfo_to_succeed_commit(data["address"], int(data["sequence"]), height)
                         assert (ret.state == error.SUCCEED), "db error"
                     
-                    ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), str(vamount/COINS), height)
+                    ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), "%.8f"%(float(vamount)/COINS), height)
                     if ret.state != error.SUCCEED:
                         ret = b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
                         assert (ret.state == error.SUCCEED), "db error"
