@@ -403,7 +403,6 @@ class violasserver:
             ret = result(error.EXCEPT, str(e), e)
         return ret
     def has_transaction(self, address, module, baddress, sequence, amount, version, receiver):
-        return result(error.SUCCEED, "", True)
         try:
             logger.debug("start has_transaction(address={}, module={}, baddress={}, sequence={}, amount={}, version={}, receiver={})"\
                     .format(address, module, baddress, sequence, amount, version, receiver))
@@ -421,6 +420,7 @@ class violasserver:
             headers = headers = {'Content-Type':'application/json'}
             response = requests.post(url,  data = data)
 
+            print(response.text)
             if response is not None:
                 jret = json.loads(response.text)
                 if jret["code"] == 2000:

@@ -148,10 +148,10 @@ def get_transactions(address, module, start):
     server = violasserver(setting.traceback_limit, setting.violas_servers)
     logger.debug(server.get_transactions(address, module, start).datas)
     
-def has_transaction(address, module, baddress, sequence, amount, version):
-    logger.debug("start has_transaction address= {} module = {}, baddress={}, sequence={}, amount={}, version={}".format(address, module, baddress, sequence, amount, version))
+def has_transaction(address, module, baddress, sequence, amount, version, receiver):
+    logger.debug("start has_transaction address= {} module = {}, baddress={}, sequence={}, amount={}, version={}, receiver={}".format(address, module, baddress, sequence, amount, version, receiver))
     server = violasserver(setting.traceback_limit, setting.violas_servers)
-    logger.debug(server.has_transaction(address, module, baddress, sequence, amount, version).datas)
+    logger.debug(server.has_transaction(address, module, baddress, sequence, amount, version, receiver).datas)
 
 def account_has_violas_module(address, module):
     logger.debug("start account_has_violas_module address= {} module = {}".format(address, module))
@@ -171,7 +171,7 @@ args = {"help"                  :   "dest: show arg list. format: --help",
         "get_violas_balance-"   :   "dest: get address's token(module) amount. format: --get_violas_balance \"address\"",
         "get_platform_balance-" :   "dest: get address's platform coin amount. fromat: --get_platform_balance \"address, module\"",
         "get_transactions-"     :   "dest: get transactions from violas server. format: --get_transactions \"address, module, start\"",
-        "has_transaction-"     :   "dest: check transaction is valid from violas server. format: --get_transaction \"address, module, btcaddress, sequence, amount, version\"",
+        "has_transaction-"     :   "dest: check transaction is valid from violas server. format: --get_transaction \"address, module, btcaddress, sequence, amount, version, receiver\"",
         "account_has_violas_module-" :   "dest: check address binded module. fromat: --account_has_violas_module \"address, module\"",
         }
 args_info = {
@@ -280,9 +280,9 @@ def run(argc, argv):
                 exit_error_arg_list(opt)
             get_transactions(arg_list[0], arg_list[1], int(arg_list[2]))
         elif opt in ("--has_transaction"):
-            if len(arg_list) != 6:
+            if len(arg_list) != 7:
                 exit_error_arg_list(opt)
-            has_transaction(arg_list[0], arg_list[1], arg_list[2], int(arg_list[3]), int(arg_list[4]), int(arg_list[5]))
+            has_transaction(arg_list[0], arg_list[1], arg_list[2], int(arg_list[3]), int(arg_list[4]), int(arg_list[5]), arg_list[6])
         elif opt in ("--account_has_violas_module"):
             if len(arg_list) != 2:
                 exit_error_arg_list(opt)
