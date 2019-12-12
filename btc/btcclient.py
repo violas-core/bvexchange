@@ -57,16 +57,16 @@ class btcclient:
         logger.info("connect btc server(rpcuser={}, rpcpassword={}, rpcip={}, rpcport={})".format(btc_conn["rpcuser"], btc_conn["rpcpassword"], btc_conn["rpcip"], btc_conn["rpcport"]))
         self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__rpcuser, self.__rpcpassword, self.__rpcip, self.__rpcport))
 
-    def __listexproofforstate(self, state, receiver, excluded):
+    def __listexproofforstate(self, extype, state, receiver, excluded):
         try:
-            logger.debug("start __listexproofforstate (state=%s receiver=%s excluded=%s)"%(state, receiver, excluded))
+            logger.debug("start __listexproofforstate (state=%s type=%c receiver=%s excluded=%s)"%(state, extype, receiver, excluded))
             if(len(receiver) == 0):
                 return result(error.ARG_INVALID, error.argument_invalid, "")
             
             if len(excluded) == 0:
-                datas = self.__rpc_connection.violas_listexproofforstate(state, receiver)
+                datas = self.__rpc_connection.violas_listexproofforstate(state, extype, receiver)
             else:
-                datas = self.__rpc_connection.violas_listexproofforstate(state, receiver, excluded)
+                datas = self.__rpc_connection.violas_listexproofforstate(state, extype, receiver, excluded)
 
             return result(error.SUCCEED, "", datas)
 
@@ -92,13 +92,13 @@ class btcclient:
         return ret
 
     def listexproofforstart(self, receiver, excluded):
-        return self.__listexproofforstate(self.proofstate.START.value, receiver, excluded)
+        return self.__listexproofforstate(self.proofstate.START.value, comm.values.EX_TYPE_B2V, receiver, excluded)
 
     def listexproofforend(self, receiver, excluded):
-        return self.__listexproofforstate(self.proofstate.END.value, receiver, excluded)
+        return self.__listexproofforstate(self.proofstate.END.value, comm.values.EX_TYPE_B2V, receiver, excluded)
 
     def listexproofforcancel(self, receiver, excluded):
-        return self.__listexproofforstate(self.proofstate.CANCEL.value, receiver, excluded)
+        return self.__listexproofforstate(self.proofstate.CANCEL.value, comm.values.EX_TYPE_B2V, receiver, excluded)
 
     def sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, height):
         try:
@@ -125,11 +125,11 @@ class btcclient:
             ret = result(error.EXCEPT, str(e), e)
         return ret
    
-    def sendbtcproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, amount, name):
+    def sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, vtoken, height):
         try:
-            logger.debug("start sendbtcproofmark(fromaddress={}, toaddress={}, toamount={}, vaddress={}, sequence={}, amount={}, name={})".format(
-                fromaddress, toaddress, toamount, vaddress, sequence, amount, name))
-            datas = self.__rpc_connection.violas_sendbtcproofmark(fromaddress, toaddress, toamount, vaddress, sequence, amount, name)
+            logger.debug("start sendexproofmark(fromaddress={}, toaddress={}, toamount={}, vaddress={}, sequence={}, , vtoken={}, height={})".format(
+                fromaddress, toaddress, toamount, vaddress, sequence, vtoken, name))
+            datas = self.__rpc_connection.violas_sendexproofmark(fromaddress, toaddress, toamount, vaddress, sequence, vtoken, height)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             logger.debug(traceback.format_exc(self.__traceback_limit))

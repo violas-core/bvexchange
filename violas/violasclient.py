@@ -402,10 +402,11 @@ class violasserver:
             logger.error(str(e))
             ret = result(error.EXCEPT, str(e), e)
         return ret
-    def has_transaction(self, address, module, baddress, sequence, amount, version):
+    def has_transaction(self, address, module, baddress, sequence, amount, version, receiver):
+        return result(error.SUCCEED, "", True)
         try:
-            logger.debug("start has_transaction(address={}, module={}, baddress={}, sequence={}, amount={}, version={})"\
-                    .format(address, module, baddress, sequence, amount, version))
+            logger.debug("start has_transaction(address={}, module={}, baddress={}, sequence={}, amount={}, version={}, receiver={})"\
+                    .format(address, module, baddress, sequence, amount, version, receiver))
             ret = result(error.FAILED, "", "")
             data = {
                     "version":version,
@@ -413,10 +414,10 @@ class violasserver:
                     "sequence_number":sequence,
                     "amount":amount,
                     "btc_address":baddress,
-                    "module":module
+                    "module":module,
+                    "receiver":receiver,
                     }
             url = "http://{}:{}/1.0/violas/vbtc/transaction".format(self.__node["ip"], self.__node["port"])
-            logger.debug(url)
             headers = headers = {'Content-Type':'application/json'}
             response = requests.post(url,  data = data)
 

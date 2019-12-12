@@ -36,7 +36,7 @@ def merge_proof_to_rpcparams(rpcparams, dbinfos):
     try:
         logger.debug("start merge_proof_to_rpcparams")
         for info in dbinfos:
-            if info.toaddress in rpcparams:
+            if info.toaddress in rpcparams.keys():
                 rpcparams[info.toaddress].append({"address":"%s"%(info.vaddress), "sequence":info.sequence})
             else:
                 rpcparams[info.toaddress] = [{"address":"%s"%(info.vaddress), "sequence":info.sequence}]
@@ -129,6 +129,39 @@ def hasviolasbalance(vclient, address, module, vamount):
         ret = result(error.EXCEPT, str(e), e)
     return ret
 
+def update_db_btcsucceed_to_complete(exg, b2v):
+    ##search db state is succeed
+    try:
+        scddatas = b2v.query_b2vinfo_is_btcsucceed()
+        if scddatas.state != error.SUCCEED:
+            logger.error("db error")
+            return result(error.FAILED)
+
+        ##excluded btc blockchain state is not start,update dbb2v state to complete
+        ##dbb2v state is complete, that means  btc blockchain state is cancel or succeed
+        for row in scddatas.datas:
+            vaddress  = row.vaddress
+            sequence = row.sequence
+            ret = exg.isexproofcomplete(vaddress, sequence)
+            if(ret.state == error.SUCCEED and ret.datas["result"] == "true"):
+                ret = b2v.update_b2vinfo_to_complete_commit(vaddress, sequence)
+
+        ret = result(error.SUCCEED)
+    except exception as e:
+        logger.debug(traceback.format_exc(setting.traceback_limit))
+        logger.error(str(e))
+        ret = result(error.EXCEPT, str(e), e)
+    return ret
+
+def rechange_btcstate_to_end_from_btcfailed(exg, b2v, combineaddress, module_address):
+    try:
+        ret = result(error.SUCCEED)
+    except exception as e:
+        logger.debug(traceback.format_exc(setting.traceback_limit))
+        logger.error(str(e))
+        ret = result(error.EXCEPT, str(e), e)
+    return ret
+
 def works():
     try:
         logger.debug("start b2v work")
@@ -154,7 +187,7 @@ def works():
         vsender = ret.datas
         vsender_address = setting.violas_sender
         module_address = setting.module_address
-        combineaddress = setting.combineaddress
+        combineaddress = setting.btc_combineaddress
 
         #make sure sender address is binded module
         ret = vclient.account_has_violas_module(vsender_address, module_address)
@@ -168,22 +201,15 @@ def works():
 
 
         #update db state by proof state
-        ##search db state is succeed
-        scddatas = b2v.query_b2vinfo_is_btcsucceed()
-        if scddatas.state != error.SUCCEED:
-            logger.error("db error")
-            return result(error.FAILED)
+        ret = update_db_btcsucceed_to_complete(exg, b2v)
+        if ret.state != error.SUCCEED:
+            return ret
 
-
-        ##excluded btc blockchain state is not start,update dbb2v state to complete
-        ##dbb2v state is complete, that means  btc blockchain state is cancel or succeed
-        for row in scddatas.datas:
-            vaddress  = row.vaddress
-            sequence = row.sequence
-            ret = exg.isexproofcomplete(vaddress, sequence)
-            if(ret.state == error.SUCCEED and ret.datas["result"] == "true"):
-                b2v.update_b2vinfo_to_complete_commit(vaddress, sequence)
-        del scddatas
+        #update proof state to end, and update db state, prevstate is btcfailed in db. 
+        #When this happens, there is not enough Bitcoin, etc.
+        ret = rechange_btcstate_to_end_from_btcfailed(exg, b2v, combineaddress, module_address)
+        if ret.state != error.SUCCEED:
+            return ret
 
         #get all excluded info from db
         rpcparams = {}
@@ -196,7 +222,7 @@ def works():
         min_gas = 1000
 
         #set receiver: get it from setting or get it from blockchain
-        receivers = list(set(setting.receivers))
+        receivers = list(set(setting.btc_receivers))
         logger.debug(receivers)
 
         #modulti receiver, one-by-one
@@ -204,6 +230,8 @@ def works():
             excluded = []
             if receiver in rpcparams:
                 excluded = rpcparams[receiver]
+
+            #check receiver is included in wallet
 
             logger.debug("check receiver=%s excluded=%s"%(receiver, excluded))
             ret = exg.listexproofforstart(receiver, excluded)
@@ -272,6 +300,7 @@ def works():
                         ret =b2v.update_b2vinfo_to_succeed_commit(data["address"], int(data["sequence"]), height)
                         assert (ret.state == error.SUCCEED), "db error"
                     
+                    #The receiver of the start state can change the state to end
                     ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), "%.8f"%(float(vamount)/COINS), height)
                     if ret.state != error.SUCCEED:
                         ret = b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
