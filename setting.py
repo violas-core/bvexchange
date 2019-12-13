@@ -53,3 +53,5 @@ violas_receivers=['1b3920fb9703cace285ac9ef5b54886b8b7a85442a8b38e06237908c3dfc1
 violas_sender='210a283f13e42a37b7fb2dec50d8c2b28d6cc7e4f041fbdfa4998aa1b5663b89'
 #btc module address(vbtc module address)
 module_address='cd0476e85ecc5fa71b61d84b9cf2f7fd524689a4f870c46d6a5d901b5ac1fdb2'
+#v2b max replay exchange count(state = faild)
+v2b_maxtimes = 99999

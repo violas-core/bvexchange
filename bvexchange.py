@@ -110,9 +110,9 @@ class works:
         try:
             logger.debug("start works")
     
-            #self.thread_append(self.work_b2v, 1, "b2v", setting.b2v_sleep)
+            self.thread_append(self.work_b2v, 1, "b2v", setting.b2v_sleep)
             self.thread_append(self.work_v2b, 2, "v2b", setting.v2b_sleep)
-            #self.thread_append(self.work_comm, 3, "comm", setting.comm_sleep)
+            self.thread_append(self.work_comm, 3, "comm", setting.comm_sleep)
             
             for work in self.__threads:
                 work.start() #start work

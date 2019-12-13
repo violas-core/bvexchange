@@ -65,6 +65,7 @@ class dbv2b:
         vreceiver   = Column(String(64), index=True, nullable=False)
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
+        times       = Column(Integer, nullable=False, default=1)
     
         def __repr__(self):
             return "<v2binfo(txid=%s,fromaddress={}, toaddress={}, bamount={}, vaddress={}, sequence={}, \
@@ -138,13 +139,14 @@ class dbv2b:
             ret = result(error.FAILED, str(e), e) 
         return ret
 
-    def query_v2binfo(self, vaddress, sequence):
+    def query_v2binfo(self, vaddress, sequence, version):
         proofs = []
         try:
-            logger.debug("start query_v2binfo(vaddress={}, sequence={})".format(vaddress, sequence))
+            logger.debug("start query_v2binfo(vaddress={}, sequence={}, version={})".format(vaddress, sequence, version))
             filter_vaddr = (self.v2binfo.vaddress==vaddress)
             filter_seq = (self.v2binfo.sequence==sequence)
-            proofs = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).all()
+            filter_ver = (self.v2binfo.version==version)
+            proofs = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).filter(filter_ver).all()
             ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
             logger.debug(traceback.format_exc(limit=self.__traceback_limit))
@@ -152,12 +154,13 @@ class dbv2b:
             ret = result(error.FAILED, str(e), e) 
         return ret
 
-    def has_v2binfo(self, vaddress, sequence):
+    def has_v2binfo(self, vaddress, sequence, version):
         try:
-            logger.debug("start has_v2binfo(vaddress={}, sequence={})".format(vaddress, sequence))
+            logger.debug("start has_v2binfo(vaddress={}, sequence={}, version={})".format(vaddress, sequence, version))
             filter_vaddr = (self.v2binfo.vaddress==vaddress)
             filter_seq = (self.v2binfo.sequence==sequence)
-            state = (self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).count() > 0)
+            filter_ver = (self.v2binfo.version==version)
+            state = (self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).filter(filter_ver).count() > 0)
             ret = result(error.SUCCEED, "", state) 
         except Exception as e:
             logger.debug(traceback.format_exc(limit=self.__traceback_limit))
@@ -166,12 +169,13 @@ class dbv2b:
         return ret
 
 
-    def __query_v2binfo_state(self, state):
+    def __query_v2binfo_state(self, state, maxtimes=999999999):
         proofs = []
         try:
-            logger.debug("start __query_v2binfo_state(state={})".format(state.name))
+            logger.debug("start __query_v2binfo_state(state={}, maxtimes={})".format(state.name, maxtimes))
             filter_state = (self.v2binfo.state==state.value)
-            proofs = self.__session.query(self.v2binfo).filter(filter_state).all()
+            filter_times = (self.v2binfo.times<=maxtimes)
+            proofs = self.__session.query(self.v2binfo).filter(filter_state).filter(filter_times).all()
             ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
             logger.debug(traceback.format_exc(limit=self.__traceback_limit))
@@ -179,21 +183,23 @@ class dbv2b:
             ret = result(error.FAILED, str(e), e) 
         return ret
 
-    def query_v2binfo_is_start(self):
-        return self.__query_v2binfo_state(self.state.START)
+    def query_v2binfo_is_start(self, maxtimes = 999999999):
+        return self.__query_v2binfo_state(self.state.START, maxtimes)
 
-    def query_v2binfo_is_succeed(self):
-        return self.__query_v2binfo_state(self.state.SUCCEED)
+    def query_v2binfo_is_succeed(self, maxtimes = 999999999):
+        return self.__query_v2binfo_state(self.state.SUCCEED, maxtimes)
 
-    def query_v2binfo_is_failed(self):
-        return self.__query_v2binfo_state(self.state.FAILED)
+    def query_v2binfo_is_failed(self, maxtimes=999999999):
+        return self.__query_v2binfo_state(self.state.FAILED, maxtimes)
 
-    def update_v2binfo(self, vaddress, sequence, state, txid):
+    def __update_v2binfo(self, vaddress, sequence, version, state, txid):
         try:
-            logger.debug("start update_v2binfo(vaddress={}, sequence={}, state={}, txid={})".format(state.name, vaddress, sequence, txid))
+            logger.debug(f"start update_v2binfo(vaddress={vaddress}, sequence={sequence}, version={version}, state={state}, txid={txid})")
             filter_vaddr = (self.v2binfo.vaddress==vaddress)
             filter_seq = (self.v2binfo.sequence==sequence)
-            datas = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).update({self.v2binfo.state:state.value, self.v2binfo.txid:txid})
+            filter_ver = (self.v2binfo.version==version)
+            datas = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).filter(filter_ver)\
+                    .update({self.v2binfo.state:state.value, self.v2binfo.txid:txid, self.v2binfo.times:self.v2binfo.times + 1})
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             logger.debug(traceback.format_exc(limit=self.__traceback_limit))
@@ -201,16 +207,11 @@ class dbv2b:
             ret = result(error.FAILED, str(e), e) 
         return ret
 
-    def update_v2binfo_to_succeed(self, vaddress, sequence, txid = None):
-        return self.update_v2binfo(vaddress, sequence, self.state.SUCCEED, txid)
-
-    def update_v2binfo_to_failed(self, vaddress, sequence, txid = None):
-        return self.pdate_v2binfo(vaddress, sequence, self.state.FAILED, txid)
-
-    def __update_v2binfo_commit(self, vaddress, sequence, state, txid = None):
+    def __update_v2binfo_commit(self, vaddress, sequence, version, state, txid = ""):
         try:
-            ret = self.update_v2binfo(vaddress, sequence, state)
-            if ret != error.SUCCEED:
+            ret = self.__update_v2binfo(vaddress, sequence, version, state, txid)
+            if ret.state != error.SUCCEED:
+                logger.debug("update_v2binfo_commit failed")
                 return ret
 
             ret = self.commit()
@@ -220,14 +221,14 @@ class dbv2b:
             ret = result(error.FAILED, str(e), e) 
         return ret
 
-    def update_v2binfo_to_start_commit(self, vaddress, sequence, txid = None):
-        return self.__update_v2binfo_commit(vaddress, sequence, self.state.START, txid)
+    def update_v2binfo_to_start_commit(self, vaddress, sequence, version, txid = ""):
+        return self.__update_v2binfo_commit(vaddress, sequence, version, self.state.START, txid)
 
-    def update_v2binfo_to_succeed_commit(self, vaddress, sequence, txid = None):
-        return self.__update_v2binfo_commit(vaddress, sequence, self.state.SUCCEED, txid)
+    def update_v2binfo_to_succeed_commit(self, vaddress, sequence, version, txid = ""):
+        return self.__update_v2binfo_commit(vaddress, sequence, version, self.state.SUCCEED, txid)
 
-    def update_v2binfo_to_failed_commit(self, vaddress, sequence, txid = None):
-        return self.__update_v2binfo_commit(vaddress, sequence, self.state.FAILED, txid)
+    def update_v2binfo_to_failed_commit(self, vaddress, sequence, version, txid = ""):
+        return self.__update_v2binfo_commit(vaddress, sequence, version, self.state.FAILED, txid)
 
     def insert_latest_version(self, address, vtoken, version):
         try:
@@ -288,7 +289,7 @@ class dbv2b:
     def update_version_commit(self, address, vtoken, version):
         try:
             ret = self.update_version(address, vtoken, version)
-            if ret != error.SUCCEED:
+            if ret.state != error.SUCCEED:
                 return ret
 
             ret = self.commit()
@@ -354,7 +355,7 @@ def test_dbv2b_query():
         logger.debug("*****************************************start test_dbv2b_query*****************************************")
         v2b = dbv2b(dbfile, traceback_limit)
         sequence = random.randint(0, max_seq)
-        ret = v2b.query_v2binfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
+        ret = v2b.query_v2binfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence, 1)
 
         if ret.state != error.SUCCEED:
             return

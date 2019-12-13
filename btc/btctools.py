@@ -32,9 +32,9 @@ def sendtoaddress(address, amount):
     print(ret.datas)
     
 
-def sendexproofmark(fromaddress, toaddress, toamount, vaddress, sequence, vtoken, version):
+def sendexproofmark(fromaddress, toaddress, toamount, vaddress, sequence, version):
     client = btcclient(setting.traceback_limit, setting.btc_conn)
-    ret = client.violas_sendbtcproofmark(fromaddress, toaddress, toamount, vaddress, sequence, vtoken, version)
+    ret = client.sendexproofmark(fromaddress, toaddress, toamount, vaddress, sequence, version)
     assert ret.state == error.SUCCEED, " sendtoaddress failed"
     print(ret.datas)
 
@@ -71,7 +71,7 @@ def getwalletaddressbalance(address):
 
 args = {"help"                  :   "dest: show arg list. format: --help",
         "sendtoaddress-"        :   "dest: send to address.format: --sendtoaddress \"address, amount\"",
-        "sendexproofmark-"     :   "dest: create new exchange mark proof. format: --sendexproofmark \"fromaddress, toaddress, toamount, vaddress, sequence, vtoken, height\"",
+        "sendexproofmark-"     :   "dest: create new exchange mark proof. format: --sendexproofmark \"fromaddress, toaddress, toamount, vaddress, sequence, height\"",
         "generatetoaddress-"    :   "dest: generate new block to address. format: --generatetoaddress \"count, address\"",
         "listunspent-"          :   "dest: returns array of unspent transaction outputs. format: --listunspent\"minconf, maxconf, addresses, include_unsafe, query_options\"",
         "btchelp"               :   "dest: returns bitcoin-cli help. format: --btchelp",
@@ -137,9 +137,9 @@ def run(argc, argv):
                 sys.exit(2)
             ret = sendtoaddress(arg_list[0], arg_list[1])
         elif opt in ("--sendexproofmark"):
-            if len(arg_list) != 7:
+            if len(arg_list) != 6:
                 exit_error_arg_list(opt)
-            ret = sendexproofmark(arg_list[0], arg_list[1], arg_list[2], arg_list[3], int(arg_list[4]), arg_list[5], int(arg_list[6]))
+            ret = sendexproofmark(arg_list[0], arg_list[1], arg_list[2], arg_list[3], int(arg_list[4]), int(arg_list[5]))
         elif opt in ("--generatetoaddress"):
             if len(arg_list) != 2:
                 show_arg_info(args["{}-".format(opt.replace('--', ''))])
