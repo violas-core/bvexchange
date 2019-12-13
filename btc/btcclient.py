@@ -13,6 +13,7 @@ import requests
 import comm
 import comm.error
 import comm.result
+import comm.values
 from comm.result import result
 from comm.error import error
 from db.dbb2v import dbb2v
@@ -42,6 +43,7 @@ class btcclient:
         START   = "start"
         END     = "end"
         CANCEL  = "cancel"
+        MARK    = "mark"
 
     def __init__(self, traceback_limit, btc_conn):
         self.__traceback_limit = traceback_limit
@@ -57,23 +59,22 @@ class btcclient:
         logger.info("connect btc server(rpcuser={}, rpcpassword={}, rpcip={}, rpcport={})".format(btc_conn["rpcuser"], btc_conn["rpcpassword"], btc_conn["rpcip"], btc_conn["rpcport"]))
         self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__rpcuser, self.__rpcpassword, self.__rpcip, self.__rpcport))
 
-    def __listexproofforstate(self, extype, state, receiver, excluded):
+    def __listexproofforstate(self, state, extype, receiver, excluded):
         try:
-            logger.debug("start __listexproofforstate (state=%s type=%c receiver=%s excluded=%s)"%(state, extype, receiver, excluded))
+            logger.debug("start __listexproofforstate(state={state} type={extype} receiver={receiver} excluded={excluded})")
             if(len(receiver) == 0):
                 return result(error.ARG_INVALID, error.argument_invalid, "")
             
-            if len(excluded) == 0:
+            if excluded is None or len(excluded) == 0:
                 datas = self.__rpc_connection.violas_listexproofforstate(state, extype, receiver)
             else:
                 datas = self.__rpc_connection.violas_listexproofforstate(state, extype, receiver, excluded)
 
-            return result(error.SUCCEED, "", datas)
-
+            ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e) 
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e) 
         return ret
 
     def isexproofcomplete(self, address, sequence):
@@ -84,11 +85,10 @@ class btcclient:
                 
             datas = self.__rpc_connection.violas_isexproofcomplete(address, sequence)
             ret = result(error.SUCCEED, "", datas)
-
         except Exception as e:
             logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e) 
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e) 
         return ret
 
     def listexproofforstart(self, receiver, excluded):
@@ -100,24 +100,41 @@ class btcclient:
     def listexproofforcancel(self, receiver, excluded):
         return self.__listexproofforstate(self.proofstate.CANCEL.value, comm.values.EX_TYPE_B2V, receiver, excluded)
 
-    def sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, height):
+    def listexproofformark(self, receiver, excluded):
+        return self.__listexproofforstate(self.proofstate.MARK.value, comm.values.EX_TYPE_V2B, receiver, excluded)
+
+    def sendexproofstart(self, fromaddress, toaddress, amount, vaddress, sequence, vtoken):
         try:
-            logger.debug("start sendexproofend (fromaddress, toaddress, vaddress, sequence, amount, height),(%s,%s,%s,%i,%s,%i)"%(fromaddress, toaddress, vaddress, sequence, amount, height))
-            if(len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) == 0 
-                    or sequence < 0 or height < 0):
-                return result(error.ARG_INVALID, "len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) == 0 or sequence < 0 or height < 0", "")
-            datas = self.__rpc_connection.violas_sendexproofend(fromaddress, toaddress, vaddress, sequence, amount, height)
+            logger.debug(f"start sendexproofstart (fromaddress={fromaddress}, toaddress={toaddress}, amount={amount:.8f}, vaddress={vaddress}, sequence={sequence}, vtoken={vtoken})")
+            if(len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) != 64 \
+                    or sequence < 0 or len(vtoken) != 64):
+                return result(error.ARG_INVALID, "len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) != 64 or sequence < 0 or len(vtoken) !=64", "")
+            datas = self.__rpc_connection.violas_sendexproofstart(fromaddress, toaddress, f"{amount:.8f}", vaddress, sequence, vtoken)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e) 
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e) 
+        return ret
+
+    def sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, version):
+        try:
+            logger.debug(f"start sendexproofend (fromaddress={fromaddress}, toaddress={toaddress}, vaddress={vaddress}, sequence={sequence}, amount={amount:.8f}, version={version})")
+            if(len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) != 64 
+                    or sequence < 0 or version< 0):
+                return result(error.ARG_INVALID, "len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) == 0 or sequence < 0 or version < 0", "")
+            datas = self.__rpc_connection.violas_sendexproofend(fromaddress, toaddress, vaddress, sequence, f"{amount:.8f}", version)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            logger.debug(traceback.format_exc(self.__traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e) 
         return ret
 
     def sendtoaddress(self, address, amount):
         try:
             logger.debug("start sendtoaddress(address={}, amount={})".format(address, amount))
-            datas = self.__rpc_connection.sendtoaddress(address, amount)
+            datas = self.__rpc_connection.sendtoaddress(address, f"{amount:.8f}")
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             logger.debug(traceback.format_exc(self.__traceback_limit))
@@ -125,11 +142,10 @@ class btcclient:
             ret = result(error.EXCEPT, str(e), e)
         return ret
    
-    def sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, height):
+    def sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, version):
         try:
-            logger.debug("start sendexproofmark(fromaddress={}, toaddress={}, toamount={}, vaddress={}, sequence={}, height={})".format(
-                fromaddress, toaddress, str(toamount), vaddress, sequence, height))
-            datas = self.__rpc_connection.violas_sendexproofmark(fromaddress, toaddress, str(toamount), vaddress, sequence, height)
+            logger.debug(f"start sendexproofmark(fromaddress={fromaddress}, toaddress={toaddress}, toamount={toamount:.8f}, vaddress={vaddress}, sequence={sequence}, version={version})")
+            datas = self.__rpc_connection.violas_sendexproofmark(fromaddress, toaddress, f"{toamount:.8f}", vaddress, sequence, version)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             logger.debug(traceback.format_exc(self.__traceback_limit))

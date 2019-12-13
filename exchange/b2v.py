@@ -301,7 +301,7 @@ def works():
                         assert (ret.state == error.SUCCEED), "db error"
                     
                     #The receiver of the start state can change the state to end
-                    ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), "%.8f"%(float(vamount)/COINS), height)
+                    ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), float(vamount)/COINS, height)
                     if ret.state != error.SUCCEED:
                         ret = b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
                         assert (ret.state == error.SUCCEED), "db error"
