@@ -125,11 +125,11 @@ class btcclient:
             ret = result(error.EXCEPT, str(e), e)
         return ret
    
-    def sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, vtoken, height):
+    def sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, height):
         try:
-            logger.debug("start sendexproofmark(fromaddress={}, toaddress={}, toamount={}, vaddress={}, sequence={}, , vtoken={}, height={})".format(
-                fromaddress, toaddress, toamount, vaddress, sequence, vtoken, name))
-            datas = self.__rpc_connection.violas_sendexproofmark(fromaddress, toaddress, toamount, vaddress, sequence, vtoken, height)
+            logger.debug("start sendexproofmark(fromaddress={}, toaddress={}, toamount={}, vaddress={}, sequence={}, height={})".format(
+                fromaddress, toaddress, str(toamount), vaddress, sequence, height))
+            datas = self.__rpc_connection.violas_sendexproofmark(fromaddress, toaddress, str(toamount), vaddress, sequence, height)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             logger.debug(traceback.format_exc(self.__traceback_limit))

@@ -36,7 +36,8 @@ def merge_v2b_to_rpcparams(rpcparams, dbinfos):
         logger.debug("start merge_v2b_to_rpcparams")
         for info in dbinfos:
             new_data = {"vaddress":info.vaddress, "sequence":info.sequence, "vtoken":info.vtoken,\
-                        "version":info.version, "baddress":info.toaddress, "vreceiver":info.vreceiver, "vamount":info.vamount}
+                    "version":info.version, "baddress":info.toaddress, "vreceiver":info.vreceiver, \
+                    "vamount":info.vamount, "times":info.times}
             if info.vreceiver in rpcparams.keys():
                 rpcparams[info.vreceiver].append(new_data)
             else:
@@ -51,11 +52,14 @@ def merge_v2b_to_rpcparams(rpcparams, dbinfos):
 
 def get_reexchange(v2b):
     try:
+        maxtimes = 5
         rpcparams = {}
         #transactions that should be get_reexchange(dbv2b.db)
         
         ## btcfailed 
-        bflddatas = v2b.query_v2binfo_is_failed()
+        if setting.v2b_maxtimes and setting.v2b_maxtimes > 0:
+            maxtimes = setting.v2b_maxtimes
+        bflddatas = v2b.query_v2binfo_is_failed(maxtimes)
         if(bflddatas.state != error.SUCCEED):
             return bflddatas
         logger.debug("get count = {}".format(len(bflddatas.datas)))
@@ -174,9 +178,9 @@ def works():
                     baddress = data["baddress"]
                     module_old = data["vtoken"]
                     vreceiver = data["vreceiver"]
+                    times    = data["times"]
 
-                    logger.debug("start exchange v2b. receiver = {}, vaddress={} sequence={} baddress={} amount={} \
-                            datas from db.".format(receiver, vaddress, sequence, baddress, fmtamount))
+                    logger.debug(f"start exchange v2b(times={times}), datas from db. receiver = {receiver}, vaddress={vaddress} sequence={sequence} baddress={baddress} {fmtamount: .8f}") 
 
                     #check version, get transaction list is ordered ?
                     #if version >= (latest_version - 1):
@@ -185,12 +189,16 @@ def works():
                     #match module 
                     if module_old != module_address:
                         logger.debug("module is not match.")
+                        ret = v2b.update_v2binfo_to_failed_commit(vaddress, sequence, version)
+                        assert (ret.state == error.SUCCEED), "db error"
                         continue
 
                     #not found , process next
                     ret = vserver.has_transaction(vaddress, module_old, baddress, sequence, vamount, version, vreceiver)
                     if ret.state != error.SUCCEED or ret.datas != True:
                         logger.debug("not found transaction from violas server.")
+                        ret = v2b.update_v2binfo_to_failed_commit(vaddress, sequence, version)
+                        assert (ret.state == error.SUCCEED), "db error"
                         continue
 
                     #get btc sender from setting.btc_senders
@@ -201,15 +209,19 @@ def works():
                     sender = ret.datas
 
                     #send btc and mark it in OP_RETURN
-                    ret = bclient.sendexproofmark(sender, baddress, "%.8f"%(fmtamount), vaddress, sequence, module_old, version)
+                    ret = bclient.sendexproofmark(sender, baddress, "%.8f"%(fmtamount), vaddress, sequence, version)
                     txid = ret.datas
+                    logger.debug(f"txid={txid}")
                     #update db state
                     if ret.state == error.SUCCEED:
                         max_version = max(version, max_version)
-                        ret = v2b.update_v2binfo_to_succeed_commit(vaddress, sequence, txid)
+                        ret = v2b.update_or_insert_version_commit(receiver, module_address, max_version)
                         assert (ret.state == error.SUCCEED), "db error"
 
-                        ret = v2b.update_or_insert_version_commit(receiver, module_address, max_version)
+                        ret = v2b.update_v2binfo_to_succeed_commit(vaddress, sequence, version, txid)
+                        assert (ret.state == error.SUCCEED), "db error"
+                    else:
+                        ret = v2b.update_v2binfo_to_failed_commit(vaddress, sequence, version)
                         assert (ret.state == error.SUCCEED), "db error"
 
             #get new transaction from violas server
@@ -230,10 +242,12 @@ def works():
                             datas from server.".format(receiver, vaddress, sequence, baddress, fmtamount))
 
                     max_version = max(version, max_version)
-                    ret = v2b.has_v2binfo(vaddress, sequence)
+
+                    #if found transaction in v2b.db, then get_transactions's latest_version is error(too small or other case)'
+                    ret = v2b.has_v2binfo(vaddress, sequence, version)
                     assert ret.state == error.SUCCEED, "has_v2binfo(vaddress={}, sequence={}) failed.".format(vaddress, sequence)
                     if ret.datas == True:
-                        logger.error("found transaction(vaddress={}, sequence={}) in db. ignore it and process next.".format(vaddress, sequence))
+                        logger.info("found transaction(vaddress={}, sequence={}) in db. ignore it and process next.".format(vaddress, sequence))
                         continue
 
                     #get btc sender from setting.btc_senders
@@ -246,9 +260,9 @@ def works():
                     sender = ret.datas
 
                     ##send btc transaction and mark to OP_RETURN
-                    ret = bclient.sendbtcproofmark(sender, baddress, "%.8f"%(fmtamount), vaddress, sequence, module_address, version)
+                    ret = bclient.sendexproofmark(sender, baddress, "%.8f"%(fmtamount), vaddress, sequence, version)
                     txid = ret.datas
-                    logger.debug(txid)
+                    logger.debug(f"txid={txid}")
                     #save db amount is satoshi, so db value's violas's amount == btc's amount 
                     if ret.state != error.SUCCEED:
                         ret = v2b.insert_v2binfo_commit("", sender, baddress, vamount, vaddress, sequence, version, vamount, module_address, receiver, dbv2b.state.FAILED)

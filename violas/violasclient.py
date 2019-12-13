@@ -377,6 +377,7 @@ class violasserver:
             #datas = [{"address": "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6", "amount":10000, "sequence":sequence,  "version":version, "baddress":"2N8qe3KogEF3DjWNsDGr2qLQGgQD3g9oTnc"}]
             url = "http://{}:{}/1.0/violas/vbtc/transaction?receiver_address={}&module_address={}&start_version={}"\
                     .format(self.__node["ip"], self.__node["port"], address, module, start)
+            logger.debug(f"get url={url}")
             response = requests.get(url)
 
             ret = result(error.FAILED, "", "")
@@ -418,9 +419,7 @@ class violasserver:
                     }
             url = "http://{}:{}/1.0/violas/vbtc/transaction".format(self.__node["ip"], self.__node["port"])
             headers = headers = {'Content-Type':'application/json'}
-            response = requests.post(url,  data = data)
-
-            print(response.text)
+            response = requests.post(url,  json = data)
             if response is not None:
                 jret = json.loads(response.text)
                 if jret["code"] == 2000:
