@@ -209,7 +209,7 @@ def works():
                     sender = ret.datas
 
                     #send btc and mark it in OP_RETURN
-                    ret = bclient.sendexproofmark(sender, baddress, "%.8f"%(fmtamount), vaddress, sequence, version)
+                    ret = bclient.sendexproofmark(sender, baddress, fmtamount, vaddress, sequence, version)
                     txid = ret.datas
                     logger.debug(f"txid={txid}")
                     #update db state
@@ -260,7 +260,7 @@ def works():
                     sender = ret.datas
 
                     ##send btc transaction and mark to OP_RETURN
-                    ret = bclient.sendexproofmark(sender, baddress, "%.8f"%(fmtamount), vaddress, sequence, version)
+                    ret = bclient.sendexproofmark(sender, baddress, fmtamount, vaddress, sequence, version)
                     txid = ret.datas
                     logger.debug(f"txid={txid}")
                     #save db amount is satoshi, so db value's violas's amount == btc's amount 

@@ -31,23 +31,55 @@ def sendtoaddress(address, amount):
     assert ret.state == error.SUCCEED, " sendtoaddress failed"
     print(ret.datas)
     
+def sendexproofstart(fromaddress, toaddress, amount, vaddress, sequence, vtoken):
+    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    ret = client.sendexproofstart(fromaddress, toaddress, amount, vaddress, sequence, vtoken)
+    assert ret.state == error.SUCCEED, " sendexproofstart failed"
+    print(ret.datas)
+
+def sendexproofend(fromaddress, toaddress, vaddress, sequence, vamount, version):
+    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    ret = client.sendexproofend(fromaddress, toaddress, vaddress, sequence, vamount, version)
+    assert ret.state == error.SUCCEED, " sendexproofend failed"
+    print(ret.datas)
 
 def sendexproofmark(fromaddress, toaddress, toamount, vaddress, sequence, version):
     client = btcclient(setting.traceback_limit, setting.btc_conn)
     ret = client.sendexproofmark(fromaddress, toaddress, toamount, vaddress, sequence, version)
-    assert ret.state == error.SUCCEED, " sendtoaddress failed"
+    assert ret.state == error.SUCCEED, "sendexproofmark failed"
     print(ret.datas)
 
 def generatetoaddress(count, address):
     client = btcclient(setting.traceback_limit, setting.btc_conn)
     ret = client.generatetoaddress(count, address)
-    assert ret.state == error.SUCCEED, " sendtoaddress failed"
+    assert ret.state == error.SUCCEED, " generatetoaddress failed"
     print(ret.datas)
     
 def listunspent(minconf, maxconf, addresses, include_unsafe, query_options):
     client = btcclient(setting.traceback_limit, setting.btc_conn)
     ret = client.listunspent(minconf, maxconf, addresses, include_unsafe, query_options)
     assert ret.state == error.SUCCEED, " listunspent failed"
+    for data in ret.datas:
+        print(data)
+
+def listexproofforstart(receiver, excluded = None):
+    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    ret = client.listexproofforstart(receiver, excluded)
+    assert ret.state == error.SUCCEED, " listexproofforstart failed"
+    for data in ret.datas:
+        print(data)
+
+def listexproofforend(receiver, excluded = None):
+    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    ret = client.listexproofforend(receiver, excluded)
+    assert ret.state == error.SUCCEED, " listexproofforend failed"
+    for data in ret.datas:
+        print(data)
+
+def listexproofformark(receiver, excluded = None):
+    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    ret = client.listexproofformark(receiver, excluded)
+    assert ret.state == error.SUCCEED, " listexproofformark failed"
     for data in ret.datas:
         print(data)
 
@@ -71,9 +103,14 @@ def getwalletaddressbalance(address):
 
 args = {"help"                  :   "dest: show arg list. format: --help",
         "sendtoaddress-"        :   "dest: send to address.format: --sendtoaddress \"address, amount\"",
-        "sendexproofmark-"     :   "dest: create new exchange mark proof. format: --sendexproofmark \"fromaddress, toaddress, toamount, vaddress, sequence, height\"",
+        "sendexproofstart-"     :   "dest: create new exchange start proof. format: --sendexproofstart \"fromaddress, toaddress, amount, vaddress, sequence, vtoken\"",
+        "sendexproofend-"       :   "dest: create new exchange end proof. format: --sendexproofend \"fromaddress, toaddress, vaddress, sequence, vamount, version\"",
+        "sendexproofmark-"      :   "dest: create new exchange mark proof. format: --sendexproofmark \"fromaddress, toaddress, toamount, vaddress, sequence, version\"",
         "generatetoaddress-"    :   "dest: generate new block to address. format: --generatetoaddress \"count, address\"",
         "listunspent-"          :   "dest: returns array of unspent transaction outputs. format: --listunspent\"minconf, maxconf, addresses, include_unsafe, query_options\"",
+        "listexproofforstart-"  :   "dest: returns array of proof state is start . format: --listexproofforstart\"receiver\"",
+        "listexproofforend-"    :   "dest: returns array of proof state is end . format: --listexproofforend\"receiver\"",
+        "listexproofformark-"   :   "dest: returns array of proof state is mark . format: --listexproofformark\"receiver\"",
         "btchelp"               :   "dest: returns bitcoin-cli help. format: --btchelp",
         "getwalletbalance"      :   "dest: returns wallet balance. format: --getwalletbalance",
         "getwalletaddressbalance-"      :   "dest: returns wallet target address's balance. format: --getwalletaddressbalance \"address\"",
@@ -136,27 +173,50 @@ def run(argc, argv):
                 show_arg_info(args["{}-".format(opt.replace('--', ''))])
                 sys.exit(2)
             ret = sendtoaddress(arg_list[0], arg_list[1])
+        elif opt in ("--sendexproofstart"):
+            if len(arg_list) != 6:
+                exit_error_arg_list(opt)
+            ret = sendexproofstart(arg_list[0], arg_list[1], float(arg_list[2]), arg_list[3], int(arg_list[4]), arg_list[5])
+        elif opt in ("--sendexproofend"):
+            if len(arg_list) != 6:
+                exit_error_arg_list(opt)
+            ret = sendexproofend(arg_list[0], arg_list[1], arg_list[2], int(arg_list[3]), int(arg_list[4]), int(arg_list[5]))
         elif opt in ("--sendexproofmark"):
             if len(arg_list) != 6:
                 exit_error_arg_list(opt)
             ret = sendexproofmark(arg_list[0], arg_list[1], arg_list[2], arg_list[3], int(arg_list[4]), int(arg_list[5]))
         elif opt in ("--generatetoaddress"):
             if len(arg_list) != 2:
-                show_arg_info(args["{}-".format(opt.replace('--', ''))])
+                exit_error_arg_list(opt)
                 sys.exit(2)
             ret = generatetoaddress(int(arg_list[0]), arg_list[1])
         elif opt in ("--listunspent"):
             if len(arg_list) != 5:
-                show_arg_info(args["{}-".format(opt.replace('--', ''))])
+                exit_error_arg_list(opt)
                 sys.exit(2)
             ret = listunspent(int(arg_list[0]), int(arg_list[1]), arg_list[2], arg_list[3], arg_list[4])
+        elif opt in ("--listexproofforstart"):
+            if len(arg_list) != 1:
+                exit_error_arg_list(opt)
+                sys.exit(2)
+            ret = listexproofforstart(arg_list[0])
+        elif opt in ("--listexproofforend"):
+            if len(arg_list) != 1:
+                exit_error_arg_list(opt)
+                sys.exit(2)
+            ret = listexproofforend(arg_list[0])
+        elif opt in ("--listexproofformark"):
+            if len(arg_list) != 1:
+                exit_error_arg_list(opt)
+                sys.exit(2)
+            ret = listexproofformark(arg_list[0])
         elif opt in ("--btchelp"):
             ret = btchelp()
         elif opt in ("--getwalletbalance"):
             ret = getwalletbalance()
         elif opt in ("--getwalletaddressbalance"):
             if len(arg_list) != 1:
-                show_arg_info(args["{}-".format(opt.replace('--', ''))])
+                exit_error_arg_list(opt)
                 sys.exit(2)
             ret = getwalletaddressbalance(arg_list[0])
 
