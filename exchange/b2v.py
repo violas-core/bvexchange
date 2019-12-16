@@ -129,7 +129,7 @@ def hasviolasbalance(vclient, address, module, vamount):
         ret = result(error.EXCEPT, str(e), e)
     return ret
 
-def update_db_btcsucceed_to_complete(exg, b2v):
+def update_db_btcsucceed_to_complete(bclient, b2v):
     ##search db state is succeed
     try:
         scddatas = b2v.query_b2vinfo_is_btcsucceed()
@@ -142,7 +142,7 @@ def update_db_btcsucceed_to_complete(exg, b2v):
         for row in scddatas.datas:
             vaddress  = row.vaddress
             sequence = row.sequence
-            ret = exg.isexproofcomplete(vaddress, sequence)
+            ret = bclient.isexproofcomplete(vaddress, sequence)
             if(ret.state == error.SUCCEED and ret.datas["result"] == "true"):
                 ret = b2v.update_b2vinfo_to_complete_commit(vaddress, sequence)
 
@@ -153,14 +153,47 @@ def update_db_btcsucceed_to_complete(exg, b2v):
         ret = result(error.EXCEPT, str(e), e)
     return ret
 
-def rechange_btcstate_to_end_from_btcfailed(exg, b2v, combineaddress, module_address):
+def rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, receivers):
     try:
-        ret = result(error.SUCCEED)
-    except exception as e:
+        logger.debug(f"start rechange_btcstate_to_end_from_btcfailed(combineaddress={combineaddress}, module_address={module_address}, receivers={receivers})")
+        bflddatas = b2v.query_b2vinfo_is_btcfailed()
+        if(bflddatas.state != error.SUCCEED):
+            return bflddatas
+        logger.debug("get count = {}".format(len(bflddatas.datas)))
+
+        for data in bflddatas.datas:
+            receiver = data.toaddress
+            if module_address != data.vtoken:
+                logger.info(f"db's vtoken({data.vtoken}) not match setting.module_address({module_address}), ignore it, next")
+                continue
+
+            if receiver not in receivers:
+                logger.info(f"db's fromaddress({data.fromaddress}) not match setting.btc_recivers({receivers}), ignore it, next")
+                continue
+
+            vaddress = data.vaddress
+            bamount = data.bamount  
+            sequence = data.sequence
+            height = data.height
+
+            #recheck b2v state in blockchain, may be performed manually
+            ret = bclient.isexproofcomplete(vaddress, sequence)
+            if(ret.state == error.SUCCEED and ret.datas["result"] == "true"):
+                ret = b2v.update_b2vinfo_to_complete_commit(vaddress, sequence)
+                continue
+
+            #The receiver of the start state can change the state to end
+            ret = bclient.sendexproofend(receiver, combineaddress, vaddress, sequence, float(bamount)/COINS, height)
+            if ret.state != error.SUCCEED:
+                ret = b2v.update_b2vinfo_to_btcfailed_commit(vaddress, sequence)
+                assert (ret.state == error.SUCCEED), "db error"
+            else:
+                ret = b2v.update_b2vinfo_to_btcsucceed_commit(vaddress, sequence)
+                assert (ret.state == error.SUCCEED), "db error"
+    except Exception as e:
         logger.debug(traceback.format_exc(setting.traceback_limit))
         logger.error(str(e))
         ret = result(error.EXCEPT, str(e), e)
-    return ret
 
 def works():
     try:
@@ -172,7 +205,7 @@ def works():
         checks()
 
         #btc init
-        exg = btcclient(setting.traceback_limit, setting.btc_conn)
+        bclient = btcclient(setting.traceback_limit, setting.btc_conn)
         b2v = dbb2v(dbb2v_name, setting.traceback_limit)
 
         #violas init
@@ -199,17 +232,14 @@ def works():
             logger.error("sender account {} not bind module {}".format(vsender_address, module_address))
             return result(error.FAILED)
 
-
         #update db state by proof state
-        ret = update_db_btcsucceed_to_complete(exg, b2v)
+        ret = update_db_btcsucceed_to_complete(bclient, b2v)
         if ret.state != error.SUCCEED:
             return ret
 
         #update proof state to end, and update db state, prevstate is btcfailed in db. 
         #When this happens, there is not enough Bitcoin, etc.
-        ret = rechange_btcstate_to_end_from_btcfailed(exg, b2v, combineaddress, module_address)
-        if ret.state != error.SUCCEED:
-            return ret
+        rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, setting.btc_receivers)
 
         #get all excluded info from db
         rpcparams = {}
@@ -219,7 +249,7 @@ def works():
             return result(error.FAILED)
 
         rpcparams = ret.datas
-        min_gas = 1000
+        min_gas = comm.values.MIN_EST_GAS 
 
         #set receiver: get it from setting or get it from blockchain
         receivers = list(set(setting.btc_receivers))
@@ -227,14 +257,18 @@ def works():
 
         #modulti receiver, one-by-one
         for receiver in receivers:
+            #check receiver is included in wallet
+            ret = bclient.has_btc_banlance(receiver, 0)
+            if ret.state != error.SUCCEED or ret.datas != True:
+                logger.warning("receiver({}) has't enough satoshi ({}). ignore it's b2v, next receiver.".format(receiver, comm.values.MIN_EST_GAS))
+                continue 
+
             excluded = []
             if receiver in rpcparams:
                 excluded = rpcparams[receiver]
 
-            #check receiver is included in wallet
-
-            logger.debug("check receiver=%s excluded=%s"%(receiver, excluded))
-            ret = exg.listexproofforstart(receiver, excluded)
+            logger.debug("check receiver={} excluded={}".format(receiver, excluded))
+            ret = bclient.listexproofforstart(receiver, excluded)
             if ret.state == error.SUCCEED and len(ret.datas) > 0:
                 for data in ret.datas:
                     #grant vbtc 
@@ -287,8 +321,8 @@ def works():
                     assert (ret.state == error.SUCCEED), "db error"
 
                     if ret.datas == False:
-                        ret = b2v.insert_b2vinfo_commit(data["txid"], data["issuer"], data["receiver"], int(float(data["amount"] * COINS)), 
-                                data["address"], int(data["sequence"]), 0, data["vtoken"], data["creation_block"], data["update_block"])
+                        ret = b2v.insert_b2vinfo_commit(data["txid"], data["issuer"], data["receiver"], int(float(data["amount"]) * COINS), 
+                                data["address"], int(data["sequence"]), int(float(data["amount"]) * COINS), data["vtoken"], data["creation_block"], data["update_block"])
                         assert (ret.state == error.SUCCEED), "db error"
 
                     rettmp = vclient.get_address_sequence(vsender_address)
@@ -301,7 +335,7 @@ def works():
                         assert (ret.state == error.SUCCEED), "db error"
                     
                     #The receiver of the start state can change the state to end
-                    ret = exg.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), float(vamount)/COINS, height)
+                    ret = bclient.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), float(vamount)/COINS, height)
                     if ret.state != error.SUCCEED:
                         ret = b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
                         assert (ret.state == error.SUCCEED), "db error"

@@ -63,7 +63,7 @@ class dbb2v:
         sequence    = Column(Integer, index=True, nullable=False, primary_key=True)
         vamount     = Column(Integer)
         height      = Column(Integer)
-        vtoken        = Column(String(64), nullable=False)
+        vtoken       = Column(String(64), nullable=False)
         createblock = Column(String(64), index=True, nullable=False)
         updateblock = Column(String(64), index=True)
         state       = Column(Integer, index=True, nullable=False)
