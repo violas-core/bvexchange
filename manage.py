@@ -1,39 +1,49 @@
 #!/usr/bin/python3
 import sys, getopt
+sys.path.append("..")
 import log 
 import json
 import log.logger
-import daemon
+from comm.parseargs import parseargs
+import bvexchange
 
 name = "bvelog"
 logger = log.logger.getLogger(name)
-params = ["-h ",
-          "-d debug model",
-          "-s service model",
-        ]
+
+
+def init_args(pargs):
+    pargs.append("help", "show args info")
+    pargs.append("mod", "run mod", True, ["all", "b2v", "v2b"])
+
 def main(argc, argv):
+    pargs = parseargs()
     try:
         logger.debug("start manage.main")
+        init_args(pargs)
+        pargs.show_help(argv)
+
         if argc == 0:
-            logger.critical(json.dumps(params))
-        opts, args = getopt.getopt(argv, "hds")
+            pargs.show_args()
+
+        opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
-        logger.error(json.dumps(params))
+        logger.error(str(e))
         sys.exit(2)
     except Exception as e:
         logger.error(e)
         sys.exit(2)
 
-    if len(opts) == 0:
-            logger.critical(json.dumps(params))
+    if len(err_args) > 0:
+        pargs.show_args()
 
+    names = [opt for opt, arg in opts]
+    pargs.check_unique(names)
     for opt, arg in opts:
-        if opt == '-h':
-            logger.info(json.dumps(params))
-        elif opt == '-d':
-            logger.debug("debug")
-        elif opt == '-s':
-            logger.debug("service")
+        count, arg_list = pargs.split_arg(arg)
+        if pargs.is_matched(opt, ["mod"]) :
+            if count != 1:
+                pargs.exit_error_opt(opt)
+            bvexchange.run(arg_list[0])
     logger.debug("end manage.main")
 
 if __name__ == '__main__':

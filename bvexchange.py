@@ -19,6 +19,7 @@ import db.dbb2v
 import db.dbv2b
 from exchange import b2v, v2b
 import subprocess
+from enum import Enum
 
 name="bvexchange"
 
@@ -28,12 +29,20 @@ def checkrerun():
     if len(std[0].decode().split()) > 1:
         exit("already running")
 
+class work_mod(Enum):
+    ALL = 0
+    B2V = 1
+    V2B = 2
+
 class works:
     __threads = []
     __work_b2v_looping = 1
     __work_v2b_looping = 1
     __work_comm_looping = 1
     __traceback_limit = 0
+    __mod = work_mod.ALL
+
+
     def __init__(self, traceback_limit):
         logger.debug("works __init__")
         self.__work_b2v_looping = 1
@@ -106,12 +115,16 @@ class works:
         finally:
             logger.debug("thread_append")
 
-    def start(self):
+    def start(self, mod = work_mod.ALL):
         try:
             logger.debug("start works")
     
-            self.thread_append(self.work_b2v, 1, "b2v", setting.b2v_sleep)
-            self.thread_append(self.work_v2b, 2, "v2b", setting.v2b_sleep)
+            if mod == work_mod.ALL or mod == work_mod.B2V:
+                self.thread_append(self.work_b2v, 1, "b2v", setting.b2v_sleep)
+
+            if mod == work_mod.ALL or mod == work_mod.V2B:
+                self.thread_append(self.work_v2b, 2, "v2b", setting.v2b_sleep)
+
             self.thread_append(self.work_comm, 3, "comm", setting.comm_sleep)
             
             for work in self.__threads:
@@ -152,19 +165,27 @@ def signal_stop(signal, frame):
     finally:
         logger.debug("end signal")
 
-def main():
+def run(mod):
+    checkrerun()
+    global work_manage
+    logger.debug("start main")
+    if mod is None or mod not in ["all", "b2v", "v2b"]:
+        raise Exception("mod is invalid [all, b2v, v2b].")
+
+    signal.signal(signal.SIGINT, signal_stop)
+    signal.signal(signal.SIGTSTP, signal_stop)
+    work_manage.start(work_mod[mod.upper()])
+    work_manage.join()
+
+def main(argc, argv):
     try:
-        global work_manage
-        logger.debug("start main")
-        signal.signal(signal.SIGINT, signal_stop)
-        signal.signal(signal.SIGTSTP, signal_stop)
-        work_manage.start()
-        work_manage.join()
+        if argc != 1:
+             raise Exception(f"argument is invalid")
+        run(argv[0])
     except Exception as e:
         logger.error(traceback.format_exc(limit=setting.traceback_limit))
     finally:
         logger.critical("main end")
 
 if __name__ == '__main__':
-    checkrerun()
-    main()
+    main(len(sys.argv) - 1, sys.argv[1:])
