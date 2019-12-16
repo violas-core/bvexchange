@@ -86,32 +86,13 @@ def checks():
     for sender in setting.btc_senders:
         assert len(sender) >= 20, "btc address({}) is invalied".format(sender)
 
-def has_btc_banlance(btcclient, address, vamount, gas = 1000):
-    try:
-        logger.debug("start has_btc_banlance(address={}, vamount={}, gas={})".format(address, vamount, gas))
-        ret = btcclient.getwalletaddressbalance(address)
-        if ret.state != error.SUCCEED:
-            return ret
-
-        #change bitcoin unit to satoshi and check amount is sufficient
-        wbalance = int(ret.datas * COINS)
-        if wbalance <= (vamount + gas): #need some gas, so wbalance > vamount
-            ret = result(error.SUCCEED, "", False)
-        else:
-            ret = result(error.SUCCEED, "", True)
-    except Exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e)
-    return ret
-
 def get_btc_sender_address(bclient, excludeds, amount, gas):
     try:
         use_sender = None
         for sender in setting.btc_senders:
             if sender not in excludeds:
                #check btc amount
-               ret = has_btc_banlance(bclient, sender, amount, gas)
+               ret = bclient.has_btc_banlance(sender, amount, gas)
                if ret.state != error.SUCCEED or ret.datas != True:
                    continue
                if ret.datas != True:

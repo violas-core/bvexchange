@@ -84,6 +84,7 @@ class btcclient:
                 return result(error.ARG_INVALID, error.argument_invalid, "")
                 
             datas = self.__rpc_connection.violas_isexproofcomplete(address, sequence)
+            logger.debug(datas)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             logger.debug(traceback.format_exc(self.__traceback_limit))
@@ -217,6 +218,26 @@ class btcclient:
             logger.error(str(e))
             ret = result(error.EXCEPT, str(e), e)
         return ret
+
+    def has_btc_banlance(self, address, vamount, gas = comm.values.MIN_EST_GAS):
+        try:
+            logger.debug("start has_btc_banlance(address={}, vamount={}, gas={})".format(address, vamount, gas))
+            ret = self.getwalletaddressbalance(address)
+            if ret.state != error.SUCCEED:
+                return ret
+    
+            #change bitcoin unit to satoshi and check amount is sufficient
+            wbalance = int(ret.datas * comm.values.COINS)
+            if wbalance <= (vamount + gas): #need some gas, so wbalance > vamount
+                ret = result(error.SUCCEED, "", False)
+            else:
+                ret = result(error.SUCCEED, "", True)
+        except Exception as e:
+            logger.debug(traceback.format_exc(setting.traceback_limit))
+            logger.error(str(e))
+            ret = result(error.EXCEPT, str(e), e)
+        return ret
+    
 
 def test_conn():
     exg = btcclient(setting.traceback_limit, setting.btc_conn)
