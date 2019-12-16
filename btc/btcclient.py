@@ -168,8 +168,7 @@ class btcclient:
     def listunspent(self, minconf = 1, maxconf = 9999999, addresses = None, include_unsafe = True, query_options = None):
         try:
             logger.debug("start listunspent(minconf={}, maxconf={}, addresses={}, include_unsafe={}, query_options={})".format(minconf, maxconf, addresses, include_unsafe, query_options))
-            #datas = self.__rpc_connection.listunspent(minconf, maxconf, addresses, include_unsafe, query_options)
-            datas = self.__rpc_connection.listunspent()
+            datas = self.__rpc_connection.listunspent(minconf, maxconf, addresses, include_unsafe, query_options)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             logger.debug(traceback.format_exc(self.__traceback_limit))

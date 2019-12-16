@@ -4,12 +4,15 @@ import sys, getopt
 import json
 import os
 sys.path.append("..")
+sys.path.append("../packages")
 import log
 import log.logger
 import traceback
 import datetime
 import setting
 import requests
+import libra
+from libra.json_print import json_print
 import comm
 import comm.error
 import comm.result
@@ -55,12 +58,12 @@ def generatetoaddress(count, address):
     assert ret.state == error.SUCCEED, " generatetoaddress failed"
     print(ret.datas)
     
-def listunspent(minconf, maxconf, addresses, include_unsafe, query_options):
+def listunspent(minconf = 1, maxconf = 9999999, addresses = None, include_unsafe = True, query_options = None):
     client = btcclient(setting.traceback_limit, setting.btc_conn)
     ret = client.listunspent(minconf, maxconf, addresses, include_unsafe, query_options)
     assert ret.state == error.SUCCEED, " listunspent failed"
     for data in ret.datas:
-        print(data)
+        print("address:{}, amount:{}".format(data["address"], data["amount"]))
 
 def listexproofforstart(receiver, excluded = None):
     client = btcclient(setting.traceback_limit, setting.btc_conn)
@@ -191,10 +194,13 @@ def run(argc, argv):
                 sys.exit(2)
             ret = generatetoaddress(int(arg_list[0]), arg_list[1])
         elif opt in ("--listunspent"):
-            if len(arg_list) != 5:
+            if len(arg_list) != 5 and len(arg_list) != 2:
                 exit_error_arg_list(opt)
                 sys.exit(2)
-            ret = listunspent(int(arg_list[0]), int(arg_list[1]), arg_list[2], arg_list[3], arg_list[4])
+            if len(arg_list) != 2:
+                ret = listunspent(int(arg_list[0]), int(arg_list[1]), arg_list[2], arg_list[3], arg_list[4])
+            else:
+                ret = listunspent(int(arg_list[0]), int(arg_list[1]))
         elif opt in ("--listexproofforstart"):
             if len(arg_list) != 1:
                 exit_error_arg_list(opt)
