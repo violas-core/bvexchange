@@ -174,6 +174,7 @@ def run(mod):
 
     signal.signal(signal.SIGINT, signal_stop)
     signal.signal(signal.SIGTSTP, signal_stop)
+    signal.signal(signal.SIGTERM, signal_stop)
     work_manage.start(work_mod[mod.upper()])
     work_manage.join()
 

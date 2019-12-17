@@ -12,7 +12,7 @@ b2v_sleep = 8
 v2b_sleep = 6
 
 #communication thread loop time
-comm_sleep = 12
+comm_sleep = 1
 
 traceback_limit = 4
 
