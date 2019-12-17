@@ -1,0 +1,10 @@
+[Unit]
+Description=btc vbtc exchange
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/usr/bin/python3 /usr/bin/bvexchange/manage.py --mod all
+
+[Install]
+WantedBy=multi-user.target

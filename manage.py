@@ -1,6 +1,7 @@
 #!/usr/bin/python3
-import sys, getopt
+import sys, getopt, os
 sys.path.append("..")
+sys.path.append("/usr/bin/bvexchange")
 import log 
 import json
 import log.logger
@@ -30,10 +31,11 @@ def main(argc, argv):
         logger.error(str(e))
         sys.exit(2)
     except Exception as e:
-        logger.error(e)
+        logger.error(str(e))
         sys.exit(2)
 
-    if len(err_args) > 0:
+    print(err_args)
+    if err_args is None or len(err_args) > 0:
         pargs.show_args()
 
     names = [opt for opt, arg in opts]
