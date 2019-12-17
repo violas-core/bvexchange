@@ -3,14 +3,14 @@
 # -*- coding: UTF-8 -*-
 import operator
 import signal
-import sys
+import sys, os
+print(os.getcwd())
 import traceback
 import log
 import log.logger
 import threading
 from time import sleep, ctime
 '''
-  ÎÒµÄ²âÊÔÇéÐ÷
 '''
 class MyNumbers:
     def __iter__(self):
