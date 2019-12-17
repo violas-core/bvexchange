@@ -22,9 +22,6 @@ def main(argc, argv):
         init_args(pargs)
         pargs.show_help(argv)
 
-        if argc == 0:
-            pargs.show_args()
-
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
         logger.error(str(e))
@@ -33,7 +30,6 @@ def main(argc, argv):
         logger.error(str(e))
         sys.exit(2)
 
-    print(err_args)
     if err_args is None or len(err_args) > 0:
         pargs.show_args()
 
