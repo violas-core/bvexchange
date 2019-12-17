@@ -6,7 +6,8 @@ btc and vbtc exchange main
 '''
 import operator
 import signal
-import sys
+import sys, os
+os.chdir(os.path.dirname(sys.argv[0]))
 sys.path.append("./packages")
 import traceback
 import log
