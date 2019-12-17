@@ -29,6 +29,10 @@ def checkrerun():
     std = proc.communicate()
     if len(std[0].decode().split()) > 1:
         exit("already running")
+    proc = subprocess.Popen(["pgrep", "-f", "bvmanage.py"], stdout=subprocess.PIPE)
+    std = proc.communicate()
+    if len(std[0].decode().split()) > 1:
+        exit("already running")
 
 class work_mod(Enum):
     ALL = 0
@@ -167,12 +171,15 @@ def signal_stop(signal, frame):
         logger.debug("end signal")
 
 def run(mod):
-    checkrerun()
-    global work_manage
-    logger.debug("start main")
+    
+    print(mod)
     if mod is None or mod not in ["all", "b2v", "v2b"]:
         raise Exception("mod is invalid [all, b2v, v2b].")
 
+    checkrerun()
+    global work_manage
+    logger.debug("start main")
+    
     signal.signal(signal.SIGINT, signal_stop)
     signal.signal(signal.SIGTSTP, signal_stop)
     signal.signal(signal.SIGTERM, signal_stop)

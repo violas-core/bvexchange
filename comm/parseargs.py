@@ -44,6 +44,15 @@ class parseargs:
                     sys.exit(2)
 
 
+    def isvalid(self, name):
+        arg = name[2:]
+        return arg in [key.replace('-', '') for key in self.__args.keys()]
+
+    def hasarg(self, name):
+        for arg in self.__args.keys():
+            if arg.find('-') >= 0 and name[2:] == arg.replace('-', ''):
+                return True
+        return False
 
     def append(self, name, desc, hasarg = False, arglist = None):
         if name in self.__args:
@@ -78,14 +87,31 @@ class parseargs:
         return [ "--" + arg.replace('-', "") for arg in self.args.keys()]
 
     def show_help(self, args):
+        if args is not None and len(args) > 0 and args[0] == "--help":
+            self.show_args()
+
+        if args is None or len(args) == 0:
+            self.show_args()
+
         if args is None or len(args) != 2 or args[0] != "help" :
+            find = False
+            for name in args:
+                if find == True:
+                    find = False
+                    continue
+                if self.isvalid(name) == False:
+                    self.show_args()
+                if self.hasarg(name) == True:
+                    find = True
             return
+
         name = args[1]
 
         if name in self.__args:
             self.__show_arg_info("--{} \n\t{}".format(name, self.__args[name].replace("format:", "\n\tformat:")))
         else:
             self.__show_arg_info("--{} \n\t{}".format(name, self.__args["{}-".format(name)].replace("format:", "\n\tformat:")))
+
         system.exit(2)
 
     def getopt(self, argv):
