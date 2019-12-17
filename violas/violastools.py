@@ -3,8 +3,8 @@ import operator
 import sys, getopt
 import json
 import os
-sys.path.append("..")
-sys.path.append("../packages")
+sys.path.append(os.getcwd())
+sys.path.append("{}/packages".format(os.getcwd()))
 import libra
 from libra import Client
 from libra import WalletLibrary
