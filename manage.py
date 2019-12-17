@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import sys, getopt, os
-sys.path.append("..")
 sys.path.append("/usr/bin/bvexchange")
 import log 
 import json

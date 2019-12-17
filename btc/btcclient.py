@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 import operator
-import sys
+import sys, os
 import json
-sys.path.append("..")
+sys.path.append(os.getcwd())
 import log
 import log.logger
 import traceback

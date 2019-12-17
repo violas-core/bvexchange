@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 import operator
-import sys
+import sys, os
 import json
-sys.path.append("..")
 import log
+sys.path.append(os.getcwd())
 import log.logger
 import traceback
 import datetime

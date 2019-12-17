@@ -3,8 +3,7 @@ import operator
 import sys, getopt
 import json
 import os
-sys.path.append("..")
-sys.path.append("../packages")
+sys.path.append(os.getcwd())
 import log
 import log.logger
 import traceback
@@ -138,7 +137,7 @@ def run(argc, argv):
     try:
         argfmt = list(args.keys())
 
-        logger.debug("start violas.main")
+        logger.debug("start btc.main")
         if argc == 0:
             show_args()
             sys.exit(2)

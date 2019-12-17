@@ -3,8 +3,8 @@
 btc exchange vtoken db
 '''
 import operator
-import sys
-sys.path.append("..")
+import sys,os
+sys.path.append(os.getcwd())
 import log
 import log.logger
 import traceback
