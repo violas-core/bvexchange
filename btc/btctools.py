@@ -16,6 +16,7 @@ import comm.error
 import comm.result
 from comm.result import result
 from comm.error import error
+from comm.parseargs import parseargs
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from btc.btcclient import btcclient
 from enum import Enum
@@ -26,9 +27,9 @@ name="btcclient"
 #load logging
 logger = log.logger.getLogger(name) 
 
-def sendtoaddress(address, amount):
+def sendtoaddress(address, count):
     client = btcclient(setting.traceback_limit, setting.btc_conn)
-    ret = client.sendtoaddress(address, amount)
+    ret = client.sendtoaddress(address, count)
     assert ret.state == error.SUCCEED, " sendtoaddress failed"
     print(ret.datas)
     
@@ -102,52 +103,28 @@ def getwalletaddressbalance(address):
     assert ret.state == error.SUCCEED, " getwalletaddressbalance failed"
     print("wallet balance:{}".format(ret.datas))
 
-args = {"help"                  :   "dest: show arg list. format: --help",
-        "sendtoaddress-"        :   "dest: send to address.format: --sendtoaddress \"address, amount\"",
-        "sendexproofstart-"     :   "dest: create new exchange start proof. format: --sendexproofstart \"fromaddress, toaddress, amount, vaddress, sequence, vtoken\"",
-        "sendexproofend-"       :   "dest: create new exchange end proof. format: --sendexproofend \"fromaddress, toaddress, vaddress, sequence, vamount, version\"",
-        "sendexproofmark-"      :   "dest: create new exchange mark proof. format: --sendexproofmark \"fromaddress, toaddress, toamount, vaddress, sequence, version\"",
-        "generatetoaddress-"    :   "dest: generate new block to address. format: --generatetoaddress \"count, address\"",
-        "listunspent-"          :   "dest: returns array of unspent transaction outputs. format: --listunspent\"minconf, maxconf, addresses, include_unsafe, query_options\"",
-        "listexproofforstart-"  :   "dest: returns array of proof state is start . format: --listexproofforstart\"receiver\"",
-        "listexproofforend-"    :   "dest: returns array of proof state is end . format: --listexproofforend\"receiver\"",
-        "listexproofformark-"   :   "dest: returns array of proof state is mark . format: --listexproofformark\"receiver\"",
-        "btchelp"               :   "dest: returns bitcoin-cli help. format: --btchelp",
-        "getwalletbalance"      :   "dest: returns wallet balance. format: --getwalletbalance",
-        "getwalletaddressbalance-"      :   "dest: returns wallet target address's balance. format: --getwalletaddressbalance \"address\"",
-        }
-args_info = {
-        }
-
-def show_args():
-    global args
-    for key in args.keys():
-        print("{}{} \n\t\t\t\t{}".format("--", key.replace('-', ''), args[key].replace('\n', '')))
-
-def exit_error_arg_list(arg):
-    print(args["{}-".format(arg.replace('--', ''))])
-    sys.exit(2)
-
-def show_arg_info(info):
-    print(info)
+def init_args(pargs):
+    pargs.append("help", "show arg list")
+    pargs.append("sendtoaddress", "send to address.format.", True, ["address", "count"])
+    pargs.append("endexproofstart", "create new exchange start proof.", True, ["fromaddress", "toaddress", "amount", "vaddress", "sequence", "vtoken"])
+    pargs.append("sendexproofend", "create new exchange end proof.", True, ["fromaddress", "toaddress", "vaddress", "sequence", "vamount", "version"])
+    pargs.append("endexproofmark", "create new exchange mark proof.", True, ["fromaddress", "toaddress", "toamount", "vaddress", "sequence", "version"])
+    pargs.append("generatetoaddress", "generate new block to address.", True, ["count", "address"])
+    pargs.append("listunspent", "returns array of unspent transaction outputs.", True, ["minconf", "maxconf", "addresses", "include_unsafe", "query_options"])
+    pargs.append("listexproofforstart", "returns array of proof state is start .", True, ["receiver"])
+    pargs.append("listexproofforend", "returns array of proof state is end .", True, ["receiver"])
+    pargs.append("listexproofformark", "returns array of proof state is mark .", True, ["receiver"])
+    pargs.append("btchelp", "returns bitcoin-cli help.")
+    pargs.append("getwalletbalance", "returns wallet balance.")
+    pargs.append("getwalletaddressbalance", "returns wallet target address's balance.", True, ["address"])
 
 def run(argc, argv):
-    global args, args_info
     try:
-        argfmt = list(args.keys())
-
         logger.debug("start btc.main")
-        if argc == 0:
-            show_args()
-            sys.exit(2)
-        if argv[0] == "help" and argc == 2:
-            if argv[1] in argfmt:
-                show_arg_info("--{} \n\t{}".format(argv[1], args[argv[1]].replace("format:", "\n\tformat:")))
-            else:
-                show_arg_info("--{} \n\t{}".format(argv[1], args["{}-".format(argv[1])].replace("format:", "\n\tformat:")))
-            sys.exit(2)
-
-        opts, err_args = getopt.getopt(argv, "ha:b:s", [arg.replace('-', "=") for arg in argfmt])
+        pargs = parseargs()
+        init_args(pargs)
+        pargs.show_help(argv)
+        opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
         logger.error(e)
         sys.exit(2)
@@ -157,71 +134,62 @@ def run(argc, argv):
 
     #argument start for --
     if len(err_args) > 0:
-        show_arg_info("arguments format is invalid. {}".format([ "--" + arg.replace('-', "") for arg in argfmt]))
+        pargs.show_args()
+
+    names = [opt for opt, arg in opts]
+    pargs.check_unique(names)
 
     for opt, arg in opts:
         if len(arg) > 0:
-            arg_list = "{}".format(arg).split(",")
-            
-            arg_list = [sub.strip() for sub in arg_list]
+            count, arg_list = pargs.split_arg(arg)
 
-            show_arg_info("opt = {}, arg = {}".format(opt, arg_list))
-        if opt in ( "--help"):
-            show_args()
-            sys.exit(2)
-        elif opt in ("--sendtoaddress"):
+            print("opt = {}, arg = {}".format(opt, arg_list))
+        elif pargs.is_matched(opt, ["sendtoaddress"]):
             if len(arg_list) != 2:
-                show_arg_info(args["{}-".format(opt.replace('--', ''))])
-                sys.exit(2)
+                pargs.exit_error_opt(opt)
             ret = sendtoaddress(arg_list[0], arg_list[1])
-        elif opt in ("--sendexproofstart"):
+        elif pargs.is_matched(opt, ["sendexproofstart"]):
             if len(arg_list) != 6:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             ret = sendexproofstart(arg_list[0], arg_list[1], float(arg_list[2]), arg_list[3], int(arg_list[4]), arg_list[5])
-        elif opt in ("--sendexproofend"):
+        elif pargs.is_matched(opt, ["sendexproofend"]):
             if len(arg_list) != 6:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             ret = sendexproofend(arg_list[0], arg_list[1], arg_list[2], int(arg_list[3]), int(arg_list[4]), int(arg_list[5]))
-        elif opt in ("--sendexproofmark"):
+        elif pargs.is_matched(opt, ["sendexproofmark"]):
             if len(arg_list) != 6:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             ret = sendexproofmark(arg_list[0], arg_list[1], arg_list[2], arg_list[3], int(arg_list[4]), int(arg_list[5]))
-        elif opt in ("--generatetoaddress"):
+        elif pargs.is_matched(opt, ["generatetoaddress"]):
             if len(arg_list) != 2:
-                exit_error_arg_list(opt)
-                sys.exit(2)
+                pargs.exit_error_opt(opt)
             ret = generatetoaddress(int(arg_list[0]), arg_list[1])
-        elif opt in ("--listunspent"):
+        elif pargs.is_matched(opt, ["listunspent"]):
             if len(arg_list) != 5 and len(arg_list) != 2:
-                exit_error_arg_list(opt)
-                sys.exit(2)
+                pargs.exit_error_opt(opt)
             if len(arg_list) != 2:
                 ret = listunspent(int(arg_list[0]), int(arg_list[1]), arg_list[2], arg_list[3], arg_list[4])
             else:
                 ret = listunspent(int(arg_list[0]), int(arg_list[1]))
-        elif opt in ("--listexproofforstart"):
+        elif pargs.is_matched(opt, ["listexproofforstart"]):
             if len(arg_list) != 1:
-                exit_error_arg_list(opt)
-                sys.exit(2)
+                pargs.exit_error_opt(opt)
             ret = listexproofforstart(arg_list[0])
-        elif opt in ("--listexproofforend"):
+        elif pargs.is_matched(opt, ["listexproofforend"]):
             if len(arg_list) != 1:
-                exit_error_arg_list(opt)
-                sys.exit(2)
+                pargs.exit_error_opt(opt)
             ret = listexproofforend(arg_list[0])
-        elif opt in ("--listexproofformark"):
+        elif pargs.is_matched(opt, ["listexproofformark"]):
             if len(arg_list) != 1:
-                exit_error_arg_list(opt)
-                sys.exit(2)
+                pargs.exit_error_opt(opt)
             ret = listexproofformark(arg_list[0])
-        elif opt in ("--btchelp"):
+        elif pargs.is_matched(opt, ["btchelp"]):
             ret = btchelp()
-        elif opt in ("--getwalletbalance"):
+        elif pargs.is_matched(opt, ["getwalletbalance"]):
             ret = getwalletbalance()
-        elif opt in ("--getwalletaddressbalance"):
+        elif pargs.is_matched(opt, ["getwalletaddressbalance"]):
             if len(arg_list) != 1:
-                exit_error_arg_list(opt)
-                sys.exit(2)
+                pargs.exit_error_opt(opt)
             ret = getwalletaddressbalance(arg_list[0])
 
     logger.debug("end manage.main")
