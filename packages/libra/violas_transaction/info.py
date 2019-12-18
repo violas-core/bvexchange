@@ -1,13 +1,10 @@
-from canoser import  Struct
 from libra.violas_transaction import ViolasBase
-from libra.event import EventHandle
 from libra.violas_transaction import ViolasEventHandle
+from libra.violas_resource import ViolasInfo
 
-class  EventInfo(Struct):
-    _fields = [
-        ("allinone_events", EventHandle)
-    ]
 
 class ViolasEventInfo(ViolasBase):
-    def __init__(self, info: EventInfo):
+    def __init__(self, info: ViolasInfo):
+        self.magic = info.magic
+        self.token = self.int_list_to_hex(info.token)
         self.allinone_events = ViolasEventHandle(info.allinone_events)

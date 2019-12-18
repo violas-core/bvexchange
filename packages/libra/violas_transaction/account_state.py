@@ -3,8 +3,8 @@ from libra.account_resource import AccountResource
 from libra.violas_transaction import ViolasBase
 from libra.account_resource import AccountConfig
 from libra.violas_transaction import ViolasAccountResource
-from libra.violas_transaction import EventInfo, ViolasEventInfo
-from libra.violas_resource import ViolasResource, ViolasInfo, ViolasOwnerData, ViolasOrder, ViolasOrder2
+from libra.violas_transaction import  ViolasEventInfo, ViolasOwnerData
+from libra.violas_resource import ViolasResource, ViolasInfo, OwnerData, ViolasOrder, ViolasOrder2
 from libra.violas_transaction import ViolasAccountOrder
 
 class ViolasAccountState(ViolasBase):
@@ -24,28 +24,30 @@ class ViolasAccountState(ViolasBase):
 
         addrs = {}
         for key, value in mmaps.items():
-            if 32 == len(value):
-                addrs[key] = value
+            if 92 == len(value):
+                try:
+                    resource = ViolasEventInfo(ViolasInfo.deserialize(value))
+                except:
+                    print("ViolasEventInfo not suitable")
+                    continue
+                if resource.magic == 123456789:
+                    self.violas_resource[resource.token] = {}
+                    self.violas_resource[resource.token]["info"] = resource
+                    addrs[key] = resource.token
 
         for key in addrs.keys():
             mmaps.pop(key)
 
         useds = []
         for addr in addrs.values():
-            addr = self.int_list_to_hex(addr)
-            self.violas_resource[addr] = {}
             balance_key = ViolasResource.violas_resource_path(addr)
             if mmaps.get(balance_key):
                 useds.append(balance_key)
                 self.violas_resource[addr]["balance"]= int.from_bytes(bytes(mmaps[balance_key]), byteorder="little", signed=False)
-            info_key = ViolasInfo.violas_info_path(addr)
-            if mmaps.get(info_key):
-                useds.append(info_key)
-                self.violas_resource[addr]["info"] = ViolasEventInfo(EventInfo.deserialize(mmaps[info_key]))
-            owner_key = ViolasOwnerData.violas_ownerdata_path(addr)
+            owner_key = OwnerData.violas_ownerdata_path(addr)
             if mmaps.get(owner_key):
                 useds.append(owner_key)
-                self.violas_resource["tender"] = bytes(ViolasOwnerData.deserialize(mmaps.get(owner_key)).data).decode()
+                self.violas_resource["owner"] = ViolasOwnerData(OwnerData.deserialize(mmaps.get(owner_key)))
             order_key = ViolasOrder.violas_order_path(addr)
             if mmaps.get(order_key):
                 useds.append(order_key)
@@ -76,7 +78,7 @@ class ViolasAccountState(ViolasBase):
 
     def violas_get_tender_name(self):
         try:
-            return self.violas_resource["tender"]
+            return self.violas_resource["owner"].data
         except:
             return None
 

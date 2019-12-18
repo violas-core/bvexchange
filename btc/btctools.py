@@ -4,14 +4,13 @@ import sys, getopt
 import json
 import os
 sys.path.append(os.getcwd())
+sys.path.append("..")
 import log
 import log.logger
 import traceback
 import datetime
 import setting
 import requests
-import libra
-from libra.json_print import json_print
 import comm
 import comm.error
 import comm.result

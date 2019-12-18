@@ -264,6 +264,7 @@ class dbv2b:
             info = self.__session.query(self.versions).filter(filter_address).filter(filter_vtoken).all()
             if info is not None and len(info) > 0:
                 ret = result(error.SUCCEED, "", info[0].version)
+                logger.debug(f"latest version:{info[0].version}")
             else:
                 ret = result(error.SUCCEED, "", 0)
 
@@ -331,121 +332,9 @@ class dbv2b:
             ret = result(error.FAILED, str(e), e) 
         return ret
 
-dbfile = "bve_v2b.db"
-traceback_limit = setting.traceback_limit
-max_seq = 100000
-def test_dbv2b_insert():
-    v2b = dbv2b(dbfile, traceback_limit)
-    sequence = random.randint(0,max_seq)
-    if v2b.has_v2binfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence):
-        return
-    v2b.insert_v2binfo("0000000000000000000000000000000000000000000000000000000000000001", \
-                "2NFMbhLACujsHKa45X4P2fZupVrgB268pbo", \
-                "2NFMbhLACujsHKa45X4P2fZupVrgB268pbo", \
-                1, \
-                "c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", \
-                sequence, #sequence 
-                0, \
-                "0000000000000000000000000000000000000000000000000000000000000000", \
-                )
-    v2b.commit()
-
-def test_dbv2b_query():
-    try:
-        logger.debug("*****************************************start test_dbv2b_query*****************************************")
-        v2b = dbv2b(dbfile, traceback_limit)
-        sequence = random.randint(0, max_seq)
-        ret = v2b.query_v2binfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence, 1)
-
-        if ret.state != error.SUCCEED:
-            return
-
-        if(len(ret.datas) == 0):
-            logger.debug("not fount proof")
-
-        for proof in ret.datas:
-            logger.info("vaddress: %s" % (proof.vaddress))
-            logger.info("sequence: %s" % (proof.sequence))
-            logger.info("state : %i" % (proof.state))
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-def test_dbv2b_query_state_start():
-    try:
-        logger.debug("*****************************************start test_dbv2b_query_state_start****************************")
-        v2b = dbv2b(dbfile, traceback_limit)
-        ret = v2b.query_v2binfo_is_start()
-
-        if ret.state != error.SUCCEED:
-            return
-
-        if(len(ret.datas) == 0):
-            logger.debug("not fount proof")
-
-        for proof in ret.datas:
-            logger.info("vaddress: %s" % (proof.vaddress))
-            logger.info("sequence: %s" % (proof.sequence))
-            logger.info("state : %i" % (proof.state))
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-def test_dbv2b_query_state_succeed():
-    try:
-        logger.debug("*****************************************start test_dbv2b_query_state_succeed*************************")
-        v2b = dbv2b(dbfile, traceback_limit)
-        ret = v2b.query_v2binfo_is_succeed()
-
-        if ret.state != error.SUCCEED:
-            return
-
-        if(len(ret.datas) == 0):
-            logger.debug("not fount proof")
-
-        for proof in ret.datas:
-            logger.info("vaddress: %s" % (proof.vaddress))
-            logger.info("sequence: %s" % (proof.sequence))
-            logger.info("state : %i" % (proof.state))
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-def test_dbv2b_query_state_failed():
-    try:
-        logger.debug("*****************************************start test_dbv2b_query_state_failed*************************")
-        v2b = dbv2b(dbfile, traceback_limit)
-        ret = v2b.query_v2binfo_is_failed()
-
-        if ret.state != error.SUCCEED:
-            return
-
-        if(len(ret.datas) == 0):
-            logger.debug("not fount proof")
-
-        for proof in ret.datas:
-            logger.info("vaddress: %s" % (proof.vaddress))
-            logger.info("sequence: %s" % (proof.sequence))
-            logger.info("state : %i" % (proof.state))
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-
-def test_dbv2b_update():
-    try:
-        logger.debug("*****************************************start t_dbv2b_update***************************************")
-        v2b = dbv2b(dbfile, traceback_limit)
-        sequence = random.randint(0, max_seq)
-        v2b.update_v2binfo_to_succeed_commit("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
 def test():
     try:
-        test_dbv2b_insert()
-        test_dbv2b_query()
-        test_dbv2b_update()
-        test_dbv2b_query()
-        test_dbv2b_query_state_start()
-        test_dbv2b_query_state_succeed()
-        test_dbv2b_query_state_failed()
+        pass
     except Exception as e:
         logger.error(traceback.format_exc(limit=traceback_limit))
 

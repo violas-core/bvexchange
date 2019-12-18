@@ -37,7 +37,8 @@ class Account:
     @classmethod
     def gen_faucet_account(cls, faucet_account_file):
         if faucet_account_file is None:
-            faucet_account_file = cls.faucet_file_path()
+            return
+            # faucet_account_file = cls.faucet_file_path()
         with open(faucet_account_file, 'rb') as f:
             data = f.read()
             assert len(data) == 72
