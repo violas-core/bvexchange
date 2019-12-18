@@ -7,6 +7,7 @@ sys.path.append(os.getcwd())
 sys.path.append("{}/packages".format(os.getcwd()))
 sys.path.append("..")
 sys.path.append("../packages")
+
 import libra
 from libra import Client
 from libra import WalletLibrary
@@ -23,6 +24,7 @@ import comm.error
 import comm.result
 from comm.result import result
 from comm.error import error
+from comm.parseargs import parseargs
 from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from violasclient import violasclient, violaswallet, violasserver
@@ -160,54 +162,31 @@ def account_has_violas_module(address, module):
     client = violasclient(setting.traceback_limit, setting.violas_nodes)
     logger.debug(client.account_has_violas_module(address, module).datas)
     
-args = {"help"                  :   "dest: show arg list. format: --help",
-        "mint_platform_coin-"   :   "dest: mint vtoken(amount) to target address.format: --mint_platform_coin \"address, amount\"",
-        "create_violas_coin-"   :   "dest: create new token(module) in violas blockchain. format: --create_violas_coin \"module\"",
-        "bind_module-"          :   "dest: bind address to module. format: --bind_module \"address, module\"",
-        "mint_violas_coin-"     :   "dest: mint some(amount) token(module) to target address. format: --mint_violas_coin \"address, amount, module\" ",
-        "send_violas_coin-"           :   "dest: send token(coin) to target address. format: --send_violas_coin \"form_address, to_address, amount, module, data[default = None  ex: v2b:btc_address:<BTC ADDRESS>]\" ",
-        "new_account"           :   "dest: new account and save to local wallet. format: --new_account",
-        "get_account-"          :   "dest: show account info. format: --get_account \"address\"",
-        "has_account-"          :   "dest: has target account in wallet. format: --has_account \"address\"",
-        "show_accounts"         :   "dest: show all counts address list(local wallet).  foramt: --show_accounts",
-        "get_violas_balance-"   :   "dest: get address's token(module) amount. format: --get_violas_balance \"address, module\"",
-        "get_platform_balance-" :   "dest: get address's platform coin amount. fromat: --get_platform_balance \"address\"",
-        "get_transactions-"     :   "dest: get transactions from violas server. format: --get_transactions \"address, module, start\"",
-        "has_transaction-"     :   "dest: check transaction is valid from violas server. format: --get_transaction \"address, module, btcaddress, sequence, amount, version, receiver\"",
-        "account_has_violas_module-" :   "dest: check address binded module. fromat: --account_has_violas_module \"address, module\"",
-        }
-args_info = {
-        }
-
-def show_args():
-    global args
-    for key in args.keys():
-        print("{}{} \n\t\t\t\t{}".format("--", key.replace('-', ''), args[key].replace('\n', '')))
-
-def exit_error_arg_list(arg):
-    print(args["{}-".format(arg.replace('--', ''))])
-    sys.exit(2)
-
-def show_arg_info(info):
-    print(info)
+def init_args(pargs):
+    pargs.append("help", "show arg list.")
+    pargs.append("mint_platform_coin", "mint vtoken(amount) to target address.", True, ["address", "amount"])
+    pargs.append("create_violas_coin", "create new token(module) in violas blockchain", True, ["module"])
+    pargs.append("bind_module", "bind address to module.", True, ["address", "module"])
+    pargs.append("mint_violas_coin", "mint some(amount) token(module) to target address.", True, ["address", "amount", "module"])
+    pargs.append("send_violas_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "module", "data[default = None  ex: v2b:btc_address:<BTC ADDRESS>]"])
+    pargs.append("new_account", "new account and save to local wallet.")
+    pargs.append("get_account", "show account info.", True, ["address"])
+    pargs.append("has_account", "has target account in wallet.", True, ["address"])
+    pargs.append("show_accounts", "show all counts address list(local wallet).")
+    pargs.append("get_violas_balance", "get address's token(module) amount.", True, ["address", "module"])
+    pargs.append("get_platform_balance", "get address's platform coin amount.", True, ["address"])
+    pargs.append("get_transactions", "get transactions from violas server.", True, ["address", "module", "start"])
+    pargs.append("has_transaction", "check transaction is valid from violas server.", True, ["address", "module", "btcaddress", "sequence", "amount","version", "receiver"])
+    pargs.append("account_has_violas_module", "check address binded module.", True, ["address", "module"])
 
 def run(argc, argv):
-    global args, args_info
     try:
-        argfmt = list(args.keys())
-
         logger.debug("start violas.main")
-        if argc == 0:
-            show_args()
-            sys.exit(2)
-        if argv[0] == "help" and argc == 2:
-            if argv[1] in argfmt:
-                show_arg_info("--{} \n\t{}".format(argv[1], args[argv[1]].replace("format:", "\n\tformat:")))
-            else:
-                show_arg_info("--{} \n\t{}".format(argv[1], args["{}-".format(argv[1])].replace("format:", "\n\tformat:")))
-            sys.exit(2)
+        pargs = parseargs()
+        init_args(pargs)
+        pargs.show_help(argv)
 
-        opts, err_args = getopt.getopt(argv, "ha:b:s", [arg.replace('-', "=") for arg in argfmt])
+        opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
         logger.error(e)
         sys.exit(2)
@@ -217,77 +196,74 @@ def run(argc, argv):
 
     #argument start for --
     if len(err_args) > 0:
-        show_arg_info("arguments format is invalid. {}".format([ "--" + arg.replace('-', "") for arg in argfmt]))
+        pargs.show_args()
+
+    names = [opt for opt, arg in opts]
+    pargs.check_unique(names)
 
     for opt, arg in opts:
         if len(arg) > 0:
-            arg_list = "{}".format(arg).split(",")
-            
-            arg_list = [sub.strip() for sub in arg_list]
+            count, arg_list = pargs.split_arg(arg)
 
-            show_arg_info("opt = {}, arg = {}".format(opt, arg_list))
-        if opt in ( "--help"):
-            show_args()
-            sys.exit(2)
-        elif opt in ("--create_violas_coin"):
+            print("opt = {}, arg = {}".format(opt, arg_list))
+        if pargs.is_matched(opt, ["create_violas_coin"]):
             if len(arg_list) != 1:
-                show_arg_info(args["{}-".format(opt.replace('--', ''))])
-                sys.exit(2)
+                pargs.exit_error_opt(opt)
             ret = create_violas_coin(arg_list[0])
-        elif opt in ("--bind_module"):
+        elif pargs.is_matched(opt, ["bind_module"]):
             if len(arg_list) != 2:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             ret = bind_module(arg_list[0], arg_list[1])
-        elif opt in ("--mint_platform_coin"):
+        elif pargs.is_matched(opt, ["mint_platform_coin"]):
             if len(arg_list) != 2:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             ret = mint_platform_coin(arg_list[0], int(arg_list[1]))
-        elif opt in ("--mint_violas_coin"):
+        elif pargs.is_matched(opt, ["mint_violas_coin"]):
             if len(arg_list) != 3:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             ret = mint_violas_coin(arg_list[0], int(arg_list[1]), arg_list[2])
-        elif opt in ("--send_violas_coin"):
+        elif pargs.is_matched(opt, ["send_violas_coin"]):
             if len(arg_list) != 4 and len(arg_list) != 5:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             if len(arg_list) == 5:
                 ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3], arg_list[4])
             else:
                 ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3])
-        elif opt in ("--get_account"):
+        elif pargs.is_matched(opt, ["get_account"]):
             if len(arg_list) != 1:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             get_account(arg)
-        elif opt in ("--has_account"):
+        elif pargs.is_matched(opt, ["has_account"]):
             if len(arg_list) != 1:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             has_account(arg)
-        elif opt in ("--show_accounts"):
+        elif pargs.is_matched(opt, ["show_accounts"]):
             if len(arg) != 0:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             show_accounts()
-        elif opt in ("--new_account"):
+        elif pargs.is_matched(opt, ["new_account"]):
             if len(arg) != 0:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             ret = new_account()
-        elif opt in ("--get_violas_balance"):
+        elif pargs.is_matched(opt, ["get_violas_balance"]):
             if len(arg_list) != 2:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             get_violas_balance(arg_list[0], arg_list[1])
-        elif opt in ("--get_platform_balance"):
+        elif pargs.is_matched(opt, ["get_platform_balance"]):
             if len(arg_list) != 1:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             get_platform_balance(arg)
-        elif opt in ("--get_transactions"):
+        elif pargs.is_matched(opt, ["get_transactions"]):
             if len(arg_list) != 3:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             get_transactions(arg_list[0], arg_list[1], int(arg_list[2]))
-        elif opt in ("--has_transaction"):
+        elif pargs.is_matched(opt, ["has_transaction"]):
             if len(arg_list) != 7:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             has_transaction(arg_list[0], arg_list[1], arg_list[2], int(arg_list[3]), int(arg_list[4]), int(arg_list[5]), arg_list[6])
-        elif opt in ("--account_has_violas_module"):
+        elif pargs.is_matched(opt, ["account_has_violas_module"]):
             if len(arg_list) != 2:
-                exit_error_arg_list(opt)
+                pargs.exit_error_opt(opt)
             account_has_violas_module(arg_list[0], arg_list[1])
         elif opt == '-s':
             logger.debug(arg)

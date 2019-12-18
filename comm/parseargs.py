@@ -112,7 +112,7 @@ class parseargs:
         else:
             self.__show_arg_info("--{} \n\t{}".format(name, self.__args["{}-".format(name)].replace("format:", "\n\tformat:")))
 
-        system.exit(2)
+        sys.exit(2)
 
     def getopt(self, argv):
         return getopt.getopt(argv, None, [arg.replace('-', "=") for arg in self.__args.keys()])
