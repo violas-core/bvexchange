@@ -68,15 +68,30 @@ class TransactionTimeoutError(LibraError):
     pass
 
 class LibraNetError(LibraError):
-    pass
+    @property
+    def error_code(self):
+        code, _ = self.args
+        return code
+
+    @property
+    def error_msg(self):
+        _, msg = self.args
+        return msg
+
+from enum import IntEnum
+class NetErrorCode(IntEnum):
+    PORT_ERROR= 0
+    SUBMIT_ERROR = 1
+    REQUEST_ERROR = 2
+    INIT_ERROR = 3
 
 
 class Client:
     def __init__(self, network="testnet", validator_set_file=None, faucet_file=None):
         if network == "mainnet":
-            raise LibraNetError("Mainnet is not supported currently")
+            raise LibraNetError(NetErrorCode.INIT_ERROR, "Mainnet is not supported currently")
         if network not in (NETWORKS.keys()):
-            raise LibraNetError(f"Unknown network: {network}")
+            raise LibraNetError(NetErrorCode.INIT_ERROR, f"Unknown network: {network}")
         self.host = NETWORKS[network]['host']
         self.port = NETWORKS[network]['port']
         self.do_init(validator_set_file, faucet_file)
@@ -87,7 +102,7 @@ class Client:
         self.init_faucet_account(faucet_file)
         self.timeout = 30
         self.client_known_version = 0
-        self.verbose = True
+        self.verbose = False
 
     def init_grpc(self):
         #TODO: should check under ipv6, add [] around ipv6 host
@@ -133,7 +148,7 @@ class Client:
         if isinstance(port, str):
             port = int(port)
         if port <=0 or port > 65535:
-            raise LibraNetError("port must be between 1 and 65535")
+            raise LibraNetError(NetErrorCode.PORT_ERROR, "port must be between 1 and 65535")
         ret.port = port
         ret.do_init(validator_set_file, faucet_file)
         return ret
@@ -185,7 +200,7 @@ class Client:
             except _Rendezvous as e:
                 traceback.print_exc()
                 if not self.change_channel():
-                    raise LibraNetError
+                    raise LibraNetError(NetErrorCode.REQUEST_ERROR, "update_to_latest_ledger")
 
         # verify(self.validator_verifier, request, resp)
         #TODO:need update to latest proof, bitmap is removed.
@@ -336,13 +351,16 @@ class Client:
                 continue
         raise TransactionTimeoutError("wait_for_transaction timeout.")
 
-
-    def transfer_coin(self, sender_account, receiver_address, micro_libra,
+    def transfer_coin(self, sender_account, receiver_address, micro_libra, data=None,
         max_gas=280_000, unit_price=0, is_blocking=False, txn_expiration=100):
-        script = Script.gen_transfer_script(receiver_address,micro_libra)
+        if data is None:
+            script = Script.gen_transfer_script(receiver_address,micro_libra)
+        else:
+            script = Script.gen_transfer_script_with_data(receiver_address, micro_libra, data)
         payload = TransactionPayload('Script', script)
         return self.submit_payload(sender_account, payload, max_gas, unit_price,
             is_blocking, txn_expiration)
+
 
     def create_account(self, sender_account, fresh_address, is_blocking=True):
         script = Script.gen_create_account_script(fresh_address)
@@ -398,9 +416,8 @@ class Client:
                 self.change_times = 0
                 break
             except _Rendezvous as e:
-                traceback.print_exc()
                 if not self.change_channel():
-                    raise LibraNetError(e.args)
+                    raise LibraNetError(NetErrorCode.SUBMIT_ERROR, "submit_transaction_non_block")
 
         status = resp.WhichOneof('status')
         if status == 'ac_status':
@@ -416,7 +433,7 @@ class Client:
             raise TransactionIllegalError(resp.mempool_status.code, resp.mempool_status.message)
         else:
             raise TransactionIllegalError(f"Unknown Error: {resp}")
-        raise LibraNetError("unreacheable")
+        raise LibraNetError(NetErrorCode.SUBMIT_ERROR, "unreacheable")
 
     # Returns events specified by `access_path` with sequence number in range designated by
     # `start_seq_num`, `ascending` and `limit`. If ascending is true this query will return up to
@@ -489,15 +506,11 @@ class Client:
         max_gas=280_000, unit_price=0, is_blocking=False, txn_expiration=100):
         if data is None:
             script = Script.gen_violas_transfer_script(receiver_address,micro_libra,module_address)
-            payload = TransactionPayload('Script', script)
-            return self.submit_payload(sender_account, payload, max_gas, unit_price,
-                is_blocking, txn_expiration)
         else:
-            data = bytes(data, encoding="utf8")
             script = Script.gen_violas_peer_to_peer_transfer_with_data_script(receiver_address, micro_libra, module_address, data)
-            payload = TransactionPayload('Script', script)
-            return self.submit_payload(sender_account, payload, max_gas, unit_price,
-                is_blocking, txn_expiration)
+        payload = TransactionPayload('Script', script)
+        return self.submit_payload(sender_account, payload, max_gas, unit_price,
+            is_blocking, txn_expiration)
 
     # flag 0：提交稳定币换平台币的订单, 1:提交平台币换稳定币的订单
     def violas_make_order(self, sender_account, module_address, order_amount, pick_amount, source_is_vtoken=0,

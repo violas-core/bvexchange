@@ -101,6 +101,9 @@ class ViolasSignedTransaction(ViolasBase):
     def get_index(self):
         return 0
 
+    # def get_timestamp_usec(self):
+    #     return self
+
 
 
 

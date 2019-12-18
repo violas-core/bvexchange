@@ -34,11 +34,11 @@ btc_senders=['2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB','2N9gZbqRiLKAhYCBFu3PquZwmqCB
 
 #violas node list, to connect one
 violas_nodes=[
-        #{'ip':'51.140.241.96', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        #{'ip':'13.68.141.242', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        {'ip':'51.140.241.96', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        {'ip':'13.68.141.242', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
         {'ip':'47.52.195.50', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        #{'ip':'18.220.66.235', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        #{'ip':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        {'ip':'18.220.66.235', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        {'ip':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
         ]
 
 #vioals server list. violas provides query of historical transactions. to connect one 

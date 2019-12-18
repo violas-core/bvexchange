@@ -21,6 +21,17 @@ class LibraP2P(ViolasBase):
         self.sender_module_address = platform_address
         self.receiver_module_address = platform_address
 
+class LibraP2PWithData(ViolasBase):
+    def __init__(self, type, sender, payload):
+        self.type = type
+        self.sender = sender
+        self.receiver = payload.args[0]
+        self.amount = payload.args[1]
+        self.sender_module_address = platform_address
+        self.receiver_module_address = platform_address
+        self.data = bytes.fromhex(payload.args[2]).decode()
+
+
 class LibraCreateAccount(ViolasBase):
     def __init__(self, type, sender, payload):
         self.type = type
@@ -143,6 +154,7 @@ class ViolasWriteSet(ViolasBase):
 type_mapping = {
     "mint": LibraMint,
     "peer_to_peer_transfer": LibraP2P,
+    "peer_to_peer_transfer_with_data": LibraP2PWithData,
     "create_account": LibraCreateAccount,
     "rotate_authentication_key": LibraRotateAuthenticationKey,
     "violas_module": ViolasPublish,
