@@ -14,7 +14,7 @@ import comm
 import comm.error
 import comm.result
 import comm.values
-from comm.result import result
+from comm.result import result, parse_except
 from comm.error import error
 from db.dbv2b import dbv2b
 from btc.btcclient import btcclient
@@ -45,9 +45,7 @@ def merge_v2b_to_rpcparams(rpcparams, dbinfos):
 
         return result(error.SUCCEED, "", rpcparams)
     except Exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e)
+        ret = parse_except(e)
     return ret
 
 def get_reexchange(v2b):
@@ -70,9 +68,7 @@ def get_reexchange(v2b):
         
         ret = result(error.SUCCEED, "", rpcparams)
     except Exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e)
+        ret = parse_except(e)
     return ret
 def checks():
     assert (len(setting.btc_conn) == 4), "btc_conn is invalid."
@@ -105,9 +101,7 @@ def get_btc_sender_address(bclient, excludeds, amount, gas):
         else:
             ret = result(error.FAILED)
     except Exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e)
+        ret = parse_except(e)
     return ret
 
 def works():
@@ -258,9 +252,7 @@ def works():
         ret = result(error.SUCCEED) 
 
     except Exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e) 
+        ret = parse_except(e)
     finally:
         logger.info("works end.")
 

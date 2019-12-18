@@ -15,3 +15,18 @@ class result:
             self.message = message
             self.datas = datas
 
+
+def parse_except(e, msg = None, datas = None):
+    try:
+        e_type = error.EXCEPT
+        raise e
+    except Exception as e: #at last
+        if msg is None:
+            msg = "Exception"
+        if datas is None:
+            datas = e
+
+    ret = result(e_type, msg, datas)
+    return ret
+
+

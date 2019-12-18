@@ -14,7 +14,7 @@ import comm
 import comm.error
 import comm.result
 import comm.values
-from comm.result import result
+from comm.result import result, parse_except
 from comm.error import error
 from db.dbb2v import dbb2v
 from btc.btcclient import btcclient
@@ -43,9 +43,7 @@ def merge_proof_to_rpcparams(rpcparams, dbinfos):
 
         return result(error.SUCCEED, "", rpcparams)
     except Exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e)
+        ret = parse_except(e)
     return ret
 
 def get_excluded(b2v):
@@ -84,9 +82,7 @@ def get_excluded(b2v):
 
         ret = result(error.SUCCEED, "", rpcparams)
     except Exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e)
+        ret = parse_except(e)
     return ret
 
 def checks():
@@ -107,9 +103,7 @@ def hasplatformbalance(vclient, address, vamount = 0):
         else:
             ret = result(error.SUCCEED, "", False)
     except Exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e)
+        ret = parse_except(e)
     return ret
 
 def hasviolasbalance(vclient, address, module, vamount):
@@ -124,9 +118,7 @@ def hasviolasbalance(vclient, address, module, vamount):
         else:
             ret = result(error.SUCCEED, "", False)
     except Exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e)
+        ret = parse_except(e)
     return ret
 
 def update_db_btcsucceed_to_complete(bclient, b2v):
@@ -148,9 +140,7 @@ def update_db_btcsucceed_to_complete(bclient, b2v):
 
         ret = result(error.SUCCEED)
     except exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e)
+        ret = parse_except(e)
     return ret
 
 def rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, receivers):
@@ -190,10 +180,10 @@ def rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module
             else:
                 ret = b2v.update_b2vinfo_to_btcsucceed_commit(vaddress, sequence)
                 assert (ret.state == error.SUCCEED), "db error"
+        ret = result(error.SUCCEED)
     except Exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e)
+        ret = parse_except(e)
+    return ret
 
 def works():
     try:
@@ -346,9 +336,7 @@ def works():
         ret = result(error.SUCCEED) 
 
     except Exception as e:
-        logger.debug(traceback.format_exc(setting.traceback_limit))
-        logger.error(str(e))
-        ret = result(error.EXCEPT, str(e), e) 
+        ret = parse_except(e)
     finally:
         vclient.disconn_node()
         vwallet.dump_wallet()

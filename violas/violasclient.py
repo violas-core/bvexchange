@@ -20,7 +20,7 @@ import random
 import comm
 import comm.error
 import comm.result
-from comm.result import result
+from comm.result import result, parse_except
 from comm.error import error
 from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
@@ -60,9 +60,7 @@ class violaswallet:
                 self.__wallet = WalletLibrary.new()
 
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def dump_wallet(self):
@@ -71,9 +69,7 @@ class violaswallet:
             self.__wallet.write_recovery(self.__wallet_name)
             ret = result(error.SUCCEED)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def new_account(self):
@@ -82,9 +78,7 @@ class violaswallet:
             account = self.__wallet.new_account();
             ret = result(error.SUCCEED, "", account)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def get_account_count(self):
@@ -95,9 +89,7 @@ class violaswallet:
             account = self.__wallet.get_account_by_address_or_refid(addressorid)
             ret = result(error.SUCCEED, "", account)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def has_account_by_address(self, address):
@@ -108,21 +100,17 @@ class violaswallet:
             else:
                 ret = result(error.SUCCEED, "", False)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def has_account(self):
         try:
             self.__wallet.get_account_by_address_or_refid(0)
             ret = result(error.SUCCEED, "", True)
-        except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
         except ValueError as e: #account count is 0, so not found account
             ret = result(error.SUCCEED, "", False)
+        except Exception as e:
+            ret = parse_except(e)
         return ret
 
 
@@ -148,12 +136,12 @@ class violasclient:
             
             for node in nodes:
                 try:
-                    client = Client.new(node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
-                    logger.debug("connect violas node : ip = {} port = {} validator={} faucet ={}".format( \
+                    logger.debug("try connect violas node : ip = {} port = {} validator={} faucet ={}".format( \
                             node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
+                    client = Client.new(node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
+                    client.get_transaction_info(1)
                 except Exception as e:
-                    logger.debug(traceback.format_exc(self.__traceback_limit))
-                    logger.error(str(e))
+                    logger.info("connect violas node failed. test next")
                 else:
                     self.__client = client
                     self.__node = node
@@ -162,9 +150,7 @@ class violasclient:
             #not connect any violas node
             ret = result(error.FAILED,  "connect violas node failed.", "")
         except:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
     
     def disconn_node(self):
@@ -178,9 +164,7 @@ class violasclient:
                 self.__client = None
             ret = result(error.SUCCEED) 
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e)
+            ret = parse_except(e)
         return ret
    
     def create_violas_coin(self, account, is_blocking = True):
@@ -189,9 +173,7 @@ class violasclient:
             self.__client.violas_publish(account, is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def mint_platform_coin(self, address, amount, is_blocking = True):
@@ -200,9 +182,7 @@ class violasclient:
             self.__client.mint_coins(address, amount, is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def bind_module(self, account, module_address, is_blocking=True):
@@ -211,9 +191,7 @@ class violasclient:
             self.__client.violas_init(account, module_address, is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def mint_violas_coin(self, address, amount, module_account, is_blocking=True):
@@ -222,9 +200,7 @@ class violasclient:
             self.__client.violas_mint_coin(address, amount, module_account, is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def send_violas_coin(self, from_account, to_address, amount, module_address, data=None, is_blocking=True):
@@ -233,9 +209,7 @@ class violasclient:
             self.__client.violas_transfer_coin(from_account, to_address, amount, module_address, data, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def get_platform_balance(self, account_address):
@@ -244,9 +218,7 @@ class violasclient:
             balance = self.__client.get_balance(account_address)
             ret = result(error.SUCCEED, "", balance)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def get_violas_balance(self, account_address, module_address):
@@ -255,9 +227,7 @@ class violasclient:
             balance = self.__client.violas_get_balance(account_address, module_address)
             ret = result(error.SUCCEED, "", balance)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def get_account_state(self, address):
@@ -266,9 +236,7 @@ class violasclient:
             state =  self.__client.get_account_state(address)
             ret = result(error.SUCCEED, "", state)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def get_address_sequence(self, address):
@@ -277,9 +245,7 @@ class violasclient:
             num = self.__client.get_sequence_number(address)
             ret = result(error.SUCCEED, "", num)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def get_latest_transaction_version(self):
@@ -288,9 +254,7 @@ class violasclient:
             datas = self.__client.get_latest_transaction_version()
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def account_has_violas_module(self, address, module):
@@ -302,9 +266,7 @@ class violasclient:
             else:
                 ret = result(error.SUCCEED, "", False)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
 
@@ -346,9 +308,7 @@ class violasserver:
             #not connect any violas node
             ret = result(error.FAILED,  "connect violas node failed.", "")
         except:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
     
     def disconn_node(self):
@@ -363,9 +323,7 @@ class violasserver:
                 self.__server = None
             ret = result(error.SUCCEED) 
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
    
     def get_transactions(self, address, module, start):
@@ -395,9 +353,7 @@ class violasserver:
                     datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "baddress":baddress})
                 ret = result(error.SUCCEED, message, datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         finally:
             logger.debug("end get_transactions.")
         return ret
@@ -425,9 +381,7 @@ class violasserver:
                 else:
                     ret = result(error.SUCCEED, jret["message"], False)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         finally:
             logger.debug("end has_transaction.")
         return ret
