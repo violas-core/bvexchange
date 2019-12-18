@@ -13,7 +13,12 @@ class ViolasAccessPath(ViolasBase):
         self.address = int_list_to_hex(access.address)
         self.path = int_list_to_hex(access.path)
 
+
 class ViolasWriteSet(ViolasBase):
-    def __init__(self, write_set: WriteSet):
-        self.access_path = ViolasAccessPath(write_set.write_set[0][0])
-        self.write_op = ViolasWriteOp(write_set.write_set[0][1])
+    def __init__(self, write_set: WriteSet, version = None, info = None, events=[]):
+        self.write_set = [ (ViolasAccessPath(value[0]), ViolasWriteOp(value[1])) for value in write_set.write_set.write_set]
+        # self.access_path = ViolasAccessPath(write_set.write_set[0][0])
+        # self.write_op = ViolasWriteOp(write_set.write_set[0][1])
+
+    def get_index(self):
+        return 1

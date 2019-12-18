@@ -43,13 +43,13 @@ class SignedTransaction(Struct):
             )
 
     def hash(self):
-        shazer = gen_hasher(b"SignedTransaction")
+        shazer = gen_hasher(b"SignedTransaction::libra_types::transaction")
         shazer.update(self.serialize())
         return shazer.digest()
 
     @classmethod
     def from_proto(cls, proto):
-        return cls.deserialize(proto.txn_bytes)
+        return cls.deserialize(proto.transaction)
 
     def check_signature(self):
         message = self.raw_txn.hash()

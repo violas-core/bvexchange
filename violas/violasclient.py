@@ -372,12 +372,8 @@ class violasserver:
         try:
             logger.debug("start get_transactions(address={}, module={}, start={})".format(address, module, start))
             datas = []
-            #sequence = random.randint(1, 10000)
-            #version = random.randint(1, 9999999)
-            #datas = [{"address": "f086b6a2348ac502c708ac41d06fe824c91806cabcd5b2b5fa25ae1c50bed3c6", "amount":10000, "sequence":sequence,  "version":version, "baddress":"2N8qe3KogEF3DjWNsDGr2qLQGgQD3g9oTnc"}]
             url = "http://{}:{}/1.0/violas/vbtc/transaction?receiver_address={}&module_address={}&start_version={}"\
                     .format(self.__node["ip"], self.__node["port"], address, module, start)
-            logger.debug(f"get url={url}")
             response = requests.get(url)
 
             ret = result(error.FAILED, "", "")
@@ -402,6 +398,8 @@ class violasserver:
             logger.debug(traceback.format_exc(self.__traceback_limit))
             logger.error(str(e))
             ret = result(error.EXCEPT, str(e), e)
+        finally:
+            logger.debug("end get_transactions.")
         return ret
     def has_transaction(self, address, module, baddress, sequence, amount, version, receiver):
         try:
@@ -430,5 +428,7 @@ class violasserver:
             logger.debug(traceback.format_exc(self.__traceback_limit))
             logger.error(str(e))
             ret = result(error.EXCEPT, str(e), e)
+        finally:
+            logger.debug("end has_transaction.")
         return ret
 

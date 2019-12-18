@@ -98,6 +98,10 @@ class ViolasSignedTransaction(ViolasBase):
         except:
             return None
 
+    def get_index(self):
+        return 0
+
+
 
 
 

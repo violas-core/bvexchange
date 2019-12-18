@@ -8,7 +8,6 @@ class Module(Struct):
         ('code', [Uint8])
     ]
 
-
     @classmethod
     def gen_violas_publish_module(cls, module_address):
         if isinstance(module_address, bytes):

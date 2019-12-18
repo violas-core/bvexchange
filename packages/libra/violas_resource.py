@@ -1,9 +1,10 @@
 from libra.access_path import *
 from libra.language_storage import StructTag
 from libra.event import EventHandle
+from canoser import BytesT
 
 class ViolasResource(Struct):
-    COIN_MODULE_NAME = "DToken"
+    COIN_MODULE_NAME = "ViolasToken"
     COIN_STRUCT_NAME = "T"
 
     _fields = [
@@ -24,10 +25,12 @@ class ViolasResource(Struct):
     )
 
 class ViolasInfo(Struct):
-    COIN_MODULE_NAME = "DToken"
+    COIN_MODULE_NAME = "ViolasToken"
     COIN_STRUCT_NAME = "Info"
 
     _fields = [
+        ('magic', Uint64),
+        ('token', Address),
         ('allinone_events', EventHandle)
     ]
 
@@ -44,12 +47,15 @@ class ViolasInfo(Struct):
             []
     )
 
-class ViolasOwnerData(Struct):
-    COIN_MODULE_NAME = "DToken"
+
+class OwnerData(Struct):
+    COIN_MODULE_NAME = "ViolasToken"
     COIN_STRUCT_NAME = "OwnerData"
 
     _fields = [
-        ('data', [Uint8])
+        ('data', [Uint8]),
+        ('owner', Address),
+        ('bulletins', BytesT)
     ]
 
     @classmethod
@@ -66,7 +72,7 @@ class ViolasOwnerData(Struct):
     )
 
 class ViolasOrder(Struct):
-    COIN_MODULE_NAME = "DToken"
+    COIN_MODULE_NAME = "ViolasToken"
     COIN_STRUCT_NAME = "Order"
 
     _fields = [
@@ -89,7 +95,7 @@ class ViolasOrder(Struct):
     )
 
 class ViolasOrder2(Struct):
-    COIN_MODULE_NAME = "DToken"
+    COIN_MODULE_NAME = "ViolasToken"
     COIN_STRUCT_NAME = "Order2"
 
     _fields = [

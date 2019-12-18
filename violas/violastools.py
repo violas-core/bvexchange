@@ -5,6 +5,8 @@ import json
 import os
 sys.path.append(os.getcwd())
 sys.path.append("{}/packages".format(os.getcwd()))
+sys.path.append("..")
+sys.path.append("../packages")
 import libra
 from libra import Client
 from libra import WalletLibrary

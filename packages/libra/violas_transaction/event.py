@@ -1,9 +1,11 @@
 from libra.event import EventHandle
 from libra.violas_transaction import ViolasBase
-from libra.event import ContractEvent
+from libra.contract_event import ContractEvent
 from canoser import *
 from libra.account_address import Address
 from libra.language_storage import StructTag
+
+from libra.account_config import AccountEvent
 
 
 class ViolasEventHandle(ViolasBase):
@@ -12,11 +14,6 @@ class ViolasEventHandle(ViolasBase):
         self.key  = self.int_list_to_hex(handle.key)
 
 
-class LibraEventProto(Struct):
-    _fields = [
-        ("amount", Uint64),
-        ("payee", Address)
-    ]
 
 class ViolasEventProto(Struct):
     _fields = [
@@ -38,9 +35,10 @@ class ViolasStructTag(ViolasBase):
 
 
 class LibraEvent(ViolasBase):
-    def __init__(self, event: LibraEventProto):
+    def __init__(self, event: AccountEvent):
         self.amount = event.amount
-        self.payee = self.int_list_to_hex(event.payee)
+        self.account = self.int_list_to_hex(event.account)
+        self.metadata = self.int_list_to_hex(event.metadata)
 
 class ViolasEvent(ViolasBase):
     def __init__(self, event: ViolasEventProto):
@@ -54,7 +52,7 @@ class ViolasEvent(ViolasBase):
 
 
 class ViolasContractEvent(ViolasBase):
-    def __init__(self, event: ContractEvent):
+    def __init__(self, event: ContractEvent, transaction_version=None, event_index=None):
         self.key = self.int_list_to_hex(event.key)
         self.sequence_number = event.event_seq_num
         if(event.type_tag.index == 4):
@@ -64,10 +62,17 @@ class ViolasContractEvent(ViolasBase):
         else:
             self.tag = self.event.type_tag.value
 
-        if len(event.event_data) == 40:
-            self.event = LibraEvent(LibraEventProto.deserialize(event.event_data))
-        else:
+        if self.tag.module == "LibraAccount":
+            self.event = LibraEvent(AccountEvent.deserialize(event.event_data))
+        elif self.tag.module == "ViolasToken":
             self.event = ViolasEvent(ViolasEventProto.deserialize(event.event_data))
+        else:
+            print("unknown event")
+
+        if transaction_version:
+            self.transaction_version = transaction_version
+        if event_index:
+            self.event_index = event_index
 
     def is_libra_event(self):
         return isinstance(self.event, LibraEvent)

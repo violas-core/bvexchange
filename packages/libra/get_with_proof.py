@@ -60,7 +60,8 @@ def verify_response_item(ledger_info, requested_item, response_item):
             atreq.account,
             atreq.sequence_number,
             atreq.fetch_events,
-            atresp.signed_transaction_with_proof,
+            # atresp.signed_transaction_with_proof,
+            atresp.transaction_with_proof,
             atresp.proof_of_current_sequence_number
         )
     elif resp_type == "get_events_by_event_access_path_response":

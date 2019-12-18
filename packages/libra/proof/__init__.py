@@ -2,7 +2,7 @@ from libra.proof.merkle_tree import (get_event_root_hash,
     MerkleTreeInternalNode, SparseMerkleLeafNode)
 from libra.proof.definition import AccumulatorProof, SparseMerkleProof, MAX_ACCUMULATOR_PROOF_DEPTH
 from libra.hasher import *
-from libra.transaction import SignedTransaction, TransactionInfo
+from libra.transaction import SignedTransaction, TransactionInfo, Transaction
 from libra.account_resource import AccountStateBlob
 from libra.validator_verifier import VerifyError
 
@@ -35,7 +35,6 @@ def verify_transaction_info(
         ledger_info_to_transaction_info_proof)
 
 
-
 # Verifies an element whose hash is `element_hash` and version is `element_version` exists in the
 # accumulator whose root hash is `expected_root_hash` using the provided proof.
 def verify_accumulator_element(
@@ -48,7 +47,9 @@ def verify_accumulator_element(
     assert len(siblings) <= MAX_ACCUMULATOR_PROOF_DEPTH
     index = element_index
     hashv = element_hash
-    for sibling_hash in reversed(siblings):
+    for sibling_hash in siblings:
+        if not sibling_hash:
+            sibling_hash = bytes(ACCUMULATOR_PLACEHOLDER_HASH)
         hasher = hash_func()
         if index % 2 == 0:
             hashv = MerkleTreeInternalNode(hashv, sibling_hash, hasher).hash()
@@ -139,7 +140,7 @@ def verify_transaction_list(txn_list_with_proof, ledger_info):
     #TODO:change repeated SignedTransaction transactions = 1; to repeated Transaction transactions = 1;
     #TODO: all transactions should be same epoch
     transactions = txn_list_with_proof.transactions
-    infos = txn_list_with_proof.infos
+    infos = txn_list_with_proof.proof.transaction_infos
     len_tx = len(transactions)
     len_info = len(infos)
     if len_tx != len_info:
@@ -149,52 +150,81 @@ def verify_transaction_list(txn_list_with_proof, ledger_info):
         verify_event_root_hash(event_lists, infos)
     check_txn_list_sig_with_infos(txn_list_with_proof)
     #Get the hashes of all nodes at the accumulator leaf level.
-    hashes = [TransactionInfo.from_proto(x).hash() for x in infos]
-    hashes = collections.deque(hashes)
-    firstp = AccumulatorProof.from_proto(txn_list_with_proof.proof_of_first_transaction)
-    first = firstp.siblings
-    if txn_list_with_proof.HasField("proof_of_last_transaction"):
-        lastp = AccumulatorProof.from_proto(txn_list_with_proof.proof_of_last_transaction)
-        last = lastp.siblings
-    else:
-        last = first
-    first_idx = txn_list_with_proof.first_transaction_version.value
-    zipped = zip(first, last)
-    ite = reversed(list(zipped))
-    for first_sibling, last_sibling in ite:
-        num_nodes = len(hashes)
-        if num_nodes > 1:
-            last_idx = first_idx + num_nodes - 1
-            if last_idx % 2 == 0:
-                hashes.append(last_sibling)
-            else:
-                assert hashes[num_nodes - 2] == last_sibling
-            if first_idx % 2 == 0:
-                assert hashes[1] == first_sibling
-            else:
-                hashes.appendleft(first_sibling)
-        else:
-            assert first_sibling == last_sibling
-            if first_idx % 2 == 0:
-                hashes.append(first_sibling)
-            else:
-                hashes.appendleft(first_sibling)
-        parent_hashes = collections.deque()
-        for pair in more_itertools.chunked(hashes, 2):
-            assert len(pair) == 2
-            hasher = TransactionAccumulatorHasher()
-            hash_value = MerkleTreeInternalNode(pair[0], pair[1], hasher).hash()
-            parent_hashes.append(hash_value)
-        hashes = parent_hashes
-        first_idx //= 2
-    assert len(hashes) == 1
-    assert hashes[0] == bytes(ledger_info.transaction_accumulator_hash)
+    current_hashs = [TransactionInfo.from_proto(x).hash() for x in infos]
+    parent_hashes = []
+    first_pos = txn_list_with_proof.first_transaction_version.value
+    left_siblings = list(reversed(txn_list_with_proof.proof.ledger_info_to_transaction_infos_proof.left_siblings))
+    left_siblings = [ sibling if sibling else bytes(ACCUMULATOR_PLACEHOLDER_HASH) for sibling in left_siblings]
+    right_siblings = list(reversed(txn_list_with_proof.proof.ledger_info_to_transaction_infos_proof.right_siblings))
+    right_siblings = [ sibling if sibling else bytes(ACCUMULATOR_PLACEHOLDER_HASH) for sibling in right_siblings]
+
+    while len(current_hashs) > 1 or len(left_siblings) or len(right_siblings):
+        current_hashs = list(reversed(current_hashs))
+        if first_pos % 2 == 1:
+            left_hash = left_siblings.pop()
+            right_hash = current_hashs.pop()
+            parent_hashes.append(MerkleTreeInternalNode(left_hash, right_hash, TransactionAccumulatorHasher()).hash())
+
+        while len(current_hashs) >= 2:
+            parent_hashes.append(
+                MerkleTreeInternalNode(current_hashs.pop(), current_hashs.pop(), TransactionAccumulatorHasher()).hash()
+            )
+        if len(current_hashs):
+            left_hash = current_hashs.pop()
+            right_hash = right_siblings.pop()
+            parent_hashes.append(MerkleTreeInternalNode(left_hash, right_hash, TransactionAccumulatorHasher()).hash())
+        current_hashs, parent_hashes = parent_hashes, []
+        first_pos //= 2
+
+    assert current_hashs[0] == bytes(ledger_info.transaction_accumulator_hash)
+
+
+
+    # firstp = AccumulatorProof.from_proto(txn_list_with_proof.proof_of_first_transaction)
+    # firstp = AccumulatorProof.from_proto(txn_list_with_proof.proof_of_first_transaction)
+    # first = firstp.siblings
+    # if txn_list_with_proof.HasField("proof_of_last_transaction"):
+    #     lastp = AccumulatorProof.from_proto(txn_list_with_proof.proof_of_last_transaction)
+    #     last = lastp.siblings
+    # else:
+    #     last = first
+    # first_idx = txn_list_with_proof.first_transaction_version.value
+    # zipped = zip(first, last)
+    # ite = reversed(list(zipped))
+    # for first_sibling, last_sibling in ite:
+    #     num_nodes = len(hashes)
+    #     if num_nodes > 1:
+    #         last_idx = first_idx + num_nodes - 1
+    #         if last_idx % 2 == 0:
+    #             hashes.append(last_sibling)
+    #         else:
+    #             assert hashes[num_nodes - 2] == last_sibling
+    #         if first_idx % 2 == 0:
+    #             assert hashes[1] == first_sibling
+    #         else:
+    #             hashes.appendleft(first_sibling)
+    #     else:
+    #         assert first_sibling == last_sibling
+    #         if first_idx % 2 == 0:
+    #             hashes.append(first_sibling)
+    #         else:
+    #             hashes.appendleft(first_sibling)
+    #     parent_hashes = collections.deque()
+    #     for pair in more_itertools.chunked(hashes, 2):
+    #         assert len(pair) == 2
+    #         hasher = TransactionAccumulatorHasher()
+    #         hash_value = MerkleTreeInternalNode(pair[0], pair[1], hasher).hash()
+    #         parent_hashes.append(hash_value)
+    #     hashes = parent_hashes
+    #     first_idx //= 2
+    # assert len(hashes) == 1
+    # assert hashes[0] == bytes(ledger_info.transaction_accumulator_hash)
 
 
 def check_txn_list_sig_with_infos(txn_list_with_proof):
-    zipped = zip(txn_list_with_proof.transactions, txn_list_with_proof.infos)
+    zipped = zip(txn_list_with_proof.transactions, txn_list_with_proof.proof.transaction_infos)
     for tx, info in zipped:
-        stx = SignedTransaction.from_proto(tx)
+        stx = Transaction.deserialize(tx.transaction)
         if stx.hash() != info.transaction_hash:
             raise VerifyError(f"transaction hash mismatch:{stx}.")
 

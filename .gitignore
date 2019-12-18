@@ -10,6 +10,7 @@ vwallet
 *.rotate
 consensus_peers.config.toml
 temp_faucet_keys
+faucet_keys
 tags
 
 # db file

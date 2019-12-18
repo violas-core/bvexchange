@@ -1,6 +1,6 @@
 from libra.hasher import *
 from libra.proof import ensure, bail, verify_transaction_info
-from libra.transaction import SignedTransaction, TransactionInfo
+from libra.transaction import SignedTransaction, TransactionInfo, Transaction
 from libra.proof.merkle_tree import get_event_root_hash
 
 class SignedTransactionWithProof:
@@ -13,7 +13,9 @@ class SignedTransactionWithProof:
             sender,
             sequence_number
         ):
-        stx = SignedTransaction.deserialize(signed_transaction_with_proof.signed_transaction.txn_bytes)
+        # stx = SignedTransaction.deserialize(signed_transaction_with_proof.signed_transaction.txn_bytes)
+        stx = Transaction.deserialize(signed_transaction_with_proof.transaction.transaction)
+
         #TODO: avoid duplicated deserialize.
         ensure(
             signed_transaction_with_proof.version == version,

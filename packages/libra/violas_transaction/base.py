@@ -1,12 +1,29 @@
 import json
 
+# def type_mapping(value):
+#     if isinstance(value, ViolasBase):
+#         value = value.to_json()
+#     elif isinstance(value, list):
+#         value = [type_mapping(v) for v in value]
+#     elif isinstance(value, dict):
+#         value = { k : type_mapping(v) for k, v in value.items() }
+#     return value
+
 def type_mapping(value):
-    if isinstance(value, ViolasBase):
-        value = value.to_json()
-    elif isinstance(value, list):
-        value = [type_mapping(v) for v in value]
-    elif isinstance(value, dict):
-        value = { k : type_mapping(v) for k, v in value.items() }
+    while True:
+        if isinstance(value, ViolasBase):
+            value = value.to_json()
+        elif isinstance(value, list):
+            value = [type_mapping(v) for v in value]
+            break
+        elif isinstance(value, dict):
+            value = { k : type_mapping(v) for k, v in value.items()}
+            break
+        elif isinstance(value, tuple):
+            value = [type_mapping(v) for v in value]
+            break
+        else:
+            break
     return value
 
 class ViolasBase:
