@@ -14,7 +14,7 @@ import comm
 import comm.error
 import comm.result
 import comm.values
-from comm.result import result
+from comm.result import result, parse_except
 from comm.error import error
 from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
@@ -72,9 +72,7 @@ class btcclient:
 
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def isexproofcomplete(self, address, sequence):
@@ -87,9 +85,7 @@ class btcclient:
             logger.debug(datas)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def listexproofforstart(self, receiver, excluded):
@@ -113,9 +109,7 @@ class btcclient:
             datas = self.__rpc_connection.violas_sendexproofstart(fromaddress, toaddress, f"{amount:.8f}", vaddress, sequence, vtoken)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, version):
@@ -127,9 +121,7 @@ class btcclient:
             datas = self.__rpc_connection.violas_sendexproofend(fromaddress, toaddress, vaddress, sequence, f"{amount:.8f}", version)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def sendtoaddress(self, address, amount):
@@ -138,9 +130,7 @@ class btcclient:
             datas = self.__rpc_connection.sendtoaddress(address, f"{amount:.8f}")
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
    
     def sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, version):
@@ -149,9 +139,7 @@ class btcclient:
             datas = self.__rpc_connection.violas_sendexproofmark(fromaddress, toaddress, f"{toamount:.8f}", vaddress, sequence, version)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def generatetoaddress(self, count, address):
@@ -160,9 +148,7 @@ class btcclient:
             datas = self.__rpc_connection.generatetoaddress(count, address)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def listunspent(self, minconf = 1, maxconf = 9999999, addresses = None, include_unsafe = True, query_options = None):
@@ -171,9 +157,7 @@ class btcclient:
             datas = self.__rpc_connection.listunspent(minconf, maxconf, addresses, include_unsafe, query_options)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def help(self):
@@ -182,9 +166,7 @@ class btcclient:
             datas = self.__rpc_connection.help()
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def getwalletbalance(self):
@@ -194,9 +176,7 @@ class btcclient:
             balance = walletinfo.get("balance", 0)
             ret = result(error.SUCCEED, "", balance)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def getwalletaddressbalance(self, address):
@@ -213,9 +193,7 @@ class btcclient:
 
             ret = result(error.SUCCEED, "", balance)
         except Exception as e:
-            logger.debug(traceback.format_exc(self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
 
     def has_btc_banlance(self, address, vamount, gas = comm.values.MIN_EST_GAS):
@@ -232,37 +210,12 @@ class btcclient:
             else:
                 ret = result(error.SUCCEED, "", True)
         except Exception as e:
-            logger.debug(traceback.format_exc(setting.traceback_limit))
-            logger.error(str(e))
-            ret = result(error.EXCEPT, str(e), e)
+            ret = parse_except(e)
         return ret
-    
-
-def test_conn():
-    exg = btcclient(setting.traceback_limit, setting.btc_conn)
-    logger.debug("start test_conn")
-    ret = exg.listexproofforstart(setting.receivers[0], "")
-    if ret.state == error.SUCCEED and ret.datas:
-        for data in ret.datas:
-            logger.info(data)
-
-    if(ret.state != error.SUCCEED):
-        raise Exception(ret)
-
-    ret = exg.listexproofforend(setting.receivers[0], "")
-    if ret.state == error.SUCCEED and ret.datas:
-        for data in ret.datas:
-            logger.info(data)
-
-    ret = exg.listexproofforcancel(setting.receivers[0], "")
-    if ret.state == error.SUCCEED and ret.datas:
-        for data in ret.datas:
-            logger.info(data)
 
 def main():
     try:
        logger.debug("start main")
-       test_conn()
     except Exception as e:
         logger.error(traceback.format_exc(setting.traceback_limit))
     finally:

@@ -5,6 +5,7 @@ import operator
 import signal
 import sys, os
 print(os.getcwd())
+sys.path.append("..")
 import traceback
 import log
 import log.logger
@@ -12,6 +13,7 @@ import threading
 from time import sleep, ctime
 '''
 '''
+logger = log.logger.getLogger("test")
 class MyNumbers:
     def __iter__(self):
         self.b = 1
@@ -32,15 +34,13 @@ def hello():
     hwe = "hello, \
             world"
     Hwe = "Hello, world"
-    hwc = "你好，世界"
+    hwc = ""
 
-    print("你好, world")
     print(Hwe)
 
     port = 102
 
     print("port = %d", port)
-    input("输入enter退出，其它任意键显示...\n")
     if hwe:
         print(hwe)
         print(hwc)
@@ -117,7 +117,20 @@ def test_except():
         #traceback.print_tb(exc_traceback_obj)
         #traceback.print_exception(exc_type, exc_value, exc_traceback_obj, limit=3, file=sys.stdout)
         logger.error(traceback.format_exc(limit=1, file=sys.stdout))
-
+def parse(e):
+    try:
+        raise e
+    except IOError as e:
+        logger.debug("ioerror")
+    except ZeroDivisionError as e:
+        logger.debug("ZeroDivisionError")
+    except Exception as e:
+        logger.debug("Exception")
+def test_except_parse():
+    try:
+        f = open("a", 'r')
+    except Exception as e:
+        parse(e)
 def test_logging():
     logger.debug('This is a customer debug message')
     logger.info('This is an customer info message')
@@ -125,4 +138,5 @@ def test_logging():
     logger.error('This is an customer error message')
     logger.critical('This is a customer critical message')
 
-
+if __name__ == "__main__":
+    test_except_parse()
