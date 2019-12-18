@@ -23,6 +23,19 @@ class Script(Struct):
         return Script(code, args)
 
     @classmethod
+    def gen_transfer_script_with_data(cls, receiver_address,micro_libra, mesg):
+        if isinstance(mesg, str):
+            mesg = bytes(mesg, encoding="utf8")
+        receiver_address = Address.normalize_to_int_list(receiver_address)
+        code = bytecodes["peer_to_peer_transfer_with_data"]
+        args = [
+                TransactionArgument('Address', receiver_address),
+                TransactionArgument('U64', micro_libra),
+                TransactionArgument('ByteArray', bytes_to_int_list(mesg))
+        ]
+        return Script(code, args)
+
+    @classmethod
     def gen_mint_script(cls, receiver_address,micro_libra):
         receiver_address = Address.normalize_to_int_list(receiver_address)
         code = bytecodes["mint"]
@@ -54,8 +67,6 @@ class Script(Struct):
     @staticmethod
     def get_script_bytecode(script_name):
         return bytecodes[script_name]
-
-
 
     @classmethod
     def gen_violas_init_script(cls,module_address):

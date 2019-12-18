@@ -38,7 +38,7 @@ class LibraEvent(ViolasBase):
     def __init__(self, event: AccountEvent):
         self.amount = event.amount
         self.account = self.int_list_to_hex(event.account)
-        self.metadata = self.int_list_to_hex(event.metadata)
+        self.metadata = bytes(event.metadata).decode()
 
 class ViolasEvent(ViolasBase):
     def __init__(self, event: ViolasEventProto):

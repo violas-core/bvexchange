@@ -227,9 +227,9 @@ class violasclient:
             ret = result(error.EXCEPT, str(e), e)
         return ret
 
-    def send_coin(self, from_account, to_address, amount, module_address, data=None, is_blocking=True):
+    def send_violas_coin(self, from_account, to_address, amount, module_address, data=None, is_blocking=True):
         try:
-            logger.debug("start send_coins(from_account={}, to_address={}, amount={}, module_address={}, data={}, is_blocking={})".format(from_account.address.hex(), to_address, amount, module_address, data, is_blocking))
+            logger.debug("start send_violas_coins(from_account={}, to_address={}, amount={}, module_address={}, data={}, is_blocking={})".format(from_account.address.hex(), to_address, amount, module_address, data, is_blocking))
             self.__client.violas_transfer_coin(from_account, to_address, amount, module_address, data, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:

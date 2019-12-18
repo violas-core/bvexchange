@@ -19,3 +19,9 @@ class ViolasBlockMetadata(ViolasBase):
     def get_index(self):
         return 2
 
+    def get_version(self):
+        return self.version
+
+    def get_info(self):
+        return self.info
+
