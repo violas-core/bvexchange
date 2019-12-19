@@ -17,17 +17,18 @@ from libra.violas_transaction import LegalTender
 import traceback
 
 old_violas_config = {
-    "host": "ac.testnet.libra.org",
-    "port": 8000,
+    "host": "125.39.5.57",
+    "port": 40001,
     "validator_set_file": None,
     "faucet_file": None
 }
 import collections
 violas_hosts = ["51.140.241.96", "13.68.141.242", "18.220.66.235", "52.27.228.84", "47.52.195.50"]
 violas_config = {
+    'host': "51.140.241.96",
     "port": 40001,
-    "validator_set_file": "/tmp/consensus_peers.config.toml",
-    "faucet_file": "/tmp/temp_faucet_keys"
+    "validator_set_file": "/root/violas_config/consensus_peers.config.toml",
+    "faucet_file": "/root/violas_config/temp_faucet_keys"
 }
 
 tmp_config = {
@@ -37,27 +38,28 @@ tmp_config = {
     "faucet_file": "/tmp/5aec89e92848a55db1f475823a8cd330/temp_faucet_keys"
 }
 
-client = Client.new(**tmp_config)
-wallet = WalletLibrary.new()
-a1 = wallet.new_account()
-a2 = wallet.new_account()
-num = 0
-while True:
-    host = violas_hosts[num % 5]
-    s_time = time.time()
-    client = Client.new(host, **violas_config)
-    try:
-        client.mint_coins(a1.address, 100, is_blocking=True)
-    except Exception as e:
-        traceback.print_exc()
-    print(f"Mint Coin;     {time.time()-s_time};   IP:{host};   {num}")
-    s_time = time.time()
-    try:
-        client.transfer_coin(a1, a2.address, 10, is_blocking=True)
-    except Exception as e:
-        traceback.print_exc()
-    print(f"Transfer Coin; {time.time()-s_time};   IP:{host};   {num}")
-    num += 1
+client = Client.new(**old_violas_config)
+json_print(client.get_transaction(100, True).to_json())
+# wallet = WalletLibrary.new()
+# a1 = wallet.new_account()
+# a2 = wallet.new_account()
+# num = 0
+# while True:
+#     host = violas_hosts[num % 5]
+#     s_time = time.time()
+#     client = Client.new(host, **violas_config)
+#     try:
+#         client.mint_coins(a1.address, 100, is_blocking=True)
+#     except Exception as e:
+#         traceback.print_exc()
+#     print(f"Mint Coin;     {time.time()-s_time};   IP:{host};   {num}")
+#     s_time = time.time()
+#     try:
+#         client.transfer_coin(a1, a2.address, 10, is_blocking=True)
+#     except Exception as e:
+#         traceback.print_exc()
+#     print(f"Transfer Coin; {time.time()-s_time};   IP:{host};   {num}")
+#     num += 1
 
 
 

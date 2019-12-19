@@ -198,7 +198,6 @@ class Client:
                 self.change_times = 0
                 break
             except _Rendezvous as e:
-                traceback.print_exc()
                 if not self.change_channel():
                     raise LibraNetError(NetErrorCode.REQUEST_ERROR, "update_to_latest_ledger")
 
