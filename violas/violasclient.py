@@ -141,7 +141,7 @@ class violasclient:
                     client = Client.new(node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
                     client.get_transaction_info(1)
                 except Exception as e:
-                    logger.info("connect violas node failed. test next")
+                    logger.info(f"connect violas node failed({e}). test next...")
                 else:
                     self.__client = client
                     self.__node = node
