@@ -3,6 +3,7 @@
 import sys
 from . import error
 
+import traceback
 name="result"
 error = error.error
 class result:
@@ -21,6 +22,7 @@ def parse_except(e, msg = None, datas = None):
         e_type = error.EXCEPT
         raise e
     except Exception as e: #at last
+        print(traceback.format_exc(limit=10))
         if msg is None:
             msg = "Exception"
         if datas is None:
