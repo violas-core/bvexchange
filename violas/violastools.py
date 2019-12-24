@@ -4,9 +4,9 @@ import sys, getopt
 import json
 import os
 sys.path.append(os.getcwd())
-sys.path.append("{}/packages".format(os.getcwd()))
+sys.path.append("{}/packages/libra-client".format(os.getcwd()))
 sys.path.append("..")
-sys.path.append("../packages")
+sys.path.append("../packages/libra-client")
 
 import libra
 from libra import Client
@@ -37,13 +37,9 @@ name="violastools"
 logger = log.logger.getLogger(name) 
 
 wallet_name = "vwallet"
-def new_account():
-    global wallet_name
-    wallet = violaswallet(setting.traceback_limit, wallet_name)
-    ret = wallet.new_account()
-    assert ret.state == error.SUCCEED, "new_account failed"
-    logger.debug("account address : {}".format(ret.datas.address.hex()))
-
+'''
+*************************************************violasclient oper*******************************************************
+'''
 def mint_platform_coin(address, amount):
     logger.debug("start mcreate_violas_coin otform_coin = {} amount={}".format(address, address))
     client = violasclient(setting.traceback_limit, setting.violas_nodes)
@@ -125,6 +121,39 @@ def get_violas_balance(address, module):
     ret = client.get_violas_balance(address, module)
     logger.debug("balance: {0}".format(ret.datas))
 
+def get_latest_transaction_version():
+    logger.debug("start get_latest_transaction_version")
+    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    ret = client.get_latest_transaction_version()
+    logger.debug("latest version: {0}".format(ret.datas))
+
+def get_transactions(start_version, limit = 1, fetch_event = False):
+    logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
+    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    ret = client.get_transactions(start_version, limit, fetch_event)
+    if ret.state != error.SUCCEED:
+        return
+    if ret.datas is None or len(ret.datas) == 0:
+        return
+    print(f"count: {len(ret.datas)}")
+
+    for data in ret.datas:
+        print(data.to_json())
+'''
+*************************************************violaswallet oper*******************************************************
+'''
+def new_account():
+    global wallet_name
+    wallet = violaswallet(setting.traceback_limit, wallet_name)
+    ret = wallet.new_account()
+    assert ret.state == error.SUCCEED, "new_account failed"
+    logger.debug("account address : {}".format(ret.datas.address.hex()))
+
+def account_has_violas_module(address, module):
+    logger.debug("start account_has_violas_module address= {} module = {}".format(address, module))
+    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    logger.debug(client.account_has_violas_module(address, module).datas)
+
 def show_accounts():
     global wallet_name
     wallet = violaswallet(setting.traceback_limit, wallet_name)
@@ -146,9 +175,11 @@ def has_account(address):
     global wallet_name
     wallet = violaswallet(setting.traceback_limit, wallet_name)
     logger.debug(wallet.has_account_by_address(address).datas)
-
-def get_transactions(address, module, start):
-    logger.debug("start get_balance address= {} module = {}, start={}".format(address, module, start))
+'''
+*************************************************violasserver oper*******************************************************
+'''
+def get_account_transactions(address, module, start):
+    logger.debug("start get_account_transactions address= {} module = {}, start={}".format(address, module, start))
     server = violasserver(setting.traceback_limit, setting.violas_servers)
     logger.debug(server.get_transactions(address, module, start).datas)
     
@@ -157,11 +188,10 @@ def has_transaction(address, module, baddress, sequence, amount, version, receiv
     server = violasserver(setting.traceback_limit, setting.violas_servers)
     logger.debug(server.has_transaction(address, module, baddress, sequence, amount, version, receiver).datas)
 
-def account_has_violas_module(address, module):
-    logger.debug("start account_has_violas_module address= {} module = {}".format(address, module))
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
-    logger.debug(client.account_has_violas_module(address, module).datas)
     
+'''
+*************************************************main oper*******************************************************
+'''
 def init_args(pargs):
     pargs.append("help", "show arg list.")
     pargs.append("mint_platform_coin", "mint vtoken(amount) to target address.", True, ["address", "amount"])
@@ -175,9 +205,12 @@ def init_args(pargs):
     pargs.append("show_accounts", "show all counts address list(local wallet).")
     pargs.append("get_violas_balance", "get address's token(module) amount.", True, ["address", "module"])
     pargs.append("get_platform_balance", "get address's platform coin amount.", True, ["address"])
-    pargs.append("get_transactions", "get transactions from violas server.", True, ["address", "module", "start"])
+    pargs.append("get_account_transactions", "get account's transactions from violas server.", True, ["address", "module", "start"])
     pargs.append("has_transaction", "check transaction is valid from violas server.", True, ["address", "module", "btcaddress", "sequence", "amount","version", "receiver"])
     pargs.append("account_has_violas_module", "check address binded module.", True, ["address", "module"])
+    pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=False"])
+    pargs.append("get_latest_transaction_version", "show latest transaction version.")
+
 
 def run(argc, argv):
     try:
@@ -253,10 +286,19 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             get_platform_balance(arg)
-        elif pargs.is_matched(opt, ["get_transactions"]):
+        elif pargs.is_matched(opt, ["get_account_transactions"]):
             if len(arg_list) != 3:
                 pargs.exit_error_opt(opt)
-            get_transactions(arg_list[0], arg_list[1], int(arg_list[2]))
+            get_account_transactions(arg_list[0], arg_list[1], int(arg_list[2]))
+        elif pargs.is_matched(opt, ["get_transactions"]):
+            if len(arg_list) != 3 and len(arg_list) != 2 and len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            if len(arg_list) == 3:
+                get_transactions(int(arg_list[0]), int(arg_list[1]), arg_list[2] in ("True"))
+            elif len(arg_list) == 2:
+                get_transactions(int(arg_list[0]), int(arg_list[1]))
+            elif len(arg_list) == 1:
+                get_transactions(int(arg_list[0]))
         elif pargs.is_matched(opt, ["has_transaction"]):
             if len(arg_list) != 7:
                 pargs.exit_error_opt(opt)
@@ -265,6 +307,8 @@ def run(argc, argv):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
             account_has_violas_module(arg_list[0], arg_list[1])
+        elif pargs.is_matched(opt, ["get_latest_transaction_version"]):
+            get_latest_transaction_version()
         elif opt == '-s':
             logger.debug(arg)
     logger.debug("end manage.main")
