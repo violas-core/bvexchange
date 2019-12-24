@@ -4,7 +4,7 @@ import sys
 import json
 import os
 sys.path.append(os.getcwd())
-sys.path.append("{}/packages".format(os.getcwd()))
+sys.path.append("{}/packages/libra-client".format(os.getcwd()))
 import libra
 from libra import Client
 from libra import WalletLibrary
@@ -139,7 +139,7 @@ class violasclient:
                     logger.debug("try connect violas node : ip = {} port = {} validator={} faucet ={}".format( \
                             node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
                     client = Client.new(node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
-                    client.get_transaction_info(1)
+                    client.get_latest_transaction_version()
                 except Exception as e:
                     logger.info(f"connect violas node failed({e}). test next...")
                 else:
@@ -265,6 +265,15 @@ class violasclient:
                 ret = result(error.SUCCEED, "", True)
             else:
                 ret = result(error.SUCCEED, "", False)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_transactions(self, start_version, limit = 1, fetch_event=False):
+        try:
+            logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
+            datas = self.__client.get_transactions(start_version, limit, fetch_event)
+            ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)
         return ret

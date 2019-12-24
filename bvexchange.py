@@ -9,6 +9,7 @@ import signal
 import sys, os
 os.chdir(os.path.dirname(sys.argv[0]))
 sys.path.append("./packages")
+sys.path.append("./packages/libra-client")
 import traceback
 import log
 import log.logger
