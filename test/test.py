@@ -10,7 +10,7 @@ import traceback
 import log
 import log.logger
 import threading
-import hashlib
+import hashlib 
 import binascii
 from time import sleep, ctime
 '''
@@ -141,9 +141,8 @@ def test_logging():
     logger.critical('This is a customer critical message')
 
 def test_hash():
-    #x = hashlib.pbkdf2_hmac("sha3-512", b"asd", b"", 1)
-    #print("x_1 = " + binascii.hexlify(x).decode())
-    print(hashlib.sha3_256("qqqqqqqqqqqqqqqqqqqqqqqq".encode('utf-8')).hexdigest())
+    hashlib.pbkdf2_hmac("sha3-256","adsf".encode('utf-8'), b"test", 1024)
+    #print(hashlib.sha3_256("qqqqqqqqqqqqqqqqqqqqqqqq".encode('utf-8')).hexdigest())
 
 if __name__ == "__main__":
     test_hash()
