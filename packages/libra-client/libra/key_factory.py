@@ -33,7 +33,6 @@ class KeyFactory:
         # else:
         #     stretched = hashlib.pbkdf2_hmac("sha512", mnemonic, passphrase, 2048)
 
-
         stretched = hashlib.pbkdf2_hmac("sha512", mnemonic, passphrase, 2048)
         return stretched[:64]
 
