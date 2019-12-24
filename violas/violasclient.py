@@ -5,6 +5,9 @@ import json
 import os
 sys.path.append(os.getcwd())
 sys.path.append("{}/packages/libra-client".format(os.getcwd()))
+sys.path.append("..")
+sys.path.append("../packages/libra-client")
+print(sys.path)
 import libra
 from libra import Client
 from libra import WalletLibrary
@@ -149,7 +152,7 @@ class violasclient:
 
             #not connect any violas node
             ret = result(error.FAILED,  "connect violas node failed.", "")
-        except:
+        except Exception as e:
             ret = parse_except(e)
         return ret
     
@@ -395,3 +398,22 @@ class violasserver:
             logger.debug("end has_transaction.")
         return ret
 
+def _test_get_transactions():
+    latest_ver = 1000
+    i = 0
+    step = 1000
+    while i < latest_ver:
+        try:
+            client = violasclient(setting.traceback_limit, setting.violas_nodes)
+            latest_ver = client.get_latest_transaction_version().datas;
+            ret = client.get_transactions(i, step)
+            for data in ret.datas:
+                print(data.to_json())
+            i += step
+        except Exception as e:
+            continue
+        
+def main():
+    _test_get_transactions()
+if __name__ == "__main__":
+    main()

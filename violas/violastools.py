@@ -138,7 +138,8 @@ def get_transactions(start_version, limit = 1, fetch_event = False):
     print(f"count: {len(ret.datas)}")
 
     for data in ret.datas:
-        print(data.to_json())
+        json_print(data.to_json())
+
 '''
 *************************************************violaswallet oper*******************************************************
 '''

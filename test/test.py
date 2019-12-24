@@ -144,5 +144,33 @@ def test_hash():
     hashlib.pbkdf2_hmac("sha3-256","adsf".encode('utf-8'), b"test", 1024)
     #print(hashlib.sha3_256("qqqqqqqqqqqqqqqqqqqqqqqq".encode('utf-8')).hexdigest())
 
+class tclass:
+    def __init__(self, index, name):
+        print("tclass")
+        self.index = index
+        self.name = name
+
+class xclass:
+    def __init__(self, index, name):
+        print("xclass")
+        self.index = index
+        self.name = name
+
+def create_tuple():
+    data = [11, 12, 13]
+    data_name = [0, 1, 0]
+    return [(tclass, xclass)[cn](c, cn) for index, (c, cn) in enumerate(zip(data, data_name))] 
+    #return [print(index, c, cn) for index, (c, cn) in enumerate(zip(data, data_name))] 
+
+def test_tuple():
+    create_tuple()
+
+    #seq = ['one','two','three']
+    #for i,element in enumerate(seq):
+    #    print(i,element)
+    return
+    for data in datas:
+        print(data[0])
+
 if __name__ == "__main__":
-    test_hash()
+    test_tuple()
