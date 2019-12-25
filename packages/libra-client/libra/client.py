@@ -17,6 +17,8 @@ from libra.trusted_peers import ConsensusPeersConfig
 from libra.ledger_info import LedgerInfo
 from libra.get_with_proof import verify
 from libra.contract_event import ContractEvent
+from libra.violas_transaction.raw_transaction import ViolasRawTransaction
+
 
 from libra.proto.admission_control_pb2 import SubmitTransactionRequest, AdmissionControlStatusCode
 from libra.proto.admission_control_pb2_grpc import AdmissionControlStub
@@ -360,7 +362,6 @@ class Client:
         return self.submit_payload(sender_account, payload, max_gas, unit_price,
             is_blocking, txn_expiration)
 
-
     def create_account(self, sender_account, fresh_address, is_blocking=True):
         script = Script.gen_create_account_script(fresh_address)
         payload = TransactionPayload('Script', script)
@@ -397,6 +398,28 @@ class Client:
         request = SubmitTransactionRequest()
         request.transaction.txn_bytes = signed_txn
         return self.submit_transaction(request, signed_txn, is_blocking)
+
+    def parse_signed_txn(self, signed_txn, check=True):
+        if isinstance(signed_txn, str):
+            signed_txn = bytes.fromhex(signed_txn)
+        txn = SignedTransaction.deserialize(signed_txn)
+        if check:
+            from nacl.signing import VerifyKey
+            from canoser.util import int_list_to_bytes
+            from libra.key_factory import new_sha3_256
+            pubkey = int_list_to_bytes(txn.public_key)
+            sender = int_list_to_bytes(txn.raw_txn.sender)
+            shazer = new_sha3_256()
+            shazer.update(pubkey)
+            address = shazer.digest()
+            if sender != address:
+                raise TransactionIllegalError(f"{sender.hex()} != {address.hex()}")
+            try:
+                VerifyKey(pubkey).verify(txn.raw_txn.hash(), bytes(txn.signature))
+            except:
+                raise TransactionIllegalError(f"Signature was forged or corrupt")
+        return ViolasSignedTransaction(txn)
+
 
     def submit_transaction(self, request, signed_txn, is_blocking=False):
         resp = self.submit_transaction_non_block(request)
@@ -512,22 +535,22 @@ class Client:
             is_blocking, txn_expiration)
 
     # flag 0：提交稳定币换平台币的订单, 1:提交平台币换稳定币的订单
-    def violas_make_order(self, sender_account, module_address, order_amount, pick_amount, source_is_vtoken=0,
+    def violas_make_order(self, sender_account, module_address, order_amount, pick_amount, vcoin_to_scoin=0,
         max_gas=280_000, unit_price=0, is_blocking=False, txn_expiration=100):
-        script = Script.gen_violas_order_script(module_address, order_amount, pick_amount, source_is_vtoken)
+        script = Script.gen_violas_order_script(module_address, order_amount, pick_amount, vcoin_to_scoin)
         payload = TransactionPayload('Script', script)
         return self.submit_payload(sender_account, payload, max_gas, unit_price, is_blocking, txn_expiration)
 
-    def violas_pick_order(self, sender_account, module_address, order_address, order_amount, pick_amount, source_is_vtoken=0,
+    def violas_pick_order(self, sender_account, module_address, order_address, order_amount, pick_amount, vcoin_to_scoin=0,
         max_gas = 280_000, unit_price = 0, is_blocking = False, txn_expiration = 100):
-        script = Script.gen_violas_pick_script(module_address, order_address, order_amount, pick_amount, source_is_vtoken)
+        script = Script.gen_violas_pick_script(module_address, order_address, order_amount, pick_amount, vcoin_to_scoin)
         payload = TransactionPayload('Script', script)
         return self.submit_payload(sender_account, payload, max_gas, unit_price,
                                    is_blocking, txn_expiration)
 
-    def violas_withdraw_order(self, sender_account, module_address,
+    def violas_withdraw_order(self, sender_account, module_address, vcoin_to_scoin=0,
         max_gas=280_000, unit_price=0, is_blocking=False, txn_expiration=100):
-        script = Script.gen_violas_withdrawal_script(module_address)
+        script = Script.gen_violas_withdrawal_script(module_address, vcoin_to_scoin)
         payload = TransactionPayload('Script', script)
         return self.submit_payload(sender_account, payload, max_gas, unit_price,
                                    is_blocking, txn_expiration)

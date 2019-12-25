@@ -8,11 +8,10 @@ from libra import AccountError, TransactionIllegalError, TransactionNotExistErro
 # "validator_set_file": "/tmp/9f062c60e0d4384c34f8b749ff6c89c1/0/consensus_peers.config.toml",
 # "faucet_file": "/tmp/5aec89e92848a55db1f475823a8cd330/temp_faucet_keys"
 # }
-
-network="localhost"
-port = 34943
-validator_set_file="/tmp/9f062c60e0d4384c34f8b749ff6c89c1/0/consensus_peers.config.toml"
-faucet_file="/tmp/5aec89e92848a55db1f475823a8cd330/temp_faucet_keys"
+network = "localhost"
+port = 45939
+validator_set_file =  "/tmp/df065e7b8944676acf685a61324f2548/0/consensus_peers.config.toml"
+faucet_file = "/tmp/7dd1d1b3bd54ee11731c93c8c8683e88/temp_faucet_keys"
 
 platform_address = bytes.fromhex("0000000000000000000000000000000000000000000000000000000000000000")
 platform_mint_address = bytes.fromhex("000000000000000000000000000000000000000000000000000000000a550c18")
@@ -172,9 +171,9 @@ def test_violas_exchange2():
     client.violas_owner_init(a2, "this is a2", True)
     client.violas_mint_coin(a1.address, 100, a1, True)
     client.violas_mint_coin(a2.address, 100, a1, True)
-    client.violas_make_order(a1, a1.address, 10, 10, source_is_vtoken=1, is_blocking=True)
+    client.violas_make_order(a1, a1.address, 10, 10, vcoin_to_scoin=1, is_blocking=True)
     assert 90 == client.get_balance(a1.address)
-    client.violas_pick_order(a2, a1.address, a1.address, 10, 10, source_is_vtoken=1, is_blocking=True)
+    client.violas_pick_order(a2, a1.address, a1.address, 10, 10, vcoin_to_scoin=1, is_blocking=True)
     assert 90 == client.violas_get_balance(a2.address, a1.address)
     assert 110 == client.get_balance(a2.address)
     assert 110 == client.violas_get_balance(a1.address, a1.address)

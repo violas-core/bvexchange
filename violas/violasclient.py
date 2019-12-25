@@ -28,7 +28,7 @@ from comm.error import error
 from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
-
+import redis
 #module name
 name="violasclient"
 
@@ -402,16 +402,53 @@ def _test_get_transactions():
     latest_ver = 1000
     i = 0
     step = 1000
-    while i < latest_ver:
+    key_latest_ver = "get_latest_ver"
+    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    red = redis.Redis(host="127.0.0.1", port=6379, db = 2)
+    while True:
         try:
-            client = violasclient(setting.traceback_limit, setting.violas_nodes)
             latest_ver = client.get_latest_transaction_version().datas;
-            ret = client.get_transactions(i, step)
+            get_latest_ver = red.get(key_latest_ver)
+            if get_latest_ver is None:
+                get_latest_ver = '-1'
+            i = int(get_latest_ver) + 1
+
+            print(f"i = {i}  latest_ver = {latest_ver}")
+            if i >= latest_ver:
+                continue
+
+            ret = client.get_transactions(i, step, True)
+            idx = 0
             for data in ret.datas:
-                print(data.to_json())
-            i += step
+                dict = data.to_json()
+
+                #save to redis db
+                value = json.dumps(dict)
+                key = dict.get("version", 0)
+                red.set(key_latest_ver, key)
+
+                events = dict.get("events", None)
+                if events is None or len(events) == 0:
+                    continue
+
+
+                event = events[0].get("event", None)
+                if event is None or len(event) == 0:
+                    continue
+
+                data = event.get("data", None)
+                if data is None or len(data) == 0 or data.find("v2b:") != 0:
+                    continue
+
+                red.set(key, value)
+                json_print(dict)
         except Exception as e:
-            continue
+            client = violasclient(setting.traceback_limit, setting.violas_nodes)
+            print(str(e))
+        finally:
+            print("next group")
+            pass
+
         
 def main():
     _test_get_transactions()
