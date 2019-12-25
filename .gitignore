@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+*.rdb
+*.pid
 *.log*
 *.address
 vwallet_std
