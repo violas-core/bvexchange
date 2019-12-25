@@ -404,7 +404,7 @@ def _test_get_transactions():
     step = 1000
     key_latest_ver = "get_latest_ver"
     client = violasclient(setting.traceback_limit, setting.violas_nodes)
-    red = redis.Redis(host="127.0.0.1", port=6379, db = 2)
+    red = redis.Redis(host="127.0.0.1", port=6378, db = 2)
     while True:
         try:
             latest_ver = client.get_latest_transaction_version().datas;
