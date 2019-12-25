@@ -131,13 +131,12 @@ class Script(Struct):
         return Script(code, args)
 
     @classmethod
-    def gen_violas_withdrawal_script(cls, module_address):
+    def gen_violas_withdrawal_script(cls, module_address, vcoin_to_scoin):
         if isinstance(module_address, bytes):
             module_address = module_address.hex()
         code = hex_to_int_list(int_list_to_hex(bytecodes["violas_withdrawal"]).replace(default_module_address, module_address))
-        flag = 1 if module_address == bytes([0]*32) else 0
         args = [
-            TransactionArgument('U64', flag)
+            TransactionArgument('U64', vcoin_to_scoin)
         ]
         return Script(code, args)
 

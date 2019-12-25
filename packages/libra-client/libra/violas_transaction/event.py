@@ -62,12 +62,15 @@ class ViolasContractEvent(ViolasBase):
         else:
             self.tag = self.event.type_tag.value
 
-        if self.tag.module == "LibraAccount":
-            self.event = LibraEvent(AccountEvent.deserialize(event.event_data))
-        elif self.tag.module == "ViolasToken":
-            self.event = ViolasEvent(ViolasEventProto.deserialize(event.event_data))
-        else:
-            print("unknown event")
+        try:
+            if self.tag.module == "LibraAccount":
+                self.event = LibraEvent(AccountEvent.deserialize(event.event_data))
+            elif self.tag.module == "ViolasToken":
+                self.event = ViolasEvent(ViolasEventProto.deserialize(event.event_data))
+            else:
+                print("unknown event")
+        except:
+            print("known event with unkonwn data")
 
         if transaction_version:
             self.transaction_version = transaction_version
