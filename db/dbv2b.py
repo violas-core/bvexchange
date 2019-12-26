@@ -33,11 +33,9 @@ class dbv2b:
     __engine = ""
     __session = ""
     __engine = ""
-    __traceback_limit = 0
 
-    def __init__(self, dbfile, traceback_limit):
+    def __init__(self, dbfile):
         logger.debug("start __init__")
-        self.__traceback_limit = traceback_limit
         self.__init_db(dbfile)
 
     def __del__(self):
@@ -109,9 +107,7 @@ class dbv2b:
 
             ret = result(error.SUCCEED, "", "")
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def insert_v2binfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state):
@@ -121,9 +117,7 @@ class dbv2b:
                 return ret 
             ret = self.commit()
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def commit(self):
@@ -134,9 +128,7 @@ class dbv2b:
 
             ret = result(error.SUCCEED, "", "")
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def query_v2binfo(self, vaddress, sequence, version):
@@ -149,9 +141,7 @@ class dbv2b:
             proofs = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).filter(filter_ver).all()
             ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def has_v2binfo(self, vaddress, sequence, version):
@@ -163,9 +153,7 @@ class dbv2b:
             state = (self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).filter(filter_ver).count() > 0)
             ret = result(error.SUCCEED, "", state) 
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
 
@@ -178,9 +166,7 @@ class dbv2b:
             proofs = self.__session.query(self.v2binfo).filter(filter_state).filter(filter_times).all()
             ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def query_v2binfo_is_start(self, maxtimes = 999999999):
@@ -202,9 +188,7 @@ class dbv2b:
                     .update({self.v2binfo.state:state.value, self.v2binfo.txid:txid, self.v2binfo.times:self.v2binfo.times + 1})
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def __update_v2binfo_commit(self, vaddress, sequence, version, state, txid = ""):
@@ -216,9 +200,7 @@ class dbv2b:
 
             ret = self.commit()
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def update_v2binfo_to_start_commit(self, vaddress, sequence, version, txid = ""):
@@ -238,9 +220,7 @@ class dbv2b:
             self.__session.add(v2bi)
             ret = result(error.SUCCEED, "", "")
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def insert_latest_version_commit(self, address, vtoken, version):
@@ -250,9 +230,7 @@ class dbv2b:
                 return ret 
             ret = self.commit()
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def query_latest_version(self, address, vtoken):
@@ -269,9 +247,7 @@ class dbv2b:
                 ret = result(error.SUCCEED, "", 0)
 
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def update_version(self, address, vtoken, version):
@@ -282,9 +258,7 @@ class dbv2b:
             datas = self.__session.query(self.versions).filter(filter_address).filter(filter_vtoken).update({self.versions.version:version})
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def update_version_commit(self, address, vtoken, version):
@@ -295,9 +269,7 @@ class dbv2b:
 
             ret = self.commit()
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def has_version(self, address, vtoken):
@@ -308,9 +280,7 @@ class dbv2b:
             datas = self.__session.query(self.versions).filter(filter_address).filter(filter_vtoken).count() > 0
             ret = result(error.SUCCEED, "", datas) 
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
     def update_or_insert_version_commit(self, address, vtoken, version):
@@ -327,16 +297,6 @@ class dbv2b:
             if ret.state == error.SUCCEED:
                 self.commit()
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(str(e))
-            ret = result(error.FAILED, str(e), e) 
+            ret = parse_except(e)
         return ret
 
-def test():
-    try:
-        pass
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-if __name__ == "__main__" :
-    test()

@@ -195,12 +195,12 @@ def works():
         checks()
 
         #btc init
-        bclient = btcclient(setting.traceback_limit, setting.btc_conn)
-        b2v = dbb2v(dbb2v_name, setting.traceback_limit)
+        bclient = btcclient(setting.btc_conn)
+        b2v = dbb2v(dbb2v_name)
 
         #violas init
-        vclient = violasclient(setting.traceback_limit, setting.violas_nodes)
-        vwallet = violaswallet(setting.traceback_limit, wallet_name)
+        vclient = violasclient(setting.violas_nodes)
+        vwallet = violaswallet(wallet_name)
         ret = vwallet.get_account(setting.violas_sender)
         if ret.state != error.SUCCEED:
             logger.error("not fount violas sender account({}".format(setting.violas_sender)) 
