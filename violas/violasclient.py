@@ -36,11 +36,9 @@ name="violasclient"
 logger = log.logger.getLogger(name) 
 
 class violaswallet:
-    __traceback_limit       = 0
     __wallet_name           = "vwallet"
     
-    def __init__(self, traceback_limit, wallet_name):
-        self.__traceback_limit = traceback_limit
+    def __init__(self, wallet_name):
         assert wallet_name is not None, "wallet_name is None"
         if wallet_name is not None:
             ret = self.__load_wallet(wallet_name)
@@ -120,8 +118,7 @@ class violaswallet:
 
 class violasclient:
     __node = None
-    def __init__(self, traceback_limit, nodes):
-        self.__traceback_limit = traceback_limit
+    def __init__(self, nodes):
         self.__client = None
         if nodes is not None:
             ret = self.conn_node(nodes)
@@ -133,7 +130,6 @@ class violasclient:
 
     def conn_node(self, nodes):
         try:
-            logger.debug("conn_node")
             if nodes is None or len(nodes) == 0:
                 return result(error.ARG_INVALID, repr(nodes), "")
             
@@ -143,6 +139,7 @@ class violasclient:
                             node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
                     client = Client.new(node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
                     client.get_latest_transaction_version()
+                    logger.debug(f"connect violas node succeed.") 
                 except Exception as e:
                     logger.info(f"connect violas node failed({e}). test next...")
                 else:
@@ -284,8 +281,7 @@ class violasclient:
 
 class violasserver:
     __node = None
-    def __init__(self, traceback_limit, nodes):
-        self.__traceback_limit = traceback_limit
+    def __init__(self, nodes):
         self.__server= None
         assert nodes is not None, "nodes is None"
         if nodes is not None:
@@ -310,8 +306,7 @@ class violasserver:
                             node["ip"], node["port"], node["user"], node["password"]))
                     self.__node = node
                 except Exception as e:
-                    logger.debug(traceback.format_exc(self.__traceback_limit))
-                    logger.error(str(e))
+                    parse_except(e)
                 else:
                     self.__server = server 
                     self.__node = node
@@ -403,7 +398,7 @@ def _test_get_transactions():
     i = 0
     step = 1000
     key_latest_ver = "get_latest_ver"
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    client = violasclient(setting.violas_nodes)
     red = redis.Redis(host="127.0.0.1", port=6378, db = 2)
     while True:
         try:
@@ -443,8 +438,7 @@ def _test_get_transactions():
                 red.set(key, value)
                 json_print(dict)
         except Exception as e:
-            client = violasclient(setting.traceback_limit, setting.violas_nodes)
-            print(str(e))
+            parse_except(e)
         finally:
             print("next group")
             pass

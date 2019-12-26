@@ -11,8 +11,11 @@ b2v_sleep = 8
 #violas token exchange btc thread loop time(s)
 v2b_sleep = 6
 
+#violas blockchain transactions filter
+vfilter_sleep = 1
+
 #communication thread loop time
-comm_sleep = 1
+comm_sleep = 10
 
 traceback_limit = 4
 
@@ -54,3 +57,9 @@ violas_sender='210a283f13e42a37b7fb2dec50d8c2b28d6cc7e4f041fbdfa4998aa1b5663b89'
 module_address='cd0476e85ecc5fa71b61d84b9cf2f7fd524689a4f870c46d6a5d901b5ac1fdb2'
 #v2b max replay exchange count(state = faild)
 v2b_maxtimes = 99999
+
+violas_filter={
+        #'db_transactions':{'host':'127.0.0.1', 'port':6378, 'db':'3', 'password':'123'},
+        'db_transactions':{'host':'127.0.0.1', 'port':6378, 'db':'3', 'password':'violas'},
+        'step':1000
+        }

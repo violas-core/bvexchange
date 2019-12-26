@@ -32,11 +32,9 @@ class dbb2v:
     __engine = ""
     __session = ""
     __engine = ""
-    __traceback_limit = 0
 
-    def __init__(self, dbfile, traceback_limit):
+    def __init__(self, dbfile):
         logger.debug("start __init__")
-        self.__traceback_limit = traceback_limit
         self.__init_db(dbfile)
 
     def __del__(self):
@@ -105,23 +103,19 @@ class dbb2v:
 
             ret = result(error.SUCCEED, "", "")
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e) 
+            ret = parse_except(e)
         return ret
 
     def insert_b2vinfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock):
         try:
             logger.debug("start insert_b2vinfo_commit")
             result = self.insert_b2vinfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock)
-            if result == False:
+            if result.state != error.SUCCEED:
                 return result
             self.__session.flush()
             ret = self.commit()
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e) 
+            ret = parse_except(e)
         return ret
 
     def commit(self):
@@ -131,9 +125,7 @@ class dbb2v:
             self.__session.commit()
             ret = result(error.SUCCEED, "", "")
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e) 
+            ret = parse_except(e)
         return ret
 
     def query_b2vinfo(self, vaddress, sequence):
@@ -144,9 +136,7 @@ class dbb2v:
             proofs = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).all()
             ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e) 
+            ret = parse_except(e)
         return ret
 
     def has_b2vinfo(self, vaddress, sequence):
@@ -156,9 +146,7 @@ class dbb2v:
             filter_seq = (self.b2vinfo.sequence==sequence)
             ret = result(error.SUCCEED, "", self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).count() > 0)
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e) 
+            ret = parse_except(e)
         return ret
 
     def __query_b2vinfo_state(self, state):
@@ -168,9 +156,7 @@ class dbb2v:
             proofs = self.__session.query(self.b2vinfo).filter(filter_state).all()
             ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e) 
+            ret = parse_except(e)
         return ret
 
     def query_b2vinfo_is_start(self):
@@ -206,9 +192,7 @@ class dbb2v:
 
             ret = result(error.SUCCEED, "", upn)
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e) 
+            ret = parse_except(e)
         return ret
 
     def __update_b2vinfo_commit(self, vaddress, sequence, state, height = -1):
@@ -220,9 +204,7 @@ class dbb2v:
 
             ret = self.commit()
         except Exception as e:
-            logger.debug(traceback.format_exc(limit=self.__traceback_limit))
-            logger.error(e.message)
-            ret = result(error.EXCEPT, e.message, e) 
+            ret = parse_except(e)
         return ret
 
     def update_b2vinfo_to_start_commit(self, vaddress, sequence):
@@ -243,168 +225,3 @@ class dbb2v:
     def update_b2vinfo_to_btcsucceed_commit(self, vaddress, sequence):
         return self.__update_b2vinfo_commit(vaddress, sequence, self.state.SUCCEED_BTC)
 
-
-dbfile = "bve_b2v.db"
-traceback_limit = setting.traceback_limit
-max_seq=10000
-def test_dbb2v_insert():
-    b2v = dbb2v(dbfile, traceback_limit)
-    sequence = random.randint(0, max_seq)
-    ret = b2v.has_b2vinfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
-    if ret.state != SUCCEED or ret.datas == True:
-        return
-    b2v.insert_b2vinfo("0000000000000000000000000000000000000000000000000000000000000001", \
-                "2NFMbhLACujsHKa45X4P2fZupVrgB268pbo", \
-                "2NFMbhLACujsHKa45X4P2fZupVrgB268pbo", \
-                1, \
-                "c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", \
-                sequence, #sequence 
-                0, \
-                "0000000000000000000000000000000000000000000000000000000000000000", \
-                "e36d8ad4f1ab2ecbaf63d14ac150d464d81ef0fdf45ad0df8c27efaf8a10410d", \
-                "e36d8ad4f1ab2ecbaf63d14ac150d464d81ef0fdf45ad0df8c27efaf8a10410d"
-                )
-    b2v.commit()
-
-def test_dbb2v_query():
-    try:
-        logger.debug("*****************************************start test_dbb2v_query*****************************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        sequence = random.randint(0, max_seq)
-        ret = b2v.query_b2vinfo("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence)
-
-        if ret.state != error.SUCCEED:
-            return
-        
-        if (len(ret.datas) == 0):
-            logger.debug("not fount proof")
-
-        for proof in ret.datas:
-            logger.info("vaddress: %s" % (proof.vaddress))
-            logger.info("sequence: %s" % (proof.sequence))
-            logger.info("state : %i" % (proof.state))
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-def test_dbb2v_query_state_start():
-    try:
-        logger.debug("*****************************************start test_dbb2v_query_state_start****************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        ret = b2v.query_b2vinfo_is_start()
-
-        if ret.state != error.SUCCEED:
-            return
-        
-        if (len(ret.datas) == 0):
-            logger.debug("not fount proof")
-
-        for proof in ret.datas:
-            logger.info("vaddress: %s" % (proof.vaddress))
-            logger.info("sequence: %s" % (proof.sequence))
-            logger.info("state : %i" % (proof.state))
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-def test_dbb2v_query_state_succeed():
-    try:
-        logger.debug("*****************************************start test_dbb2v_query_state_succeed*************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        ret = b2v.query_b2vinfo_is_succeed()
-
-        if ret.state != error.SUCCEED:
-            return
-        
-        if (len(ret.datas) == 0):
-            logger.debug("not fount proof")
-
-        for proof in ret.datas:
-            logger.info("vaddress: %s" % (proof.vaddress))
-            logger.info("sequence: %s" % (proof.sequence))
-            logger.info("state : %i" % (proof.state))
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-def test_dbb2v_query_state_failed():
-    try:
-        logger.debug("*****************************************start test_dbb2v_query_state_failed*************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        ret = b2v.query_b2vinfo_is_failed()
-
-        if ret.state != error.SUCCEED:
-            return
-        
-        if (len(ret.datas) == 0):
-            logger.debug("not fount proof")
-
-        for proof in ret.datas:
-            logger.info("vaddress: %s" % (proof.vaddress))
-            logger.info("sequence: %s" % (proof.sequence))
-            logger.info("state : %i" % (proof.state))
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-def test_dbb2v_query_state_complete():
-    try:
-        logger.debug("*****************************************start test_dbb2v_query_state_complete*************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        ret = b2v.query_b2vinfo_is_complete()
-
-        if ret.state != error.SUCCEED:
-            return
-        
-        if (len(ret.datas) == 0):
-            logger.debug("not fount proof")
-
-        for proof in ret.datas:
-            logger.info("vaddress: %s" % (proof.vaddress))
-            logger.info("sequence: %s" % (proof.sequence))
-            logger.info("state : %i" % (proof.state))
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-def test_dbb2v_query_state_btcfailed():
-    try:
-        logger.debug("*****************************************start test_dbb2v_query_state_btcfailed*************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        ret = b2v.query_b2vinfo_is_btcfailed()
-
-        if ret.state != error.SUCCEED:
-            return
-        
-        if (len(ret.datas) == 0):
-            logger.debug("not fount proof")
-
-        for proof in ret.datas:
-            logger.info("vaddress: %s" % (proof.vaddress))
-            logger.info("sequence: %s" % (proof.sequence))
-            logger.info("state : %i" % (proof.state))
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-def test_dbb2v_update():
-    try:
-        logger.debug("*****************************************start t_dbb2v_update***************************************")
-        b2v = dbb2v(dbfile, traceback_limit)
-        sequence = random.randint(0, max_seq)
-        height = random.randint(0, max_seq)
-        b2v.update_b2vinfo_to_succeed_commit("c8b9311393966d5b64919d73c3d27d88f7f5744ff2fc288f0177761fe0671ca2", sequence, height)
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-def test():
-    try:
-        #test_dbb2v_insert()
-        #test_dbb2v_query()
-        #test_dbb2v_update()
-        #test_dbb2v_query()
-        test_dbb2v_query_state_start()
-        test_dbb2v_query_state_succeed()
-        test_dbb2v_query_state_failed()
-        test_dbb2v_query_state_complete()
-        test_dbb2v_query_state_btcfailed()
-        test_dbb2v_query_state_btcsucceed()
-    except Exception as e:
-        logger.error(traceback.format_exc(limit=traceback_limit))
-
-if __name__ == "__main__" :
-    test()

@@ -115,11 +115,11 @@ def works():
         checks()
 
         #btc init
-        bclient = btcclient(setting.traceback_limit, setting.btc_conn)
-        v2b = dbv2b(dbv2b_name, setting.traceback_limit)
+        bclient = btcclient( setting.btc_conn)
+        v2b = dbv2b(dbv2b_name)
 
         #violas init
-        vserver = violasserver(setting.traceback_limit, setting.violas_servers)
+        vserver = violasserver(setting.violas_servers)
 
         module_address = setting.module_address
 

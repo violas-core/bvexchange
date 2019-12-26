@@ -7,7 +7,8 @@ btc and vbtc exchange main
 import operator
 import signal
 import sys, os
-os.chdir(os.path.dirname(sys.argv[0]))
+if len(sys.argv) > 0:
+    os.chdir(os.path.dirname(sys.argv[0]))
 sys.path.append("./packages")
 sys.path.append("./packages/libra-client")
 import traceback
@@ -20,6 +21,8 @@ import db
 import db.dbb2v
 import db.dbv2b
 from exchange import b2v, v2b
+from comm.result import parse_except
+from violasanalysis import violas_filter
 import subprocess
 from enum import Enum
 
@@ -39,13 +42,14 @@ class work_mod(Enum):
     ALL = 0
     B2V = 1
     V2B = 2
+    VFILTER = 3
 
 class works:
     __threads = []
     __work_b2v_looping = 1
     __work_v2b_looping = 1
+    __work_vf_looping = 1
     __work_comm_looping = 1
-    __traceback_limit = 0
     __mod = work_mod.ALL
 
 
@@ -54,6 +58,7 @@ class works:
         self.__work_b2v_looping = 1
         self.__work_v2b_looping = 1
         self.__work_comm_looping = 1
+        self.__work_vf_looping = 1
         self.__threads = []
         self.__traceback_limit = traceback_limit
 
@@ -68,7 +73,7 @@ class works:
                 b2v.works()
                 sleep(nsec)
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
+            parse_except(e)
         finally:
             logger.critical("stop: b2v")
     
@@ -80,10 +85,21 @@ class works:
                 v2b.works()
                 sleep(nsec)
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
+            parse_except(e)
         finally:
             logger.critical("stop: v2b")
     
+    def work_vfilter(self, nsec):
+        try:
+            logger.debug("start: violas filter")
+            while (self.__work_vf_looping):
+                logger.debug("looping: vfilter")
+                violas_filter.works()
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical("stop: vfilter")
     def work_comm(self, nsec):
         try:
             logger.debug("start: comm")
@@ -91,7 +107,7 @@ class works:
                 logger.debug("looping: comm")
                 sleep(nsec)
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
+            parse_except(e)
         finally:
             logger.critical("stop: comm")
     
@@ -117,7 +133,7 @@ class works:
             b2v = self.work_thread(work, threadId, name, nsec)
             self.__threads.append(b2v)
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
+            parse_except(e)
         finally:
             logger.debug("thread_append")
 
@@ -131,13 +147,16 @@ class works:
             if mod == work_mod.ALL or mod == work_mod.V2B:
                 self.thread_append(self.work_v2b, 2, "v2b", setting.v2b_sleep)
 
-            self.thread_append(self.work_comm, 3, "comm", setting.comm_sleep)
+            if mod == work_mod.ALL or mod == work_mod.VFILTER:
+                self.thread_append(self.work_vfilter, 3, "vfilter", setting.vfilter_sleep)
+
+            self.thread_append(self.work_comm, 4, "comm", setting.comm_sleep)
             
             for work in self.__threads:
                 work.start() #start work
 
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
+            parse_except(e)
         finally:
             logger.critical("start end")
 
@@ -148,7 +167,7 @@ class works:
             for work in self.__threads:
                 work.join() # work finish
         except Exception as e:
-            logger.error(traceback.format_exc(limit=self.__traceback_limit))
+            parse_except(e)
         finally:
             logger.critical("end join")
     
@@ -156,6 +175,7 @@ class works:
         logger.debug("stop works")
         self.__work_b2v_looping = 0
         self.__work_v2b_looping = 0
+        self.__work_vf_looping = 0
         self.__work_comm_looping = 0
 
 
@@ -167,17 +187,27 @@ def signal_stop(signal, frame):
         global work_manage
         work_manage.stop()
     except Exception as e:
-        logger.error(traceback.format_exc(limit=setting.traceback_limit))
+        parse_except(e)
     finally:
         logger.debug("end signal")
+
+def write_pid():
+    try:
+        f = open("bvexchange.pid", mode='w')
+        f.write(f"{os.getpid()}")
+        f.close()
+    except Exception as e:
+        parse_except(e)
+
 
 def run(mod):
     
     print(mod)
-    if mod is None or mod not in ["all", "b2v", "v2b"]:
-        raise Exception("mod is invalid [all, b2v, v2b].")
+    if mod is None or mod not in ["all", "b2v", "v2b", "vfilter"]:
+        raise Exception("mod is invalid [all, b2v, v2b, vfilter].")
 
     checkrerun()
+    write_pid()
     global work_manage
     logger.debug("start main")
     
@@ -193,7 +223,7 @@ def main(argc, argv):
              raise Exception(f"argument is invalid")
         run(argv[0])
     except Exception as e:
-        logger.error(traceback.format_exc(limit=setting.traceback_limit))
+        parse_except(e)
     finally:
         logger.critical("main end")
 

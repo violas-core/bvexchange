@@ -14,7 +14,7 @@ import setting
 import random
 import redis
 from comm.error import error
-from comm.result import result
+from comm.result import result, parse_except
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
@@ -31,6 +31,7 @@ logger = log.logger.getLogger(name)
 
 class dbvfilter:
     __key_latest_filter_ver = "latest_filter_ver"
+    __key_latest_saved_ver = "latest_saved_ver"
     def __init__(self, host, port, db, passwd = None):
         self.__host = host
         self.__port = port
@@ -41,9 +42,10 @@ class dbvfilter:
         if ret.state != error.SUCCEED:
             raise Exception("connect db failed")
 
-    def __connect(self, host, port, db, passwd = None):
+    def __connect(self, host, port, db, password = None):
         try:
-            self.__client = redis.Redis(host=host, port=port, db=db, passwd=passwd)
+            logger.debug(f"connect filter db(host={host}, port={port}, db={db}, passwd={password})")
+            self.__client = redis.Redis(host=host, port=port, db=db, password=password, decode_responses=True)
             ret = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
@@ -53,7 +55,7 @@ class dbvfilter:
         try:
             self.__client.set(key, value)
             ret = result(error.SUCCEED)
-        Exception as e:
+        except Exception as e:
             ret = parse_except(e)
         return ret
 
@@ -75,7 +77,7 @@ class dbvfilter:
 
     def delete(self, key):
         try:
-            self,.__client.delete(key)
+            self.__client.delete(key)
             ret = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
@@ -108,6 +110,22 @@ class dbvfilter:
     def get_latest_filter_ver(self):
         try:
             datas = self.__client.get(self.__key_latest_filter_ver)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def set_latest_saved_ver(self, ver):
+        try:
+            self.__client.set(self.__key_latest_saved_ver, ver)
+            ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_latest_saved_ver(self):
+        try:
+            datas = self.__client.get(self.__key_latest_saved_ver)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)
