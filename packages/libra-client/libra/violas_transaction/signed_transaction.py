@@ -5,7 +5,6 @@ from libra.violas_transaction import ViolasContractEvent
 from libra.violas_transaction import ViolasTransactionInfo
 
 from canoser.util import int_list_to_hex
-import json
 
 class ViolasSignedTransaction(ViolasBase):
     def __init__(self, transaction: SignedTransaction, version=-1, info=None, events=[]):

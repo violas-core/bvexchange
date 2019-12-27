@@ -28,77 +28,77 @@ name="btcclient"
 logger = log.logger.getLogger(name) 
 
 def sendtoaddress(address, count):
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.sendtoaddress(address, count)
     assert ret.state == error.SUCCEED, " sendtoaddress failed"
     print(ret.datas)
     
 def sendexproofstart(fromaddress, toaddress, amount, vaddress, sequence, vtoken):
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.sendexproofstart(fromaddress, toaddress, amount, vaddress, sequence, vtoken)
     assert ret.state == error.SUCCEED, " sendexproofstart failed"
     print(ret.datas)
 
 def sendexproofend(fromaddress, toaddress, vaddress, sequence, vamount, version):
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.sendexproofend(fromaddress, toaddress, vaddress, sequence, vamount, version)
     assert ret.state == error.SUCCEED, " sendexproofend failed"
     print(ret.datas)
 
 def sendexproofmark(fromaddress, toaddress, toamount, vaddress, sequence, version):
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.sendexproofmark(fromaddress, toaddress, toamount, vaddress, sequence, version)
     assert ret.state == error.SUCCEED, "sendexproofmark failed"
     print(ret.datas)
 
 def generatetoaddress(count, address):
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.generatetoaddress(count, address)
     assert ret.state == error.SUCCEED, " generatetoaddress failed"
     print(ret.datas)
     
 def listunspent(minconf = 1, maxconf = 9999999, addresses = None, include_unsafe = True, query_options = None):
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.listunspent(minconf, maxconf, addresses, include_unsafe, query_options)
     assert ret.state == error.SUCCEED, " listunspent failed"
     for data in ret.datas:
         print("address:{}, amount:{}".format(data["address"], data["amount"]))
 
 def listexproofforstart(receiver, excluded = None):
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.listexproofforstart(receiver, excluded)
     assert ret.state == error.SUCCEED, " listexproofforstart failed"
     for data in ret.datas:
         print(data)
 
 def listexproofforend(receiver, excluded = None):
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.listexproofforend(receiver, excluded)
     assert ret.state == error.SUCCEED, " listexproofforend failed"
     for data in ret.datas:
         print(data)
 
 def listexproofformark(receiver, excluded = None):
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.listexproofformark(receiver, excluded)
     assert ret.state == error.SUCCEED, " listexproofformark failed"
     for data in ret.datas:
         print(data)
 
 def btchelp():
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.help()
     assert ret.state == error.SUCCEED, " btchelp failed"
     print(ret.datas)
 
 def getwalletbalance():
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.getwalletbalance()
     assert ret.state == error.SUCCEED, "getwalletbalance failed"
     print("wallet balance:{}".format(ret.datas))
 
 def getwalletaddressbalance(address):
-    client = btcclient(setting.traceback_limit, setting.btc_conn)
+    client = btcclient(setting.btc_conn)
     ret = client.getwalletaddressbalance(address)
     assert ret.state == error.SUCCEED, " getwalletaddressbalance failed"
     print("wallet balance:{}".format(ret.datas))

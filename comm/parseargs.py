@@ -121,8 +121,14 @@ class parseargs:
         nl = [ "--" + name for name in names]
         return opt in nl
 
-    def split_arg(self, arg, sign = ','):
+    def split_arg(self, arg):
         if arg is None:
             return (0, None)
-        arg_list = "{}".format(arg).split(sign)
-        return  (len(arg_list), [sub.strip() for sub in arg_list])
+        #arg_list = "{}".format(arg).split(sign)
+        if "," not in arg:
+            argstr = "[\"{}\"]".format(arg)
+        else:
+            argstr = "[{}]".format(arg)
+        print(argstr)
+        arg_list = json.loads(argstr)
+        return  (len(arg_list), arg_list)

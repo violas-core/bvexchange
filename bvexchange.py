@@ -53,14 +53,13 @@ class works:
     __mod = work_mod.ALL
 
 
-    def __init__(self, traceback_limit):
+    def __init__(self):
         logger.debug("works __init__")
         self.__work_b2v_looping = 1
         self.__work_v2b_looping = 1
         self.__work_comm_looping = 1
         self.__work_vf_looping = 1
         self.__threads = []
-        self.__traceback_limit = traceback_limit
 
     def __del__(self):
         del self.__threads
@@ -180,7 +179,7 @@ class works:
 
 
 logger = log.logger.getLogger(name)
-work_manage = works(setting.traceback_limit)
+work_manage = works()
 def signal_stop(signal, frame):
     try:
         logger.debug("start signal : %i", signal )

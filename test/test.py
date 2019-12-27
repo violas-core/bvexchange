@@ -12,6 +12,7 @@ import log.logger
 import threading
 import hashlib 
 import binascii
+import json
 from time import sleep, ctime
 '''
 '''
@@ -172,5 +173,16 @@ def test_tuple():
     for data in datas:
         print(data[0])
 
+def test_json():
+    base = "{\"name\":\"li\", \"age\":12}"
+    print(base)
+    jstr = json.loads(base)
+    print(jstr)
+    jdump = json.dumps(jstr)
+    print(jdump)
+    jstr = json.loads(jdump)
+    print(jstr)
+    jdump = json.dumps(jstr)
+    print(jdump)
 if __name__ == "__main__":
-    test_tuple()
+    test_json()

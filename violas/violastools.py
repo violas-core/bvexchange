@@ -42,7 +42,7 @@ wallet_name = "vwallet"
 '''
 def mint_platform_coin(address, amount):
     logger.debug("start mcreate_violas_coin otform_coin = {} amount={}".format(address, address))
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    client = violasclient(setting.violas_nodes)
 
     ret = client.mint_platform_coin(address, amount)
     assert ret.state == error.SUCCEED, "mint_platform_coin failed."
@@ -52,8 +52,8 @@ def mint_platform_coin(address, amount):
 def mint_violas_coin(address, amount, module):
     logger.debug("start mcreate_violas_coin otform_coin = {} amount={} module={}".format(address, amount, module))
     global wallet_name
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
-    wallet = violaswallet(setting.traceback_limit, wallet_name)
+    client = violasclient(setting.violas_nodes)
+    wallet = violaswallet(wallet_name)
     ret = wallet.get_account(module)
     if ret.state != error.SUCCEED:
         logger.error(ret.datas)
@@ -69,13 +69,13 @@ def mint_violas_coin(address, amount, module):
 def create_violas_coin(module):
     logger.debug("start create_violas_coin module = {}".format(module))
     global wallet_name
-    wallet = violaswallet(setting.traceback_limit, wallet_name)
+    wallet = violaswallet(wallet_name)
     ret = wallet.get_account(module)
     if(ret.state != error.SUCCEED):
         return
     account = ret.datas
 
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    client = violasclient(setting.violas_nodes)
 
     ret = client.create_violas_coin(account)
     if(ret.state != error.SUCCEED):
@@ -86,8 +86,8 @@ def create_violas_coin(module):
 def bind_module(address, module):
     logger.debug("start bind_module address= {} module = {}".format(address, module))
     global wallet_name
-    wallet = violaswallet(setting.traceback_limit, wallet_name)
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    wallet = violaswallet(wallet_name)
+    client = violasclient(setting.violas_nodes)
     ret = wallet.get_account(address)
     if ret.state != error.SUCCEED:
         logger.debug("get account failed")
@@ -99,37 +99,37 @@ def bind_module(address, module):
 
 def send_violas_coin(from_address, to_address, amount, module, data = None):
     global wallet_name
-    wallet = violaswallet(setting.traceback_limit, wallet_name)
+    wallet = violaswallet(wallet_name)
     ret = wallet.get_account(from_address)
     if ret.state != error.SUCCEED:
         logger.debug("get account failed")
     account = ret.datas
 
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    client = violasclient(setting.violas_nodes)
     client.send_violas_coin(account, to_address, amount, module, data)
     json_print(client.get_account_state(account.address).datas.to_json())
 
 def get_platform_balance(address):
     logger.debug("start get_platform_balance address= {}".format(address))
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    client = violasclient(setting.violas_nodes)
     ret = client.get_platform_balance(address)
     logger.debug("balance: {0}".format(ret.datas))
 
 def get_violas_balance(address, module):
     logger.debug("start get_violas_balance address= {} module = {}".format(address, module))
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    client = violasclient(setting.violas_nodes)
     ret = client.get_violas_balance(address, module)
     logger.debug("balance: {0}".format(ret.datas))
 
 def get_latest_transaction_version():
     logger.debug("start get_latest_transaction_version")
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    client = violasclient(setting.violas_nodes)
     ret = client.get_latest_transaction_version()
     logger.debug("latest version: {0}".format(ret.datas))
 
 def get_transactions(start_version, limit = 1, fetch_event = False):
     logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    client = violasclient(setting.violas_nodes)
     ret = client.get_transactions(start_version, limit, fetch_event)
     if ret.state != error.SUCCEED:
         return
@@ -145,19 +145,19 @@ def get_transactions(start_version, limit = 1, fetch_event = False):
 '''
 def new_account():
     global wallet_name
-    wallet = violaswallet(setting.traceback_limit, wallet_name)
+    wallet = violaswallet(wallet_name)
     ret = wallet.new_account()
     assert ret.state == error.SUCCEED, "new_account failed"
     logger.debug("account address : {}".format(ret.datas.address.hex()))
 
 def account_has_violas_module(address, module):
     logger.debug("start account_has_violas_module address= {} module = {}".format(address, module))
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    client = violasclient(setting.violas_nodes)
     logger.debug(client.account_has_violas_module(address, module).datas)
 
 def show_accounts():
     global wallet_name
-    wallet = violaswallet(setting.traceback_limit, wallet_name)
+    wallet = violaswallet(wallet_name)
     i = 0
     account_count = wallet.get_account_count()
     while True and i < account_count:
@@ -169,24 +169,24 @@ def show_accounts():
         i += 1
 
 def get_account(address):
-    client = violasclient(setting.traceback_limit, setting.violas_nodes)
+    client = violasclient(setting.violas_nodes)
     json_print(client.get_account_state(address).datas.to_json())
 
 def has_account(address):
     global wallet_name
-    wallet = violaswallet(setting.traceback_limit, wallet_name)
+    wallet = violaswallet(wallet_name)
     logger.debug(wallet.has_account_by_address(address).datas)
 '''
 *************************************************violasserver oper*******************************************************
 '''
 def get_account_transactions(address, module, start):
     logger.debug("start get_account_transactions address= {} module = {}, start={}".format(address, module, start))
-    server = violasserver(setting.traceback_limit, setting.violas_servers)
+    server = violasserver(setting.violas_servers)
     logger.debug(server.get_transactions(address, module, start).datas)
     
 def has_transaction(address, module, baddress, sequence, amount, version, receiver):
     logger.debug("start has_transaction address= {} module = {}, baddress={}, sequence={}, amount={}, version={}, receiver={}".format(address, module, baddress, sequence, amount, version, receiver))
-    server = violasserver(setting.traceback_limit, setting.violas_servers)
+    server = violasserver(setting.violas_servers)
     logger.debug(server.has_transaction(address, module, baddress, sequence, amount, version, receiver).datas)
 
     
@@ -260,7 +260,7 @@ def run(argc, argv):
             if len(arg_list) != 4 and len(arg_list) != 5:
                 pargs.exit_error_opt(opt)
             if len(arg_list) == 5:
-                ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3], arg_list[4])
+                ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3], json.dumps(arg_list[4]))
             else:
                 ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3])
         elif pargs.is_matched(opt, ["get_account"]):
