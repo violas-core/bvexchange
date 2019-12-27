@@ -31,7 +31,6 @@ logger = log.logger.getLogger(name)
 
 
 class btcclient:
-    __traceback_limit       = 0
     __btc_url               = "http://%s:%s@%s:%i"
     __rpcuser               = "btc"
     __rpcpassword           = "btc"
@@ -45,8 +44,7 @@ class btcclient:
         CANCEL  = "cancel"
         MARK    = "mark"
 
-    def __init__(self, traceback_limit, btc_conn):
-        self.__traceback_limit = traceback_limit
+    def __init__(selfbtc_conn):
         if btc_conn :
             if btc_conn["rpcuser"]:
                 self.__rpcuser = btc_conn["rpcuser"]
@@ -217,7 +215,7 @@ def main():
     try:
        logger.debug("start main")
     except Exception as e:
-        logger.error(traceback.format_exc(setting.traceback_limit))
+        parse_except(e)
     finally:
         logger.info("end main")
 

@@ -23,7 +23,7 @@ class WalletLibrary:
             privkey = self.accounts[iv].private_key
             address = self.accounts[ik].address
             self.accounts[ik] = libra.Account(privkey, address=address)
-        #print("rotate_keys:", rotate_keys)
+        # print("rotate_keys:", rotate_keys)
 
     def json_print_fields(self):
         return ["mnemonic", "seed", "child_count", "accounts.address"]
@@ -71,7 +71,6 @@ class WalletLibrary:
     @classmethod
     def new_from_mnemonic(cls, mnemonic, child_count=0, rotate_keys={}):
         seed = KeyFactory.to_seed(mnemonic)
-
         key_factory = KeyFactory(seed)
         return cls(mnemonic, seed, key_factory, child_count, rotate_keys)
 

@@ -297,20 +297,20 @@ class Client:
     def get_transaction_version(self, address, sequence_number):
         return self.get_account_transaction(address, sequence_number).version
 
-    def mint_coins(self, address, micro_libra, is_blocking=False):
+    def mint_coins(self, address, micro_coin, is_blocking=False):
         if self.faucet_account:
-            tx = self.mint_coins_with_faucet_account(address, micro_libra, is_blocking)
+            tx = self.mint_coins_with_faucet_account(address, micro_coin, is_blocking)
             return tx.raw_txn.sequence_number
         else:
-            return self.mint_coins_with_faucet_service(address, micro_libra, is_blocking)
+            return self.mint_coins_with_faucet_service(address, micro_coin, is_blocking)
 
-    def mint_coins_with_faucet_account(self, receiver_address, micro_libra, is_blocking=False):
-        script = Script.gen_mint_script(receiver_address, micro_libra)
+    def mint_coins_with_faucet_account(self, receiver_address, micro_coin, is_blocking=False):
+        script = Script.gen_mint_script(receiver_address, micro_coin)
         payload = TransactionPayload('Script', script)
         return self.submit_payload(self.faucet_account, payload, is_blocking=is_blocking)
 
-    def mint_coins_with_faucet_service(self, receiver, micro_libra, is_blocking=False):
-        url = "http://{}?amount={}&address={}".format(self.faucet_host, micro_libra, receiver)
+    def mint_coins_with_faucet_service(self, receiver, micro_coin, is_blocking=False):
+        url = "http://{}?amount={}&address={}".format(self.faucet_host, micro_coin, receiver)
         resp = requests.post(url, timeout=self.timeout)
         if resp.status_code != 200:
             raise IOError(
@@ -352,12 +352,12 @@ class Client:
                 continue
         raise TransactionTimeoutError("wait_for_transaction timeout.")
 
-    def transfer_coin(self, sender_account, receiver_address, micro_libra, data=None,
+    def transfer_coin(self, sender_account, receiver_address, micro_coin, data=None,
         max_gas=280_000, unit_price=0, is_blocking=False, txn_expiration=100):
         if data is None:
-            script = Script.gen_transfer_script(receiver_address,micro_libra)
+            script = Script.gen_transfer_script(receiver_address,micro_coin)
         else:
-            script = Script.gen_transfer_script_with_data(receiver_address, micro_libra, data)
+            script = Script.gen_transfer_script_with_data(receiver_address, micro_coin, data)
         payload = TransactionPayload('Script', script)
         return self.submit_payload(sender_account, payload, max_gas, unit_price,
             is_blocking, txn_expiration)
@@ -372,9 +372,9 @@ class Client:
         payload = TransactionPayload('Script', script)
         return self.submit_payload(sender_account, payload, is_blocking=is_blocking)
 
-    def gen_signed_transaction(self, sender_account, receiver_address, micro_libra,
+    def gen_signed_transaction(self, sender_account, receiver_address, micro_coin,
                                    max_gas=280_000, unit_price=0, txn_expiration=100):
-        script = Script.gen_transfer_script(receiver_address, micro_libra)
+        script = Script.gen_transfer_script(receiver_address, micro_coin)
         payload = TransactionPayload('Script', script)
         sequence_number = self.get_sequence_number(sender_account.address)
         raw_tx = RawTransaction.new_tx(sender_account.address, sequence_number,
@@ -524,12 +524,12 @@ class Client:
         payload = TransactionPayload('Script', script)
         return self.submit_payload(module_account, payload, is_blocking=is_blocking)
 
-    def violas_transfer_coin(self, sender_account, receiver_address, micro_libra, module_address, data=None,
+    def violas_transfer_coin(self, sender_account, receiver_address, micro_coin, module_address, data=None,
         max_gas=280_000, unit_price=0, is_blocking=False, txn_expiration=100):
         if data is None:
-            script = Script.gen_violas_transfer_script(receiver_address,micro_libra,module_address)
+            script = Script.gen_violas_transfer_script(receiver_address,micro_coin,module_address)
         else:
-            script = Script.gen_violas_peer_to_peer_transfer_with_data_script(receiver_address, micro_libra, module_address, data)
+            script = Script.gen_violas_peer_to_peer_transfer_with_data_script(receiver_address, micro_coin, module_address, data)
         payload = TransactionPayload('Script', script)
         return self.submit_payload(sender_account, payload, max_gas, unit_price,
             is_blocking, txn_expiration)
