@@ -21,7 +21,7 @@ from db.dbv2b import dbv2b
 from violas.violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
 from db.dbvfilter import dbvfilter
-from violas_base import vbase
+from violasanalysis.violas_base import vbase
 
 #module name
 name="vfilter"
