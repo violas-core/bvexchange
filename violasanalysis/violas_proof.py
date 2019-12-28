@@ -41,14 +41,17 @@ class vfilter(vbase):
     def work(self):
         i = 0
         #init
+        vclient = self._vclient
+        dbclient = self._dbclient
+
         try:
-            ret = self._vclient.get_latest_transaction_version();
+            ret = vclient.get_latest_transaction_version();
             if ret.state != error.SUCCEED:
                 return ret
                 
             chain_latest_ver = ret.datas
 
-            ret = self._dbclient.get_latest_filter_ver()
+            ret = dbclient.get_latest_filter_ver()
             if ret.state != error.SUCCEED:
                 return ret
             db_latest_ver = ret.datas
@@ -57,12 +60,12 @@ class vfilter(vbase):
                 db_latest_ver = '-1'
             i = int(db_latest_ver) + 1
     
-            latest_saved_ver = str(self._dbclient.get_latest_saved_ver().datas)
+            latest_saved_ver = str(dbclient.get_latest_saved_ver().datas)
             print(f"latest_saved_ver={latest_saved_ver} start version = {i}  step = {self.get_step()} chain_latest_ver = {chain_latest_ver} ")
             if i >= chain_latest_ver:
                return 
     
-            ret = self._vclient.get_transactions(i, self.get_step(), True)
+            ret = vclient.get_transactions(i, self.get_step(), True)
             if ret.state != error.SUCCEED:
                 return ret
             for data in ret.datas:
@@ -72,7 +75,7 @@ class vfilter(vbase):
                 value = json.dumps(dict)
                 key = dict.get("version", 0)
 
-                ret = self._dbclient.set_latest_filter_ver(key)
+                ret = dbclient.set_latest_filter_ver(key)
                 if ret.state != error.SUCCEED:
                     return ret
     
@@ -82,11 +85,11 @@ class vfilter(vbase):
                         not tran_filter.datas.get("tran_state", False):
                     continue
 
-                ret = self._dbclient.set(key, value)
+                ret = dbclient.set(key, value)
                 if ret.state != error.SUCCEED:
                     return ret
 
-                self._dbclient.set_latest_saved_ver(key)
+                dbclient.set_latest_saved_ver(key)
                 logger.debug(tran_filter.datas)
             ret = result(error.SUCCEED)
         except Exception as e:
