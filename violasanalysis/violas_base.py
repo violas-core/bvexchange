@@ -31,7 +31,6 @@ logger = log.logger.getLogger(name)
     
 class vbase(object):
     _step = 1000
-
     class datatype(Enum):
         V2B = 1
         V2L = 2
@@ -46,7 +45,10 @@ class vbase(object):
         self.__connect_violas(vnodes)
 
     def __del__(self):
-        self._vclient.disconn_node()
+        if self._vclient is not None:
+            self._vclient.disconn_node()
+        if self._dbclient is not None:
+            self._dbclient.save()
 
     def __connect_db(self, rconf):
         self._dbclient = dbvfilter(rconf.get("host", "127.0.0.1"), rconf.get("port", 6378), rconf.get("db", "violas_filter"), rconf.get("password", None))
@@ -82,24 +84,25 @@ class vbase(object):
         if flag == "violas":
             return self.trantype.VIOLAS
         return self.trantype.UNKOWN
-        
+    def create_tran_id(self, sender, receiver, vtoken, version):
+        return hashlib.sha3_256(f"{sender}.{receiver}.{vtoken}.{version}".encode("UTF-8").hexdigest())
+
     def parse_tran(self, transaction):
         try:
-            datas = {"flag": self.trantype.UNKOWN, 
-                    "type": self.datatype.UNKOWN, 
-                    "btc_address": "",
-                    "libra_address": "",
-                    "vtbc_address": "",
-                    "nettype":"",
-                    "state":"",
-                    "amount":0,
-                    "sender":"",
-                    "receiver":"",
-                    "vtoken":"",
-                    "version":0,
-                    "tran_id":0,
-                    "tran_state":False
-
+            datas = {"flag"         : self.trantype.UNKOWN, 
+                    "type"          : self.datatype.UNKOWN, 
+                    "btc_address"   : None,
+                    "libra_address" : None,
+                    "vtbc_address"  : None,
+                    "nettype"       : None,
+                    "state"         : None,
+                    "amount"        : 0,
+                    "sender"        : None,
+                    "receiver"      : None,
+                    "vtoken"        : None,
+                    "version"       : 0,
+                    "tran_id"       : None,
+                    "tran_state"    : False
                     }
 
             tran = result(error.SUCCEED, datas = datas)
@@ -132,18 +135,22 @@ class vbase(object):
             if not self.is_valid_flag(data_dict.get("flag", None)):
                 return tran
             
-            datas["flag"] = self.parse_tran_type(data_dict.get("flag", None))
-            datas["type"] = self.parse_type(data_dict.get("type", None))
-            datas["btc_address"] = transaction.get("btc_address", None)
-            datas["libra_address"] = data_dict.get("libra_address", None)
-            datas["vtbc_address"] = data_dict.get("vtbc_address", None)
-            datas["nettype"] = data_dict.get("nettype", None)
-            datas["state"] = data_dict.get("state", None)
-            datas["amount"] = event.get("amount", 0)
-            datas["sender"] = event.get("sender", None)
-            datas["receiver"] = event.get("receiver", None)
-            datas["vtoken"] = event.get("receiver", None)
-            datas["tran_id"] = hashlib.sha3_256(f"{datas['sender']}.{datas['receiver']}.{datas['vtoken']}.{datas['version']}".encode("UTF-8").hexdigest())
+            datas["flag"]           = self.parse_tran_type(data_dict.get("flag", None))
+            datas["type"]           = self.parse_type(data_dict.get("type", None))
+            datas["btc_address"]    = transaction.get("btc_address", None)
+            datas["libra_address"]  = data_dict.get("libra_address", None)
+            datas["vtbc_address"]   = data_dict.get("vtbc_address", None)
+            datas["nettype"]        = data_dict.get("nettype", None)
+            datas["state"]          = data_dict.get("state", None)
+            datas["amount"]         = event.get("amount", 0)
+            datas["sender"]         = event.get("sender", None)
+            datas["receiver"]       = event.get("receiver", None)
+            datas["vtoken"]         = event.get("receiver", None)
+            datas["tran_id"]        = data_dict.get("tran_id", None)
+
+            if data_dict["tran_id"] is None or len(data_dict["tran_id"]) <= 0:
+                datas["tran_id"] = self.create_tran_id(datas['sender'], datas['receiver'], datas['vtoken'], datas['version'])
+
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)

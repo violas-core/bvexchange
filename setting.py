@@ -61,5 +61,6 @@ v2b_maxtimes = 99999
 violas_filter={
         #'db_transactions':{'host':'127.0.0.1', 'port':6378, 'db':'3', 'password':'123'},
         'db_transactions':{'host':'127.0.0.1', 'port':6378, 'db':'3', 'password':'violas'},
+        'db_proof':{'host':'127.0.0.1', 'port':6378, 'db':'4', 'password':'violas'},
         'step':1000
         }
