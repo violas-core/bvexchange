@@ -22,6 +22,7 @@ from violas.violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
 from db.dbvfilter import dbvfilter
 from violasanalysis.violas_base import vbase
+from violasanalysis.violas_proof import vproof
 
 #module name
 name="vfilter"
@@ -31,8 +32,9 @@ COINS = comm.values.COINS
 logger = log.logger.getLogger(name) 
     
 class vfilter(vbase):
-    def __init__(self, rconf, vnodes):
+    def __init__(self, rconf, vnodes, vproof):
         vbase.__init__(self, rconf, vnodes)
+        self._vproof = vproof
 
     def __del__(self):
         vbase.__del__(self)
@@ -58,9 +60,9 @@ class vfilter(vbase):
             i = int(db_latest_ver) + 1
     
             latest_saved_ver = str(self._dbclient.get_latest_saved_ver().datas)
-            print(f"latest_saved_ver={latest_saved_ver} start version = {i}  step = {self.get_step()} chain_latest_ver = {chain_latest_ver} ")
-            if i >= chain_latest_ver:
-               return 
+            logger.debug(f"latest_saved_ver={latest_saved_ver} start version = {i}  step = {self.get_step()} chain_latest_ver = {chain_latest_ver} ")
+            if i > chain_latest_ver:
+               return result(error.SUCCEED)
     
             ret = self._vclient.get_transactions(i, self.get_step(), True)
             if ret.state != error.SUCCEED:
@@ -76,18 +78,24 @@ class vfilter(vbase):
                 if ret.state != error.SUCCEED:
                     return ret
     
-                tran_filter = self.parse_tran(dict)
-                if tran_filter.state != error.SUCCEED or \
-                        tran_filter.datas.get("flag", None) == self.trantype.UNKOWN or \
-                        not tran_filter.datas.get("tran_state", False):
+                ret = self.parse_tran(dict)
+                if ret.state != error.SUCCEED or \
+                        ret.datas.get("flag", None) == self.trantype.UNKOWN or \
+                        not ret.datas.get("tran_state", False):
                     continue
+                tran_filter = ret.datas
+                logger.debug(f"transaction parse: {tran_filter}")
 
                 ret = self._dbclient.set(key, value)
                 if ret.state != error.SUCCEED:
                     return ret
-
                 self._dbclient.set_latest_saved_ver(key)
-                logger.debug(tran_filter.datas)
+
+                #this is target transaction, todo work here
+                ret = self._vproof.update_proof_info(tran_filter)
+                if ret.state != error.SUCCEED:
+                    logger.error(ret.message)
+ 
             ret = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
@@ -97,10 +105,13 @@ class vfilter(vbase):
         
 def works():
     try:
-        pass
-        filter = vfilter(setting.violas_filter.get("db_transactions", None), setting.violas_nodes)
+        proof = vproof(setting.violas_filter.get("db_proof", None))
+        filter = vfilter(setting.violas_filter.get("db_transactions", None), setting.violas_nodes, proof)
         filter.set_step(setting.violas_filter.get("step", 1000))
         ret = filter.work()
+        if ret.state != error.SUCCEED:
+            logger.error(ret.message)
+
     except Exception as e:
         ret = parse_except(e)
     return ret

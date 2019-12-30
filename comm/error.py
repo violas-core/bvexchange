@@ -10,6 +10,8 @@ class error(Enum):
     ARG_INVALID = "argument invalid"
     SETTING_INVALID = "setting invalid"
     WALLET_INVALID = "wallet invalid"
+    TRAN_INFO_INVALID = "transaction info invalid"
+    DB_PROOF_INFO_INVALID = "proof db info invalid"
 
 
 

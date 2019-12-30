@@ -127,7 +127,7 @@ def get_latest_transaction_version():
     ret = client.get_latest_transaction_version()
     logger.debug("latest version: {0}".format(ret.datas))
 
-def get_transactions(start_version, limit = 1, fetch_event = False):
+def get_transactions(start_version, limit = 1, fetch_event = True):
     logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
     client = violasclient(setting.violas_nodes)
     ret = client.get_transactions(start_version, limit, fetch_event)
@@ -209,7 +209,7 @@ def init_args(pargs):
     pargs.append("get_account_transactions", "get account's transactions from violas server.", True, ["address", "module", "start"])
     pargs.append("has_transaction", "check transaction is valid from violas server.", True, ["address", "module", "btcaddress", "sequence", "amount","version", "receiver"])
     pargs.append("account_has_violas_module", "check address binded module.", True, ["address", "module"])
-    pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=False"])
+    pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=True"])
     pargs.append("get_latest_transaction_version", "show latest transaction version.")
 
 

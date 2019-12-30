@@ -55,9 +55,33 @@ class dbvbase(object):
             ret = parse_except(e)
         return ret
 
+    def pipeline():
+        try:
+            datas = self._client.pipeline(transaction = true)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def pipeline():
+        try:
+            self._client.execute()
+            ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def set(self, key, value):
         try:
             self._client.set(key, value)
+            ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def mset(self, *args, **kwargs):
+        try:
+            self._client.mset(args, kwargs)
             ret = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
@@ -73,8 +97,8 @@ class dbvbase(object):
 
     def key_is_exists(self, key):
         try:
-            datas = self._client.get(key)
-            ret = result(error.SUCCEED, "", datas is None)
+            datas = self._client.exists(key)
+            ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -83,6 +107,102 @@ class dbvbase(object):
         try:
             self._client.delete(key)
             ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def keys(self):
+        try:
+            datas = self._client.keys()
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def type(self, key):
+        try:
+            datas = self._client.type(key)
+            ret = result(error.SUCCEED, "", typte)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def scan(cursor, match = None, count = None):
+        try:
+            pos, datas = self._client.scan(cursor, match, count)
+            ret = result(error.SUCCEED, "", (pos, datas))
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def hset(self, name, key, value):
+        try:
+            self._client.hset(name, key, value)
+            ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def hget(self, name, key):
+        try:
+            datas = self._client.hget(name, key)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def hgetall(self, name):
+        try:
+            datas = self._client.hgetall(name)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def hlen(self, name):
+        try:
+            datas = self._client.hlen(name)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def hkeys(self, name):
+        try:
+            datas = self._client.hkeys(name)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def hvals(self, name):
+        try:
+            datas = self._client.hvals(name)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def hexists(self, name, key):
+        try:
+            datas = self._client.hexists(name, key)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def hdel(self, name, key):
+        try:
+            datas = self._client.hdel(name, key)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def hscan(name, cursor, match = None, count = None):
+        try:
+            pos, datas = self._client.hscan(name, cursor, match, count)
+            ret = result(error.SUCCEED, "", (pos, datas))
         except Exception as e:
             ret = parse_except(e)
         return ret
