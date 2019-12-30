@@ -41,6 +41,8 @@ class vbase(object):
         UNKOWN = 255
 
     def __init__(self, rconf, vnodes):
+        self._vclient = None
+        self._dbclient = None
         self.__connect_db(rconf)
         self.__connect_violas(vnodes)
 
@@ -51,11 +53,13 @@ class vbase(object):
             self._dbclient.save()
 
     def __connect_db(self, rconf):
-        self._dbclient = dbvfilter(rconf.get("host", "127.0.0.1"), rconf.get("port", 6378), rconf.get("db", "violas_filter"), rconf.get("password", None))
+        if rconf is not None:
+            self._dbclient = dbvfilter(rconf.get("host", "127.0.0.1"), rconf.get("port", 6378), rconf.get("db", "violas_filter"), rconf.get("password", None))
         return self._dbclient
 
     def __connect_violas(self, vnodes):
-        self._vclient = violasclient(vnodes) 
+        if vnodes is not None:
+            self._vclient = violasclient(vnodes) 
         return self._vclient
 
     def set_step(self, step):
@@ -66,13 +70,22 @@ class vbase(object):
     def get_step(self):
         return self._step
 
-    def parse_type(self, data):
+    def parse_data_type(self, data):
         if data is None or len(data) == 0:
             return self.datatype.UNKOWN
+        '''
         if data.find("v2b") == 0:
             return self.datatype.V2B
         if data.find("v2l") == 0:
             return self.datatype.V2L
+        '''
+
+        print(data.upper())
+        for etype in self.datatype:
+            print(f"etype.name={etype.name}")
+            if etype.name == data.upper():
+                return etype
+
         return self.datatype.UNKOWN
 
     def is_valid_flag(self, flag):
@@ -81,11 +94,11 @@ class vbase(object):
     def parse_tran_type(self, flag):
         if flag is None or len(flag) == 0:
             return self.trantype.UNKOWN
-        if flag == "violas":
+        if flag == comm.values.EX_DATA_FLAG:
             return self.trantype.VIOLAS
         return self.trantype.UNKOWN
-    def create_tran_id(self, sender, receiver, vtoken, version):
-        return hashlib.sha3_256(f"{sender}.{receiver}.{vtoken}.{version}".encode("UTF-8").hexdigest())
+    def create_tran_id(self, flag, dtype, sender, receiver, vtoken, version):
+        return hashlib.sha3_256(f"{flag}.{dtype}.{sender}.{receiver}.{vtoken}.{version}".encode("UTF-8")).hexdigest()
 
     def parse_tran(self, transaction):
         try:
@@ -131,13 +144,15 @@ class vbase(object):
             if data is None or len(data) == 0:
                 return tran
 
+            print(data)
             data_dict = json.loads(data)
+            print(type(data_dict))
             if not self.is_valid_flag(data_dict.get("flag", None)):
                 return tran
             
             datas["flag"]           = self.parse_tran_type(data_dict.get("flag", None))
-            datas["type"]           = self.parse_type(data_dict.get("type", None))
-            datas["btc_address"]    = transaction.get("btc_address", None)
+            datas["type"]           = self.parse_data_type(data_dict.get("type", None))
+            datas["btc_address"]    = data_dict.get("btc_address", None)
             datas["libra_address"]  = data_dict.get("libra_address", None)
             datas["vtbc_address"]   = data_dict.get("vtbc_address", None)
             datas["nettype"]        = data_dict.get("nettype", None)
@@ -146,14 +161,12 @@ class vbase(object):
             datas["sender"]         = event.get("sender", None)
             datas["receiver"]       = event.get("receiver", None)
             datas["vtoken"]         = event.get("receiver", None)
-            datas["tran_id"]        = data_dict.get("tran_id", None)
-
-            if data_dict["tran_id"] is None or len(data_dict["tran_id"]) <= 0:
-                datas["tran_id"] = self.create_tran_id(datas['sender'], datas['receiver'], datas['vtoken'], datas['version'])
+            tran_id = data_dict.get("tran_id", None)
+            datas["tran_id"]        = tran_id
 
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
-            ret = parse_except(e)
+            ret = parse_except(e, transaction)
         return ret
 
         

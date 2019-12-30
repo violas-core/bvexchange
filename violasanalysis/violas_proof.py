@@ -24,90 +24,118 @@ from db.dbvfilter import dbvfilter
 from violasanalysis.violas_base import vbase
 
 #module name
-name="vfilter"
+name="vproof"
 
 COINS = comm.values.COINS
 #load logging
 logger = log.logger.getLogger(name) 
     
-class vfilter(vbase):
-    def __init__(self, rconf, vnodes):
-        vbase.__init__(self, rconf, vnodes)
+class vproof(vbase):
+
+    class proofstate(Enum):
+        START = 1
+        END = 2
+        CANCEL = 3
+        UNKOWN = 255
+
+    def __init__(self, rconf):
+        vbase.__init__(self, rconf, None)
 
     def __del__(self):
         vbase.__del__(self)
 
+    def proofstate_name_to_value(self, name):
+        if name is None or len(name) == 0:
+            return self.proofstate.UNKOWN
 
-    def work(self):
-        i = 0
-        #init
-        vclient = self._vclient
-        dbclient = self._dbclient
+        for estate in self.proofstate:
+            if estate.name == name.upper():
+                return estate
 
+        return self.proofstate.UNKOWN
+
+    def proofstate_value_to_name(self, value):
+        for estate in self.proofstate:
+            if estate == value:
+                return estate.name.lower()
+        return "unkown"
+
+    def check_tran_is_valid(self, tran_info):
+        return tran_info.get("flag", None) == self.trantype.VIOLAS and \
+               self.proofstate_name_to_value(tran_info.get("state", "")) != self.proofstate.UNKOWN and \
+               tran_info.get("type", self.datatype.UNKOWN) in (self.datatype.V2B, self.datatype.V2L)
+
+    def update_proof_info(self, tran_info):
         try:
-            ret = vclient.get_latest_transaction_version();
-            if ret.state != error.SUCCEED:
-                return ret
-                
-            chain_latest_ver = ret.datas
+            logger.debug(f"start update_proof_info{tran_info}")
+            version = tran_info.get("version", None)
 
-            ret = dbclient.get_latest_filter_ver()
-            if ret.state != error.SUCCEED:
-                return ret
-            db_latest_ver = ret.datas
-                
-            if db_latest_ver is None or len(db_latest_ver) == 0:
-                db_latest_ver = '-1'
-            i = int(db_latest_ver) + 1
-    
-            latest_saved_ver = str(dbclient.get_latest_saved_ver().datas)
-            print(f"latest_saved_ver={latest_saved_ver} start version = {i}  step = {self.get_step()} chain_latest_ver = {chain_latest_ver} ")
-            if i >= chain_latest_ver:
-               return 
-    
-            ret = vclient.get_transactions(i, self.get_step(), True)
-            if ret.state != error.SUCCEED:
-                return ret
-            for data in ret.datas:
-                dict = data.to_json()
-    
-                #save to redis db
-                value = json.dumps(dict)
-                key = dict.get("version", 0)
+            ret = self._dbclient.set_latest_filter_ver(version)
 
-                ret = dbclient.set_latest_filter_ver(key)
-                if ret.state != error.SUCCEED:
-                    return ret
-    
-                tran_filter = self.parse_tran(dict)
-                if tran_filter.state != error.SUCCEED or \
-                        tran_filter.datas.get("flag", None) == self.trantype.UNKOWN or \
-                        not tran_filter.datas.get("tran_state", False):
-                    continue
+            if self.check_tran_is_valid(tran_info) != True:
+                return result(error.TRAN_INFO_INVALID, f"tran is valid(check flag type). violas tran info : {tran_info}")
 
-                ret = dbclient.set(key, value)
+            new_proof = False
+            if self.proofstate_name_to_value(tran_info.get("state", "")) == self.proofstate.START:
+                new_proof = True
+
+            if new_proof == True:
+                ret  = self._dbclient.key_is_exists(version)
                 if ret.state != error.SUCCEED:
                     return ret
 
-                dbclient.set_latest_saved_ver(key)
-                logger.debug(tran_filter.datas)
+                #found key = version info, db has old datas , must be flush db?
+                if ret.datas == True:
+                    return result(error.TRAN_INFO_INVALID, f"key{version} is exists. violas tran info : {tran_info}")
+
+                #create tran id
+                tran_id = self.create_tran_id(tran_info["flag"], tran_info["type"], tran_info['sender'], \
+                        tran_info['receiver'], tran_info['vtoken'], tran_info['version'])
+
+                tran_info["flag"] = tran_info["flag"].name
+                tran_info["type"] = tran_info["type"].name
+                ret = self._dbclient.set(tran_id, version)
+                ret = self._dbclient.set(version, json.dumps(tran_info))
+                if ret.state != error.SUCCEED:
+                    return ret
+
+            else:
+                tran_id = tran_info.get("tran_id", None)
+
+                #get tran info from db(tran_id -> version -> tran info)
+                ret = self._dbclient.get(tran_id)
+                if ret.state != error.SUCCEED:
+                    return ret
+
+                version = ret.datas
+                if version is None or len(version) == 0:
+                    return result(error.TRAN_INFO_INVALID, f"update key{tran_id}, but not found, violas tran info : {tran_info}")
+
+
+                ret = self._dbclient.get(version)
+                if ret.state != error.SUCCEED:
+                    return ret
+
+                if ret.datas is None or len(ret.datas) == 0:
+                    return result(error.TRAN_INFO_INVALID, f"key{version} not found value or key is not found.violas tran info : {tran_info}")
+
+                db_tran_info = json.loads(ret.datas())
+
+                #only recevier can change state (start -> end/cancel)
+                if db_tran_info.get("receiver", "start state receiver") != tran_info.get("sender", "to end address"):
+                    return result(error.TRAN_INFO_INVALID, f"violas info: {tran_info}\ndb info : {db_tran_info}") 
+
+                #only db tran info's state = start, state can change
+                if self.proofstate_name_to_value(db_tran_info.get("state", "")) != self.proofstate.START:
+                    return result(error.TRAN_INFO_INVALID, f"db tran info : {db_tran_info}")
+
+                db_tran_info["state"] = tran_info["state"]
+                self._dbclient.set(version, db_tran_info)
+
+            #mark it, watch only
+            self._dbclient.set_latest_saved_ver(version)
             ret = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
-        else:
-            print("filter end")
         return ret
         
-def works():
-    try:
-        pass
-        filter = vfilter(setting.violas_filter.get("db_transactions", None), setting.violas_nodes)
-        filter.set_step(setting.violas_filter.get("step", 1000))
-        ret = filter.work()
-    except Exception as e:
-        ret = parse_except(e)
-    return ret
-
-if __name__ == "__main__":
-    logger.debug(f"start {__file__}.{__name__}")
-    works()
