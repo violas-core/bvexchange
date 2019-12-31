@@ -15,6 +15,9 @@ v2b_sleep = 6
 vfilter_sleep = 1
 
 #communication thread loop time
+vproof_sleep = 1
+
+#communication thread loop time
 comm_sleep = 10
 
 traceback_limit = 4
@@ -60,7 +63,6 @@ v2b_maxtimes = 99999
 
 violas_filter={
         #'db_transactions':{'host':'127.0.0.1', 'port':6378, 'db':'3', 'password':'123'},
-        'db_transactions':{'host':'127.0.0.1', 'port':6378, 'db':'3', 'password':'violas'},
-        'db_proof':{'host':'127.0.0.1', 'port':6378, 'db':'4', 'password':'violas'},
-        'step':1000
+        'db_vfilter':{'host':'127.0.0.1', 'port':6378, 'db':'3', 'password':'violas', 'step':1000},
+        'db_vproof':{'host':'127.0.0.1', 'port':6378, 'db':'4', 'password':'violas', 'step':100},
         }

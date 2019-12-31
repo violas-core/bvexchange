@@ -48,7 +48,7 @@ class dbvbase(object):
 
     def __connect(self, host, port, db, password = None):
         try:
-            logger.debug(f"connect filter db(host={host}, port={port}, db={db}, passwd={password})")
+            logger.debug(f"connect db(host={host}, port={port}, db={db}, passwd={password})")
             self._client = redis.Redis(host=host, port=port, db=db, password=password, decode_responses=True)
             ret = result(error.SUCCEED)
         except Exception as e:

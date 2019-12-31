@@ -32,17 +32,15 @@ COINS = comm.values.COINS
 logger = log.logger.getLogger(name) 
     
 class vfilter(vbase):
-    def __init__(self, vfconf, vnodes, vpconf):
+    def __init__(self, dbconf, vnodes):
         self._vclient = None
         self._dbclient = None
         self._connect_violas(vnodes)
-        if vfconf is not None:
-            self._dbclient = dbvfilter(vfconf.get("host", "127.0.0.1"), vfconf.get("port", 6378), vfconf.get("db", "violas_filter"), vfconf.get("password", None))
-        self._vproof = vproof(vpconf)
+        if dbconf is not None:
+            self._dbclient = dbvfilter(dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db", "violas_filter"), dbconf.get("password", None))
 
     def __del__(self):
         vbase.__del__(self)
-
 
     def work(self):
         i = 0
@@ -72,17 +70,17 @@ class vfilter(vbase):
             if ret.state != error.SUCCEED:
                 return ret
             for data in ret.datas:
-                dict = data.to_json()
+                tran_data = data.to_json()
     
                 #save to redis db
-                value = json.dumps(dict)
-                key = dict.get("version", 0)
+                value = json.dumps(tran_data)
+                key = tran_data.get("version", 0)
 
                 ret = self._dbclient.set_latest_filter_ver(key)
                 if ret.state != error.SUCCEED:
                     return ret
     
-                ret = self.parse_tran(dict)
+                ret = self.parse_tran(tran_data)
                 if ret.state != error.SUCCEED or \
                         ret.datas.get("flag", None) == self.trantype.UNKOWN or \
                         not ret.datas.get("tran_state", False):
@@ -94,11 +92,6 @@ class vfilter(vbase):
                 if ret.state != error.SUCCEED:
                     return ret
                 self._dbclient.set_latest_saved_ver(key)
-
-                #this is target transaction, todo work here
-                ret = self._vproof.update_proof_info(tran_filter)
-                if ret.state != error.SUCCEED:
-                    logger.error(ret.message)
  
             ret = result(error.SUCCEED)
         except Exception as e:
@@ -109,8 +102,8 @@ class vfilter(vbase):
         
 def works():
     try:
-        filter = vfilter(setting.violas_filter.get("db_transactions", None), setting.violas_nodes, setting.violas_filter.get("db_proof", None))
-        filter.set_step(setting.violas_filter.get("step", 1000))
+        filter = vfilter(setting.violas_filter.get("db_vfilter", None), setting.violas_nodes)
+        filter.set_step(setting.violas_filter.get("db_vfilter", "").get("step", 1000))
         ret = filter.work()
         if ret.state != error.SUCCEED:
             logger.error(ret.message)

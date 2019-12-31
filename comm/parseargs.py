@@ -129,6 +129,5 @@ class parseargs:
             argstr = "[\"{}\"]".format(arg)
         else:
             argstr = "[{}]".format(arg)
-        print(argstr)
         arg_list = json.loads(argstr)
         return  (len(arg_list), arg_list)
