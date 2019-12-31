@@ -20,7 +20,7 @@ from comm.error import error
 from db.dbv2b import dbv2b
 from violas.violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
-from db.dbvfilter import dbvfilter
+from db.dbvbase import dbvbase
 
 #module name
 name="vbase"
@@ -43,8 +43,8 @@ class vbase(object):
     def __init__(self, rconf, vnodes):
         self._vclient = None
         self._dbclient = None
-        self.__connect_db(rconf)
-        self.__connect_violas(vnodes)
+        self._connect_db(rconf)
+        self._connect_violas(vnodes)
 
     def __del__(self):
         if self._vclient is not None:
@@ -52,12 +52,12 @@ class vbase(object):
         if self._dbclient is not None:
             self._dbclient.save()
 
-    def __connect_db(self, rconf):
+    def _connect_db(self, rconf):
         if rconf is not None:
-            self._dbclient = dbvfilter(rconf.get("host", "127.0.0.1"), rconf.get("port", 6378), rconf.get("db", "violas_filter"), rconf.get("password", None))
+            self._dbclient = dbvbase(rconf.get("host", "127.0.0.1"), rconf.get("port", 6378), rconf.get("db", "violas_filter"), rconf.get("password", None))
         return self._dbclient
 
-    def __connect_violas(self, vnodes):
+    def _connect_violas(self, vnodes):
         if vnodes is not None:
             self._vclient = violasclient(vnodes) 
         return self._vclient
@@ -144,9 +144,7 @@ class vbase(object):
             if data is None or len(data) == 0:
                 return tran
 
-            print(data)
             data_dict = json.loads(data)
-            print(type(data_dict))
             if not self.is_valid_flag(data_dict.get("flag", None)):
                 return tran
             
