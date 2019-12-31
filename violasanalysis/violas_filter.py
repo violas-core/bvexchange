@@ -32,9 +32,13 @@ COINS = comm.values.COINS
 logger = log.logger.getLogger(name) 
     
 class vfilter(vbase):
-    def __init__(self, rconf, vnodes, vproof):
-        vbase.__init__(self, rconf, vnodes)
-        self._vproof = vproof
+    def __init__(self, vfconf, vnodes, vpconf):
+        self._vclient = None
+        self._dbclient = None
+        self._connect_violas(vnodes)
+        if vfconf is not None:
+            self._dbclient = dbvfilter(vfconf.get("host", "127.0.0.1"), vfconf.get("port", 6378), vfconf.get("db", "violas_filter"), vfconf.get("password", None))
+        self._vproof = vproof(vpconf)
 
     def __del__(self):
         vbase.__del__(self)
@@ -105,8 +109,7 @@ class vfilter(vbase):
         
 def works():
     try:
-        proof = vproof(setting.violas_filter.get("db_proof", None))
-        filter = vfilter(setting.violas_filter.get("db_transactions", None), setting.violas_nodes, proof)
+        filter = vfilter(setting.violas_filter.get("db_transactions", None), setting.violas_nodes, setting.violas_filter.get("db_proof", None))
         filter.set_step(setting.violas_filter.get("step", 1000))
         ret = filter.work()
         if ret.state != error.SUCCEED:
