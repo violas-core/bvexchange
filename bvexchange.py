@@ -7,8 +7,9 @@ btc and vbtc exchange main
 import operator
 import signal
 import sys, os
-if len(sys.argv) > 0:
-    os.chdir(os.path.dirname(sys.argv[0]))
+print(sys.argv)
+#if len(sys.argv) > 1:
+#    os.chdir(os.path.dirname(sys.argv[0]))
 sys.path.append("./packages")
 sys.path.append("./packages/libra-client")
 import traceback

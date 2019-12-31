@@ -45,11 +45,11 @@ class dbvproof(dbvbase):
             if tran_id is None or len(tran_id) <= 0:
                 return result(error.ARG_INVALID)
 
-            ret = super().set(key, value)
+            ret = self.set(key, value)
             if ret.state != error.SUCCEED:
                 return ret
 
-            ret = super().set(tran_id, key)
+            ret = self.set(tran_id, key)
 
         except Exception as e:
             ret = parse_except(e)
@@ -57,11 +57,11 @@ class dbvproof(dbvbase):
 
     def get_proof_by_hash(self, hkey):
         try:
-            ret = super.get(hkey)
+            ret = self.get(hkey)
             if ret.state != error.SUCCEED:
                 reutrn ret
 
-            return super.get(ret.datas)
+            return self.get(ret.datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -69,7 +69,7 @@ class dbvproof(dbvbase):
 
     def get_proof_version(self, key):
         try:
-            return super.get(key)
+            return self.get(key)
         except Exception as e:
             ret = parse_except(e)
         return ret
