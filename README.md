@@ -8,15 +8,18 @@ violas server: [https://github.com/palliums-developers/violas-webservice.git]
 
 ## install
 apt install python3.6 sqlite3
-python3.6 -m pip install --upgrade pip
-pip3 install python-bitcoinrpc sqlalchemy
 python3 install python3.6-dev
+python3.6 -m pip install --upgrade pip
+pip3 install python-bitcoinrpc sqlalchemy redis
 
 git clone https://github.com/palliums-developers/bvexchange.git
 cd bvexchange
 ./bvexchnge.py  or python3 bvexchange.py
 
 # catalog
+### bvmanage.py
+    work run manage, main
+
 ### bvexchange.py
     work main file
 
@@ -49,3 +52,6 @@ cd bvexchange
 
 ### vwallet
     violas wallet file
+
+### violasanalysis
+    violas transaction filter , state parse

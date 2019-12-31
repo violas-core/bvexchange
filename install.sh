@@ -36,6 +36,9 @@ cp_mkdir "packages"  "$install_path"
 echo "copy root/*.py files"
 cp_mkdir "*.py"  "$install_path" 
 cp_mkdir "*.sh"  "$install_path" 
+cp_mkdir "*.conf"  "$install_path" 
+cp_mkdir "*.txt"  "$install_path" 
+cp_mkdir "*.md"  "$install_path" 
 
 echo "copy bvexchange.service"
 cp bvexchange.service /lib/systemd/system
