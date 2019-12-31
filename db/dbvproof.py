@@ -33,7 +33,7 @@ logger = log.logger.getLogger(name)
 
 class dbvproof(dbvbase):
     def __init__(self, host, port, db, passwd = None):
-        dbvbase.__init__(self. host, port, db, passwd)
+        dbvbase.__init__(self, host, port, db, passwd)
 
     def __del__(self):
         dbvbase.__del__(self)
@@ -59,7 +59,7 @@ class dbvproof(dbvbase):
         try:
             ret = self.get(hkey)
             if ret.state != error.SUCCEED:
-                reutrn ret
+                return ret
 
             return self.get(ret.datas)
         except Exception as e:

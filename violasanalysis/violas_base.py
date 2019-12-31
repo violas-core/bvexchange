@@ -80,9 +80,7 @@ class vbase(object):
             return self.datatype.V2L
         '''
 
-        print(data.upper())
         for etype in self.datatype:
-            print(f"etype.name={etype.name}")
             if etype.name == data.upper():
                 return etype
 

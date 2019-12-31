@@ -7,7 +7,6 @@ sys.path.append(os.getcwd())
 sys.path.append("{}/packages/libra-client".format(os.getcwd()))
 sys.path.append("..")
 sys.path.append("../packages/libra-client")
-print(sys.path)
 import libra
 from libra import Client
 from libra import WalletLibrary

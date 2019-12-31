@@ -13,7 +13,7 @@ logger = log.logger.getLogger(name)
 
 def init_args(pargs):
     pargs.append("help", "show args info")
-    pargs.append("mod", "run mod", True, ["all", "b2v", "v2b", "vfilter"])
+    pargs.append("mod", "run mod", True, ["all", "b2v", "v2b", "vfilter", "vproof"])
 
 def main(argc, argv):
     pargs = parseargs()
@@ -21,7 +21,6 @@ def main(argc, argv):
         logger.debug("start manage.main")
         init_args(pargs)
         pargs.show_help(argv)
-
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
         logger.error(str(e))
@@ -38,9 +37,9 @@ def main(argc, argv):
     for opt, arg in opts:
         count, arg_list = pargs.split_arg(arg)
         if pargs.is_matched(opt, ["mod"]) :
-            if count != 1:
+            if count < 1:
                 pargs.exit_error_opt(opt)
-            bvexchange.run(arg_list[0])
+            bvexchange.run(arg_list)
     logger.debug("end manage.main")
 
 if __name__ == '__main__':
