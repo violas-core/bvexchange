@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys, getopt, os
-os.chdir(os.path.dirname(sys.argv[0]))
+#os.chdir(os.path.dirname(sys.argv[0]))
 import log 
 import json
 import log.logger
