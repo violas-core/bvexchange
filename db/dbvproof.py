@@ -32,44 +32,66 @@ name="dbvproof"
 logger = log.logger.getLogger(name) 
 
 class dbvproof(dbvbase):
+    __KEY_MIN_VERSION_START = "min_version_start"
     def __init__(self, host, port, db, passwd = None):
         dbvbase.__init__(self, host, port, db, passwd)
 
     def __del__(self):
         dbvbase.__del__(self)
 
-    def set_proof(self, key, value):
+    def set_proof(self, version, value):
         try:
             dict = json.loads(value)
             tran_id = dict.get("tran_id", None)
             if tran_id is None or len(tran_id) <= 0:
-                return result(error.ARG_INVALID)
+                return result(error.ARG_INVALID, "tran id is invalid.")
 
-            ret = self.set(key, value)
+            ret = self.set(version, value)
             if ret.state != error.SUCCEED:
                 return ret
 
-            ret = self.set(tran_id, key)
+            ret = self.set(tran_id, version)
 
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def get_proof_by_hash(self, hkey):
+    def get_proof_by_hash(self, tran_id):
         try:
-            ret = self.get(hkey)
+            ret = self.get(tran_id)
             if ret.state != error.SUCCEED:
                 return ret
 
+            version = ret.datas
+            if version is None or len(version) == 0:
+                return result(error.TRAN_INFO_INVALID, f"not found proof, tran_id: {tran_id}.")
+            
             return self.get(ret.datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
 
-    def get_proof_version(self, key):
+    def get_proof_version(self, version):
         try:
-            return self.get(key)
+            return self.get(version)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def set_proof_min_version_for_start(self, version):
+        try:
+            ret = self.set(self.__KEY_MIN_VERSION_START, version)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_proof_min_version_for_start(self):
+        try:
+            ret = self.get(self.__KEY_MIN_VERSION_START)
+            if ret.state == error.SUCCEED:
+                if ret.datas is None:
+                    ret = result(error.SUCCEED, "", '0')
         except Exception as e:
             ret = parse_except(e)
         return ret
