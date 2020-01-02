@@ -110,7 +110,7 @@ class vbase(object):
                     "amount"        : 0,
                     "sender"        : None,
                     "receiver"      : None,
-                    "vtoken"        : None,
+                    "token"         : None,
                     "version"       : 0,
                     "tran_id"       : None,
                     "tran_state"    : False
@@ -156,7 +156,7 @@ class vbase(object):
             datas["amount"]         = event.get("amount", 0)
             datas["sender"]         = event.get("sender", None)
             datas["receiver"]       = event.get("receiver", None)
-            datas["vtoken"]         = event.get("receiver", None)
+            datas["token"]         = event.get("token", None)
             tran_id = data_dict.get("tran_id", None)
             datas["tran_id"]        = tran_id
 

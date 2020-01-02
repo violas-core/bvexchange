@@ -234,6 +234,8 @@ class dbvbase(object):
     def get_latest_filter_ver(self):
         try:
             datas = self._client.get(self.__key_latest_filter_ver)
+            if datas is None:
+                datas = '-1'
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)
@@ -250,6 +252,8 @@ class dbvbase(object):
     def get_latest_saved_ver(self):
         try:
             datas = self._client.get(self.__key_latest_saved_ver)
+            if datas is None:
+                datas = '-1'
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)
