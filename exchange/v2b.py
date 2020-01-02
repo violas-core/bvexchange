@@ -25,7 +25,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 
 #module name
-name="exchangev2b"
+name="exgv2b"
 
 COINS = comm.values.COINS
 #load logging

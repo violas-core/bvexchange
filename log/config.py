@@ -4,7 +4,8 @@ config = {
    'version': 1,
    'formatters': {
        'simple': {
-           'format': '%(asctime)s : %(name)s : %(levelname)s : %(message)s',
+           #'format': '%(asctime)s : %(name)s : %(levelname)s : %(message)s',
+           'format':'%(asctime)s:%(levelname)s:%(threadName)s:%(thread)d:%(name)s:%(filename)s:%(lineno)d--: ''%(message)s' 
            },
        },
    'handlers': {
@@ -28,27 +29,43 @@ config = {
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-       'b2vlog': {
+       'exgb2v': {
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-       'v2blog': {
+       'exgv2b': {
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-       'dbv2blog': {
+       'dbv2b': {
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-       'dbb2vlog': {
+       'dbb2v': {
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-       'blog': {
+       'dbvfilter': {
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-       'vlog': {
+       'dbvproof': {
+           'handlers': ['console', 'file'],
+           'level': 'DEBUG',
+           },
+       'vclient': {
+           'handlers': ['console', 'file'],
+           'level': 'DEBUG',
+           },
+       'bclient': {
+           'handlers': ['console', 'file'],
+           'level': 'DEBUG',
+           },
+       'vproof': {
+           'handlers': ['console', 'file'],
+           'level': 'DEBUG',
+           },
+       'vfilter': {
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },

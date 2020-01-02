@@ -22,7 +22,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 
 #module name
-name="btcclient"
+name="bclient"
 
 #load logging
 logger = log.logger.getLogger(name) 

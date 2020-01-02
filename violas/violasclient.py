@@ -29,7 +29,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 import redis
 #module name
-name="violasclient"
+name="vclient"
 
 #load logging
 logger = log.logger.getLogger(name) 

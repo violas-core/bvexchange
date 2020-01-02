@@ -143,6 +143,7 @@ class vproof(vbase):
         
     def work(self):
         try:
+            logger.debug("start vproof work")
             ret = self._dbclient.get_latest_filter_ver()
             if ret.state != error.SUCCEED:
                 return ret
@@ -208,6 +209,9 @@ class vproof(vbase):
 
         except Exception as e:
             ret = parse_except(e)
+        finally:
+            logger.debug("end vproof work")
+
         return ret
 
 def works():
