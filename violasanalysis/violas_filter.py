@@ -46,6 +46,7 @@ class vfilter(vbase):
         i = 0
         #init
         try:
+            logger.debug("start vfilter work")
             ret = self._vclient.get_latest_transaction_version();
             if ret.state != error.SUCCEED:
                 return ret
@@ -96,8 +97,8 @@ class vfilter(vbase):
             ret = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
-        else:
-            print("filter end")
+        finally:
+            logger.debug("end vfilter work")
         return ret
         
 def works():
