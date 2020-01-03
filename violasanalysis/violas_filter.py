@@ -9,7 +9,7 @@ import hashlib
 import traceback
 import datetime
 import sqlalchemy
-import setting
+import stmanage
 import requests
 import comm
 import comm.error
@@ -32,12 +32,11 @@ COINS = comm.values.COINS
 logger = log.logger.getLogger(name) 
     
 class vfilter(vbase):
-    def __init__(self, dbconf, vnodes):
-        self._vclient = None
-        self._dbclient = None
-        self._connect_violas(vnodes)
+    def __init__(self, ttype, dtype, dbconf, vnodes):
+        #db user dbvfilter
+        vbase.__init__(self, ttype, dtype, None, vnodes)
         if dbconf is not None:
-            self._dbclient = dbvfilter(dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db", "violas_filter"), dbconf.get("password", None))
+            self._dbclient = dbvfilter(dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
 
     def __del__(self):
         vbase.__del__(self)
@@ -83,7 +82,7 @@ class vfilter(vbase):
     
                 ret = self.parse_tran(tran_data)
                 if ret.state != error.SUCCEED or \
-                        ret.datas.get("flag", None) == self.trantype.UNKOWN or \
+                        ret.datas.get("flag", None) not in self.get_tran_types() or \
                         not ret.datas.get("tran_state", False):
                     continue
                 tran_filter = ret.datas
@@ -101,10 +100,12 @@ class vfilter(vbase):
             logger.debug("end vfilter work")
         return ret
         
-def works():
+def works(ttype, dtype):
     try:
-        filter = vfilter(setting.violas_filter.get("db_vfilter", None), setting.violas_nodes)
-        filter.set_step(setting.violas_filter.get("db_vfilter", "").get("step", 1000))
+        #ttype: chain name. data's flag(violas/libra). ex. ttype = "violas"
+        #dtype: save transaction's data type(vfilter/lfilter) . ex. dtype = "vfilter" 
+        filter = vfilter(ttype, None, stmanage.get_db(dtype),  stmanage.get_violas_nodes())
+        filter.set_step(stmanage.get_db(dtype).get("step", 1000))
         ret = filter.work()
         if ret.state != error.SUCCEED:
             logger.error(ret.message)

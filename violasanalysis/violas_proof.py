@@ -10,7 +10,7 @@ import hashlib
 import traceback
 import datetime
 import sqlalchemy
-import setting
+import stmanage
 import requests
 import comm
 import comm.error
@@ -40,12 +40,11 @@ class vproof(vbase):
         CANCEL = 3
         UNKOWN = 255
 
-    def __init__(self, dbconf, vfdbconf, vnodes = None):
-        self._vclient = None
-        self._dbclient = None
-        self._connect_violas(vnodes)
-        self._dbclient = dbvproof(dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db", "violas_vproof"), dbconf.get("password", None))
-        self._vfdbcliet = dbvfilter(vfdbconf.get("host", "127.0.0.1"), vfdbconf.get("port", 6378), vfdbconf.get("db", "violas_vfilter"), vfdbconf.get("password", None))
+    def __init__(self, ttype, dtype, dbconf, vfdbconf, vnodes = None):
+        #db use dbvproof, dbvfilter, not use violas/libra nodes
+        vbase.__init__(ttype, dtype, None, vnodes)
+        self._dbclient = dbvproof(dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
+        self._vfdbcliet = dbvfilter(vfdbconf.get("host", "127.0.0.1"), vfdbconf.get("port", 6378), vfdbconf.get("db"), vfdbconf.get("password", None))
 
     def __del__(self):
         vbase.__del__(self)
@@ -67,10 +66,10 @@ class vproof(vbase):
         return "unkown"
 
     def is_valid_datatype(self, dtype):
-        return dtype in (self.datatype.V2B, self.datatype.V2L)
+        return dtype in self.get_data_types()
 
     def check_tran_is_valid(self, tran_info):
-        return tran_info.get("flag", None) == self.trantype.VIOLAS and \
+        return tran_info.get("flag", None) in self.get_tran_types() and \
                self.proofstate_name_to_value(tran_info.get("state", "")) != self.proofstate.UNKOWN and \
                self.is_valid_datatype(tran_info.get("type"))
 
@@ -128,7 +127,8 @@ class vproof(vbase):
                     return ret
 
                 if ret.datas is None or len(ret.datas) == 0:
-                    return result(error.TRAN_INFO_INVALID, f"tran_id {tran_id} not found value or key is not found.tran version : {tran_info.get('version')}")
+                    return result(error.TRAN_INFO_INVALID, 
+                            f"tran_id {tran_id} not found value or key is not found.tran version : {tran_info.get('version')}")
 
                 db_tran_info = json.loads(ret.datas)
 
@@ -138,11 +138,13 @@ class vproof(vbase):
 
                 old_proofstate = self.proofstate_name_to_value(db_tran_info.get("state", ""))
                 if not self.is_valid_proofstate_change(new_proofstate, old_proofstate):
-                    return result(error.TRAN_INFO_INVALID, f"change state to {new_proofstate.name} is invalid. old state is {old_proofstate.name}. tran version: {tran_info.get('version')}")
+                    return result(error.TRAN_INFO_INVALID, f"change state to {new_proofstate.name} is invalid. \
+                            old state is {old_proofstate.name}. tran version: {tran_info.get('version')}")
 
                 #only recevier can change state (start -> end/cancel)
                 if db_tran_info.get("receiver", "start state receiver") != tran_info.get("sender", "to end address"):
-                    return result(error.TRAN_INFO_INVALID, f"change state error. sender[state = end] != recever[state = start] sender: {tran_info.get('receiver')}  receiver : {db_tran_info.get('sender')} version = {tran_info.get('version')}") 
+                    return result(error.TRAN_INFO_INVALID, f"change state error. sender[state = end] != recever[state = start] \
+                            sender: {tran_info.get('receiver')}  receiver : {db_tran_info.get('sender')} version = {tran_info.get('version')}") 
 
                 db_tran_info["state"] = tran_info["state"]
                 self._dbclient.set_proof(db_tran_info.get("version"), json.dumps(db_tran_info))
@@ -216,7 +218,8 @@ class vproof(vbase):
 
             version  = start_version
             count = 0
-            logger.debug(f"proof latest_saved_ver={self._dbclient.get_latest_saved_ver().datas} start version = {start_version}  step = {self.get_step()} valid transaction latest_saved_ver = {latest_saved_ver} ")
+            logger.debug(f"proof latest_saved_ver={self._dbclient.get_latest_saved_ver().datas} start version = {start_version}  \
+                    step = {self.get_step()} valid transaction latest_saved_ver = {latest_saved_ver} ")
             while(version <= max_version and count < self.get_step()):
                 try:
                     #record last version(parse), maybe version is not exists
@@ -265,10 +268,14 @@ class vproof(vbase):
 
         return ret
 
-def works():
+def works(ttype, dtype, basedata):
     try:
-        _vproof = vproof(setting.violas_filter.get("db_vproof", None), setting.violas_filter.get("db_vfilter", None), setting.violas_nodes)
-        _vproof.set_step(setting.violas_filter.get("db_vproof", "").get("step", 100))
+        #ttype: chain name. data's flag(violas/libra). ex. ttype = "violas"
+        #dtype: save transaction's data type(v2b v2l l2v) . ex. dtype = "v2b" 
+        #basedata: transaction info(vfilter/lfilter), vfilter: filter transaction from violas chain; \
+        #        lfilter: filter transaction from violas chain. ex. basedata = "vfilter" 
+        _vproof = vproof(ttype, dtype, stmanage.get_db(dtype), stmanage.get_db(basedata), stmanage.get_violas_nodes())
+        _vproof.set_step(stmanage.get_db(dtype).get("step", 100))
         ret = _vproof.work()
         if ret.state != error.SUCCEED:
             logger.error(ret.message)

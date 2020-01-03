@@ -44,6 +44,9 @@ cd bvexchange
 ### setting.py
     Main configuration file
 
+### stmanage.py
+    Manage configuration file
+
 ### test
     test 
 

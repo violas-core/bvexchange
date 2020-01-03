@@ -10,7 +10,6 @@ import log.logger
 import traceback
 import datetime
 import sqlalchemy
-import setting
 import random
 import redis
 from comm.error import error
@@ -32,6 +31,14 @@ logger = log.logger.getLogger(name)
 class dbvbase(object):
     __key_latest_filter_ver = "latest_filter_ver"
     __key_latest_saved_ver = "latest_saved_ver"
+
+    class dbindex(Enum):
+        VFILTER = 1
+        V2B     = 2
+        V2L     = 3
+        LFILTER = 4
+        L2V     = 5
+
     def __init__(self, host, port, db, passwd = None):
         self.__host = host
         self.__port = port
@@ -49,12 +56,18 @@ class dbvbase(object):
     def __connect(self, host, port, db, password = None):
         try:
             logger.debug(f"connect db(host={host}, port={port}, db={db}, passwd={password})")
-            self._client = redis.Redis(host=host, port=port, db=db, password=password, decode_responses=True)
+            self._client = redis.Redis(host=host, port=port, db=self.db_name_to_value(db), password=password, decode_responses=True)
             ret = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
+    def db_name_to_value(self, name):
+        for di in self.dbindex:
+            if di.name == name.upper():
+                return di.value
+        raise ValueError(f"db name({name} unkown)")
+    
     def pipeline():
         try:
             datas = self._client.pipeline(transaction = true)
