@@ -15,7 +15,7 @@ import traceback
 import log
 import log.logger
 import threading
-import setting
+import stmanage
 from time import sleep, ctime
 import db
 import db.dbb2v
@@ -88,7 +88,7 @@ class works:
             logger.debug("start: violas filter")
             while (self.__work_looping.get(work_mod.VFILTER.name, False)):
                 logger.debug("looping: vfilter")
-                violas_filter.works()
+                violas_filter.works("violas", "vfilter")
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -100,7 +100,7 @@ class works:
             logger.debug("start: violas proof")
             while (self.__work_looping.get(work_mod.VPROOF.name, False)):
                 logger.debug("looping: vproof")
-                violas_proof.works()
+                violas_proof.works("violas", "v2b")
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -151,18 +151,18 @@ class works:
             self.__work_looping = work_mods
 
             if work_mods.get(work_mod.B2V.name, False):
-                self.thread_append(self.work_b2v, 1, "b2v", setting.b2v_sleep)
+                self.thread_append(self.work_b2v, 1, "b2v", stmanage.get_looping_sleep("b2v"))
 
             if work_mods.get(work_mod.V2B.name, False):
-                self.thread_append(self.work_v2b, 2, "v2b", setting.v2b_sleep)
+                self.thread_append(self.work_v2b, 2, "v2b", stmanage.get_looping_sleep("v2b"))
 
             if work_mods.get(work_mod.VFILTER.name, False):
-                self.thread_append(self.work_vfilter, 3, "vfilter", setting.vfilter_sleep)
+                self.thread_append(self.work_vfilter, 3, "vfilter", stmanage.get_looping_sleep("vfilter"))
 
             if work_mods.get(work_mod.VPROOF.name, False):
-                self.thread_append(self.work_vproof, 4, "vproof", setting.vproof_sleep)
+                self.thread_append(self.work_vproof, 4, "vproof", stmanage.get_looping_sleep("vproof"))
 
-            self.thread_append(self.work_comm, 5, "comm", setting.comm_sleep)
+            self.thread_append(self.work_comm, 5, "comm", stmanage.get_looping_sleep("comm"))
             
             for work in self.__threads:
                 work.start() #start work

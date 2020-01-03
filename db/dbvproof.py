@@ -10,7 +10,7 @@ import log.logger
 import traceback
 import datetime
 import sqlalchemy
-import setting
+import stmanage
 import random
 import redis
 import json

@@ -10,7 +10,6 @@ import log.logger
 import traceback
 import datetime
 import sqlalchemy
-import setting
 import random
 import redis
 from comm.error import error

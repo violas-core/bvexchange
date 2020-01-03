@@ -9,7 +9,6 @@ import hashlib
 import traceback
 import datetime
 import sqlalchemy
-import setting
 import requests
 import comm
 import comm.error
@@ -31,20 +30,26 @@ logger = log.logger.getLogger(name)
     
 class vbase(object):
     _step = 1000
+    _dtypes = []
+    _tran_types = []
     class datatype(Enum):
         V2B = 1
         V2L = 2
+        L2V = 3
         UNKOWN = 255
 
     class trantype(Enum):
         VIOLAS = 1
+        LIBRA  = 2
         UNKOWN = 255
 
-    def __init__(self, rconf, vnodes):
+    def __init__(self, ttype, dtype, dbconf, vnodes):
         self._vclient = None
         self._dbclient = None
-        self._connect_db(rconf)
+        self._connect_db(dbconf)
         self._connect_violas(vnodes)
+        self.append_data_type(dtype)
+        self.append_tran_type(ttype)
 
     def __del__(self):
         if self._vclient is not None:
@@ -54,13 +59,40 @@ class vbase(object):
 
     def _connect_db(self, rconf):
         if rconf is not None:
-            self._dbclient = dbvbase(rconf.get("host", "127.0.0.1"), rconf.get("port", 6378), rconf.get("db", "violas_filter"), rconf.get("password", None))
+            self._dbclient = dbvbase(rconf.get("host", "127.0.0.1"), rconf.get("port", 6378), rconf.get("db"), rconf.get("password", None))
         return self._dbclient
 
     def _connect_violas(self, vnodes):
         if vnodes is not None:
             self._vclient = violasclient(vnodes) 
         return self._vclient
+
+    def _datatype_name_to_type(self, name):
+        for ev in self.datatype:
+            if ev.name == name.upper():
+                return ev
+        raise ValueError(f"data type({name}) unkown")
+
+    def _trantype_name_to_type(self, name):
+        for ev in self.trantype:
+            if ev.name == name.upper():
+                return ev
+        raise ValueError(f"tran type({name}) unkown")
+
+    def append_tran_type(self, ttype):
+        self._tran_types.append(self._trantype_name_to_type(ttype))
+
+    def get_tran_types(self):
+        return self._tran_types
+
+    def append_data_type(self, dtype):
+        if dtype is None:
+            return None
+            
+        self._dtypes.append(self._datatype_name_to_type(dtype))
+
+    def get_data_types(self):
+        return self._dtypes
 
     def set_step(self, step):
         if step is None or step <= 0:
@@ -73,12 +105,6 @@ class vbase(object):
     def parse_data_type(self, data):
         if data is None or len(data) == 0:
             return self.datatype.UNKOWN
-        '''
-        if data.find("v2b") == 0:
-            return self.datatype.V2B
-        if data.find("v2l") == 0:
-            return self.datatype.V2L
-        '''
 
         for etype in self.datatype:
             if etype.name == data.upper():
@@ -87,16 +113,28 @@ class vbase(object):
         return self.datatype.UNKOWN
 
     def is_valid_flag(self, flag):
-        return self.parse_tran_type(flag) != self.trantype.UNKOWN
+        return self.parse_tran_type(flag) in self._tran_types
         
     def parse_tran_type(self, flag):
-        if flag is None or len(flag) == 0:
-            return self.trantype.UNKOWN
-        if flag == comm.values.EX_DATA_FLAG:
-            return self.trantype.VIOLAS
+        try:
+            if flag is None or len(flag) == 0:
+                return self.trantype.UNKOWN
+
+            return self._trantype_name_to_type(flag)
+        except Exception as e:
+            parse_except(e)
         return self.trantype.UNKOWN
+
     def create_tran_id(self, flag, dtype, sender, receiver, vtoken, version):
         return hashlib.sha3_256(f"{flag}.{dtype}.{sender}.{receiver}.{vtoken}.{version}".encode("UTF-8")).hexdigest()
+
+    def json_to_dict(self, data):
+        try:
+            data = json.loads(data)
+            ret = result(error.SUCCEED, "", data)
+        except Exception as e:
+            ret = result(error.FAILED, "data is not json format.")
+        return ret
 
     def parse_tran(self, transaction):
         try:
@@ -142,7 +180,11 @@ class vbase(object):
             if data is None or len(data) == 0:
                 return tran
 
-            data_dict = json.loads(data)
+            ret = self.json_to_dict(data)
+            if ret.state != error.SUCCEED:
+                return tran
+
+            data_dict = ret.datas
             if not self.is_valid_flag(data_dict.get("flag", None)):
                 return tran
             

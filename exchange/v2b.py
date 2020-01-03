@@ -8,7 +8,7 @@ import log.logger
 import traceback
 import datetime
 import sqlalchemy
-import setting
+import stmanage
 import requests
 import comm
 import comm.error
@@ -25,7 +25,9 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 
 #module name
-name="exgv2b"
+name="v2b"
+btc_chain = "btc"
+violas_chain = "violas"
 
 COINS = comm.values.COINS
 #load logging
@@ -55,8 +57,8 @@ def get_reexchange(v2b):
         #transactions that should be get_reexchange(dbv2b.db)
         
         ## btcfailed 
-        if setting.v2b_maxtimes and setting.v2b_maxtimes > 0:
-            maxtimes = setting.v2b_maxtimes
+        if stmanage.get_max_times(name) > 0:
+            maxtimes = stmanage.get_max_times(name)
         bflddatas = v2b.query_v2binfo_is_failed(maxtimes)
         if(bflddatas.state != error.SUCCEED):
             return bflddatas
@@ -71,21 +73,21 @@ def get_reexchange(v2b):
         ret = parse_except(e)
     return ret
 def checks():
-    assert (len(setting.btc_conn) == 4), "btc_conn is invalid."
-    assert (len(setting.btc_senders) > 0), "btc_senders is invalid"
-    assert (len(setting.module_address) == 64), "module_address is invalid"
-    assert (len(setting.violas_servers) > 0 and len(setting.violas_servers[0]) > 1), "violas_nodes is invalid."
-    assert (len(setting.violas_receivers) > 0), "violas_server is invalid."
-    for violas_receiver in setting.violas_receivers:
+    assert (len(stmanage.get_btc_conn()) == 4), "btc_conn is invalid."
+    assert (len(stmanage.get_sender_address_list(name, btc_chain)) > 0), "btc senders is invalid"
+    assert (len(stmanage.get_module_address(name, violas_chain)) == 64), "module_address is invalid"
+    assert (len(stmanage.get_violas_servers()) > 0), "violas_nodes is invalid."
+    assert (len(stmanage.get_receiver_address_list(name, violas_chain)) > 0), "violas server is invalid."
+    for violas_receiver in stmanage.get_receiver_address_list(name, violas_chain):
         assert len(violas_receiver) == 64, "violas receiver({}) is invalid".format(violas_receiver)
 
-    for sender in setting.btc_senders:
+    for sender in stmanage.get_sender_address_list(name, btc_chain):
         assert len(sender) >= 20, "btc address({}) is invalied".format(sender)
 
 def get_btc_sender_address(bclient, excludeds, amount, gas):
     try:
         use_sender = None
-        for sender in setting.btc_senders:
+        for sender in stmanage.get_sender_address_list(name, btc_chain):
             if sender not in excludeds:
                #check btc amount
                ret = bclient.has_btc_banlance(sender, amount, gas)
@@ -115,13 +117,13 @@ def works():
         checks()
 
         #btc init
-        bclient = btcclient( setting.btc_conn)
+        bclient = btcclient( stmanage.get_btc_conn())
         v2b = dbv2b(dbv2b_name)
 
         #violas init
-        vserver = violasserver(setting.violas_servers)
+        vserver = violasserver(stmanage.get_violas_servers())
 
-        module_address = setting.module_address
+        module_address = stmanage.get_module_address(name, violas_chain)
 
         gas = 1000
         
@@ -132,7 +134,7 @@ def works():
             return ret
         rpcparams = ret.datas
 
-        receivers = list(set(setting.violas_receivers))
+        receivers = list(set(stmanage.get_receiver_address_list(name, violas_chain)))
         #modulti receiver, one-by-one
         for receiver in receivers:
             ret = v2b.query_latest_version(receiver, module_address)
@@ -176,7 +178,7 @@ def works():
                         assert (ret.state == error.SUCCEED), "db error"
                         continue
 
-                    #get btc sender from setting.btc_senders
+                    #get btc sender from stmanage.get_sender_address_list(name, btc_chain)
                     ret = get_btc_sender_address(bclient, [baddress], vamount, gas) #vamount and gas unit is satoshi
                     if ret.state != error.SUCCEED:
                         logger.debug("not found btc sender. check btc address and amount")
@@ -225,7 +227,7 @@ def works():
                         logger.info("found transaction(vaddress={}, sequence={}) in db. ignore it and process next.".format(vaddress, sequence))
                         continue
 
-                    #get btc sender from setting.btc_senders
+                    #get btc sender from btc senders
                     ret = get_btc_sender_address(bclient, [baddress], fmtamount, gas)
                     if ret.state != error.SUCCEED:
                         logger.debug("not found btc sender or amount too low. check btc address and amount")

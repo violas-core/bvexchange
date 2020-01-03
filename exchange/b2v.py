@@ -8,7 +8,7 @@ import log.logger
 import traceback
 import datetime
 import sqlalchemy
-import setting
+import stmanage
 import requests
 import comm
 import comm.error
@@ -25,7 +25,9 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 
 #module name
-name="exgb2v"
+name="b2v"
+btc_chain = "btc"
+violas_chain = "violas"
 
 COINS = comm.values.COINS
 #load logging
@@ -86,10 +88,16 @@ def get_excluded(b2v):
     return ret
 
 def checks():
-    assert (len(setting.btc_conn) == 4), "btc_conn is invalid."
-    assert (len(setting.violas_sender) == 64 ), "violas_sender is invalid."
-    assert (len(setting.module_address) == 64), "module_address is invalid"
-    assert (len(setting.violas_nodes) > 0 and len(setting.violas_nodes[0]) > 1), "violas_nodes is invalid."
+    assert (len(stmanage.get_btc_conn()) == 4), "btc_conn is invalid."
+    assert (len(stmanage.get_sender_address_list(name, violas_chain)) > 0 ), "violas sender not found."
+    assert (len(stmanage.get_receiver_address_list(name, btc_chain)) > 0 ), "btc receiver not found."
+    assert (len(stmanage.get_module_address(name, violas_chain)) == 64), "module_address is invalid"
+    assert (len(stmanage.get_violas_nodes()) > 0), "violas_nodes is invalid."
+    for addr in stmanage.get_sender_address_list(name, violas_chain):
+        assert len(addr) == 64, f"violas address({addr}) is invalid."
+
+    for addr in stmanage.get_receiver_address_list(name, btc_chain):
+        assert len(addr) >= 20, f"btc address({addr}) is invalid."
 
 def hasplatformbalance(vclient, address, vamount = 0):
     try:
@@ -154,11 +162,11 @@ def rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module
         for data in bflddatas.datas:
             receiver = data.toaddress
             if module_address != data.vtoken:
-                logger.info(f"db's vtoken({data.vtoken}) not match setting.module_address({module_address}), ignore it, next")
+                logger.info(f"db's vtoken({data.vtoken}) not match module_address({module_address}), ignore it, next")
                 continue
 
             if receiver not in receivers:
-                logger.info(f"db's fromaddress({data.fromaddress}) not match setting.btc_recivers({receivers}), ignore it, next")
+                logger.info(f"db's fromaddress({data.fromaddress}) not match btc_recivers({receivers}), ignore it, next")
                 continue
 
             vaddress = data.vaddress
@@ -185,6 +193,45 @@ def rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module
         ret = parse_except(e)
     return ret
 
+def get_violas_sender(vclient, vwallet, module, vamount, min_gas):
+    for sender in stmanage.get_sender_address_list(name, violas_chain):
+        ret = vwallet.get_account(sender)
+        if ret.state != error.SUCCEED:
+            continue
+        asender = ret.datas
+
+        #make sure sender address is binded module
+        ret = vclient.account_has_violas_module(sender, module)
+        if ret.state != error.SUCCEED:
+            logger.warning("violas client error")
+            continue
+
+        if ret.datas != True:
+            logger.warning("sender account {} not bind module {}".format(sender, module))
+            continue
+
+        #make sure sender address has enough platform coins
+        ret = hasplatformbalance(vclient, sender, min_gas)
+        if ret.state != error.SUCCEED:
+            continue
+
+        if ret.datas != True:
+            logger.warning("{} not enough platform coins {}".format(sender, min_gas))
+            continue
+
+        #make sure sender address has enough violas coins
+        ret = hasviolasbalance(vclient, sender, module, vamount)
+        if ret.state != error.SUCCEED:
+            continue
+
+        if ret.datas != True:
+            logger.info("{} not enough {} coins {}".format(vsender_address, module, vamount))
+            continue
+        return(error.SUCCEED, "", (asender, sender))
+
+    return result(error.FAILED, "not found account from wallet")
+
+
 def works():
     try:
         logger.debug("start b2v work")
@@ -195,32 +242,15 @@ def works():
         checks()
 
         #btc init
-        bclient = btcclient(setting.btc_conn)
+        bclient = btcclient(stmanage.get_btc_conn())
         b2v = dbb2v(dbb2v_name)
 
         #violas init
-        vclient = violasclient(setting.violas_nodes)
+        vclient = violasclient(stmanage.get_violas_nodes())
         vwallet = violaswallet(wallet_name)
-        ret = vwallet.get_account(setting.violas_sender)
-        if ret.state != error.SUCCEED:
-            logger.error("not fount violas sender account({}".format(setting.violas_sender)) 
-            return result(error.FAILED)
 
-        #violas sender, grant vbtc
-        vsender = ret.datas
-        vsender_address = setting.violas_sender
-        module_address = setting.module_address
-        combineaddress = setting.btc_combineaddress
-
-        #make sure sender address is binded module
-        ret = vclient.account_has_violas_module(vsender_address, module_address)
-        if ret.state != error.SUCCEED:
-            logger.error("violas client error")
-            return result(error.FAILED)
-
-        if ret.datas != True:
-            logger.error("sender account {} not bind module {}".format(vsender_address, module_address))
-            return result(error.FAILED)
+        module_address = stmanage.get_module_address(name, violas_chain)
+        combineaddress = stmanage.get_combine_address(name, btc_chain)[0]
 
         #update db state by proof state
         ret = update_db_btcsucceed_to_complete(bclient, b2v)
@@ -229,7 +259,7 @@ def works():
 
         #update proof state to end, and update db state, prevstate is btcfailed in db. 
         #When this happens, there is not enough Bitcoin, etc.
-        rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, setting.btc_receivers)
+        rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, stmanage.get_receiver_address_list(name, btc_chain))
 
         #get all excluded info from db
         rpcparams = {}
@@ -241,8 +271,8 @@ def works():
         rpcparams = ret.datas
         min_gas = comm.values.MIN_EST_GAS 
 
-        #set receiver: get it from setting or get it from blockchain
-        receivers = list(set(setting.btc_receivers))
+        #set receiver: get it from stmanage or get it from blockchain
+        receivers = list(set(stmanage.get_receiver_address_list(name, btc_chain)))
         logger.debug(receivers)
 
         #modulti receiver, one-by-one
@@ -274,32 +304,24 @@ def works():
                         logger.warning("amount({}) is invalid.".format(vamount))
                         continue
                     
-                    #make sure receiver address is binded module
+                    #get sender account and address
+                    ret = get_violas_sender(vclient, vwallet, to_module_address, vamount, min_gas)
+                    if ret.state != error.SUCCEED:
+                        logger.debug(f"get violas account failed. {ret.message}")
+                        continue
+
+                    #violas sender, grant vbtc
+                    vsender  = ret.datas(0)
+                    vsender_address = ret.datas(1)
+                                #make sure receiver address is binded module
                     ret = vclient.account_has_violas_module(to_address, to_module_address)
                     if ret.state != error.SUCCEED:
                         continue
 
                     if ret.datas != True:
-                        logger.info("account {} not bind module {}".format(to_address, to_module_address))
-                        continue
-
-                    #make sure sender address has enough platform coins
-                    ret = hasplatformbalance(vclient, vsender_address, min_gas)
-                    if ret.state != error.SUCCEED:
-                        break 
-                    if ret.datas != True:
-                        logger.info("{} not enough platform coins {}".format(vsender_address, min_gas))
-                        break
-
-                    #make sure sender address has enough violas coins
-                    ret = hasviolasbalance(vclient, vsender_address, to_module_address, vamount)
-                    if ret.state != error.SUCCEED:
+                        logger.warning("account {} not bind module {}".format(to_address, to_module_address))
                         continue
                        
-                    if ret.datas != True:
-                        logger.info("{} not enough {} coins {}".format(vsender_address, to_module_address, vamount))
-                        continue
-
                     logger.debug("start new btc -> vbtc(address={}, sequence={} amount={}, module={})".format(to_address, int(data["sequence"]), vamount, to_module_address))
                     ##send vbtc to vaddress, vtoken and amount
                     ret = vclient.send_coin(vsender, to_address, vamount, to_module_address, data="btctxid:{}".format(data["txid"]))

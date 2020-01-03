@@ -17,7 +17,7 @@ import log.logger
 import traceback
 import datetime
 import sqlalchemy
-import setting
+import stmanage
 import requests
 import comm
 import comm.error
@@ -40,9 +40,12 @@ wallet_name = "vwallet"
 '''
 *************************************************violasclient oper*******************************************************
 '''
+def get_violasclient():
+    return violasclient(stmanage.get_violas_nodes())
+
 def mint_platform_coin(address, amount):
     logger.debug("start mcreate_violas_coin otform_coin = {} amount={}".format(address, address))
-    client = violasclient(setting.violas_nodes)
+    client = violasclient(stmanage.get_violas_nodes())
 
     ret = client.mint_platform_coin(address, amount)
     assert ret.state == error.SUCCEED, "mint_platform_coin failed."
@@ -52,7 +55,7 @@ def mint_platform_coin(address, amount):
 def mint_violas_coin(address, amount, module):
     logger.debug("start mcreate_violas_coin otform_coin = {} amount={} module={}".format(address, amount, module))
     global wallet_name
-    client = violasclient(setting.violas_nodes)
+    client = get_violasclient()
     wallet = violaswallet(wallet_name)
     ret = wallet.get_account(module)
     if ret.state != error.SUCCEED:
@@ -75,7 +78,7 @@ def create_violas_coin(module):
         return
     account = ret.datas
 
-    client = violasclient(setting.violas_nodes)
+    client = get_violasclient()
 
     ret = client.create_violas_coin(account)
     if(ret.state != error.SUCCEED):
@@ -87,7 +90,7 @@ def bind_module(address, module):
     logger.debug("start bind_module address= {} module = {}".format(address, module))
     global wallet_name
     wallet = violaswallet(wallet_name)
-    client = violasclient(setting.violas_nodes)
+    client = get_violasclient()
     ret = wallet.get_account(address)
     if ret.state != error.SUCCEED:
         logger.debug("get account failed")
@@ -105,31 +108,31 @@ def send_violas_coin(from_address, to_address, amount, module, data = None):
         logger.debug("get account failed")
     account = ret.datas
 
-    client = violasclient(setting.violas_nodes)
+    client = get_violasclient()
     client.send_violas_coin(account, to_address, amount, module, data)
     json_print(client.get_account_state(account.address).datas.to_json())
 
 def get_platform_balance(address):
     logger.debug("start get_platform_balance address= {}".format(address))
-    client = violasclient(setting.violas_nodes)
+    client = get_violasclient()
     ret = client.get_platform_balance(address)
     logger.debug("balance: {0}".format(ret.datas))
 
 def get_violas_balance(address, module):
     logger.debug("start get_violas_balance address= {} module = {}".format(address, module))
-    client = violasclient(setting.violas_nodes)
+    client = get_violasclient()
     ret = client.get_violas_balance(address, module)
     logger.debug("balance: {0}".format(ret.datas))
 
 def get_latest_transaction_version():
     logger.debug("start get_latest_transaction_version")
-    client = violasclient(setting.violas_nodes)
+    client = get_violasclient()
     ret = client.get_latest_transaction_version()
     logger.debug("latest version: {0}".format(ret.datas))
 
 def get_transactions(start_version, limit = 1, fetch_event = True):
     logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
-    client = violasclient(setting.violas_nodes)
+    client = get_violasclient()
     ret = client.get_transactions(start_version, limit, fetch_event)
     if ret.state != error.SUCCEED:
         return
@@ -152,7 +155,7 @@ def new_account():
 
 def account_has_violas_module(address, module):
     logger.debug("start account_has_violas_module address= {} module = {}".format(address, module))
-    client = violasclient(setting.violas_nodes)
+    client = get_violasclient()
     logger.debug(client.account_has_violas_module(address, module).datas)
 
 def show_accounts():
@@ -169,7 +172,7 @@ def show_accounts():
         i += 1
 
 def get_account(address):
-    client = violasclient(setting.violas_nodes)
+    client = get_violasclient()
     json_print(client.get_account_state(address).datas.to_json())
 
 def has_account(address):
@@ -179,14 +182,17 @@ def has_account(address):
 '''
 *************************************************violasserver oper*******************************************************
 '''
+def get_violas_server():
+    return violasserver(stmanage.get_violas_servers())
+
 def get_account_transactions(address, module, start):
     logger.debug("start get_account_transactions address= {} module = {}, start={}".format(address, module, start))
-    server = violasserver(setting.violas_servers)
+    server = get_violas_server()
     logger.debug(server.get_transactions(address, module, start).datas)
     
 def has_transaction(address, module, baddress, sequence, amount, version, receiver):
     logger.debug("start has_transaction address= {} module = {}, baddress={}, sequence={}, amount={}, version={}, receiver={}".format(address, module, baddress, sequence, amount, version, receiver))
-    server = violasserver(setting.violas_servers)
+    server = get_violas_server()
     logger.debug(server.has_transaction(address, module, baddress, sequence, amount, version, receiver).datas)
 
     

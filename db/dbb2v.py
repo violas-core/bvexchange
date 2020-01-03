@@ -9,7 +9,7 @@ import log
 import log.logger
 import traceback
 import datetime
-import setting
+import stmanage
 import random
 from comm.error import error
 from comm.result import result
@@ -79,8 +79,8 @@ class dbb2v:
         logger.debug("start __init_db")
         db_echo = False
 
-        if setting.db_echo:
-            db_echo = setting.db_echo
+        if stmanage.get_db_echo():
+            db_echo = stmanage.get_db_echo()
 
         self.__engine = create_engine('sqlite:///{}?check_same_thread=False'.format(dbfile), echo=db_echo)
         #self.b2vinfo.__table__
