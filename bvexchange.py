@@ -20,23 +20,15 @@ from time import sleep, ctime
 import db
 import db.dbb2v
 import db.dbv2b
+import comm.functions as fn
 from exchange import b2v, v2b
 from comm.result import parse_except
-from violasanalysis import violas_base, violas_filter, violas_proof
+from analysis import violas_base, violas_filter, violas_proof
 import subprocess
 from enum import Enum
 
-name="bvexchange"
 
-def checkrerun():
-    proc = subprocess.Popen(["pgrep", "-f", __file__], stdout=subprocess.PIPE)
-    std = proc.communicate()
-    if len(std[0].decode().split()) > 1:
-        exit("already running")
-    proc = subprocess.Popen(["pgrep", "-f", "bvmanage.py"], stdout=subprocess.PIPE)
-    std = proc.communicate()
-    if len(std[0].decode().split()) > 1:
-        exit("already running")
+name="bvexchange"
 
 class work_mod(Enum):
     COMM    = 0
@@ -48,6 +40,14 @@ class work_mod(Enum):
 class works:
     __threads = []
     __work_looping = {}
+    __v2b = None
+    __b2v = None
+    __vfilter = None
+    __vproof = None
+    __lproof = None
+    __l2v = None
+    __v2l = None
+    
 
     def __init__(self):
         logger.debug("works __init__")
@@ -64,7 +64,8 @@ class works:
             logger.debug("start: b2v")
             while (self.__work_looping.get(work_mod.B2V.name, False)):
                 logger.debug("looping: b2v")
-                b2v.works()
+                self.__b2v = b2v.exb2v()
+                self.__b2v.work()
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -76,7 +77,8 @@ class works:
             logger.debug("start: v2b")
             while (self.__work_looping.get(work_mod.V2B.name, False)):
                 logger.debug("looping: v2b")
-                v2b.works()
+                self.__v2b = b2v.exb2v()
+                self.__v2b.work()
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -88,7 +90,11 @@ class works:
             logger.debug("start: violas filter")
             while (self.__work_looping.get(work_mod.VFILTER.name, False)):
                 logger.debug("looping: vfilter")
-                violas_filter.works("violas", "vfilter")
+                dtype = "vfilter"
+                self.__vfilter = violas_filter.vfilter(name="vfilter", ttype="violas", \
+                        dbconf=stmanage.get_db(dtype), vnodes=stmanage.get_violas_nodes())
+                self.__vfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
+                self.__vfilter.work()
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -100,7 +106,12 @@ class works:
             logger.debug("start: violas proof")
             while (self.__work_looping.get(work_mod.VPROOF.name, False)):
                 logger.debug("looping: vproof")
-                violas_proof.works("violas", "v2b")
+                dtype = "v2b"
+                basedata = "vfilter"
+                self.__vproof = violas_proof.vproof(name="v2bproof", ttype="violas", dtype=dtype, \
+                        dbconf=stmanage.get_db(dtype), vfdbconf=stmanage.get_db(basedata), vnodes=stmanage.get_violas_nodes())
+                self.__vproof.set_step(stmanage.get_db(dtype).get("step", 100))
+                self.__vproof.work()
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -201,25 +212,20 @@ def signal_stop(signal, frame):
     finally:
         logger.debug("end signal")
 
-def write_pid():
-    try:
-        f = open("bvexchange.pid", mode='w')
-        f.write(f"{os.getpid()}")
-        f.close()
-    except Exception as e:
-        parse_except(e)
-
-
 def run(mods):
     for mod in mods:
         if mod is None or mod not in ["all", "b2v", "v2b", "vfilter", "vproof"]:
             raise Exception(f"mod({mod}) is invalid [all, b2v, v2b, vfilter, vproof].")
 
-    checkrerun()
-    write_pid()
+    #fn.checkrerun(__file__)
+    fn.write_pid(name)
+    lockpid = fn.filelock(name)
+    if lockpid.lock() == False:
+        logger.warning("already running.")
+        sys.exit(0)
+
     global work_manage
     logger.debug("start main")
-
     
     signal.signal(signal.SIGINT, signal_stop)
     signal.signal(signal.SIGTSTP, signal_stop)

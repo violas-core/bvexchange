@@ -22,13 +22,13 @@ from btc.btcclient import btcclient
 from enum import Enum
 
 #module name
-name="btcclient"
+name="btctools"
 
 #load logging
 logger = log.logger.getLogger(name) 
 
 def getbtcclient()
-    return btcclient(stmanage.get_btc_conn())
+    return btcclient(name, stmanage.get_btc_conn())
 
 def sendtoaddress(address, count):
     client = getbtcclient()

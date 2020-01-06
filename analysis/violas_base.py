@@ -4,7 +4,6 @@ import sys, os
 import json
 sys.path.append("..")
 sys.path.append(os.getcwd())
-import log
 import hashlib
 import traceback
 import datetime
@@ -20,15 +19,13 @@ from db.dbv2b import dbv2b
 from violas.violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
 from db.dbvbase import dbvbase
+from baseobject import baseobject
 
 #module name
 name="vbase"
 
 COINS = comm.values.COINS
-#load logging
-logger = log.logger.getLogger(name) 
-    
-class vbase(object):
+class vbase(baseobject):
     _step = 1000
     _dtypes = []
     _tran_types = []
@@ -43,11 +40,12 @@ class vbase(object):
         LIBRA  = 2
         UNKOWN = 255
 
-    def __init__(self, ttype, dtype, dbconf, vnodes):
+    def __init__(self, name, ttype, dtype, dbconf, vnodes):
+        baseobject.__init__(self, name)
         self._vclient = None
         self._dbclient = None
-        self._connect_db(dbconf)
-        self._connect_violas(vnodes)
+        self._connect_db(name, dbconf)
+        self._connect_violas(name, vnodes)
         self.append_data_type(dtype)
         self.append_tran_type(ttype)
 
@@ -57,14 +55,14 @@ class vbase(object):
         if self._dbclient is not None:
             self._dbclient.save()
 
-    def _connect_db(self, rconf):
+    def _connect_db(self, name, rconf):
         if rconf is not None:
-            self._dbclient = dbvbase(rconf.get("host", "127.0.0.1"), rconf.get("port", 6378), rconf.get("db"), rconf.get("password", None))
+            self._dbclient = dbvbase(name, rconf.get("host", "127.0.0.1"), rconf.get("port", 6378), rconf.get("db"), rconf.get("password", None))
         return self._dbclient
 
-    def _connect_violas(self, vnodes):
+    def _connect_violas(self, name, vnodes):
         if vnodes is not None:
-            self._vclient = violasclient(vnodes) 
+            self._vclient = violasclient(name, vnodes) 
         return self._vclient
 
     def _datatype_name_to_type(self, name):

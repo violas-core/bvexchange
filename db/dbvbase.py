@@ -5,6 +5,7 @@ btc exchange vtoken db
 import operator
 import sys,os
 sys.path.append(os.getcwd())
+sys.path.append("..")
 import log
 import log.logger
 import traceback
@@ -20,6 +21,7 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime, UniqueConstraint, Index, String
 
+from baseobject import baseobject
 from enum import Enum
 
 #module name
@@ -28,7 +30,7 @@ name="dbvbase"
 #load logging
 logger = log.logger.getLogger(name) 
 
-class dbvbase(object):
+class dbvbase(baseobject):
     __key_latest_filter_ver = "latest_filter_ver"
     __key_latest_saved_ver = "latest_saved_ver"
 
@@ -39,7 +41,8 @@ class dbvbase(object):
         LFILTER = 4
         L2V     = 5
 
-    def __init__(self, host, port, db, passwd = None):
+    def __init__(self, name, host, port, db, passwd = None):
+        baseobject.__init__(self, name)
         self.__host = host
         self.__port = port
         self.__db = db
@@ -55,7 +58,7 @@ class dbvbase(object):
 
     def __connect(self, host, port, db, password = None):
         try:
-            logger.debug(f"connect db(host={host}, port={port}, db={db}, passwd={password})")
+            logger.debug(f"connect db(host={host}, port={port}, db={db}({self.db_name_to_value(db)}), passwd={password})")
             self._client = redis.Redis(host=host, port=port, db=self.db_name_to_value(db), password=password, decode_responses=True)
             ret = result(error.SUCCEED)
         except Exception as e:

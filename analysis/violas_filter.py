@@ -21,22 +21,21 @@ from db.dbv2b import dbv2b
 from violas.violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
 from db.dbvfilter import dbvfilter
-from violasanalysis.violas_base import vbase
-from violasanalysis.violas_proof import vproof
+from analysis.violas_base import vbase
+from analysis.violas_proof import vproof
 
 #module name
 name="vfilter"
 
 COINS = comm.values.COINS
 #load logging
-logger = log.logger.getLogger(name) 
     
 class vfilter(vbase):
-    def __init__(self, ttype, dtype, dbconf, vnodes):
+    def __init__(self, name = "vfilter", ttype = "violas", dtype = None, dbconf = None, vnodes = None):
         #db user dbvfilter
-        vbase.__init__(self, ttype, dtype, None, vnodes)
+        vbase.__init__(self, name, ttype, dtype, None, vnodes) #no-use defalut db
         if dbconf is not None:
-            self._dbclient = dbvfilter(dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
+            self._dbclient = dbvfilter(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
 
     def __del__(self):
         vbase.__del__(self)
@@ -45,7 +44,7 @@ class vfilter(vbase):
         i = 0
         #init
         try:
-            logger.debug("start vfilter work")
+            self._logger.debug("start vfilter work")
             ret = self._vclient.get_latest_transaction_version();
             if ret.state != error.SUCCEED:
                 return ret
@@ -62,7 +61,7 @@ class vfilter(vbase):
             i = int(db_latest_ver) + 1
     
             latest_saved_ver = str(self._dbclient.get_latest_saved_ver().datas)
-            logger.debug(f"latest_saved_ver={latest_saved_ver} start version = {i}  step = {self.get_step()} chain_latest_ver = {chain_latest_ver} ")
+            self._logger.debug(f"latest_saved_ver={latest_saved_ver} start version = {i}  step = {self.get_step()} chain_latest_ver = {chain_latest_ver} ")
             if i > chain_latest_ver:
                return result(error.SUCCEED)
     
@@ -86,7 +85,7 @@ class vfilter(vbase):
                         not ret.datas.get("tran_state", False):
                     continue
                 tran_filter = ret.datas
-                logger.debug(f"transaction parse: {tran_filter}")
+                self._logger.debug(f"transaction parse: {tran_filter}")
 
                 ret = self._dbclient.set(key, value)
                 if ret.state != error.SUCCEED:
@@ -97,14 +96,15 @@ class vfilter(vbase):
         except Exception as e:
             ret = parse_except(e)
         finally:
-            logger.debug("end vfilter work")
+            self._logger.debug("end vfilter work")
         return ret
         
 def works(ttype, dtype):
     try:
         #ttype: chain name. data's flag(violas/libra). ex. ttype = "violas"
         #dtype: save transaction's data type(vfilter/lfilter) . ex. dtype = "vfilter" 
-        filter = vfilter(ttype, None, stmanage.get_db(dtype),  stmanage.get_violas_nodes())
+        logger = log.logger.getlogger(name) 
+        filter = vfilter(name, ttype, None, stmanage.get_db(dtype),  stmanage.get_violas_nodes())
         filter.set_step(stmanage.get_db(dtype).get("step", 1000))
         ret = filter.work()
         if ret.state != error.SUCCEED:

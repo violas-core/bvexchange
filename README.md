@@ -56,5 +56,5 @@ cd bvexchange
 ### vwallet
     violas wallet file
 
-### violasanalysis
-    violas transaction filter , state parse
+### analysis
+    violas/libra transaction filter , state parse

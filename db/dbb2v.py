@@ -5,6 +5,7 @@ btc exchange vbtc db
 import operator
 import sys, os
 sys.path.append(os.getcwd())
+sys.path.append("..")
 import log
 import log.logger
 import traceback
@@ -20,6 +21,7 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime, UniqueConstraint, Index, String
 from enum import Enum
+from baseobject import baseobject
 
 #module name
 name="dbb2v"
@@ -27,13 +29,15 @@ name="dbb2v"
 #load logging
 logger = log.logger.getLogger(name) 
 
-class dbb2v:
+class dbb2v(baseobject):
     __base = declarative_base()
     __engine = ""
     __session = ""
     __engine = ""
 
-    def __init__(self, dbfile):
+    def __init__(self, name, dbfile):
+        baseobject.__init__(self, name)
+
         logger.debug("start __init__")
         self.__init_db(dbfile)
 

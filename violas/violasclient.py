@@ -27,18 +27,17 @@ from comm.error import error
 from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
+from baseobject import baseobject
 import redis
 #module name
 name="vclient"
 
-#load logging
-logger = log.logger.getLogger(name) 
-
-class violaswallet:
+class violaswallet(baseobject):
     __wallet_name           = "vwallet"
     
-    def __init__(self, wallet_name):
+    def __init__(self, name, wallet_name):
         assert wallet_name is not None, "wallet_name is None"
+        baseobject.__init__(self, name)
         if wallet_name is not None:
             ret = self.__load_wallet(wallet_name)
             if ret.state != error.SUCCEED:
@@ -49,7 +48,7 @@ class violaswallet:
 
     def __load_wallet(self, wallet_name):
         try:
-            logger.debug("start load_wallet({})".format(wallet_name))
+            self._logger.debug("start load_wallet({})".format(wallet_name))
             self.__wallet_name = wallet_name
             if os.path.isfile(self.__wallet_name):
                 self.__wallet = WalletLibrary.recover(self.__wallet_name)
@@ -65,7 +64,7 @@ class violaswallet:
 
     def dump_wallet(self):
         try:
-            logger.debug("start dump_wallet")
+            self._logger.debug("start dump_wallet")
             self.__wallet.write_recovery(self.__wallet_name)
             ret = result(error.SUCCEED)
         except Exception as e:
@@ -74,7 +73,7 @@ class violaswallet:
 
     def new_account(self):
         try:
-            logger.debug("start new_wallet")
+            self._logger.debug("start new_wallet")
             account = self.__wallet.new_account();
             ret = result(error.SUCCEED, "", account)
         except Exception as e:
@@ -115,9 +114,10 @@ class violaswallet:
 
 
 
-class violasclient:
+class violasclient(baseobject):
     __node = None
-    def __init__(self, nodes):
+    def __init__(self, name, nodes):
+        baseobject.__init__(self, name)
         self.__client = None
         if nodes is not None:
             ret = self.conn_node(nodes)
@@ -134,13 +134,13 @@ class violasclient:
             
             for node in nodes:
                 try:
-                    logger.debug("try connect violas node : ip = {} port = {} validator={} faucet ={}".format( \
+                    self._logger.debug("try connect violas node : ip = {} port = {} validator={} faucet ={}".format( \
                             node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
                     client = Client.new(node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
                     client.get_latest_transaction_version()
-                    logger.debug(f"connect violas node succeed.") 
+                    self._logger.debug(f"connect violas node succeed.") 
                 except Exception as e:
-                    logger.info(f"connect violas node failed({e}). test next...")
+                    self._logger.info(f"connect violas node failed({e}). test next...")
                 else:
                     self.__client = client
                     self.__node = node
@@ -168,7 +168,7 @@ class violasclient:
    
     def create_violas_coin(self, account, is_blocking = True):
         try:
-            logger.debug("create_violas_coin(account={}, is_blocking={})".format(account, is_blocking))
+            self._logger.debug("create_violas_coin(account={}, is_blocking={})".format(account, is_blocking))
             self.__client.violas_publish(account, is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
@@ -177,7 +177,7 @@ class violasclient:
 
     def mint_platform_coin(self, address, amount, is_blocking = True):
         try:
-            logger.debug("start mint_platform_coin(address={}, amount={}, is_blocking={})".format(address, amount, is_blocking))
+            self._logger.debug("start mint_platform_coin(address={}, amount={}, is_blocking={})".format(address, amount, is_blocking))
             self.__client.mint_coins(address, amount, is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
@@ -186,7 +186,7 @@ class violasclient:
 
     def bind_module(self, account, module_address, is_blocking=True):
         try:
-            logger.debug("start bind_module(account={}, module_address={}, is_blocking={}".format(account.address.hex(), module_address, is_blocking))
+            self._logger.debug("start bind_module(account={}, module_address={}, is_blocking={}".format(account.address.hex(), module_address, is_blocking))
             self.__client.violas_init(account, module_address, is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
@@ -195,7 +195,7 @@ class violasclient:
 
     def mint_violas_coin(self, address, amount, module_account, is_blocking=True):
         try:
-            logger.debug("start mint_violas_coin(address={}, amount={}, module_account=R{}, is_blocking={})".format(address, amount, module_account.address.hex(), is_blocking))
+            self._logger.debug("start mint_violas_coin(address={}, amount={}, module_account=R{}, is_blocking={})".format(address, amount, module_account.address.hex(), is_blocking))
             self.__client.violas_mint_coin(address, amount, module_account, is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
@@ -204,7 +204,7 @@ class violasclient:
 
     def send_violas_coin(self, from_account, to_address, amount, module_address, data=None, is_blocking=True):
         try:
-            logger.debug("start send_violas_coins(from_account={}, to_address={}, amount={}, module_address={}, data={}, is_blocking={})".format(from_account.address.hex(), to_address, amount, module_address, data, is_blocking))
+            self._logger.debug("start send_violas_coins(from_account={}, to_address={}, amount={}, module_address={}, data={}, is_blocking={})".format(from_account.address.hex(), to_address, amount, module_address, data, is_blocking))
             self.__client.violas_transfer_coin(from_account, to_address, amount, module_address, data, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
@@ -213,7 +213,7 @@ class violasclient:
 
     def get_platform_balance(self, account_address):
         try:
-            logger.debug("get_platform_balance(address={})".format(account_address))
+            self._logger.debug("get_platform_balance(address={})".format(account_address))
             balance = self.__client.get_balance(account_address)
             ret = result(error.SUCCEED, "", balance)
         except Exception as e:
@@ -222,7 +222,7 @@ class violasclient:
 
     def get_violas_balance(self, account_address, module_address):
         try:
-            logger.debug("get_balance(address={}, module={})".format(account_address, module_address))
+            self._logger.debug("get_balance(address={}, module={})".format(account_address, module_address))
             balance = self.__client.violas_get_balance(account_address, module_address)
             ret = result(error.SUCCEED, "", balance)
         except Exception as e:
@@ -231,7 +231,7 @@ class violasclient:
 
     def get_account_state(self, address):
         try:
-            logger.debug("start get_account_state(address={})".format(address))
+            self._logger.debug("start get_account_state(address={})".format(address))
             state =  self.__client.get_account_state(address)
             ret = result(error.SUCCEED, "", state)
         except Exception as e:
@@ -240,7 +240,7 @@ class violasclient:
 
     def get_address_sequence(self, address):
         try:
-            logger.debug("start get_address_sequence(address={})".format(address))
+            self._logger.debug("start get_address_sequence(address={})".format(address))
             num = self.__client.get_sequence_number(address)
             ret = result(error.SUCCEED, "", num)
         except Exception as e:
@@ -249,7 +249,7 @@ class violasclient:
 
     def get_latest_transaction_version(self):
         try:
-            logger.debug("start get_latest_transaction_version")
+            self._logger.debug("start get_latest_transaction_version")
             datas = self.__client.get_latest_transaction_version()
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
@@ -258,7 +258,7 @@ class violasclient:
 
     def account_has_violas_module(self, address, module):
         try:
-            logger.debug("start account_has_violas_module(address={}, module={})".format(address, module))
+            self._logger.debug("start account_has_violas_module(address={}, module={})".format(address, module))
             vres = self.__client.violas_get_info(address)
             if vres is not None and module in vres.keys():
                 ret = result(error.SUCCEED, "", True)
@@ -270,7 +270,7 @@ class violasclient:
 
     def get_transactions(self, start_version, limit = 1, fetch_event=False):
         try:
-            logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
+            self._logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
             datas = self.__client.get_transactions(start_version, limit, fetch_event)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
@@ -278,9 +278,10 @@ class violasclient:
         return ret
 
 
-class violasserver:
+class violasserver(baseobject):
     __node = None
     def __init__(self, nodes):
+        baseobject.__init__(self, name)
         self.__server= None
         assert nodes is not None, "nodes is None"
         if nodes is not None:
@@ -293,7 +294,7 @@ class violasserver:
 
     def conn_node(self, nodes):
         try:
-            logger.debug("conn_server")
+            self._logger.debug("conn_server")
             if nodes is None or len(nodes) == 0:
                 return result(error.ARG_INVALID, repr(nodes), "")
             
@@ -301,7 +302,7 @@ class violasserver:
                 try:
                     server = ""
                     #server = Client.new(node["ip"], node["port"], node["user"], node["password"])
-                    logger.debug("connect violas server: ip = {} port = {} user={} password={}".format( \
+                    self._logger.debug("connect violas server: ip = {} port = {} user={} password={}".format( \
                             node["ip"], node["port"], node["user"], node["password"]))
                     self.__node = node
                 except Exception as e:
@@ -319,7 +320,7 @@ class violasserver:
     
     def disconn_node(self):
         try:
-            logger.debug("start disconn_node")
+            self._logger.debug("start disconn_node")
             if self.__node is not None:
                 del self.__node
                 self.__node = None
@@ -334,7 +335,7 @@ class violasserver:
    
     def get_transactions(self, address, module, start):
         try:
-            logger.debug("start get_transactions(address={}, module={}, start={})".format(address, module, start))
+            self._logger.debug("start get_transactions(address={}, module={}, start={})".format(address, module, start))
             datas = []
             url = "http://{}:{}/1.0/violas/vbtc/transaction?receiver_address={}&module_address={}&start_version={}"\
                     .format(self.__node["ip"], self.__node["port"], address, module, start)
@@ -361,11 +362,11 @@ class violasserver:
         except Exception as e:
             ret = parse_except(e)
         finally:
-            logger.debug("end get_transactions.")
+            self._logger.debug("end get_transactions.")
         return ret
     def has_transaction(self, address, module, baddress, sequence, amount, version, receiver):
         try:
-            logger.debug("start has_transaction(address={}, module={}, baddress={}, sequence={}, amount={}, version={}, receiver={})"\
+            self._logger.debug("start has_transaction(address={}, module={}, baddress={}, sequence={}, amount={}, version={}, receiver={})"\
                     .format(address, module, baddress, sequence, amount, version, receiver))
             ret = result(error.FAILED, "", "")
             data = {
@@ -389,7 +390,7 @@ class violasserver:
         except Exception as e:
             ret = parse_except(e)
         finally:
-            logger.debug("end has_transaction.")
+            self._logger.debug("end has_transaction.")
         return ret
 
 def main():
