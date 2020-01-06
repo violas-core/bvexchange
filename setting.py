@@ -3,21 +3,6 @@
 bvexchange config
 '''
 
-#btc exchange violas token thread loop time(s)
-b2v_sleep = 8
-
-#violas token exchange btc thread loop time(s)
-v2b_sleep = 6
-
-#violas blockchain transactions filter
-vfilter_sleep = 1
-
-#communication thread loop time
-vproof_sleep = 1
-
-#communication thread loop time
-comm_sleep = 10
-
 traceback_limit = 4
 
 #db logging echo(False, True) default: False
@@ -31,13 +16,6 @@ btc_conn = {'rpcuser':'btc',
         'rpcpassword':'btc', 
         'rpcip':'192.168.1.196', 
         'rpcport':18332}
-
-#btc receiver address, btc exchange vbtc's valid receiving address, filter btc proofs
-btc_receivers =['2MxBZG7295wfsXaUj69quf8vucFzwG35UWh', '2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB']
-# receiver address  state change to "end", combineaddress not in receivers 
-btc_combineaddress='2N9gZbqRiLKAhYCBFu3PquZwmqCBEwu1ien'
-#btc send address. vbtc exchange btc use. from sender send btc to target address. (must has privkey)
-btc_senders=['2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB','2N9gZbqRiLKAhYCBFu3PquZwmqCBEwu1ien', '2MxBZG7295wfsXaUj69quf8vucFzwG35UWh']
 
 #violas node list, to connect one
 violas_nodes=[
@@ -58,14 +36,6 @@ libra_nodes=[
 violas_servers=[
         {'ip':'52.27.228.84', "port":4000, 'user':'violas', 'password':'violas'},
         ]
-
-#violas receiver address, vbtc exchange btc's valid receiving address, filter transaction 
-violas_receivers=['1b3920fb9703cace285ac9ef5b54886b8b7a85442a8b38e06237908c3dfc1e5c']
-#violas sendor address, btc exchange vbtc use. from violas_sender send vbtc to target address. (must has privkey)
-violas_sender='210a283f13e42a37b7fb2dec50d8c2b28d6cc7e4f041fbdfa4998aa1b5663b89'
-#btc module address(vbtc module address)
-module_address='cd0476e85ecc5fa71b61d84b9cf2f7fd524689a4f870c46d6a5d901b5ac1fdb2'
-
 
 #db info type(vfilter vfilter lfilter v2b  l2b v2l)
 db_list=[
@@ -97,8 +67,9 @@ address_list = {
             ],
         'module':[
             {'address':'cd0476e85ecc5fa71b61d84b9cf2f7fd524689a4f870c46d6a5d901b5ac1fdb2', 'type':'v2b', 'chain':'violas'},
+            {'address':'cd0476e85ecc5fa71b61d84b9cf2f7fd524689a4f870c46d6a5d901b5ac1fdb2', 'type':'b2v', 'chain':'violas'},
             {'address':'210a283f13e42a37b7fb2dec50d8c2b28d6cc7e4f041fbdfa4998aa1b5663b89', 'type':'v2l', 'chain':'violas'},
-            {'address':'210a283f13e42a37b7fb2dec50d8c2b28d6cc7e4f041fbdfa4998aa1b5663b89', 'type':'l2v', 'chain':'violas'},
+            {'address':'cd0476e85ecc5fa71b61d84b9cf2f7fd524689a4f870c46d6a5d901b5ac1fdb2', 'type':'l2v', 'chain':'violas'},
             ],
         'combine':[
             {'address':'1b3920fb9703cace285ac9ef5b54886b8b7a85442a8b38e06237908c3dfc1e5c', 'type':'v2b', 'chain':'violas'},
@@ -109,10 +80,12 @@ address_list = {
         }
 
 looping_sleep={
-        'v2b' : 1,
-        'b2v' : 2,
+        'v2b' : 1,          #violas token exchange btc thread loop time(s)
+        'b2v' : 2,          #btc exchange violas token thread loop time(s)
         'v2l' : 3,
         'l2v' : 4,
-        'vfilter' : 5,
+        'vfilter' : 5,      #violas blockchain transactions filter
         'lfilter' : 6,
+        'v2bproof' : 7,     #communication thread loop time
+        'comm': 8,          #communication thread loop time
         }

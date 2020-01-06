@@ -30,8 +30,8 @@ name="dbvfilter"
 logger = log.logger.getLogger(name) 
 
 class dbvfilter(dbvbase):
-    def __init__(self, host, port, db, passwd = None):
-        dbvbase.__init__(self, host, port, db, passwd)
+    def __init__(self, name, host, port, db, passwd = None):
+        dbvbase.__init__(self, name, host, port, db, passwd)
 
     def __del__(self):
         dbvbase.__del__(self)

@@ -5,8 +5,6 @@ btc exchange vtoken db
 import operator
 import sys,os
 sys.path.append(os.getcwd())
-import log
-import log.logger
 import traceback
 import datetime
 import sqlalchemy
@@ -29,12 +27,11 @@ from enum import Enum
 name="dbvproof"
 
 #load logging
-logger = log.logger.getLogger(name) 
 
 class dbvproof(dbvbase):
     __KEY_MIN_VERSION_START = "min_version_start"
-    def __init__(self, host, port, db, passwd = None):
-        dbvbase.__init__(self, host, port, db, passwd)
+    def __init__(self, name, host, port, db, passwd = None):
+        dbvbase.__init__(self, name, host, port, db, passwd)
 
     def __del__(self):
         dbvbase.__del__(self)

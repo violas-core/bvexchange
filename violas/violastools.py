@@ -41,7 +41,9 @@ wallet_name = "vwallet"
 *************************************************violasclient oper*******************************************************
 '''
 def get_violasclient():
-    return violasclient(stmanage.get_violas_nodes())
+    return violasclient(name, stmanage.get_violas_nodes())
+def get_violaswallet():
+    return violaswallet(name, wallet_name)
 
 def mint_platform_coin(address, amount):
     logger.debug("start mcreate_violas_coin otform_coin = {} amount={}".format(address, address))
@@ -56,7 +58,7 @@ def mint_violas_coin(address, amount, module):
     logger.debug("start mcreate_violas_coin otform_coin = {} amount={} module={}".format(address, amount, module))
     global wallet_name
     client = get_violasclient()
-    wallet = violaswallet(wallet_name)
+    wallet = get_violaswallet()
     ret = wallet.get_account(module)
     if ret.state != error.SUCCEED:
         logger.error(ret.datas)
@@ -72,7 +74,7 @@ def mint_violas_coin(address, amount, module):
 def create_violas_coin(module):
     logger.debug("start create_violas_coin module = {}".format(module))
     global wallet_name
-    wallet = violaswallet(wallet_name)
+    wallet = get_violaswallet()
     ret = wallet.get_account(module)
     if(ret.state != error.SUCCEED):
         return
@@ -89,7 +91,7 @@ def create_violas_coin(module):
 def bind_module(address, module):
     logger.debug("start bind_module address= {} module = {}".format(address, module))
     global wallet_name
-    wallet = violaswallet(wallet_name)
+    wallet = get_violaswallet()
     client = get_violasclient()
     ret = wallet.get_account(address)
     if ret.state != error.SUCCEED:
@@ -102,7 +104,7 @@ def bind_module(address, module):
 
 def send_violas_coin(from_address, to_address, amount, module, data = None):
     global wallet_name
-    wallet = violaswallet(wallet_name)
+    wallet = get_violaswallet()
     ret = wallet.get_account(from_address)
     if ret.state != error.SUCCEED:
         logger.debug("get account failed")
@@ -148,7 +150,7 @@ def get_transactions(start_version, limit = 1, fetch_event = True):
 '''
 def new_account():
     global wallet_name
-    wallet = violaswallet(wallet_name)
+    wallet = get_violaswallet()
     ret = wallet.new_account()
     assert ret.state == error.SUCCEED, "new_account failed"
     logger.debug("account address : {}".format(ret.datas.address.hex()))
@@ -160,7 +162,7 @@ def account_has_violas_module(address, module):
 
 def show_accounts():
     global wallet_name
-    wallet = violaswallet(wallet_name)
+    wallet = get_violaswallet()
     i = 0
     account_count = wallet.get_account_count()
     while True and i < account_count:
@@ -177,7 +179,7 @@ def get_account(address):
 
 def has_account(address):
     global wallet_name
-    wallet = violaswallet(wallet_name)
+    wallet = get_violaswallet()
     logger.debug(wallet.has_account_by_address(address).datas)
 '''
 *************************************************violasserver oper*******************************************************
