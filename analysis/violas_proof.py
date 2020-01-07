@@ -41,11 +41,16 @@ class vproof(vbase):
     def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, vfdbconf = None, vnodes = None):
         #db use dbvproof, dbvfilter, not use violas/libra nodes
         vbase.__init__(self, name, ttype, dtype, None, vnodes)
-        self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
-        self._vfdbcliet = dbvfilter(name, vfdbconf.get("host", "127.0.0.1"), vfdbconf.get("port", 6378), vfdbconf.get("db"), vfdbconf.get("password", None))
+        if dbconf is not None:
+            self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
+        if vfdbconf is not None:
+            self._vfdbcliet = dbvfilter(name, vfdbconf.get("host", "127.0.0.1"), vfdbconf.get("port", 6378), vfdbconf.get("db"), vfdbconf.get("password", None))
 
     def __del__(self):
         vbase.__del__(self)
+
+    def stop(self):
+        vbase.stop(self)
 
     def proofstate_name_to_value(self, name):
         if name is None or len(name) == 0:
@@ -148,7 +153,7 @@ class vproof(vbase):
                 self._dbclient.set_proof(db_tran_info.get("version"), json.dumps(db_tran_info))
                 self._logger.info(f"change state succeed. version = {db_tran_info.get('version')} tran_id = {db_tran_id}")
 
-            ret = result(error.SUCCEED)
+            ret = result(error.SUCCEED, "", new_proof)
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -187,7 +192,7 @@ class vproof(vbase):
             ret = parse_except(e)
         return ret
 
-    def work(self):
+    def start(self):
         try:
             self._logger.debug("start vproof work")
 
@@ -218,7 +223,7 @@ class vproof(vbase):
             count = 0
             self._logger.debug(f"proof latest_saved_ver={self._dbclient.get_latest_saved_ver().datas} start version = {start_version}  \
                     step = {self.get_step()} valid transaction latest_saved_ver = {latest_saved_ver} ")
-            while(version <= max_version and count < self.get_step()):
+            while(version <= max_version and count < self.get_step() and self.work()):
                 try:
                     #record last version(parse), maybe version is not exists
                     self._dbclient.set_latest_filter_ver(version)
@@ -250,7 +255,8 @@ class vproof(vbase):
                         continue
 
                     #mark it, watch only
-                    self._dbclient.set_latest_saved_ver(version)
+                    if ret.datas == True:
+                        self._dbclient.set_latest_saved_ver(version)
                     count += 1
                 except Exception as e:
                     ret = parse_except(e)
@@ -277,7 +283,7 @@ def works(ttype, dtype, basedata):
 
         _vproof = vproof(name, ttype, dtype, stmanage.get_db(dtype), stmanage.get_db(basedata), stmanage.get_violas_nodes())
         _vproof.set_step(stmanage.get_db(dtype).get("step", 100))
-        ret = _vproof.work()
+        ret = _vproof.start()
         if ret.state != error.SUCCEED:
             logger.error(ret.message)
 

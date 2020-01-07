@@ -22,10 +22,12 @@ class baseobject(object):
     _name = None
     _btc_chain = "btc"
     _violas_chain = "violas"
+    _logger = None
     def __init__(self, name = 'base', work = True):
         self._work = work
         self._name = name
-        self._logger = getlogger(name) 
+        if self._logger is None:
+            self._logger = getlogger(name) 
 
     def work(self):
         return self._work
@@ -35,4 +37,7 @@ class baseobject(object):
 
     def work_start(self):
         self._work = True
+
+    def name(self):
+        return self._name
 

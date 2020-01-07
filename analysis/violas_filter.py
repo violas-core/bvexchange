@@ -40,7 +40,11 @@ class vfilter(vbase):
     def __del__(self):
         vbase.__del__(self)
 
-    def work(self):
+    def stop(self):
+        vbase.stop(self)
+        self.work_stop()
+
+    def start(self):
         i = 0
         #init
         try:
@@ -68,7 +72,11 @@ class vfilter(vbase):
             ret = self._vclient.get_transactions(i, self.get_step(), True)
             if ret.state != error.SUCCEED:
                 return ret
+
             for data in ret.datas:
+                if self.work() == False:
+                    break
+
                 tran_data = data.to_json()
     
                 #save to redis db
@@ -82,6 +90,7 @@ class vfilter(vbase):
                 ret = self.parse_tran(tran_data)
                 if ret.state != error.SUCCEED or \
                         ret.datas.get("flag", None) not in self.get_tran_types() or \
+                        ret.datas.get("type") not in self.get_data_types or \
                         not ret.datas.get("tran_state", False):
                     continue
                 tran_filter = ret.datas
@@ -106,7 +115,7 @@ def works(ttype, dtype):
         logger = log.logger.getlogger(name) 
         filter = vfilter(name, ttype, None, stmanage.get_db(dtype),  stmanage.get_violas_nodes())
         filter.set_step(stmanage.get_db(dtype).get("step", 1000))
-        ret = filter.work()
+        ret = filter.start()
         if ret.state != error.SUCCEED:
             logger.error(ret.message)
 

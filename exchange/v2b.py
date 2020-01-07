@@ -107,22 +107,25 @@ class exv2b(baseobject):
             ret = parse_except(e)
         return ret
     
-    def work(self):
+    def stop(self):
+        self.work_stop()
+
+    def start(self):
     
         try:
             self._logger.debug("start works")
-            dbv2b_self._name = "bve_v2b.db"
-            wallet_self._name = "vwallet"
+            dbv2b_name = "bve_v2b.db"
+            wallet_name = "vwallet"
     
             #requirement checks
             self.__checks()
     
             #btc init
-            bclient = btcclient( stmanage.get_btc_conn())
-            v2b = dbv2b(dbv2b_self._name)
+            bclient = btcclient(self.name(), stmanage.get_btc_conn())
+            v2b = dbv2b(self.name(), dbv2b_name)
     
             #violas init
-            vserver = violasserver(stmanage.get_violas_servers())
+            vserver = violasserver(self.name(), stmanage.get_violas_servers())
     
             module_address = stmanage.get_module_address(self._name, self._violas_chain)
     
@@ -138,6 +141,9 @@ class exv2b(baseobject):
             receivers = list(set(stmanage.get_receiver_address_list(self._name, self._violas_chain)))
             #modulti receiver, one-by-one
             for receiver in receivers:
+                if (self.work() == False):
+                    break
+
                 ret = v2b.query_latest_version(receiver, module_address)
                 assert ret.state == error.SUCCEED, "get latest version error"
                 latest_version = ret.datas + 1
@@ -148,6 +154,9 @@ class exv2b(baseobject):
                 if failed is not None:
                     self._logger.debug("start exchange failed datas from db. receiver={}".format(receiver))
                     for data in failed:
+                        if (self.work() == False):
+                            break
+
                         vaddress = data["vaddress"]
                         vamount = data["vamount"]
                         fmtamount = float(vamount) / COINS
@@ -207,6 +216,9 @@ class exv2b(baseobject):
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     self._logger.debug("start exchange datas from violas server. receiver={}".format(receiver))
                     for data in ret.datas:
+                        if (self.work() == False):
+                            break
+
                         #grant vbtc 
                         ##check 
                         vaddress = data["address"]
@@ -266,7 +278,7 @@ def main():
        logger.debug("start main")
        v2b = exv2b()
        
-       ret = v2b.work()
+       ret = v2b.start()
        if ret.state != error.SUCCEED:
            logger.error(ret.message)
 

@@ -33,7 +33,7 @@ def pid_name(name):
 
 class filelock:
     def __init__(self, name):
-        self.fobj = open(name, 'w')
+        self.fobj = open(pid_name(name), 'w')
         self.fd = self.fobj.fileno()
 
     def __del__(self):

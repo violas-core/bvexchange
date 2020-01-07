@@ -27,9 +27,6 @@ from enum import Enum
 #module name
 name="dbv2b"
 
-#load logging
-logger = log.logger.getLogger(name) 
-
 class dbv2b(baseobject):
     __base = declarative_base()
     __engine = ""
@@ -38,11 +35,11 @@ class dbv2b(baseobject):
 
     def __init__(self, name, dbfile):
         baseobject.__init__(self, name)
-        logger.debug("start __init__")
+        self._logger.debug("start __init__")
         self.__init_db(dbfile)
 
     def __del__(self):
-        logger.debug("start dbb2b.__del__")
+        self._logger.debug("start dbb2b.__del__")
         self.__uninit_db()
 
     #btc exchange vtoken state
@@ -83,7 +80,7 @@ class dbv2b(baseobject):
             return "<versions(address=%s, vtoken= %s, version= %i)>" % (self.address, self.module, self.version)
 
     def __init_db(self, dbfile):
-        logger.debug("start __init_db(dbfile={})".format(dbfile))
+        self._logger.debug("start __init_db(dbfile={})".format(dbfile))
         db_echo = False
 
         if stmanage.get_db_echo():
@@ -96,11 +93,11 @@ class dbv2b(baseobject):
         self.__session = Session()
     
     def __uninit_db(self):
-        logger.debug("start __uninit_db")
+        self._logger.debug("start __uninit_db")
         
     def insert_v2binfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state):
         try:
-            logger.debug("start insert_v2binfo (vtxid={}, vfromaddress={}, vtoaddress={}, vbamount={}, \
+            self._logger.debug("start insert_v2binfo (vtxid={}, vfromaddress={}, vtoaddress={}, vbamount={}, \
                     vvaddress={}, vsequence={}, version={}, vvamount={}, vvtoken={}, vreceiver={}, state={})" \
                     .format(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state.name))
 
@@ -125,7 +122,7 @@ class dbv2b(baseobject):
 
     def commit(self):
         try:
-            logger.debug("start commit")
+            self._logger.debug("start commit")
             self.__session.flush()
             self.__session.commit()
 
@@ -137,7 +134,7 @@ class dbv2b(baseobject):
     def query_v2binfo(self, vaddress, sequence, version):
         proofs = []
         try:
-            logger.debug("start query_v2binfo(vaddress={}, sequence={}, version={})".format(vaddress, sequence, version))
+            self._logger.debug("start query_v2binfo(vaddress={}, sequence={}, version={})".format(vaddress, sequence, version))
             filter_vaddr = (self.v2binfo.vaddress==vaddress)
             filter_seq = (self.v2binfo.sequence==sequence)
             filter_ver = (self.v2binfo.version==version)
@@ -149,7 +146,7 @@ class dbv2b(baseobject):
 
     def has_v2binfo(self, vaddress, sequence, version):
         try:
-            logger.debug("start has_v2binfo(vaddress={}, sequence={}, version={})".format(vaddress, sequence, version))
+            self._logger.debug("start has_v2binfo(vaddress={}, sequence={}, version={})".format(vaddress, sequence, version))
             filter_vaddr = (self.v2binfo.vaddress==vaddress)
             filter_seq = (self.v2binfo.sequence==sequence)
             filter_ver = (self.v2binfo.version==version)
@@ -163,7 +160,7 @@ class dbv2b(baseobject):
     def __query_v2binfo_state(self, state, maxtimes=999999999):
         proofs = []
         try:
-            logger.debug("start __query_v2binfo_state(state={}, maxtimes={})".format(state.name, maxtimes))
+            self._logger.debug("start __query_v2binfo_state(state={}, maxtimes={})".format(state.name, maxtimes))
             filter_state = (self.v2binfo.state==state.value)
             filter_times = (self.v2binfo.times<=maxtimes)
             proofs = self.__session.query(self.v2binfo).filter(filter_state).filter(filter_times).all()
@@ -183,7 +180,7 @@ class dbv2b(baseobject):
 
     def __update_v2binfo(self, vaddress, sequence, version, state, txid):
         try:
-            logger.debug(f"start update_v2binfo(vaddress={vaddress}, sequence={sequence}, version={version}, state={state}, txid={txid})")
+            self._logger.debug(f"start update_v2binfo(vaddress={vaddress}, sequence={sequence}, version={version}, state={state}, txid={txid})")
             filter_vaddr = (self.v2binfo.vaddress==vaddress)
             filter_seq = (self.v2binfo.sequence==sequence)
             filter_ver = (self.v2binfo.version==version)
@@ -198,7 +195,7 @@ class dbv2b(baseobject):
         try:
             ret = self.__update_v2binfo(vaddress, sequence, version, state, txid)
             if ret.state != error.SUCCEED:
-                logger.debug("update_v2binfo_commit failed")
+                self._logger.debug("update_v2binfo_commit failed")
                 return ret
 
             ret = self.commit()
@@ -217,7 +214,7 @@ class dbv2b(baseobject):
 
     def insert_latest_version(self, address, vtoken, version):
         try:
-            logger.debug("start insert_latest_version (address={}, vtoken={}, version={})".format(address, vtoken, version))
+            self._logger.debug("start insert_latest_version (address={}, vtoken={}, version={})".format(address, vtoken, version))
 
             v2bi = self.versions(address=address, vtoken=vtoken, version=version)
             self.__session.add(v2bi)
@@ -239,13 +236,13 @@ class dbv2b(baseobject):
     def query_latest_version(self, address, vtoken):
         proofs = []
         try:
-            logger.debug("start query_latest_version(address={}, vtoken={})".format(address, vtoken))
+            self._logger.debug("start query_latest_version(address={}, vtoken={})".format(address, vtoken))
             filter_address = (self.versions.address==address)
             filter_vtoken = (self.versions.vtoken==vtoken)
             info = self.__session.query(self.versions).filter(filter_address).filter(filter_vtoken).all()
             if info is not None and len(info) > 0:
                 ret = result(error.SUCCEED, "", info[0].version)
-                logger.debug(f"latest version:{info[0].version}")
+                self._logger.debug(f"latest version:{info[0].version}")
             else:
                 ret = result(error.SUCCEED, "", 0)
 
@@ -255,7 +252,7 @@ class dbv2b(baseobject):
 
     def update_version(self, address, vtoken, version):
         try:
-            logger.debug("start update_version(address={}, vtoken={}, version={})".format(address, vtoken, version))
+            self._logger.debug("start update_version(address={}, vtoken={}, version={})".format(address, vtoken, version))
             filter_address = (self.versions.address==address)
             filter_vtoken = (self.versions.vtoken==vtoken)
             datas = self.__session.query(self.versions).filter(filter_address).filter(filter_vtoken).update({self.versions.version:version})
@@ -277,7 +274,7 @@ class dbv2b(baseobject):
 
     def has_version(self, address, vtoken):
         try:
-            logger.debug("start has_version(address={}, vtoken={})".format(address, vtoken))
+            self._logger.debug("start has_version(address={}, vtoken={})".format(address, vtoken))
             filter_address = (self.versions.address==address)
             filter_vtoken = (self.versions.vtoken==vtoken)
             datas = self.__session.query(self.versions).filter(filter_address).filter(filter_vtoken).count() > 0

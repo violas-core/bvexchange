@@ -27,9 +27,6 @@ from enum import Enum
 #module name
 name="dbvbase"
 
-#load logging
-logger = log.logger.getLogger(name) 
-
 class dbvbase(baseobject):
     __key_latest_filter_ver = "latest_filter_ver"
     __key_latest_saved_ver = "latest_saved_ver"
@@ -58,9 +55,17 @@ class dbvbase(baseobject):
 
     def __connect(self, host, port, db, password = None):
         try:
-            logger.debug(f"connect db(host={host}, port={port}, db={db}({self.db_name_to_value(db)}), passwd={password})")
+            self._logger.debug(f"connect db(host={host}, port={port}, db={db}({self.db_name_to_value(db)}), passwd={password})")
             self._client = redis.Redis(host=host, port=port, db=self.db_name_to_value(db), password=password, decode_responses=True)
+            self.set_mod_name()
             ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def set_mod_name(self):
+        try:
+            ret = self.set("mod_name", self.name())
         except Exception as e:
             ret = parse_except(e)
         return ret

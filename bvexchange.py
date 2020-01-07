@@ -40,14 +40,7 @@ class work_mod(Enum):
 class works:
     __threads = []
     __work_looping = {}
-    __v2b = None
-    __b2v = None
-    __vfilter = None
-    __vproof = None
-    __lproof = None
-    __l2v = None
-    __v2l = None
-    
+    __work_obj = {}
 
     def __init__(self):
         logger.debug("works __init__")
@@ -59,13 +52,24 @@ class works:
     def __del__(self):
         del self.__threads
 
+    def set_work_obj(self, obj):
+        old_obj = self.__work_obj.get(obj.name())
+        if old_obj is not None:
+            del old_obj
+
+        if obj.name() in self.__work_obj:
+            del self.__work_obj[obj.name()]
+
+        self.__work_obj[obj.name()] = obj
+
     def work_b2v(self, nsec):
         try:
             logger.debug("start: b2v")
             while (self.__work_looping.get(work_mod.B2V.name, False)):
                 logger.debug("looping: b2v")
-                self.__b2v = b2v.exb2v()
-                self.__b2v.work()
+                b2vobj = b2v.exb2v()
+                self.set_work_obj(b2vobj)
+                b2vobj.start()
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -77,8 +81,9 @@ class works:
             logger.debug("start: v2b")
             while (self.__work_looping.get(work_mod.V2B.name, False)):
                 logger.debug("looping: v2b")
-                self.__v2b = b2v.exb2v()
-                self.__v2b.work()
+                v2bobj = v2b.exv2b()
+                self.set_work_obj(v2bobj)
+                v2bobj.start()
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -91,10 +96,11 @@ class works:
             while (self.__work_looping.get(work_mod.VFILTER.name, False)):
                 logger.debug("looping: vfilter")
                 dtype = "vfilter"
-                self.__vfilter = violas_filter.vfilter(name="vfilter", ttype="violas", \
+                vfilter = violas_filter.vfilter(name="vfilter", ttype="violas", \
                         dbconf=stmanage.get_db(dtype), vnodes=stmanage.get_violas_nodes())
-                self.__vfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
-                self.__vfilter.work()
+                vfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
+                self.set_work_obj(vfilter)
+                vfilter.start()
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -108,10 +114,11 @@ class works:
                 logger.debug("looping: vproof")
                 dtype = "v2b"
                 basedata = "vfilter"
-                self.__vproof = violas_proof.vproof(name="v2bproof", ttype="violas", dtype=dtype, \
+                vproof = violas_proof.vproof(name="v2bproof", ttype="violas", dtype=dtype, \
                         dbconf=stmanage.get_db(dtype), vfdbconf=stmanage.get_db(basedata), vnodes=stmanage.get_violas_nodes())
-                self.__vproof.set_step(stmanage.get_db(dtype).get("step", 100))
-                self.__vproof.work()
+                vproof.set_step(stmanage.get_db(dtype).get("step", 100))
+                self.set_work_obj(vproof)
+                vproof.start()
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -198,6 +205,11 @@ class works:
         logger.debug("stop works")
         for mod in self.__work_looping.keys():
             self.__work_looping[mod] = False
+        
+        for key in self.__work_obj:
+            obj = self.__work_obj.get(key)
+            if obj is not None:
+                obj.stop()
 
 
 logger = log.logger.getLogger(name)
