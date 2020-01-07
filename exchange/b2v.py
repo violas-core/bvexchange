@@ -103,6 +103,7 @@ class exb2v(baseobject):
             if ret.state != error.SUCCEED:
                 return ret
     
+            self._logger.debug(f"platform balance {ret.datas}")
             balance = ret.datas
             if balance >= vamount:
                 ret = result(error.SUCCEED, "", True)
@@ -118,6 +119,7 @@ class exb2v(baseobject):
             if ret.state != error.SUCCEED:
                 return ret
     
+            self._logger.debug(f"violas coin balance {ret.datas}")
             balance = ret.datas
             if balance >= vamount:
                 ret = result(error.SUCCEED, "", True)
@@ -201,11 +203,11 @@ class exb2v(baseobject):
             #make sure sender address is binded module
             ret = vclient.account_has_violas_module(sender, module)
             if ret.state != error.SUCCEED:
-                self._logger.warning("violas client error")
+                self._logger.warning("violas client error, next ...")
                 continue
     
             if ret.datas != True:
-                self._logger.warning("sender account {} not bind module {}".format(sender, module))
+                self._logger.warning("sender account {} not bind module {}. next ...".format(sender, module))
                 continue
     
             #make sure sender address has enough platform coins
@@ -214,7 +216,7 @@ class exb2v(baseobject):
                 continue
     
             if ret.datas != True:
-                self._logger.warning("{} not enough platform coins {}".format(sender, min_gas))
+                self._logger.warning("{} not enough platform coins {}, next ...".format(sender, min_gas))
                 continue
     
             #make sure sender address has enough violas coins
@@ -223,14 +225,17 @@ class exb2v(baseobject):
                 continue
     
             if ret.datas != True:
-                self._logger.info("{} not enough {} coins {}".format(vsender_address, module, vamount))
+                self._logger.info("{} not enough {} coins {}, next ...".format(sender, module, vamount))
                 continue
-            return(error.SUCCEED, "", (asender, sender))
+            return result(error.SUCCEED, "", (asender, sender))
     
-        return result(error.FAILED, "not found account from wallet")
+        return result(error.FAILED, "not found conform sender from wallet, check balance")
     
     
-    def work(self):
+    def stop(self):
+        self.work_stop()
+
+    def start(self):
         try:
             self._logger.debug("start b2v work")
             dbb2v_name = "bve_b2v.db"
@@ -275,6 +280,9 @@ class exb2v(baseobject):
     
             #modulti receiver, one-by-one
             for receiver in receivers:
+                if self.work() == False:
+                    break
+
                 #check receiver is included in wallet
                 ret = bclient.has_btc_banlance(receiver, 0)
                 if ret.state != error.SUCCEED or ret.datas != True:
@@ -289,6 +297,9 @@ class exb2v(baseobject):
                 ret = bclient.listexproofforstart(receiver, excluded)
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     for data in ret.datas:
+                        if self.work() == False:
+                            break
+
                         #grant vbtc 
                         ##check 
                         to_address = data["address"]
@@ -309,8 +320,8 @@ class exb2v(baseobject):
                             continue
     
                         #violas sender, grant vbtc
-                        vsender  = ret.datas(0)
-                        vsender_address = ret.datas(1)
+                        vsender  = ret.datas[0]
+                        vsender_address = ret.datas[1]
                                     #make sure receiver address is binded module
                         ret = vclient.account_has_violas_module(to_address, to_module_address)
                         if ret.state != error.SUCCEED:
@@ -322,7 +333,7 @@ class exb2v(baseobject):
                            
                         self._logger.debug("start new btc -> vbtc(address={}, sequence={} amount={}, module={})".format(to_address, int(data["sequence"]), vamount, to_module_address))
                         ##send vbtc to vaddress, vtoken and amount
-                        ret = vclient.send_coin(vsender, to_address, vamount, to_module_address, data="btctxid:{}".format(data["txid"]))
+                        ret = vclient.send_violas_coin(vsender, to_address, vamount, to_module_address, data="btctxid:{}".format(data["txid"]))
                         if ret.state != error.SUCCEED:
                             continue
                         
@@ -368,7 +379,7 @@ def main():
        logger = log.logger.getLogger(name) 
        logger.debug("start main")
        b2v = exb2v(name)
-       ret = b2v.work()
+       ret = b2v.start()
        if ret.state != error.SUCCEED:
            self._logger.error(ret.message)
 

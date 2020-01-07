@@ -77,6 +77,11 @@ class vbase(baseobject):
                 return ev
         raise ValueError(f"tran type({name}) unkown")
 
+    def stop(self):
+        if self._vclient is not None:
+            self._vclient.stop()
+        self.work_stop()
+
     def append_tran_type(self, ttype):
         self._tran_types.append(self._trantype_name_to_type(ttype))
 
@@ -193,6 +198,7 @@ class vbase(baseobject):
             datas["vtbc_address"]   = data_dict.get("vtbc_address", None)
             datas["nettype"]        = data_dict.get("nettype", None)
             datas["state"]          = data_dict.get("state", None)
+            datas["sequence_number"] = data_dict.get("raw_txn").get("sequence_number")
             datas["amount"]         = event.get("amount", 0)
             datas["sender"]         = event.get("sender", None)
             datas["receiver"]       = event.get("receiver", None)

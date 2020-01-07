@@ -26,9 +26,6 @@ from baseobject import baseobject
 #module name
 name="dbb2v"
 
-#load logging
-logger = log.logger.getLogger(name) 
-
 class dbb2v(baseobject):
     __base = declarative_base()
     __engine = ""
@@ -38,11 +35,11 @@ class dbb2v(baseobject):
     def __init__(self, name, dbfile):
         baseobject.__init__(self, name)
 
-        logger.debug("start __init__")
+        self._logger.debug("start __init__")
         self.__init_db(dbfile)
 
     def __del__(self):
-        logger.debug("start dbb2v.__del__")
+        self._logger.debug("start dbb2v.__del__")
         self.__uninit_db()
 
     #btc exchange vbtc state
@@ -80,7 +77,7 @@ class dbb2v(baseobject):
                     self.vamount, self.vbt, self.createblock, self.updateblock, self.state)
     
     def __init_db(self, dbfile):
-        logger.debug("start __init_db")
+        self._logger.debug("start __init_db")
         db_echo = False
 
         if stmanage.get_db_echo():
@@ -93,11 +90,11 @@ class dbb2v(baseobject):
         self.__session = Session()
     
     def __uninit_db(self):
-        logger.debug("start __uninit_db")
+        self._logger.debug("start __uninit_db")
         
     def insert_b2vinfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock):
         try:
-            logger.debug("start insert_b2vinfo (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock, vstate),  \
+            self._logger.debug("start insert_b2vinfo (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock, vstate),  \
                     value(%s, %s, %s, %i, %s %i, %i, %s, %s, %s, %s)" % \
                     (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock, self.state.START.name))
 
@@ -112,7 +109,7 @@ class dbb2v(baseobject):
 
     def insert_b2vinfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock):
         try:
-            logger.debug("start insert_b2vinfo_commit")
+            self._logger.debug("start insert_b2vinfo_commit")
             result = self.insert_b2vinfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock)
             if result.state != error.SUCCEED:
                 return result
@@ -124,7 +121,7 @@ class dbb2v(baseobject):
 
     def commit(self):
         try:
-            logger.debug("start commit")
+            self._logger.debug("start commit")
             self.__session.flush()
             self.__session.commit()
             ret = result(error.SUCCEED, "", "")
@@ -134,7 +131,7 @@ class dbb2v(baseobject):
 
     def query_b2vinfo(self, vaddress, sequence):
         try:
-            logger.debug("start query_b2vinfo %s %i", vaddress, sequence)
+            self._logger.debug("start query_b2vinfo %s %i", vaddress, sequence)
             filter_vaddr = (self.b2vinfo.vaddress==vaddress)
             filter_seq = (self.b2vinfo.sequence==sequence)
             proofs = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).all()
@@ -145,7 +142,7 @@ class dbb2v(baseobject):
 
     def has_b2vinfo(self, vaddress, sequence):
         try:
-            logger.debug("start query_b2vinfo %s %i", vaddress, sequence)
+            self._logger.debug("start query_b2vinfo %s %i", vaddress, sequence)
             filter_vaddr = (self.b2vinfo.vaddress==vaddress)
             filter_seq = (self.b2vinfo.sequence==sequence)
             ret = result(error.SUCCEED, "", self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).count() > 0)
@@ -155,7 +152,7 @@ class dbb2v(baseobject):
 
     def __query_b2vinfo_state(self, state):
         try:
-            logger.debug("start query_b2vinfo state is %s ", state.name)
+            self._logger.debug("start query_b2vinfo state is %s ", state.name)
             filter_state = (self.b2vinfo.state==state.value)
             proofs = self.__session.query(self.b2vinfo).filter(filter_state).all()
             ret = result(error.SUCCEED, "", proofs)
@@ -183,7 +180,7 @@ class dbb2v(baseobject):
 
     def update_b2vinfo(self, vaddress, sequence, state, height):
         try:
-            logger.debug("start update_b2vinfo state to %s filter(vaddress, sequence) %s %i", state.name, vaddress, sequence)
+            self._logger.debug("start update_b2vinfo state to %s filter(vaddress, sequence) %s %i", state.name, vaddress, sequence)
             filter_vaddr = (self.b2vinfo.vaddress==vaddress)
             filter_seq = (self.b2vinfo.sequence==sequence)
             if height >= 0:
@@ -201,7 +198,7 @@ class dbb2v(baseobject):
 
     def __update_b2vinfo_commit(self, vaddress, sequence, state, height = -1):
         try:
-            logger.debug("start __update_b2vinfo_commit")
+            self._logger.debug("start __update_b2vinfo_commit")
             ret = self.update_b2vinfo(vaddress, sequence, state, height)
             if ret != error.SUCCEED:
                 return ret

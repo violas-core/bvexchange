@@ -134,6 +134,9 @@ class violasclient(baseobject):
             
             for node in nodes:
                 try:
+                    if self.work() == False:
+                        return result(error.FAILED, "connect violas work stop")
+
                     self._logger.debug("try connect violas node : ip = {} port = {} validator={} faucet ={}".format( \
                             node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
                     client = Client.new(node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
@@ -152,6 +155,9 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
     
+    def stop(self):
+        self.work_stop()
+
     def disconn_node(self):
         try:
             if self.__node is not None:
@@ -280,7 +286,7 @@ class violasclient(baseobject):
 
 class violasserver(baseobject):
     __node = None
-    def __init__(self, nodes):
+    def __init__(self, name, nodes):
         baseobject.__init__(self, name)
         self.__server= None
         assert nodes is not None, "nodes is None"
