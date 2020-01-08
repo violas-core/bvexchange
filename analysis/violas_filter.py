@@ -90,7 +90,7 @@ class vfilter(vbase):
                 ret = self.parse_tran(tran_data)
                 if ret.state != error.SUCCEED or \
                         ret.datas.get("flag", None) not in self.get_tran_types() or \
-                        ret.datas.get("type") not in self.get_data_types or \
+                        ret.datas.get("type") == self.datatype.UNKOWN or \
                         not ret.datas.get("tran_state", False):
                     continue
                 tran_filter = ret.datas
