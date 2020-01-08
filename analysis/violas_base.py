@@ -148,6 +148,7 @@ class vbase(baseobject):
                     "vtbc_address"  : None,
                     "nettype"       : None,
                     "state"         : None,
+                    "sequence"      : -1,
                     "amount"        : 0,
                     "sender"        : None,
                     "receiver"      : None,
@@ -160,8 +161,9 @@ class vbase(baseobject):
             tran = result(error.SUCCEED, datas = datas)
     
             #check transaction state
-            datas["version"] =  transaction.get("version", 0)
+            datas["version"]    =  transaction.get("version", 0)
             datas["tran_state"] = transaction.get("success", False)
+            datas["sequence"]   = transaction.get("raw_txn").get("sequence_number")
             if not datas["tran_state"]:
                return tran 
 
@@ -198,11 +200,10 @@ class vbase(baseobject):
             datas["vtbc_address"]   = data_dict.get("vtbc_address", None)
             datas["nettype"]        = data_dict.get("nettype", None)
             datas["state"]          = data_dict.get("state", None)
-            datas["sequence_number"] = data_dict.get("raw_txn").get("sequence_number")
             datas["amount"]         = event.get("amount", 0)
             datas["sender"]         = event.get("sender", None)
             datas["receiver"]       = event.get("receiver", None)
-            datas["token"]         = event.get("token", None)
+            datas["token"]          = event.get("token", None)
             tran_id = data_dict.get("tran_id", None)
             datas["tran_id"]        = tran_id
 

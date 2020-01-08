@@ -29,6 +29,7 @@ from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
+from vrequest.violas_proof import violasproof
 
 #module name
 name="violastools"
@@ -42,8 +43,12 @@ wallet_name = "vwallet"
 '''
 def get_violasclient():
     return violasclient(name, stmanage.get_violas_nodes())
+
 def get_violaswallet():
     return violaswallet(name, wallet_name)
+
+def get_violasproof(dtype = "v2b"):
+    return violasproof(name, stmanage.get_db(dtype))
 
 def mint_platform_coin(address, amount):
     logger.debug("start mcreate_violas_coin otform_coin = {} amount={}".format(address, address))
@@ -187,14 +192,21 @@ def has_account(address):
 def get_violas_server():
     return violasserver(stmanage.get_violas_servers())
 
-def get_account_transactions(address, module, start):
+def get_account_transactions(address, module, start, limit, state):
     logger.debug("start get_account_transactions address= {} module = {}, start={}".format(address, module, start))
-    server = get_violas_server()
-    logger.debug(server.get_transactions(address, module, start).datas)
+    #server = get_violas_server()
+    server = get_violasproof("v2b")
+    if state == "start":
+        ret = server.get_transactions_for_start(address, module, start, limit)
+    elif state == "end":
+        ret = server.get_transactions_for_end(address, module, start, limit)
+    for tran in ret.datas:
+        logger.debug(tran)
     
 def has_transaction(address, module, baddress, sequence, amount, version, receiver):
     logger.debug("start has_transaction address= {} module = {}, baddress={}, sequence={}, amount={}, version={}, receiver={}".format(address, module, baddress, sequence, amount, version, receiver))
-    server = get_violas_server()
+    #server = get_violas_server()
+    server = get_violasproof("v2b")
     logger.debug(server.has_transaction(address, module, baddress, sequence, amount, version, receiver).datas)
 
     
@@ -214,7 +226,7 @@ def init_args(pargs):
     pargs.append("show_accounts", "show all counts address list(local wallet).")
     pargs.append("get_violas_balance", "get address's token(module) amount.", True, ["address", "module"])
     pargs.append("get_platform_balance", "get address's platform coin amount.", True, ["address"])
-    pargs.append("get_account_transactions", "get account's transactions from violas server.", True, ["address", "module", "start"])
+    pargs.append("get_account_transactions", "get account's transactions from violas server.", True, ["address", "module", "start", "limit", "state=(start/end)"])
     pargs.append("has_transaction", "check transaction is valid from violas server.", True, ["address", "module", "btcaddress", "sequence", "amount","version", "receiver"])
     pargs.append("account_has_violas_module", "check address binded module.", True, ["address", "module"])
     pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=True"])
@@ -296,9 +308,25 @@ def run(argc, argv):
                 pargs.exit_error_opt(opt)
             get_platform_balance(arg)
         elif pargs.is_matched(opt, ["get_account_transactions"]):
-            if len(arg_list) != 3:
+            if len(arg_list) < 2 or len(arg_list) > 5:
                 pargs.exit_error_opt(opt)
-            get_account_transactions(arg_list[0], arg_list[1], int(arg_list[2]))
+
+            receiver = arg_list[0]
+            module = arg_list[1]
+            start = -1
+            limit = 10
+            state = "start"
+
+            if len(arg_list) >= 3:
+               start = int(arg_list[2])
+
+            if len(arg_list) >= 4:
+               limit = int(arg_list[3])
+
+            if len(arg_list) >= 5:
+                state = arg_list[4]
+
+            get_account_transactions(receiver, module, start, limit, state)
         elif pargs.is_matched(opt, ["get_transactions"]):
             if len(arg_list) != 3 and len(arg_list) != 2 and len(arg_list) != 1:
                 pargs.exit_error_opt(opt)

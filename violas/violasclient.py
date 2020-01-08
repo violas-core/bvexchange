@@ -137,9 +137,9 @@ class violasclient(baseobject):
                     if self.work() == False:
                         return result(error.FAILED, "connect violas work stop")
 
-                    self._logger.debug("try connect violas node : ip = {} port = {} validator={} faucet ={}".format( \
-                            node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
-                    client = Client.new(node.get("ip", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
+                    self._logger.debug("try connect violas node : host = {} port = {} validator={} faucet ={}".format( \
+                            node.get("host", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
+                    client = Client.new(node.get("host", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
                     client.get_latest_transaction_version()
                     self._logger.debug(f"connect violas node succeed.") 
                 except Exception as e:
@@ -283,7 +283,6 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-
 class violasserver(baseobject):
     __node = None
     def __init__(self, name, nodes):
@@ -307,9 +306,9 @@ class violasserver(baseobject):
             for node in nodes:
                 try:
                     server = ""
-                    #server = Client.new(node["ip"], node["port"], node["user"], node["password"])
-                    self._logger.debug("connect violas server: ip = {} port = {} user={} password={}".format( \
-                            node["ip"], node["port"], node["user"], node["password"]))
+                    #server = Client.new(node["host"], node["port"], node["user"], node["password"])
+                    self._logger.debug("connect violas server: host= {} port = {} user={} password={}".format( \
+                            node["host"], node["port"], node["user"], node["password"]))
                     self.__node = node
                 except Exception as e:
                     parse_except(e)
@@ -344,7 +343,7 @@ class violasserver(baseobject):
             self._logger.debug("start get_transactions(address={}, module={}, start={})".format(address, module, start))
             datas = []
             url = "http://{}:{}/1.0/violas/vbtc/transaction?receiver_address={}&module_address={}&start_version={}"\
-                    .format(self.__node["ip"], self.__node["port"], address, module, start)
+                    .format(self.__node["host"], self.__node["port"], address, module, start)
             response = requests.get(url)
 
             ret = result(error.FAILED, "", "")
@@ -370,6 +369,7 @@ class violasserver(baseobject):
         finally:
             self._logger.debug("end get_transactions.")
         return ret
+
     def has_transaction(self, address, module, baddress, sequence, amount, version, receiver):
         try:
             self._logger.debug("start has_transaction(address={}, module={}, baddress={}, sequence={}, amount={}, version={}, receiver={})"\
@@ -384,7 +384,7 @@ class violasserver(baseobject):
                     "module":module,
                     "receiver":receiver,
                     }
-            url = "http://{}:{}/1.0/violas/vbtc/transaction".format(self.__node["ip"], self.__node["port"])
+            url = "http://{}:{}/1.0/violas/vbtc/transaction".format(self.__node["host"], self.__node["port"])
             headers = headers = {'Content-Type':'application/json'}
             response = requests.post(url,  json = data)
             if response is not None:
@@ -398,6 +398,7 @@ class violasserver(baseobject):
         finally:
             self._logger.debug("end has_transaction.")
         return ret
+
 
 def main():
     _test_get_transactions()

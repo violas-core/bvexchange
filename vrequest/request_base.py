@@ -18,10 +18,8 @@ from comm.result import result, parse_except
 from db.dbvproof import dbvproof
 
 from enum import Enum
-from analysis.violas_base  import vproof
-proofstate = vproof.proofstate
 #module name
-name="rbase"
+name="requestbase"
 
 class requestbase(dbvproof):
     def __init__(self, name, host, port, db, passwd = None):
@@ -35,7 +33,7 @@ class requestbase(dbvproof):
             ret = parse_except(e)
         return ret
 
-    def get_transaction_for_start(self, start = -1, limit = 10):
+    def _get_transaction_for_state(self, proofstate = None, receiver = None, module = None, start = -1, limit = 10):
         try:
             trans = []
 
@@ -52,7 +50,7 @@ class requestbase(dbvproof):
             max_version = int(ret.datas)
 
             count = 0
-            for version in (start_version ,max_version + 1):
+            for version in range(start_version ,max_version + 1):
                 if count >= limit:
                     break
 
@@ -75,9 +73,19 @@ class requestbase(dbvproof):
                 if ret.datas == False:
                     continue
 
-                if tran_info.get("state") == proofstate.START.name.lower():
-                    trans.append(tran_info)
-                    count += 1
+                if proofstate is not None and tran_info.get("state") != proofstate.name.lower():
+                    continue
+
+
+                if receiver is not None and tran_info.get("receiver") != receiver:
+                    continue
+
+                if module is not None and tran_info.get("token") != module:
+                    continue
+
+                #data is valid, return it
+                trans.append(tran_info)
+                count += 1
 
             ret = result(error.SUCCEED, "", trans)
         except Exception as e:

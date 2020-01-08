@@ -19,22 +19,22 @@ btc_conn = {'rpcuser':'btc',
 
 #violas node list, to connect one
 violas_nodes=[
- #       {'ip':'51.140.241.96', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        {'ip':'13.68.141.242', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        {'ip':'47.52.195.50', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        {'ip':'18.220.66.235', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        {'ip':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+ #       {'host':'51.140.241.96', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        {'host':'13.68.141.242', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        {'host':'47.52.195.50', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        {'host':'18.220.66.235', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        {'host':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
         ]
 
 #libra node list, to connect one
 libra_nodes=[
- #       {'ip':'51.140.241.96', 'port':40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        {'ip':'125.39.5.57', 'port':40001, 'validator':'lib_consensus_peers.config.toml', 'faucet':'lib_faucet_keys'},
+ #       {'host':'51.140.241.96', 'port':40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        {'host':'125.39.5.57', 'port':40001, 'validator':'lib_consensus_peers.config.toml', 'faucet':'lib_faucet_keys'},
         ]
 
 #vioals server list. violas provides query of historical transactions. to connect one 
 violas_servers=[
-        {'ip':'52.27.228.84', "port":4000, 'user':'violas', 'password':'violas'},
+        {'host':'52.27.228.84', "port":4000, 'user':'violas', 'password':'violas'},
         ]
 
 #db info type(vfilter vfilter lfilter v2b  l2b v2l)
