@@ -9,7 +9,6 @@ import log.logger
 name="result"
 error = error.error
 name="except" 
-logger = log.logger.getLogger(name)
 class result:
         state = error.SUCCEED
         message = ""

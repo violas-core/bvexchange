@@ -213,9 +213,8 @@ class btcclient(baseobject):
 def main():
     try:
        #load logging
-       logger = log.logger.getLogger(name) 
+       pass
 
-       logger.debug("start main")
     except Exception as e:
         parse_except(e)
     finally:

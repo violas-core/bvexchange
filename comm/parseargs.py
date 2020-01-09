@@ -3,18 +3,13 @@ import operator
 import sys, getopt
 import json
 sys.path.append("..")
-import log
-import log.logger
 import traceback
 import datetime
 #from .models import BtcRpc
 from enum import Enum
 
 #module name
-name="btcclient"
-
-#load logging
-logger = log.logger.getLogger(name) 
+name="parseargs"
 
 class parseargs:
     __args = {}
