@@ -27,6 +27,7 @@ class baseobject(object):
         self._work = work
         self._name = name
         if self._logger is None:
+            print(name)
             self._logger = getlogger(name) 
 
     def work(self):

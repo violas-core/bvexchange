@@ -39,7 +39,6 @@ class dbb2v(baseobject):
         self.__init_db(dbfile)
 
     def __del__(self):
-        self._logger.debug("start dbb2v.__del__")
         self.__uninit_db()
 
     #btc exchange vbtc state
@@ -90,7 +89,7 @@ class dbb2v(baseobject):
         self.__session = Session()
     
     def __uninit_db(self):
-        self._logger.debug("start __uninit_db")
+        pass
         
     def insert_b2vinfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock):
         try:

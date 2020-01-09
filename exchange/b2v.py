@@ -27,10 +27,22 @@ from enum import Enum
 COINS = comm.values.COINS
 #load logging
 name="b2v"
+wallet_name = "vwallet"
 
 class exb2v(baseobject):
-    def __init__(self, name = "b2v", work = True):
-        baseobject.__init__(self, name, work);
+    def __init__(self, name, vnodes , bnode,  module, combin, chain = "violas"):
+        baseobject.__init__(self, name);
+        self.set_proof_chain(chain)
+        #btc init
+        self._bclient = btcclient(name, bnode)
+        self._b2v = dbb2v(self.name(), f"{self.proof_chain()}_{self.name()}.db")
+    
+        #violas init
+        self._vclient = violasclient(self.name(), vnodes)
+        self._vwallet = violaswallet(self.name(), wallet_name)
+    
+        self._module_address = module
+        self._combineaddress = combin 
 
     def __merge_proof_to_rpcparams(self, rpcparams, dbinfos):
         try:
@@ -87,14 +99,14 @@ class exb2v(baseobject):
     
     def __checks(self):
         assert (len(stmanage.get_btc_conn()) == 4), "btc_conn is invalid."
-        assert (len(stmanage.get_sender_address_list(self._name, self.proof_chain())) > 0 ), "violas sender not found."
-        assert (len(stmanage.get_receiver_address_list(self._name, self.btc_chain())) > 0 ), "btc receiver not found."
-        assert (len(stmanage.get_module_address(self._name, self.proof_chain())) == 64), "module_address is invalid"
+        assert (len(stmanage.get_sender_address_list(self.name(), self.proof_chain())) > 0 ), "violas sender not found."
+        assert (len(stmanage.get_receiver_address_list(self.name(), self.btc_chain())) > 0 ), "btc receiver not found."
+        assert (len(stmanage.get_module_address(self.name(), self.proof_chain())) == 64), "module_address is invalid"
         assert (len(stmanage.get_violas_nodes()) > 0), "violas_nodes is invalid."
-        for addr in stmanage.get_sender_address_list(self._name, self.proof_chain()):
+        for addr in stmanage.get_sender_address_list(self.name(), self.proof_chain()):
             assert len(addr) == 64, f"violas address({addr}) is invalid."
     
-        for addr in stmanage.get_receiver_address_list(self._name, self.btc_chain()):
+        for addr in stmanage.get_receiver_address_list(self.name(), self.btc_chain()):
             assert len(addr) >= 20, f"btc address({addr}) is invalid."
     
     def __hasplatformbalance(self, vclient, address, vamount = 0):
@@ -194,7 +206,7 @@ class exb2v(baseobject):
         return ret
     
     def __get_violas_sender(self, vclient, vwallet, module, vamount, min_gas):
-        for sender in stmanage.get_sender_address_list(self._name, self.proof_chain()):
+        for sender in stmanage.get_sender_address_list(self.name(), self.proof_chain()):
             ret = vwallet.get_account(sender)
             if ret.state != error.SUCCEED:
                 continue
@@ -233,27 +245,27 @@ class exb2v(baseobject):
     
     
     def stop(self):
+        self._vclient.stop()
         self.work_stop()
+        
 
     def start(self):
         try:
             self._logger.debug("start b2v work")
-            dbb2v_name = "bve_b2v.db"
-            wallet_name = "vwallet"
     
             #requirement checks
             self.__checks()
     
             #btc init
-            bclient = btcclient(self._name, stmanage.get_btc_conn())
-            b2v = dbb2v(self._name, dbb2v_name)
+            bclient = self._bclient
+            b2v = self._b2v
     
             #violas init
-            vclient = violasclient(self._name, stmanage.get_violas_nodes())
-            vwallet = violaswallet(self._name, wallet_name)
+            vclient = self._vclient
+            vwallet = self._vwallet
     
-            module_address = stmanage.get_module_address(self._name, self.proof_chain())
-            combineaddress = stmanage.get_combine_address_list(self._name, self.btc_chain())[0]
+            module_address = self._module_address
+            combineaddress = self._combineaddress
     
             #update db state by proof state
             ret = self.__update_db_btcsucceed_to_complete(bclient, b2v)
@@ -262,7 +274,7 @@ class exb2v(baseobject):
     
             #update proof state to end, and update db state, prevstate is btcfailed in db. 
             #When this happens, there is not enough Bitcoin, etc.
-            self.__rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, stmanage.get_receiver_address_list(self._name, self.btc_chain()))
+            self.__rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, stmanage.get_receiver_address_list(self.name(), self.btc_chain()))
     
             #get all excluded info from db
             rpcparams = {}
@@ -275,12 +287,12 @@ class exb2v(baseobject):
             min_gas = comm.values.MIN_EST_GAS 
     
             #set receiver: get it from stmanage or get it from blockchain
-            receivers = list(set(stmanage.get_receiver_address_list(self._name, self.btc_chain())))
+            receivers = list(set(stmanage.get_receiver_address_list(self.name(), self.btc_chain())))
             self._logger.debug(receivers)
     
             #modulti receiver, one-by-one
             for receiver in receivers:
-                if self.work() == False:
+                if not self.work():
                     break
 
                 #check receiver is included in wallet
@@ -297,7 +309,7 @@ class exb2v(baseobject):
                 ret = bclient.listexproofforstart(receiver, excluded)
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     for data in ret.datas:
-                        if self.work() == False:
+                        if not self.work():
                             break
 
                         #grant vbtc 

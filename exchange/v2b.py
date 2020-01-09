@@ -34,20 +34,20 @@ wallet_name = "vwallet"
 COINS = comm.values.COINS
 #load logging
 class exv2b(baseobject):    
-    def __init__(self, name, vnodes , bnode, proofdb, module, chain = "violas"):
+    def __init__(self, name, vnodes , bnode, proofdb, module, receivers, chain = "violas"):
         baseobject.__init__(self, name)
         self.set_proof_chain(chain)
-        self._vclient = violasproof(self.name(), vnodes)
+        self._vclient = violasproof(name, vnodes)
         #btc init
-        self._bclient = btcclient(self.name(), bnode)
-        self._v2b = dbv2b(self.name(), f"{self.proof_chain()}_{self.name()}.db")
-        self._wallet = violaswallet(self.name(), wallet_name)
+        self._bclient = btcclient(name, bnode)
+        self._v2b = dbv2b(name, f"{self.proof_chain()}_{self.name()}.db")
+        self._wallet = violaswallet(name, wallet_name)
     
         #violas init
         #vserver = violasserver(self.name(), stmanage.get_violas_servers())
-        self._vserver = requestclient(self.name(), proofdb)
+        self._vserver = requestclient(name, proofdb)
         self._module_address = module
-        self._receivers = list(set(stmanage.get_receiver_address_list(self._name, self.proof_chain())))
+        self._receivers = receivers
 
     def __del__(self):
         del self._vclient
@@ -458,13 +458,12 @@ class exv2b(baseobject):
         return ret
     
 def main():
-       logger = log.logger.getlogger(name) 
-       logger.debug("start main")
+       print("start main")
        v2b = exv2b()
        
        ret = v2b.start()
        if ret.state != error.SUCCEED:
-           logger.error(ret.message)
+           print(ret.message)
 
 if __name__ == "__main__":
     main()
