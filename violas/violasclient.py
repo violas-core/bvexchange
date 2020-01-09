@@ -64,8 +64,9 @@ class violaswallet(baseobject):
 
     def dump_wallet(self):
         try:
-            self._logger.debug("start dump_wallet")
-            self.__wallet.write_recovery(self.__wallet_name)
+            if self.__wallet is not None:
+                #self.__wallet.write_recovery(self.__wallet_name)
+                pass
             ret = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
