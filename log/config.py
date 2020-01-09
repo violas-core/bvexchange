@@ -20,7 +20,7 @@ config = {
            'level': 'DEBUG',
            'formatter': 'simple',
            'backupCount' : 3,
-           'maxBytes' : 1000000 #1M
+           'maxBytes' : 10000000 #10M
            },
        },
    'loggers':{

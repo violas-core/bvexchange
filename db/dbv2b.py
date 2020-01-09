@@ -70,7 +70,7 @@ class dbv2b(baseobject):
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
         times       = Column(Integer, nullable=False, default=1)
-        tranid      = Column(String(64), nullable=False)
+        tranid      = Column(String(64), nullable=False, primary_key=True)
     
         def __repr__(self):
             return "<v2binfo(txid=%s,fromaddress={}, toaddress={}, bamount={}, vaddress={}, sequence={}, \
