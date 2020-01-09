@@ -21,7 +21,7 @@ getlogger = log.logger.getLogger
 class baseobject(object):
     _name = None
     _btc_chain = "btc"
-    _violas_chain = "violas"
+    _proof_chain = "violas" #violas/libra 
     _logger = None
     def __init__(self, name = 'base', work = True):
         self._work = work
@@ -40,4 +40,13 @@ class baseobject(object):
 
     def name(self):
         return self._name
+
+    def btc_chain(self):
+        return self._btc_chain
+
+    def proof_chain(self):
+        return self._proof_chain
+
+    def set_proof_chain(self, name):
+        self._proof_chain = name
 

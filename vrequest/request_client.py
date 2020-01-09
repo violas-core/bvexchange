@@ -22,9 +22,9 @@ proofstate = vproof.proofstate
 from vrequest.request_proof import requestproof
 from baseobject import baseobject
 #module name
-name="violasproof"
+name="requestclient"
 
-class violasproof(baseobject):
+class requestclient(baseobject):
     def __init__(self, name, dbconf):
         baseobject.__init__(self, name)
         try:
@@ -34,7 +34,7 @@ class violasproof(baseobject):
             pass
     def get_transactions_for_start(self, address, module, start, limit = 10):
         try:
-            self._logger.debug("start get_transactions(address={}, module={}, start={})".format(address, module, start))
+            self._logger.debug("start get_transactions_for_start(address={}, module={}, start={})".format(address, module, start))
             datas = []
             ret = self._rclient.get_transactions_for_start(address, module, start, limit)
             if ret.state != error.SUCCEED:
@@ -46,12 +46,14 @@ class violasproof(baseobject):
                 amount      = int(data["amount"])
                 sequence    = int(data["sequence"])
                 baddress    = data["btc_address"]
-                datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "baddress":baddress})
+                tran_id     = data["tran_id"]
+                datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "baddress":baddress, "tran_id":tran_id})
+            self._logger.debug(f"count={len(datas)}")
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)
         finally:
-            self._logger.debug("end get_transactions.")
+            self._logger.debug("end get_transactions_for_start.")
         return ret
 
     def get_transactions_for_end(self, address, module, start, limit = 10):
@@ -68,12 +70,14 @@ class violasproof(baseobject):
                 amount      = int(data["amount"])
                 sequence    = int(data["sequence"])
                 baddress    = data["btc_address"]
-                datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "baddress":baddress})
+                tran_id     = data["tran_id"]
+                datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "baddress":baddress, "tran_id":tran_id})
+            self._logger.debug(f"count={len(datas)}")
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)
         finally:
-            self._logger.debug("end get_transactions.")
+            self._logger.debug("end get_transactions_for_end.")
         return ret
     def has_transaction(self, address, module, baddress, sequence, amount, version, receiver):
         try:

@@ -81,7 +81,10 @@ class works:
             logger.debug("start: v2b")
             while (self.__work_looping.get(work_mod.V2B.name, False)):
                 logger.debug("looping: v2b")
-                v2bobj = v2b.exv2b()
+                mod = "v2b"
+                chain = "violas"
+                v2bobj = v2b.exv2b(mod, stmanage.get_violas_nodes(), stmanage.get_btc_conn(), stmanage.get_db(mod), 
+                        stmanage.get_module_address(mod, chain), chain=chain)
                 self.set_work_obj(v2bobj)
                 v2bobj.start()
                 sleep(nsec)

@@ -87,14 +87,14 @@ class exb2v(baseobject):
     
     def __checks(self):
         assert (len(stmanage.get_btc_conn()) == 4), "btc_conn is invalid."
-        assert (len(stmanage.get_sender_address_list(self._name, self._violas_chain)) > 0 ), "violas sender not found."
-        assert (len(stmanage.get_receiver_address_list(self._name, self._btc_chain)) > 0 ), "btc receiver not found."
-        assert (len(stmanage.get_module_address(self._name, self._violas_chain)) == 64), "module_address is invalid"
+        assert (len(stmanage.get_sender_address_list(self._name, self.proof_chain())) > 0 ), "violas sender not found."
+        assert (len(stmanage.get_receiver_address_list(self._name, self.btc_chain())) > 0 ), "btc receiver not found."
+        assert (len(stmanage.get_module_address(self._name, self.proof_chain())) == 64), "module_address is invalid"
         assert (len(stmanage.get_violas_nodes()) > 0), "violas_nodes is invalid."
-        for addr in stmanage.get_sender_address_list(self._name, self._violas_chain):
+        for addr in stmanage.get_sender_address_list(self._name, self.proof_chain()):
             assert len(addr) == 64, f"violas address({addr}) is invalid."
     
-        for addr in stmanage.get_receiver_address_list(self._name, self._btc_chain):
+        for addr in stmanage.get_receiver_address_list(self._name, self.btc_chain()):
             assert len(addr) >= 20, f"btc address({addr}) is invalid."
     
     def __hasplatformbalance(self, vclient, address, vamount = 0):
@@ -194,7 +194,7 @@ class exb2v(baseobject):
         return ret
     
     def __get_violas_sender(self, vclient, vwallet, module, vamount, min_gas):
-        for sender in stmanage.get_sender_address_list(self._name, self._violas_chain):
+        for sender in stmanage.get_sender_address_list(self._name, self.proof_chain()):
             ret = vwallet.get_account(sender)
             if ret.state != error.SUCCEED:
                 continue
@@ -252,8 +252,8 @@ class exb2v(baseobject):
             vclient = violasclient(self._name, stmanage.get_violas_nodes())
             vwallet = violaswallet(self._name, wallet_name)
     
-            module_address = stmanage.get_module_address(self._name, self._violas_chain)
-            combineaddress = stmanage.get_combine_address_list(self._name, self._btc_chain)[0]
+            module_address = stmanage.get_module_address(self._name, self.proof_chain())
+            combineaddress = stmanage.get_combine_address_list(self._name, self.btc_chain())[0]
     
             #update db state by proof state
             ret = self.__update_db_btcsucceed_to_complete(bclient, b2v)
@@ -262,7 +262,7 @@ class exb2v(baseobject):
     
             #update proof state to end, and update db state, prevstate is btcfailed in db. 
             #When this happens, there is not enough Bitcoin, etc.
-            self.__rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, stmanage.get_receiver_address_list(self._name, self._btc_chain))
+            self.__rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, stmanage.get_receiver_address_list(self._name, self.btc_chain()))
     
             #get all excluded info from db
             rpcparams = {}
@@ -275,7 +275,7 @@ class exb2v(baseobject):
             min_gas = comm.values.MIN_EST_GAS 
     
             #set receiver: get it from stmanage or get it from blockchain
-            receivers = list(set(stmanage.get_receiver_address_list(self._name, self._btc_chain)))
+            receivers = list(set(stmanage.get_receiver_address_list(self._name, self.btc_chain())))
             self._logger.debug(receivers)
     
             #modulti receiver, one-by-one
@@ -369,8 +369,9 @@ class exb2v(baseobject):
         except Exception as e:
             ret = parse_except(e)
         finally:
-            vclient.disconn_node()
-            vwallet.dump_wallet()
+            
+            #vclient.disconn_node()
+            #vwallet.dump_wallet()
             self._logger.info("works end.")
     
         return ret

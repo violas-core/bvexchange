@@ -26,6 +26,10 @@ class requestproof(requestbase):
     
     def get_transactions_for_start(self, receiver = None, module = None, start = -1, limit = 10):
         try:
+            ret = self.get_proof_min_version_for_start()
+            if ret.state == error.SUCCEED:
+                start = max(start, int(ret.datas))
+
             ret = self._get_transaction_for_state(proofstate.START, receiver, module, start, limit)
         except Exception as e:
             parse_except(e)
@@ -59,6 +63,35 @@ class requestproof(requestbase):
         finally:
             self._logger.debug("end has_transaction.")
         return ret
+
+    def _is_target_state(self, state, address, module, baddress, sequence, amount, version, receiver):
+        try:
+            ret = self.get(version)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            tran_info = json.loads(ret.datas)
+            beque = tran_info.get("sender") == address and \
+                    tran_info.get("token") == module and \
+                    tran_info.get("btc_address") == baddress and \
+                    tran_info.get("sequence") == sequence and \
+                    tran_info.get("amount") == amount and \
+                    tran_info.get("version") == version and \
+                    tran_info.get("receiver") == receiver and \
+                    tran_info.get("state") == state.name.lower()
+
+            ret = result(error.SUCCEED, "", beque)
+        except Exception as e:
+            ret = parse_except(e)
+        finally:
+            self._logger.debug("end has_transaction.")
+        return ret
+
+    def is_start(self, state, address, module, baddress, sequence, amount, version, receiver):
+        return _is_target_state(proofstate.START, address, module, baddress, sequence, amount, version, receiver)
+
+    def is_end(self, state, address, module, baddress, sequence, amount, version, receiver):
+        return _is_target_state(proofstate.END, address, module, baddress, sequence, amount, version, receiver)
 
 def main():
     try:

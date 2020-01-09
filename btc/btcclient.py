@@ -184,7 +184,6 @@ class btcclient(baseobject):
             datas = self.__rpc_connection.listunspent(1, 999999999, addresses)
             balance = 0
             if len(datas) == 0:
-                self._logger.debug("not found address({})".format(address))
                 return result(error.FAILED)
             for data in datas:
                 balance += data.get("amount", 0)
@@ -196,7 +195,7 @@ class btcclient(baseobject):
 
     def has_btc_banlance(self, address, vamount, gas = comm.values.MIN_EST_GAS):
         try:
-            self._logger.debug("start has_btc_banlance(address={}, vamount={}, gas={})".format(address, vamount, gas))
+            self._logger.debug(f"start has_btc_banlance(address={address}, vamount={vamount}, gas={gas})")
             ret = self.getwalletaddressbalance(address)
             if ret.state != error.SUCCEED:
                 return ret
