@@ -312,19 +312,19 @@ class exv2b(baseobject):
     
                         #match module 
                         if module != self._module_address:
-                            self._logger.debug("module is not match.")
+                            self._logger.warning(f"module is not match. {module}<->{self._module_address}")
                             continue
     
                         #not found , process next
                         ret = self._vserver.has_transaction(vaddress, module, baddress, sequence, vamount, version, vreceiver)
                         if ret.state != error.SUCCEED or ret.datas != True:
-                            self._logger.debug("not found transaction from violas server.")
+                            self._logger.warning(f"not found transaction({data}) from violas server.")
                             continue
     
                         #get btc sender from stmanage.get_sender_address_list(self._name, self.btc_chain())
                         ret = self.__get_btc_sender_address([baddress], vamount, gas) #vamount and gas unit is satoshi
                         if ret.state != error.SUCCEED:
-                            self._logger.debug("not found btc sender. check btc address and amount")
+                            self._logger.warning("not found btc sender{baddress} or amount too low. check btc address and amount")
                             continue
                         sender = ret.datas
     
@@ -406,8 +406,8 @@ class exv2b(baseobject):
                         baddress    = data["baddress"]
                         tran_id     = data["tran_id"]
     
-                        self._logger.debug("start exchange v2b. receiver = {}, vaddress={} sequence={} baddress={} amount={} \
-                                datas from server.".format(receiver, vaddress, sequence, baddress, fmtamount))
+                        self._logger.debug("start exchange v2b. receiver = {}, vaddress={} sequence={} baddress={} amount={} tran_id={}\
+                                datas from server.".format(receiver, vaddress, sequence, baddress, fmtamount, tran_id))
     
                         max_version = max(version, max_version)
 
@@ -419,16 +419,15 @@ class exv2b(baseobject):
                         ret = self._v2b.has_v2binfo(tran_id)
                         assert ret.state == error.SUCCEED, "has_v2binfo(vaddress={}, sequence={}) failed.".format(vaddress, sequence)
                         if ret.datas == True:
-                            self._logger.info("found transaction(vaddress={}, sequence={}) in db. ignore it and process next.".format(vaddress, sequence))
+                            self._logger.warning("found transaction(tran_id = {tran_id})) in db. ignore it and process next.".format(vaddress, sequence))
                             continue
     
                         #get btc sender from btc senders
                         ret = self.__get_btc_sender_address([baddress], fmtamount, gas)
                         if ret.state != error.SUCCEED:
-                            self._logger.debug("not found btc sender or amount too low. check btc address and amount")
+                            self._logger.warning("not found btc sender{baddress} or amount too low. check btc address and amount")
                             ret = self._v2b.insert_v2binfo_commit("", "", baddress, vamount, vaddress, sequence, version, vamount, self._module_address, receiver, dbv2b.state.FAILED, tran_id)
                             assert (ret.state == error.SUCCEED), "db error"
-
                             continue
                         sender = ret.datas
     
@@ -444,7 +443,7 @@ class exv2b(baseobject):
                         else:
                             ret = self._v2b.insert_v2binfo_commit(txid, sender, baddress, vamount, vaddress, sequence, version, vamount, self._module_address, receiver, dbv2b.state.SUCCEED, tran_id)
                             assert (ret.state == error.SUCCEED), "db error"
-
+           
                         #sendexproofmark succeed , change violas state
                         self._send_violas_coin_and_update_state_to_end(vsender, receiver, self._module_address, tran_id)
     
