@@ -33,6 +33,9 @@ from vrequest.request_client import requestclient
 
 #module name
 name="violastools"
+chain = "violas"
+datatype = "v2b"
+
 
 #load logging
 logger = log.logger.getLogger(name) 
@@ -42,17 +45,21 @@ wallet_name = "vwallet"
 *************************************************violasclient oper*******************************************************
 '''
 def get_violasclient():
+    if chain == "libra":
+        return violasclient(name, stmanage.get_libra_nodes())
+
     return violasclient(name, stmanage.get_violas_nodes())
 
 def get_violaswallet():
     return violaswallet(name, wallet_name)
 
 def get_violasproof(dtype = "v2b"):
+
     return requestclient(name, stmanage.get_db(dtype))
 
 def mint_platform_coin(address, amount):
     logger.debug("start mcreate_violas_coin otform_coin = {} amount={}".format(address, address))
-    client = violasclient(stmanage.get_violas_nodes())
+    client = get_violasclient()
 
     ret = client.mint_platform_coin(address, amount)
     assert ret.state == error.SUCCEED, "mint_platform_coin failed."
@@ -231,6 +238,7 @@ def init_args(pargs):
     pargs.append("account_has_violas_module", "check address binded module.", True, ["address", "module"])
     pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=True"])
     pargs.append("get_latest_transaction_version", "show latest transaction version.")
+    pargs.append("chain", "work chain name(violas/libra, default : violas).", True, ["chain=violas"])
 
 
 def run(argc, argv):
@@ -255,6 +263,7 @@ def run(argc, argv):
     names = [opt for opt, arg in opts]
     pargs.check_unique(names)
 
+    global chain
     for opt, arg in opts:
         if len(arg) > 0:
             count, arg_list = pargs.split_arg(arg)
@@ -346,8 +355,8 @@ def run(argc, argv):
             account_has_violas_module(arg_list[0], arg_list[1])
         elif pargs.is_matched(opt, ["get_latest_transaction_version"]):
             get_latest_transaction_version()
-        elif opt == '-s':
-            logger.debug(arg)
+        elif pargs.is_matched(opt, ["chain"]):
+            chain = arg_list[0]
     logger.debug("end manage.main")
 
 if __name__ == "__main__":
