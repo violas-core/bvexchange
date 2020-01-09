@@ -41,11 +41,18 @@ class dbv2b(baseobject):
         self.__uninit_db()
 
     #btc exchange vtoken state
+    #state change case:  
+    ##SUCCEED->COMPLETE
+    ##SUCCEED->VFAILED->SUCCEED->COMPLETE
+    ##FAILED->SUCCEED->COMPLETE
+    ##FAILED->SUCCEED->VFAILED->SUCCEED->COMPLETE
     class state(Enum):
-        START       = 0
-        SUCCEED     = 1
-        FAILED      = 2
-        COMPLETE    = 3
+        START       = 0  #no use
+        SUCCEED     = 1  #send btc ok and send change state transaction succeed but not confirm
+        FAILED      = 2  #send btc failed
+        VFAILED     = 3  #send change state transaction failed
+        VSUCCEED    = 4  #send change state transaction succeed
+        COMPLETE    = 6  #change state is confirmed
     
     #exc_traceback_objle : v2binfo
     class v2binfo(__base):
@@ -177,6 +184,12 @@ class dbv2b(baseobject):
     def query_v2binfo_is_complete(self, maxtimes=999999999):
         return self.__query_v2binfo_state(self.state.COMPLETE, maxtimes)
 
+    def query_v2binfo_is_vfailed(self, maxtimes=999999999):
+        return self.__query_v2binfo_state(self.state.VFAILED, maxtimes)
+
+    def query_v2binfo_is_vsucceed(self, maxtimes = 999999999):
+        return self.__query_v2binfo_state(self.state.VSUCCEED, maxtimes)
+
     def __update_v2binfo(self, tranid, state, txid):
         try:
             self._logger.debug(f"start update_v2binfo(tranid={tranid}, state={state}, txid={txid})")
@@ -212,6 +225,12 @@ class dbv2b(baseobject):
     def update_v2binfo_to_complete_commit(self, tranid, txid = ""):
         return self.__update_v2binfo_commit(tranid, self.state.COMPLETE, txid)
 
+    def update_v2binfo_to_vfailed_commit(self, tranid, txid = ""):
+        return self.__update_v2binfo_commit(tranid, self.state.VFAILED, txid)
+
+    def update_v2binfo_to_vsucceed_commit(self, tranid, txid = ""):
+        return self.__update_v2binfo_commit(tranid, self.state.VSUCCEED, txid)
+    
     def insert_latest_version(self, address, vtoken, version):
         try:
             self._logger.debug("start insert_latest_version (address={}, vtoken={}, version={})".format(address, vtoken, version))

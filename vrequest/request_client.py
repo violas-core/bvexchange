@@ -28,7 +28,6 @@ class requestclient(baseobject):
     def __init__(self, name, dbconf):
         baseobject.__init__(self, name)
         try:
-            print(dbconf)
             self._rclient = requestproof(name, dbconf.get("host"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password"))
         except Exception as e:
             pass
@@ -90,3 +89,5 @@ class requestclient(baseobject):
             self._logger.debug("end has_transaction.")
         return ret
 
+    def is_end(self, tran_id):
+        return self._rclient.is_end(tran_id)

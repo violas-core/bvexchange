@@ -64,20 +64,14 @@ class requestproof(requestbase):
             self._logger.debug("end has_transaction.")
         return ret
 
-    def _is_target_state(self, state, address, module, baddress, sequence, amount, version, receiver):
+    def _is_target_state(self, state, tran_id):
         try:
-            ret = self.get(version)
+            ret = self.get_proof_by_hash(tran_id)
             if ret.state != error.SUCCEED:
                 return ret
 
             tran_info = json.loads(ret.datas)
-            beque = tran_info.get("sender") == address and \
-                    tran_info.get("token") == module and \
-                    tran_info.get("btc_address") == baddress and \
-                    tran_info.get("sequence") == sequence and \
-                    tran_info.get("amount") == amount and \
-                    tran_info.get("version") == version and \
-                    tran_info.get("receiver") == receiver and \
+            beque = tran_info.get("tran_id") == tran_id and \
                     tran_info.get("state") == state.name.lower()
 
             ret = result(error.SUCCEED, "", beque)
@@ -87,11 +81,11 @@ class requestproof(requestbase):
             self._logger.debug("end has_transaction.")
         return ret
 
-    def is_start(self, state, address, module, baddress, sequence, amount, version, receiver):
-        return _is_target_state(proofstate.START, address, module, baddress, sequence, amount, version, receiver)
+    def is_start(self, tran_id):
+        return self._is_target_state(proofstate.START, tran_id)
 
-    def is_end(self, state, address, module, baddress, sequence, amount, version, receiver):
-        return _is_target_state(proofstate.END, address, module, baddress, sequence, amount, version, receiver)
+    def is_end(self, tran_id):
+        return self._is_target_state(proofstate.END, tran_id)
 
 def main():
     try:
