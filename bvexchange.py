@@ -67,7 +67,14 @@ class works:
             logger.debug("start: b2v")
             while (self.__work_looping.get(work_mod.B2V.name, False)):
                 logger.debug("looping: b2v")
-                b2vobj = b2v.exb2v()
+                mod = "b2v"
+                chain = "violas"
+                b2vobj = b2v.exb2v(mod,
+                        stmanage.get_violas_nodes(), 
+                        stmanage.get_btc_conn(), 
+                        stmanage.get_module_address(mod, chain), 
+                        stmanage.get_combine_address(), 
+                        chain=chain)
                 self.set_work_obj(b2vobj)
                 b2vobj.start()
                 sleep(nsec)
@@ -83,8 +90,13 @@ class works:
                 logger.debug("looping: v2b")
                 mod = "v2b"
                 chain = "violas"
-                v2bobj = v2b.exv2b(mod, stmanage.get_violas_nodes(), stmanage.get_btc_conn(), stmanage.get_db(mod), 
-                        stmanage.get_module_address(mod, chain), chain=chain)
+                v2bobj = v2b.exv2b(mod, 
+                        stmanage.get_violas_nodes(), 
+                        stmanage.get_btc_conn(), 
+                        stmanage.get_db(mod), 
+                        stmanage.get_module_address(mod, chain), 
+                        list(set(stmanage.get_receiver_address_list(mod, chain))),
+                        chain=chain)
                 self.set_work_obj(v2bobj)
                 v2bobj.start()
                 sleep(nsec)
@@ -115,7 +127,7 @@ class works:
             logger.debug("start: violas proof")
             while (self.__work_looping.get(work_mod.VPROOF.name, False)):
                 logger.debug("looping: vproof")
-                dtype = "v2b"
+                dtype = "v2b"   #violas transaction's data type 
                 basedata = "vfilter"
                 vproof = violas_proof.vproof(name="v2bproof", ttype="violas", dtype=dtype, \
                         dbconf=stmanage.get_db(dtype), vfdbconf=stmanage.get_db(basedata), vnodes=stmanage.get_violas_nodes())

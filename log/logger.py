@@ -8,13 +8,15 @@ def __init__():
 
 def getLogger(name):
 
-    logger_name = name
+
+    print(f"****************************{name}")
+    log.config.config["handlers"]["file"]["filename"]=f"{name}.log"
     default = log.config.config.get("loggers").get("bvelog")
-    if logger_name not in log.config.config.get("loggers"):
-        log.config.config.get("loggers")[logger_name] = default
+    if name not in log.config.config.get("loggers"):
+        log.config.config.get("loggers")[name] = default
 
     logging.config.dictConfig(log.config.config)
-    logger = logging.getLogger(logger_name)
+    logger = logging.getLogger(name)
 
     return logger
 

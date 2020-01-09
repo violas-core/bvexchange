@@ -29,46 +29,6 @@ config = {
            'handlers': ['console', 'file'],
            'level': 'DEBUG',
            },
-       'exgb2v': {
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
-       'exgv2b': {
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
-       'dbv2b': {
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
-       'dbb2v': {
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
-       'dbvfilter': {
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
-       'dbvproof': {
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
-       'vclient': {
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
-       'bclient': {
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
-       'vproof': {
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
-       'vfilter': {
-           'handlers': ['console', 'file'],
-           'level': 'DEBUG',
-           },
        }
 }
 

@@ -47,7 +47,7 @@ def get_module_address(mtype, chain = None):
     return None
 
 
-def get_combine_address_list(mtype, chain = None):
+def get_combine_address(mtype = "b2v", chain = "btc"):
     try:
         return __get_address_list("combine", mtype, chain)
     except Exception as e:
@@ -121,10 +121,10 @@ def main():
         print(f"receiver address({mtype}): {get_receiver_address_list(mtype)}")
         print(f"sender address({mtype}): {get_sender_address_list(mtype)}")
         print(f"module address({mtype}): {get_module_address(mtype)}")
-        print(f"combin address({mtype}): {get_combine_address_list(mtype)}")
         print(f"get db({mtype}): {get_db(mtype)}")
         print(f"get looping sleep({mtype}):{get_looping_sleep(mtype)}")
         print(f"get max times({mtype})):{get_max_times(mtype)}")
+        print(f"combin address({mtype}): {get_combine_address(mtype)}")
 
     print(f"get traceback limit: {get_traceback_limit()}")
     print(f"get btc_node: {get_btc_conn()}")
