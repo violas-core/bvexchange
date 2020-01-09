@@ -163,7 +163,6 @@ class vbase(baseobject):
             #check transaction state
             datas["version"]    =  transaction.get("version", 0)
             datas["tran_state"] = transaction.get("success", False)
-            datas["sequence"]   = transaction.get("raw_txn").get("sequence_number")
             if not datas["tran_state"]:
                return tran 
 
@@ -206,6 +205,7 @@ class vbase(baseobject):
             datas["token"]          = event.get("token", None)
             tran_id = data_dict.get("tran_id", None)
             datas["tran_id"]        = tran_id
+            datas["sequence"]   = transaction.get("raw_txn").get("sequence_number")
 
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:

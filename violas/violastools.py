@@ -29,7 +29,7 @@ from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
-from vrequest.violas_proof import violasproof
+from vrequest.request_client import requestclient
 
 #module name
 name="violastools"
@@ -48,7 +48,7 @@ def get_violaswallet():
     return violaswallet(name, wallet_name)
 
 def get_violasproof(dtype = "v2b"):
-    return violasproof(name, stmanage.get_db(dtype))
+    return requestclient(name, stmanage.get_db(dtype))
 
 def mint_platform_coin(address, amount):
     logger.debug("start mcreate_violas_coin otform_coin = {} amount={}".format(address, address))

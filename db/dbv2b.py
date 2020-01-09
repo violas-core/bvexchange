@@ -35,18 +35,17 @@ class dbv2b(baseobject):
 
     def __init__(self, name, dbfile):
         baseobject.__init__(self, name)
-        self._logger.debug("start __init__")
         self.__init_db(dbfile)
 
     def __del__(self):
-        self._logger.debug("start dbb2b.__del__")
         self.__uninit_db()
 
     #btc exchange vtoken state
     class state(Enum):
-        START = 0
-        SUCCEED = 1
-        FAILED = 2
+        START       = 0
+        SUCCEED     = 1
+        FAILED      = 2
+        COMPLETE    = 3
     
     #exc_traceback_objle : v2binfo
     class v2binfo(__base):
@@ -64,6 +63,7 @@ class dbv2b(baseobject):
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
         times       = Column(Integer, nullable=False, default=1)
+        tranid      = Column(String(64), nullable=False)
     
         def __repr__(self):
             return "<v2binfo(txid=%s,fromaddress={}, toaddress={}, bamount={}, vaddress={}, sequence={}, \
@@ -93,16 +93,16 @@ class dbv2b(baseobject):
         self.__session = Session()
     
     def __uninit_db(self):
-        self._logger.debug("start __uninit_db")
+        pass
         
-    def insert_v2binfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state):
+    def insert_v2binfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state, tranid):
         try:
             self._logger.debug("start insert_v2binfo (vtxid={}, vfromaddress={}, vtoaddress={}, vbamount={}, \
-                    vvaddress={}, vsequence={}, version={}, vvamount={}, vvtoken={}, vreceiver={}, state={})" \
-                    .format(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state.name))
+                    vvaddress={}, vsequence={}, version={}, vvamount={}, vvtoken={}, vreceiver={}, state={}, tranid={})" \
+                    .format(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state.name, tranid))
 
             v2bi = self.v2binfo(txid=vtxid, fromaddress=vfromaddress, toaddress=vtoaddress, bamount=vbamount, vaddress=vvaddress, sequence=vsequence, \
-                vamount=vvamount, vtoken=vvtoken, state=state.value, version=version, vreceiver=vreceiver)
+                vamount=vvamount, vtoken=vvtoken, state=state.value, version=version, vreceiver=vreceiver, tranid=tranid)
             self.__session.add(v2bi)
 
             ret = result(error.SUCCEED, "", "")
@@ -110,9 +110,9 @@ class dbv2b(baseobject):
             ret = parse_except(e)
         return ret
 
-    def insert_v2binfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state):
+    def insert_v2binfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state, tranid):
         try:
-            ret = self.insert_v2binfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state)
+            ret = self.insert_v2binfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state, tranid)
             if ret.state != error.SUCCEED:
                 return ret 
             ret = self.commit()
@@ -131,26 +131,22 @@ class dbv2b(baseobject):
             ret = parse_except(e)
         return ret
 
-    def query_v2binfo(self, vaddress, sequence, version):
+    def query_v2binfo(self, tranid):
         proofs = []
         try:
-            self._logger.debug("start query_v2binfo(vaddress={}, sequence={}, version={})".format(vaddress, sequence, version))
-            filter_vaddr = (self.v2binfo.vaddress==vaddress)
-            filter_seq = (self.v2binfo.sequence==sequence)
-            filter_ver = (self.v2binfo.version==version)
-            proofs = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).filter(filter_ver).all()
+            self._logger.debug("start query_v2binfo(tranid={})".format(tranid))
+            filter_tranid = (self.v2binfo.tranid==tranid)
+            proofs = self.__session.query(self.v2binfo).filter(filter_tranid).all()
             ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def has_v2binfo(self, vaddress, sequence, version):
+    def has_v2binfo(self, tranid):
         try:
-            self._logger.debug("start has_v2binfo(vaddress={}, sequence={}, version={})".format(vaddress, sequence, version))
-            filter_vaddr = (self.v2binfo.vaddress==vaddress)
-            filter_seq = (self.v2binfo.sequence==sequence)
-            filter_ver = (self.v2binfo.version==version)
-            state = (self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).filter(filter_ver).count() > 0)
+            self._logger.debug("start has_v2binfo(tranid={})".format(tranid))
+            filter_tranid = (self.v2binfo.tranid==tranid)
+            state = (self.__session.query(self.v2binfo).filter(filter_tranid).count() > 0)
             ret = result(error.SUCCEED, "", state) 
         except Exception as e:
             ret = parse_except(e)
@@ -178,22 +174,23 @@ class dbv2b(baseobject):
     def query_v2binfo_is_failed(self, maxtimes=999999999):
         return self.__query_v2binfo_state(self.state.FAILED, maxtimes)
 
-    def __update_v2binfo(self, vaddress, sequence, version, state, txid):
+    def query_v2binfo_is_complete(self, maxtimes=999999999):
+        return self.__query_v2binfo_state(self.state.COMPLETE, maxtimes)
+
+    def __update_v2binfo(self, tranid, state, txid):
         try:
-            self._logger.debug(f"start update_v2binfo(vaddress={vaddress}, sequence={sequence}, version={version}, state={state}, txid={txid})")
-            filter_vaddr = (self.v2binfo.vaddress==vaddress)
-            filter_seq = (self.v2binfo.sequence==sequence)
-            filter_ver = (self.v2binfo.version==version)
-            datas = self.__session.query(self.v2binfo).filter(filter_seq).filter(filter_vaddr).filter(filter_ver)\
+            self._logger.debug(f"start update_v2binfo(tranid={tranid}, state={state}, txid={txid})")
+            filter_tranid = (self.v2binfo.tranid==tranid)
+            datas = self.__session.query(self.v2binfo).filter(filter_tranid)\
                     .update({self.v2binfo.state:state.value, self.v2binfo.txid:txid, self.v2binfo.times:self.v2binfo.times + 1})
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def __update_v2binfo_commit(self, vaddress, sequence, version, state, txid = ""):
+    def __update_v2binfo_commit(self, tranid, state, txid = ""):
         try:
-            ret = self.__update_v2binfo(vaddress, sequence, version, state, txid)
+            ret = self.__update_v2binfo(tranid, state, txid)
             if ret.state != error.SUCCEED:
                 self._logger.debug("update_v2binfo_commit failed")
                 return ret
@@ -203,14 +200,17 @@ class dbv2b(baseobject):
             ret = parse_except(e)
         return ret
 
-    def update_v2binfo_to_start_commit(self, vaddress, sequence, version, txid = ""):
-        return self.__update_v2binfo_commit(vaddress, sequence, version, self.state.START, txid)
+    def update_v2binfo_to_start_commit(self, tranid, txid = ""):
+        return self.__update_v2binfo_commit(tranid, self.state.START, txid)
 
-    def update_v2binfo_to_succeed_commit(self, vaddress, sequence, version, txid = ""):
-        return self.__update_v2binfo_commit(vaddress, sequence, version, self.state.SUCCEED, txid)
+    def update_v2binfo_to_succeed_commit(self, tranid, txid = ""):
+        return self.__update_v2binfo_commit(tranid, self.state.SUCCEED, txid)
 
-    def update_v2binfo_to_failed_commit(self, vaddress, sequence, version, txid = ""):
-        return self.__update_v2binfo_commit(vaddress, sequence, version, self.state.FAILED, txid)
+    def update_v2binfo_to_failed_commit(self, tranid, txid = ""):
+        return self.__update_v2binfo_commit(tranid, self.state.FAILED, txid)
+
+    def update_v2binfo_to_complete_commit(self, tranid, txid = ""):
+        return self.__update_v2binfo_commit(tranid, self.state.COMPLETE, txid)
 
     def insert_latest_version(self, address, vtoken, version):
         try:
