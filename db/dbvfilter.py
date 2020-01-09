@@ -26,9 +26,6 @@ from enum import Enum
 #module name
 name="dbvfilter"
 
-#load logging
-logger = log.logger.getLogger(name) 
-
 class dbvfilter(dbvbase):
     def __init__(self, name, host, port, db, passwd = None):
         dbvbase.__init__(self, name, host, port, db, passwd)

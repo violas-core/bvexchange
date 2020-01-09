@@ -7,7 +7,7 @@ import log.logger
 from comm.parseargs import parseargs
 import bvexchange
 
-name = "bvelog"
+name = "bvexchange"
 logger = log.logger.getLogger(name)
 
 

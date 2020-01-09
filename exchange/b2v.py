@@ -388,13 +388,3 @@ class exb2v(baseobject):
     
         return ret
     
-def main():
-       logger = log.logger.getLogger(name) 
-       logger.debug("start main")
-       b2v = exb2v(name)
-       ret = b2v.start()
-       if ret.state != error.SUCCEED:
-           self._logger.error(ret.message)
-
-if __name__ == "__main__":
-    main()

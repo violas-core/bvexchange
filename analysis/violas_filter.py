@@ -112,17 +112,15 @@ def works(ttype, dtype):
     try:
         #ttype: chain name. data's flag(violas/libra). ex. ttype = "violas"
         #dtype: save transaction's data type(vfilter/lfilter) . ex. dtype = "vfilter" 
-        logger = log.logger.getlogger(name) 
         filter = vfilter(name, ttype, None, stmanage.get_db(dtype),  stmanage.get_violas_nodes())
         filter.set_step(stmanage.get_db(dtype).get("step", 1000))
         ret = filter.start()
         if ret.state != error.SUCCEED:
-            logger.error(ret.message)
+            print(ret.message)
 
     except Exception as e:
         ret = parse_except(e)
     return ret
 
 if __name__ == "__main__":
-    logger.debug(f"start {__file__}.{__name__}")
     works()
