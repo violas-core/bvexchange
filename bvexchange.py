@@ -23,7 +23,7 @@ import db.dbv2b
 import comm.functions as fn
 from exchange import b2v, v2b
 from comm.result import parse_except
-from analysis import violas_base, violas_filter, violas_proof
+from analysis import analysis_base, analysis_filter, analysis_proof
 import subprocess
 from enum import Enum
 
@@ -64,7 +64,7 @@ class works:
 
     def work_b2v(self, nsec):
         try:
-            logger.debug("start: b2v")
+            logger.critical("start: b2v")
             while (self.__work_looping.get(work_mod.B2V.name, False)):
                 logger.debug("looping: b2v")
                 mod = "b2v"
@@ -85,7 +85,7 @@ class works:
     
     def work_v2b(self, nsec):
         try:
-            logger.debug("start: v2b")
+            logger.critical("start: v2b")
             while (self.__work_looping.get(work_mod.V2B.name, False)):
                 logger.debug("looping: v2b")
                 mod = "v2b"
@@ -107,11 +107,11 @@ class works:
     
     def work_vfilter(self, nsec):
         try:
-            logger.debug("start: violas filter")
+            logger.critical("start: violas filter")
             while (self.__work_looping.get(work_mod.VFILTER.name, False)):
                 logger.debug("looping: vfilter")
                 dtype = "vfilter"
-                vfilter = violas_filter.vfilter(name="vfilter", ttype="violas", \
+                vfilter = analysis_filter.afilter(name="vfilter", ttype="violas", \
                         dbconf=stmanage.get_db(dtype), vnodes=stmanage.get_violas_nodes())
                 vfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
                 self.set_work_obj(vfilter)
@@ -124,12 +124,12 @@ class works:
 
     def work_vproof(self, nsec):
         try:
-            logger.debug("start: violas proof")
+            logger.critical("start: violas proof")
             while (self.__work_looping.get(work_mod.VPROOF.name, False)):
                 logger.debug("looping: vproof")
                 dtype = "v2b"   #violas transaction's data type 
                 basedata = "vfilter"
-                vproof = violas_proof.vproof(name="v2bproof", ttype="violas", dtype=dtype, \
+                vproof = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
                         dbconf=stmanage.get_db(dtype), vfdbconf=stmanage.get_db(basedata), vnodes=stmanage.get_violas_nodes())
                 vproof.set_step(stmanage.get_db(dtype).get("step", 100))
                 self.set_work_obj(vproof)
@@ -142,7 +142,7 @@ class works:
 
     def work_comm(self, nsec):
         try:
-            logger.debug("start: comm")
+            logger.critical("start: comm")
             while(self.__work_looping.get(work_mod.COMM.name, False)):
                 logger.debug("looping: comm")
                 sleep(nsec)
@@ -203,7 +203,7 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("start end")
+            logger.debug("start end")
 
     def join(self):
         try:
@@ -265,7 +265,7 @@ def run(mods):
                 work_mods[wm.name.upper()] = True
             break
 
-    print(f"work_mods= {work_mods}")
+    logger.critical(f"work_mods= {work_mods}")
     work_manage.start(work_mods)
     work_manage.join()
 

@@ -63,7 +63,8 @@ class dbb2v(baseobject):
         height      = Column(Integer)
         vtoken       = Column(String(64), nullable=False)
         createblock = Column(String(64), index=True, nullable=False)
-        updateblock = Column(String(64), index=True)
+        updateblock = Column(String(64), index=True) 
+        txid_end    = Column(String(64)) #here is saved update txid
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
         detail      = Column(String(256))
@@ -93,9 +94,9 @@ class dbb2v(baseobject):
         
     def insert_b2vinfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock):
         try:
-            self._logger.debug("start insert_b2vinfo (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock, vstate),  \
-                    value(%s, %s, %s, %i, %s %i, %i, %s, %s, %s, %s)" % \
-                    (vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock, self.state.START.name))
+            self._logger.info(f"start insert_b2vinfo (vtxid={vtxid}, vfromaddress={vfromaddress}, vtoaddress={vtoaddress}, \
+                    vbamount={vbamount}, vvaddress={vvaddress}, vsequence={vsequence}, vvamount={vvamount}, vvtoken={vvtoken}, \
+                    vcreateblock={vcreateblock}, vupdateblock={vupdateblock}, vstate={self.state.START.name})")
 
             b2vi = self.b2vinfo(txid=vtxid, fromaddress=vfromaddress, toaddress=vtoaddress, bamount=vbamount, vaddress=vvaddress, sequence=vsequence, \
                 vamount=vvamount, vtoken=vvtoken, createblock=vcreateblock, updateblock=vupdateblock, state=self.state.SUCCEED.value, height=0)
@@ -130,7 +131,7 @@ class dbb2v(baseobject):
 
     def query_b2vinfo(self, vaddress, sequence):
         try:
-            self._logger.debug("start query_b2vinfo %s %i", vaddress, sequence)
+            self._logger.debug(f"start query_b2vinfo(vaddress={vaddress}, sequence={sequence})")
             filter_vaddr = (self.b2vinfo.vaddress==vaddress)
             filter_seq = (self.b2vinfo.sequence==sequence)
             proofs = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).all()
@@ -141,20 +142,22 @@ class dbb2v(baseobject):
 
     def has_b2vinfo(self, vaddress, sequence):
         try:
-            self._logger.debug("start query_b2vinfo %s %i", vaddress, sequence)
+            self._logger.debug(f"start has_b2vinfo(vaddress={vaddress}, sequence={sequence})")
             filter_vaddr = (self.b2vinfo.vaddress==vaddress)
             filter_seq = (self.b2vinfo.sequence==sequence)
             ret = result(error.SUCCEED, "", self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).count() > 0)
+            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def __query_b2vinfo_state(self, state):
         try:
-            self._logger.debug("start query_b2vinfo state is %s ", state.name)
+            self._logger.debug(f"start query_b2vinfo({state.name})")
             filter_state = (self.b2vinfo.state==state.value)
             proofs = self.__session.query(self.b2vinfo).filter(filter_state).all()
             ret = result(error.SUCCEED, "", proofs)
+            self._logger.debug(f"result: {len(ret.datas)}")
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -177,15 +180,16 @@ class dbb2v(baseobject):
     def query_b2vinfo_is_btcsucceed(self):
         return self.__query_b2vinfo_state(self.state.SUCCEED_BTC)
 
-    def update_b2vinfo(self, vaddress, sequence, state, height):
+    def update_b2vinfo(self, vaddress, sequence, state, height = -1, txid = None):
         try:
-            self._logger.debug("start update_b2vinfo state to %s filter(vaddress, sequence) %s %i", state.name, vaddress, sequence)
+            self._logger.info(f"start update_b2vinfo(vaddress={vaddress}, sequence={sequence}, state={state.name}, height={height})")
             filter_vaddr = (self.b2vinfo.vaddress==vaddress)
             filter_seq = (self.b2vinfo.sequence==sequence)
+            upn = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.state:state.value})
             if height >= 0:
-                upn = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.state:state.value, self.b2vinfo.height:height})
-            else:
-                upn = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.state:state.value})
+                upn = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.height:height})
+            if txid is not None:
+                upn = self.__session.query(self.b2vinfo).filter(filter_seq).filter(filter_vaddr).update({self.b2vinfo.txid_end:txid})
 
             self.__session.flush()
             self.__session.commit()
@@ -195,10 +199,9 @@ class dbb2v(baseobject):
             ret = parse_except(e)
         return ret
 
-    def __update_b2vinfo_commit(self, vaddress, sequence, state, height = -1):
+    def __update_b2vinfo_commit(self, vaddress, sequence, state, height = -1, txid = None):
         try:
-            self._logger.debug("start __update_b2vinfo_commit")
-            ret = self.update_b2vinfo(vaddress, sequence, state, height)
+            ret = self.update_b2vinfo(vaddress, sequence, state, height, txid)
             if ret != error.SUCCEED:
                 return ret
 
@@ -222,6 +225,6 @@ class dbb2v(baseobject):
     def update_b2vinfo_to_btcfailed_commit(self, vaddress, sequence):
         return self.__update_b2vinfo_commit(vaddress, sequence, self.state.FAILED_BTC)
 
-    def update_b2vinfo_to_btcsucceed_commit(self, vaddress, sequence):
-        return self.__update_b2vinfo_commit(vaddress, sequence, self.state.SUCCEED_BTC)
+    def update_b2vinfo_to_btcsucceed_commit(self, vaddress, sequence, txid):
+        return self.__update_b2vinfo_commit(vaddress, sequence, self.state.SUCCEED_BTC, -1, txid)
 

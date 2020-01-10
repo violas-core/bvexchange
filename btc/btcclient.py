@@ -54,12 +54,13 @@ class btcclient(baseobject):
                 self.__rpcip = btc_conn["rpcip"]
             if btc_conn["rpcport"]:
                 self.__rpcport = btc_conn["rpcport"]
-        self._logger.info("connect btc server(rpcuser={}, rpcpassword={}, rpcip={}, rpcport={})".format(btc_conn["rpcuser"], btc_conn["rpcpassword"], btc_conn["rpcip"], btc_conn["rpcport"]))
+        self._logger.debug("connect btc server(rpcuser={}, rpcpassword={}, rpcip={}, rpcport={})".format(btc_conn["rpcuser"], btc_conn["rpcpassword"], btc_conn["rpcip"], btc_conn["rpcport"]))
         self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__rpcuser, self.__rpcpassword, self.__rpcip, self.__rpcport))
+        self._logger.debug(f"connection succeed.")
 
     def __listexproofforstate(self, state, extype, receiver, excluded):
         try:
-            self._logger.debug("start __listexproofforstate(state={state} type={extype} receiver={receiver} excluded={excluded})")
+            self._logger.debug(f"start __listexproofforstate(state={state} type={extype} receiver={receiver} excluded={excluded})")
             if(len(receiver) == 0):
                 return result(error.ARG_INVALID, error.argument_invalid, "")
             
@@ -75,13 +76,13 @@ class btcclient(baseobject):
 
     def isexproofcomplete(self, address, sequence):
         try:
-            self._logger.debug("start isexproofcomplete (address = %s sequence=%i)"%(address, sequence))
+            self._logger.debug(f"start isexproofcomplete(address = {address} sequence={sequence})")
             if(len(address) != 64 or sequence < 0):
                 return result(error.ARG_INVALID, error.argument_invalid, "")
                 
             datas = self.__rpc_connection.violas_isexproofcomplete(address, sequence)
-            self._logger.debug(datas)
             ret = result(error.SUCCEED, "", datas)
+            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -100,49 +101,53 @@ class btcclient(baseobject):
 
     def sendexproofstart(self, fromaddress, toaddress, amount, vaddress, sequence, vtoken):
         try:
-            self._logger.debug(f"start sendexproofstart (fromaddress={fromaddress}, toaddress={toaddress}, amount={amount:.8f}, vaddress={vaddress}, sequence={sequence}, vtoken={vtoken})")
+            self._logger.info(f"start sendexproofstart (fromaddress={fromaddress}, toaddress={toaddress}, amount={amount:.8f}, vaddress={vaddress}, sequence={sequence}, vtoken={vtoken})")
             if(len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) != 64 \
                     or sequence < 0 or len(vtoken) != 64):
                 return result(error.ARG_INVALID, "len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) != 64 or sequence < 0 or len(vtoken) !=64", "")
             datas = self.__rpc_connection.violas_sendexproofstart(fromaddress, toaddress, f"{amount:.8f}", vaddress, sequence, vtoken)
             ret = result(error.SUCCEED, "", datas)
+            self._logger.info(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, version):
         try:
-            self._logger.debug(f"start sendexproofend (fromaddress={fromaddress}, toaddress={toaddress}, vaddress={vaddress}, sequence={sequence}, amount={amount:.8f}, version={version})")
+            self._logger.info(f"start sendexproofend (fromaddress={fromaddress}, toaddress={toaddress}, vaddress={vaddress}, sequence={sequence}, amount={amount:.8f}, version={version})")
             if(len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) != 64 
                     or sequence < 0 or version< 0):
                 return result(error.ARG_INVALID, "len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) == 0 or sequence < 0 or version < 0", "")
             datas = self.__rpc_connection.violas_sendexproofend(fromaddress, toaddress, vaddress, sequence, f"{amount:.8f}", version)
             ret = result(error.SUCCEED, "", datas)
+            self._logger.info(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def sendtoaddress(self, address, amount):
         try:
-            self._logger.debug("start sendtoaddress(address={}, amount={})".format(address, amount))
+            self._logger.info(f"start sendtoaddress(address={address}, amount={amount})")
             datas = self.__rpc_connection.sendtoaddress(address, f"{amount:.8f}")
             ret = result(error.SUCCEED, "", datas)
+            self._logger.info(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
    
     def sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, version):
         try:
-            self._logger.debug(f"start sendexproofmark(fromaddress={fromaddress}, toaddress={toaddress}, toamount={toamount:.8f}, vaddress={vaddress}, sequence={sequence}, version={version})")
+            self._logger.info(f"start sendexproofmark(fromaddress={fromaddress}, toaddress={toaddress}, toamount={toamount:.8f}, vaddress={vaddress}, sequence={sequence}, version={version})")
             datas = self.__rpc_connection.violas_sendexproofmark(fromaddress, toaddress, f"{toamount:.8f}", vaddress, sequence, version)
             ret = result(error.SUCCEED, "", datas)
+            self._logger.info(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def generatetoaddress(self, count, address):
         try:
-            self._logger.debug("start generatetoaddress(count={}, address={})".format(count, address))
+            self._logger.info(f"start generatetoaddress(count={count}, address={address})")
             datas = self.__rpc_connection.generatetoaddress(count, address)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
@@ -151,7 +156,7 @@ class btcclient(baseobject):
 
     def listunspent(self, minconf = 1, maxconf = 9999999, addresses = None, include_unsafe = True, query_options = None):
         try:
-            self._logger.debug("start listunspent(minconf={}, maxconf={}, addresses={}, include_unsafe={}, query_options={})".format(minconf, maxconf, addresses, include_unsafe, query_options))
+            self._logger.debug(f"start listunspent(minconf={minconf}, maxconf={maxconf}, addresses={addresses}, include_unsafe={include_unsafe}, query_options={query_options})")
             datas = self.__rpc_connection.listunspent(minconf, maxconf, addresses, include_unsafe, query_options)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
@@ -173,13 +178,14 @@ class btcclient(baseobject):
             walletinfo = self.__rpc_connection.getwalletinfo()
             balance = walletinfo.get("balance", 0)
             ret = result(error.SUCCEED, "", balance)
+            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def getwalletaddressbalance(self, address):
         try:
-            self._logger.debug("start getwalletaddressbalance({})".format(address))
+            self._logger.debug(f"start getwalletaddressbalance({address})")
             addresses = [address]
             datas = self.__rpc_connection.listunspent(1, 999999999, addresses)
             balance = 0
@@ -189,6 +195,7 @@ class btcclient(baseobject):
                 balance += data.get("amount", 0)
 
             ret = result(error.SUCCEED, "", balance)
+            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -206,6 +213,7 @@ class btcclient(baseobject):
                 ret = result(error.SUCCEED, "", False)
             else:
                 ret = result(error.SUCCEED, "", True)
+            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret

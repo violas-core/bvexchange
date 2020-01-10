@@ -104,9 +104,8 @@ class dbv2b(baseobject):
         
     def insert_v2binfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state, tranid):
         try:
-            self._logger.debug("start insert_v2binfo (vtxid={}, vfromaddress={}, vtoaddress={}, vbamount={}, \
-                    vvaddress={}, vsequence={}, version={}, vvamount={}, vvtoken={}, vreceiver={}, state={}, tranid={})" \
-                    .format(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state.name, tranid))
+            self._logger.info(f"start insert_v2binfo (vtxid={vtxid}, vfromaddress={vfromaddress}, vtoaddress={vtoaddress}, vbamount={vbamount}, \
+                    vvaddress={vvaddress}, vsequence={vsequence}, version={version}, vvamount={vvamount}, vvtoken={vvtoken}, vreceiver={vreceiver}, state={state.name}, tranid={tranid})") 
 
             v2bi = self.v2binfo(txid=vtxid, fromaddress=vfromaddress, toaddress=vtoaddress, bamount=vbamount, vaddress=vvaddress, sequence=vsequence, \
                 vamount=vvamount, vtoken=vvtoken, state=state.value, version=version, vreceiver=vreceiver, tranid=tranid)
@@ -141,7 +140,7 @@ class dbv2b(baseobject):
     def query_v2binfo(self, tranid):
         proofs = []
         try:
-            self._logger.debug("start query_v2binfo(tranid={})".format(tranid))
+            self._logger.debug(f"start query_v2binfo(tranid={tranid})")
             filter_tranid = (self.v2binfo.tranid==tranid)
             proofs = self.__session.query(self.v2binfo).filter(filter_tranid).all()
             ret = result(error.SUCCEED, "", proofs)
@@ -151,7 +150,7 @@ class dbv2b(baseobject):
 
     def has_v2binfo(self, tranid):
         try:
-            self._logger.debug("start has_v2binfo(tranid={})".format(tranid))
+            self._logger.debug(f"start has_v2binfo(tranid={tranid})")
             filter_tranid = (self.v2binfo.tranid==tranid)
             state = (self.__session.query(self.v2binfo).filter(filter_tranid).count() > 0)
             ret = result(error.SUCCEED, "", state) 
@@ -163,11 +162,12 @@ class dbv2b(baseobject):
     def __query_v2binfo_state(self, state, maxtimes=999999999):
         proofs = []
         try:
-            self._logger.debug("start __query_v2binfo_state(state={}, maxtimes={})".format(state.name, maxtimes))
+            self._logger.debug(f"start __query_v2binfo_state(state={state}, maxtimes={maxtimes})")
             filter_state = (self.v2binfo.state==state.value)
             filter_times = (self.v2binfo.times<=maxtimes)
             proofs = self.__session.query(self.v2binfo).filter(filter_state).filter(filter_times).all()
             ret = result(error.SUCCEED, "", proofs)
+            self._logger.debug(f"result: {len(ret.datas)}")
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -192,7 +192,7 @@ class dbv2b(baseobject):
 
     def __update_v2binfo(self, tranid, state, txid):
         try:
-            self._logger.debug(f"start update_v2binfo(tranid={tranid}, state={state}, txid={txid})")
+            self._logger.info(f"start update_v2binfo(tranid={tranid}, state={state}, txid={txid})")
             filter_tranid = (self.v2binfo.tranid==tranid)
             datas = self.__session.query(self.v2binfo).filter(filter_tranid)\
                     .update({self.v2binfo.state:state.value, self.v2binfo.txid:txid, self.v2binfo.times:self.v2binfo.times + 1})
@@ -205,7 +205,7 @@ class dbv2b(baseobject):
         try:
             ret = self.__update_v2binfo(tranid, state, txid)
             if ret.state != error.SUCCEED:
-                self._logger.debug("update_v2binfo_commit failed")
+                self._logger.error("update_v2binfo_commit failed")
                 return ret
 
             ret = self.commit()
@@ -233,8 +233,7 @@ class dbv2b(baseobject):
     
     def insert_latest_version(self, address, vtoken, version):
         try:
-            self._logger.debug("start insert_latest_version (address={}, vtoken={}, version={})".format(address, vtoken, version))
-
+            self._logger.info(f"start insert_latest_version (address={address}, vtoken={vtoken}, version={version})")
             v2bi = self.versions(address=address, vtoken=vtoken, version=version)
             self.__session.add(v2bi)
             ret = result(error.SUCCEED, "", "")
@@ -255,7 +254,7 @@ class dbv2b(baseobject):
     def query_latest_version(self, address, vtoken):
         proofs = []
         try:
-            self._logger.debug("start query_latest_version(address={}, vtoken={})".format(address, vtoken))
+            self._logger.debug(f"start query_latest_version(address={address}, vtoken={vtoken})")
             filter_address = (self.versions.address==address)
             filter_vtoken = (self.versions.vtoken==vtoken)
             info = self.__session.query(self.versions).filter(filter_address).filter(filter_vtoken).all()
@@ -265,13 +264,14 @@ class dbv2b(baseobject):
             else:
                 ret = result(error.SUCCEED, "", 0)
 
+            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def update_version(self, address, vtoken, version):
         try:
-            self._logger.debug("start update_version(address={}, vtoken={}, version={})".format(address, vtoken, version))
+            self._logger.info(f"start update_version(address={address}, vtoken={vtoken}, version={version})")
             filter_address = (self.versions.address==address)
             filter_vtoken = (self.versions.vtoken==vtoken)
             datas = self.__session.query(self.versions).filter(filter_address).filter(filter_vtoken).update({self.versions.version:version})
@@ -293,17 +293,19 @@ class dbv2b(baseobject):
 
     def has_version(self, address, vtoken):
         try:
-            self._logger.debug("start has_version(address={}, vtoken={})".format(address, vtoken))
+            self._logger.debug(f"start has_version(address={address}, vtoken={vtoken})")
             filter_address = (self.versions.address==address)
             filter_vtoken = (self.versions.vtoken==vtoken)
             datas = self.__session.query(self.versions).filter(filter_address).filter(filter_vtoken).count() > 0
             ret = result(error.SUCCEED, "", datas) 
+            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def update_or_insert_version_commit(self, address, vtoken, version):
         try:
+            self._logger.info(f"start update_or_insert_version_commit(address={address}, vtoken={vtoken}, version={version})")
             ret = self.has_version(address, vtoken)
             if(ret.state != error.SUCCEED):
                 return ret

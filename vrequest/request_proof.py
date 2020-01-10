@@ -15,8 +15,8 @@ from comm.error import error
 from comm.result import result, parse_except
 from enum import Enum
 from vrequest.request_base import requestbase
-from analysis.violas_proof  import vproof
-proofstate = vproof.proofstate
+from analysis.analysis_proof  import aproof
+proofstate = aproof.proofstate
 #module name
 name="requestproof"
 
