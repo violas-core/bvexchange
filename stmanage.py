@@ -49,7 +49,11 @@ def get_module_address(mtype, chain = None):
 
 def get_combine_address(mtype = "b2v", chain = "btc"):
     try:
-        return __get_address_list("combine", mtype, chain)
+        ms = __get_address_list("combine", mtype, chain)
+        if ms is None or len(ms) == 0:
+            return None
+        assert len(ms) == 1, f"({mtype}) chain({chain}) found multi combin address , check it"
+        return ms[0]
     except Exception as e:
         parse_except(e)
     return None

@@ -157,6 +157,17 @@ def get_transactions(start_version, limit = 1, fetch_event = True):
     for data in ret.datas:
         json_print(data.to_json())
 
+def get_address_version(address):
+    logger.debug(f"start get_address_version({address})")
+    client = get_violasclient()
+    ret = client.get_address_version(address)
+    logger.debug("version: {0}".format(ret.datas))
+
+def get_transaction_version(address, sequence):
+    logger.debug(f"start get_address_version({address}, {sequence})")
+    client = get_violasclient()
+    ret = client.get_transactions_version(address, sequence)
+    logger.debug("version: {0}".format(ret.datas))
 '''
 *************************************************violaswallet oper*******************************************************
 '''
@@ -239,6 +250,8 @@ def init_args(pargs):
     pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=True"])
     pargs.append("get_latest_transaction_version", "show latest transaction version.")
     pargs.append("chain", "work chain name(violas/libra, default : violas).", True, ["chain=violas"])
+    pargs.append("get_address_version", "get address's latest version'.", True, ["address"])
+    pargs.append("get_transaction_version", "get address's version'.", True, ["address", "sequence"])
 
 
 def run(argc, argv):
@@ -356,7 +369,17 @@ def run(argc, argv):
         elif pargs.is_matched(opt, ["get_latest_transaction_version"]):
             get_latest_transaction_version()
         elif pargs.is_matched(opt, ["chain"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
             chain = arg_list[0]
+        elif pargs.is_matched(opt, ["get_address_version"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            get_address_version(arg_list[0])
+        elif pargs.is_matched(opt, ["get_transaction_version"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            get_transaction_version(arg_list[0], int(arg_list[1]))
     logger.debug("end manage.main")
 
 if __name__ == "__main__":

@@ -86,7 +86,6 @@ class exv2b(baseobject):
             bflddatas = self._v2b.query_v2binfo_is_failed(maxtimes)
             if(bflddatas.state != error.SUCCEED):
                 return bflddatas
-            self._logger.debug("get count = {}".format(len(bflddatas.datas)))
     
             ret = self.__merge_v2b_to_rpcparams(rpcparams, bflddatas.datas)
             if(ret.state != error.SUCCEED):
@@ -109,7 +108,6 @@ class exv2b(baseobject):
             bflddatas = self._v2b.query_v2binfo_is_vsucceed(maxtimes)
             if(bflddatas.state != error.SUCCEED):
                 return bflddatas
-            self._logger.debug("get count = {}".format(len(bflddatas.datas)))
     
             ret = self.__merge_v2b_to_rpcparams(rpcparams, bflddatas.datas)
             if(ret.state != error.SUCCEED):
@@ -156,7 +154,6 @@ class exv2b(baseobject):
             vfdatas = self._v2b.query_v2binfo_is_vfailed(maxtimes)
             if(vfdatas.state != error.SUCCEED):
                 return vfdatas
-            self._logger.debug("get count = {}".format(len(vfdatas.datas)))
     
             ret = self.__merge_v2b_to_rpcparams(rpcparams, vfdatas.datas)
             if(ret.state != error.SUCCEED):
@@ -165,7 +162,6 @@ class exv2b(baseobject):
             sudatas = self._v2b.query_v2binfo_is_succeed(maxtimes)
             if(sudatas.state != error.SUCCEED):
                 return sudatas
-            self._logger.debug("get count = {}".format(len(sudatas.datas)))
     
             ret = self.__merge_v2b_to_rpcparams(rpcparams, sudatas.datas)
             if(ret.state != error.SUCCEED):
@@ -304,7 +300,9 @@ class exv2b(baseobject):
                         times       = data["times"]
                         tran_id     = data["tran_id"]
     
-                        self._logger.debug(f"start exchange v2b(times={times}), datas from db. receiver = {receiver}, vaddress={vaddress} sequence={sequence} baddress={baddress} {fmtamount: .8f}") 
+                        self._logger.info(f"start exchange v2b(times={times}), datas from db. \
+                                receiver = {receiver}, vaddress={vaddress} sequence={sequence} baddress={baddress} \
+                                {fmtamount: .8f} version={version} module={module} tran_id={tran_id}") 
     
                         #check version, get transaction list is ordered ?
                         #if version >= (latest_version - 1):
@@ -331,7 +329,6 @@ class exv2b(baseobject):
                         #send btc and mark it in OP_RETURN
                         ret = self._bclient.sendexproofmark(sender, baddress, fmtamount, vaddress, sequence, version)
                         txid = ret.datas
-                        self._logger.debug(f"txid={txid}")
                         #update db state
                         if ret.state == error.SUCCEED:
                             ret = self._v2b.update_v2binfo_to_succeed_commit(tran_id, txid)
@@ -406,8 +403,8 @@ class exv2b(baseobject):
                         baddress    = data["baddress"]
                         tran_id     = data["tran_id"]
     
-                        self._logger.debug("start exchange v2b. receiver = {}, vaddress={} sequence={} baddress={} amount={} tran_id={}\
-                                datas from server.".format(receiver, vaddress, sequence, baddress, fmtamount, tran_id))
+                        self._logger.info(f"start exchange v2b. receiver = {receiver}, vaddress={vaddress} sequence={sequence} \
+                                baddress={baddress} amount={fmtamount} tran_id={tran_id} datas from server.")
     
                         max_version = max(version, max_version)
 
@@ -426,7 +423,8 @@ class exv2b(baseobject):
                         ret = self.__get_btc_sender_address([baddress], fmtamount, gas)
                         if ret.state != error.SUCCEED:
                             self._logger.warning("not found btc sender{baddress} or amount too low. check btc address and amount")
-                            ret = self._v2b.insert_v2binfo_commit("", "", baddress, vamount, vaddress, sequence, version, vamount, self._module_address, receiver, dbv2b.state.FAILED, tran_id)
+                            ret = self._v2b.insert_v2binfo_commit("", "", baddress, vamount, vaddress, sequence, \
+                                    version, vamount, self._module_address, receiver, dbv2b.state.FAILED, tran_id)
                             assert (ret.state == error.SUCCEED), "db error"
                             continue
                         sender = ret.datas
@@ -437,11 +435,13 @@ class exv2b(baseobject):
 
                         #save db amount is satoshi, so db value's violas's amount == btc's amount 
                         if ret.state != error.SUCCEED:
-                            ret = self._v2b.insert_v2binfo_commit("", sender, baddress, vamount, vaddress, sequence, version, vamount, self._module_address, receiver, dbv2b.state.FAILED, tran_id)
+                            ret = self._v2b.insert_v2binfo_commit("", sender, baddress, vamount, vaddress, sequence, \
+                                    version, vamount, self._module_address, receiver, dbv2b.state.FAILED, tran_id)
                             assert (ret.state == error.SUCCEED), "db error"
                             continue
                         else:
-                            ret = self._v2b.insert_v2binfo_commit(txid, sender, baddress, vamount, vaddress, sequence, version, vamount, self._module_address, receiver, dbv2b.state.SUCCEED, tran_id)
+                            ret = self._v2b.insert_v2binfo_commit(txid, sender, baddress, vamount, vaddress, sequence, \
+                                    version, vamount, self._module_address, receiver, dbv2b.state.SUCCEED, tran_id)
                             assert (ret.state == error.SUCCEED), "db error"
            
                         #sendexproofmark succeed , change violas state
@@ -452,7 +452,7 @@ class exv2b(baseobject):
         except Exception as e:
             ret = parse_except(e)
         finally:
-            self._logger.info("works end.")
+            self._logger.debug("works end.")
     
         return ret
     

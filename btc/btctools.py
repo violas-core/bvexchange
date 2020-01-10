@@ -27,7 +27,7 @@ name="btctools"
 #load logging
 logger = log.logger.getLogger(name) 
 
-def getbtcclient()
+def getbtcclient():
     return btcclient(name, stmanage.get_btc_conn())
 
 def sendtoaddress(address, count):
@@ -147,7 +147,7 @@ def run(argc, argv):
             count, arg_list = pargs.split_arg(arg)
 
             print("opt = {}, arg = {}".format(opt, arg_list))
-        elif pargs.is_matched(opt, ["sendtoaddress"]):
+        if pargs.is_matched(opt, ["sendtoaddress"]):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
             ret = sendtoaddress(arg_list[0], arg_list[1])
