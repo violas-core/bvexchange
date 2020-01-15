@@ -67,16 +67,19 @@ class works:
             logger.critical("start: b2v")
             while (self.__work_looping.get(work_mod.B2V.name, False)):
                 logger.debug("looping: b2v")
-                mod = "b2v"
-                chain = "violas"
-                b2vobj = b2v.exb2v(mod,
-                        stmanage.get_violas_nodes(), 
-                        stmanage.get_btc_conn(), 
-                        stmanage.get_module_address(mod, chain), 
-                        stmanage.get_combine_address(), 
-                        chain=chain)
-                self.set_work_obj(b2vobj)
-                b2vobj.start()
+                try:
+                    mod = "b2v"
+                    chain = "violas"
+                    b2vobj = b2v.exb2v(mod,
+                            stmanage.get_violas_nodes(), 
+                            stmanage.get_btc_conn(), 
+                            stmanage.get_module_address(mod, chain), 
+                            stmanage.get_combine_address(), 
+                            chain=chain)
+                    self.set_work_obj(b2vobj)
+                    b2vobj.start()
+                except Exception as e:
+                    parse_except(e)
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -90,15 +93,18 @@ class works:
                 logger.debug("looping: v2b")
                 mod = "v2b"
                 chain = "violas"
-                v2bobj = v2b.exv2b(mod, 
-                        stmanage.get_violas_nodes(), 
-                        stmanage.get_btc_conn(), 
-                        stmanage.get_db(mod), 
-                        stmanage.get_module_address(mod, chain), 
-                        list(set(stmanage.get_receiver_address_list(mod, chain))),
-                        chain=chain)
-                self.set_work_obj(v2bobj)
-                v2bobj.start()
+                try:
+                    v2bobj = v2b.exv2b(mod, 
+                            stmanage.get_violas_nodes(), 
+                            stmanage.get_btc_conn(), 
+                            stmanage.get_db(mod), 
+                            stmanage.get_module_address(mod, chain), 
+                            list(set(stmanage.get_receiver_address_list(mod, chain))),
+                            chain=chain)
+                    self.set_work_obj(v2bobj)
+                    v2bobj.start()
+                except Exception as e:
+                    parse_except(e)
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -110,12 +116,15 @@ class works:
             logger.critical("start: violas filter")
             while (self.__work_looping.get(work_mod.VFILTER.name, False)):
                 logger.debug("looping: vfilter")
-                dtype = "vfilter"
-                vfilter = analysis_filter.afilter(name="vfilter", ttype="violas", \
-                        dbconf=stmanage.get_db(dtype), vnodes=stmanage.get_violas_nodes())
-                vfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
-                self.set_work_obj(vfilter)
-                vfilter.start()
+                try:
+                    dtype = "vfilter"
+                    vfilter = analysis_filter.afilter(name="vfilter", ttype="violas", \
+                            dbconf=stmanage.get_db(dtype), vnodes=stmanage.get_violas_nodes())
+                    vfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
+                    self.set_work_obj(vfilter)
+                    vfilter.start()
+                except Exception as e:
+                    parse_except(e)
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -127,13 +136,16 @@ class works:
             logger.critical("start: violas proof")
             while (self.__work_looping.get(work_mod.VPROOF.name, False)):
                 logger.debug("looping: vproof")
-                dtype = "v2b"   #violas transaction's data type 
-                basedata = "vfilter"
-                vproof = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
-                        dbconf=stmanage.get_db(dtype), vfdbconf=stmanage.get_db(basedata), vnodes=stmanage.get_violas_nodes())
-                vproof.set_step(stmanage.get_db(dtype).get("step", 100))
-                self.set_work_obj(vproof)
-                vproof.start()
+                try:
+                    dtype = "v2b"   #violas transaction's data type 
+                    basedata = "vfilter"
+                    vproof = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
+                            dbconf=stmanage.get_db(dtype), vfdbconf=stmanage.get_db(basedata), vnodes=stmanage.get_violas_nodes())
+                    vproof.set_step(stmanage.get_db(dtype).get("step", 100))
+                    self.set_work_obj(vproof)
+                    vproof.start()
+                except Exception as e:
+                    parse_except(e)
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
