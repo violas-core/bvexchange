@@ -6,11 +6,20 @@ bvlscore: [https://github.com/palliums-developers/bvlscore.git]
 violas nodes:[]
 violas server: [https://github.com/palliums-developers/violas-webservice.git]
 
-## install
-apt install python3.6 sqlite3
+## To run
+git clone https://github.com/palliums-developers/bvexchange
+cd bvexchnge
+./redis_start.sh
+./bvmanage.py --mod "all" :all  vfilter vproof v2b b2v ...
+
+## Ubuntu
+##Build requirements
+sudo apt install python3.6 sqlite3 redis-server python3
 python3 install python3.6-dev
-python3.6 -m pip install --upgrade pip
 pip3 install python-bitcoinrpc sqlalchemy redis
+
+cd packages/libra-client/
+pip3 install -r requirements.txt
 
 git clone https://github.com/palliums-developers/bvexchange.git
 cd bvexchange
