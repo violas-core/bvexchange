@@ -238,6 +238,7 @@ def init_args(pargs):
     pargs.append("bind_module", "bind address to module.", True, ["address", "module"])
     pargs.append("mint_violas_coin", "mint some(amount) token(module) to target address.", True, ["address", "amount", "module"])
     pargs.append("send_violas_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "module", "data[default = None  ex: v2b:btc_address:<BTC ADDRESS>]"])
+    pargs.append("send_platform_coin", "send platform coin to target address", True, ["form_address", "to_address", "amount", "data[default = None  ex: v2b:btc_address:<BTC ADDRESS>]"])
     pargs.append("new_account", "new account and save to local wallet.")
     pargs.append("get_account", "show account info.", True, ["address"])
     pargs.append("has_account", "has target account in wallet.", True, ["address"])
@@ -249,7 +250,7 @@ def init_args(pargs):
     pargs.append("account_has_violas_module", "check address binded module.", True, ["address", "module"])
     pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=True"])
     pargs.append("get_latest_transaction_version", "show latest transaction version.")
-    pargs.append("chain", "work chain name(violas/libra, default : violas).", True, ["chain=violas"])
+    pargs.append("chain", "work chain name(violas/libra, default : violas). must be first argument", True, ["chain=violas"])
     pargs.append("get_address_version", "get address's latest version'.", True, ["address"])
     pargs.append("get_transaction_version", "get address's version'.", True, ["address", "sequence"])
 
@@ -305,6 +306,13 @@ def run(argc, argv):
                 ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3], json.dumps(arg_list[4]))
             else:
                 ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3])
+        elif pargs.is_matched(opt, ["send_platform_coin"]):
+            if len(arg_list) not in (3, 4):
+                pargs.exit_error_opt(opt)
+            data = None
+            if len(arg_list) == 5:
+                data = json.dumps(arg_list[4])
+            ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3], data)
         elif pargs.is_matched(opt, ["get_account"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)

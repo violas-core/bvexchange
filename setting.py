@@ -29,7 +29,9 @@ violas_nodes=[
 #libra node list, to connect one
 libra_nodes=[
  #       {'host':'51.140.241.96', 'port':40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-         {'host':'125.39.5.57', 'port':40001, 'validator':'libra_consensus_peers.config.toml','faucet':'libra_faucet_keys'},
+         {'host':'ac.testnet.libra.org', 'port':8000}
+         #{'host':'125.39.5.57', 'port':40001, 'validator':'libra_consensus_peers.config.toml','faucet':'libra_faucet_keys'},
+         #{'host':'125.39.5.57', 'port':40001},
         ]
 
 #vioals server list. violas provides query of historical transactions. to connect one 
