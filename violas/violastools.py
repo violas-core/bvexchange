@@ -4,9 +4,9 @@ import sys, getopt
 import json
 import os
 sys.path.append(os.getcwd())
-sys.path.append("{}/packages/libra-client".format(os.getcwd()))
+sys.path.append("{}/libra-client".format(os.getcwd()))
 sys.path.append("..")
-sys.path.append("../packages/libra-client")
+sys.path.append("../libra-client")
 
 import libra
 from libra import Client

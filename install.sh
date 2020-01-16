@@ -30,8 +30,8 @@ cp_mkdir "comm/*.py"  "$install_path/comm"
 echo "copy test files"
 cp_mkdir "test/*.py"  "$install_path/test" 
 
-echo "copy packages files"
-cp_mkdir "packages"  "$install_path" 
+echo "copy libra client files"
+cp_mkdir "libra_client"  "$install_path" 
 
 echo "copy root/*.py files"
 cp_mkdir "*.py"  "$install_path" 

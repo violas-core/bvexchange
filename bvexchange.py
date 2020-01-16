@@ -9,8 +9,7 @@ import signal
 import sys, os
 #if len(sys.argv) > 1:
 #    os.chdir(os.path.dirname(sys.argv[0]))
-sys.path.append("./packages")
-sys.path.append("./packages/libra-client")
+sys.path.append("./libra-client")
 import traceback
 import log
 import log.logger
@@ -121,7 +120,7 @@ class works:
                 try:
                     dtype = "vfilter"
                     vfilter = analysis_filter.afilter(name="vfilter", ttype="violas", \
-                            dbconf=stmanage.get_db(dtype), vnodes=stmanage.get_violas_nodes())
+                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes())
                     vfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
                     self.set_work_obj(vfilter)
                     vfilter.start()
@@ -142,7 +141,7 @@ class works:
                     dtype = "v2b"   #violas transaction's data type 
                     basedata = "vfilter"
                     vproof = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
-                            dbconf=stmanage.get_db(dtype), vfdbconf=stmanage.get_db(basedata), vnodes=stmanage.get_violas_nodes())
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata), nodes=stmanage.get_violas_nodes())
                     vproof.set_step(stmanage.get_db(dtype).get("step", 100))
                     self.set_work_obj(vproof)
                     vproof.start()
