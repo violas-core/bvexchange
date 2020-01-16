@@ -38,16 +38,18 @@ class aproof(abase):
         CANCEL = 3
         UNKOWN = 255
 
-    def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, vfdbconf = None, vnodes = None):
+    def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, fdbconf = None, nodes = None):
         #db use dbvproof, dbvfilter, not use violas/libra nodes
-        abase.__init__(self, name, ttype, dtype, None, vnodes)
+        abase.__init__(self, name, ttype, dtype, None, nodes)
         if dbconf is not None:
             self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
         if vfdbconf is not None:
-            self._vfdbcliet = dbvfilter(name, vfdbconf.get("host", "127.0.0.1"), vfdbconf.get("port", 6378), vfdbconf.get("db"), vfdbconf.get("password", None))
+            self._fdbcliet = dbvfilter(name, fdbconf.get("host", "127.0.0.1"), fdbconf.get("port", 6378), fdbconf.get("db"), fdbconf.get("password", None))
 
     def __del__(self):
         abase.__del__(self)
+        if self._fdbcliet is not None:
+            self._fdbcliet.save()
 
     def stop(self):
         abase.stop(self)
@@ -206,7 +208,7 @@ class aproof(abase):
             start_version = int(latest_filter_ver) + 1
 
             #can get max version 
-            ret = self._vfdbcliet.get_latest_saved_ver()
+            ret = self._fdbcliet.get_latest_saved_ver()
             if ret.state != error.SUCCEED:
                 return ret
             latest_saved_ver = ret.datas
@@ -229,7 +231,7 @@ class aproof(abase):
                     self._dbclient.set_latest_filter_ver(version)
                     self._logger.debug(f"parse transaction:{version}")
 
-                    ret = self._vfdbcliet.get(version)
+                    ret = self._fdbcliet.get(version)
                     if ret.state != error.SUCCEED:
                         return ret
 

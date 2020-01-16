@@ -36,6 +36,8 @@ class work_mod(Enum):
     V2B     = 2
     VFILTER = 3
     VPROOF  = 4
+    LFILTER = 5
+    LPROOF  = 6
 
 class works:
     __threads = []
@@ -112,7 +114,7 @@ class works:
                 logger.debug("looping: vfilter")
                 dtype = "vfilter"
                 vfilter = analysis_filter.afilter(name="vfilter", ttype="violas", \
-                        dbconf=stmanage.get_db(dtype), vnodes=stmanage.get_violas_nodes())
+                        dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes())
                 vfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
                 self.set_work_obj(vfilter)
                 vfilter.start()
@@ -130,10 +132,45 @@ class works:
                 dtype = "v2b"   #violas transaction's data type 
                 basedata = "vfilter"
                 vproof = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
-                        dbconf=stmanage.get_db(dtype), vfdbconf=stmanage.get_db(basedata), vnodes=stmanage.get_violas_nodes())
+                        dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata), nodes=stmanage.get_violas_nodes())
                 vproof.set_step(stmanage.get_db(dtype).get("step", 100))
                 self.set_work_obj(vproof)
                 vproof.start()
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical("stop: vproof")
+
+    def work_lfilter(self, nsec):
+        try:
+            logger.critical("start: libra filter")
+            while (self.__work_looping.get(work_mod.LFILTER.name, False)):
+                logger.debug("looping: lfilter")
+                dtype = "lfilter"
+                lfilter = analysis_filter.afilter(name="lfilter", ttype="libra", \
+                        dbconf=stmanage.get_db(dtype), nodes=stmanage.get_libra_nodes())
+                lfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
+                self.set_work_obj(lfilter)
+                lfilter.start()
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical("stop: lfilter")
+
+    def work_lproof(self, nsec):
+        try:
+            logger.critical("start: violas proof")
+            while (self.__work_looping.get(work_mod.VPROOF.name, False)):
+                logger.debug("looping: lproof")
+                dtype = "l2v"   #libra transaction's data type 
+                basedata = "lfilter"
+                lproof = analysis_proof.aproof(name="l2vproof", ttype="libra", dtype=dtype, \
+                        dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata), nodes=stmanage.get_libra_nodes())
+                lproof.set_step(stmanage.get_db(dtype).get("step", 100))
+                self.set_work_obj(vproof)
+                lproof.start()
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -183,6 +220,8 @@ class works:
     
             self.__work_looping = work_mods
 
+            self.thread_append(self.work_comm, 0, "comm", stmanage.get_looping_sleep("comm"))
+
             if work_mods.get(work_mod.B2V.name, False):
                 self.thread_append(self.work_b2v, 1, "b2v", stmanage.get_looping_sleep("b2v"))
 
@@ -195,7 +234,12 @@ class works:
             if work_mods.get(work_mod.VPROOF.name, False):
                 self.thread_append(self.work_vproof, 4, "vproof", stmanage.get_looping_sleep("vproof"))
 
-            self.thread_append(self.work_comm, 5, "comm", stmanage.get_looping_sleep("comm"))
+            if work_mods.get(work_mod.LFILTER.name, False):
+                self.thread_append(self.work_lfilter, 5, "lfilter", stmanage.get_looping_sleep("lfilter"))
+
+            if work_mods.get(work_mod.LPROOF.name, False):
+                self.thread_append(self.work_lproof, 6, "lproof", stmanage.get_looping_sleep("lproof"))
+
             
             for work in self.__threads:
                 work.start() #start work
@@ -241,8 +285,8 @@ def signal_stop(signal, frame):
 
 def run(mods):
     for mod in mods:
-        if mod is None or mod not in ["all", "b2v", "v2b", "vfilter", "vproof"]:
-            raise Exception(f"mod({mod}) is invalid [all, b2v, v2b, vfilter, vproof].")
+        if mod is None or mod not in ["all", "b2v", "v2b", "vfilter", "vproof", "lfilter", "lproof"]:
+            raise Exception(f"mod({mod}) is invalid [all, b2v, v2b, vfilter, vproof, lfilter, lproof].")
 
     #fn.checkrerun(__file__)
     fn.write_pid(name)

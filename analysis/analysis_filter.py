@@ -29,9 +29,9 @@ COINS = comm.values.COINS
 #load logging
     
 class afilter(abase):
-    def __init__(self, name = "vfilter", ttype = "violas", dtype = None, dbconf = None, vnodes = None):
+    def __init__(self, name = "vfilter", ttype = "violas", dtype = None, dbconf = None, nodes = None):
         #db user dbvfilter
-        abase.__init__(self, name, ttype, dtype, None, vnodes) #no-use defalut db
+        abase.__init__(self, name, ttype, dtype, None, nodes) #no-use defalut db
         if dbconf is not None:
             self._dbclient = dbvfilter(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
 
