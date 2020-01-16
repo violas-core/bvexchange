@@ -18,7 +18,7 @@ sudo apt install python3.6 sqlite3 redis-server python3
 python3 install python3.6-dev
 pip3 install python-bitcoinrpc sqlalchemy redis
 
-cd packages/libra-client/
+cd libra-client/
 pip3 install -r requirements.txt
 
 git clone https://github.com/palliums-developers/bvexchange.git
@@ -47,7 +47,7 @@ cd bvexchange
 ### log
     Log configuration and output classification
 
-### packages
+### libra-client
     Dependent libraries(libra)
 
 ### setting.py
