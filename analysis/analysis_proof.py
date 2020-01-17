@@ -39,11 +39,12 @@ class aproof(abase):
         UNKOWN = 255
 
     def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, fdbconf = None, nodes = None):
+        self._fdbcliet = None
         #db use dbvproof, dbvfilter, not use violas/libra nodes
         abase.__init__(self, name, ttype, dtype, None, nodes)
         if dbconf is not None:
             self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
-        if vfdbconf is not None:
+        if fdbconf is not None:
             self._fdbcliet = dbvfilter(name, fdbconf.get("host", "127.0.0.1"), fdbconf.get("port", 6378), fdbconf.get("db"), fdbconf.get("password", None))
 
     def __del__(self):
@@ -228,9 +229,15 @@ class aproof(abase):
             while(version <= max_version and count < self.get_step() and self.work()):
                 try:
                     #record last version(parse), maybe version is not exists
-                    self._dbclient.set_latest_filter_ver(version)
                     self._logger.debug(f"parse transaction:{version}")
 
+                    ret = self._fdbcliet.key_is_exists(version)
+                    if ret.state != error.SUCCEED:
+                        return ret
+                    if ret.datas == False:
+                        continue
+
+                    self._dbclient.set_latest_filter_ver(version)
                     ret = self._fdbcliet.get(version)
                     if ret.state != error.SUCCEED:
                         return ret
