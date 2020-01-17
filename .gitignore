@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+violas-client
 libra-client
 *.rdb
 *.pid
