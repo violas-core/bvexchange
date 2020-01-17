@@ -39,6 +39,7 @@ def main(argc, argv):
         if pargs.is_matched(opt, ["mod"]) :
             if count < 1:
                 pargs.exit_error_opt(opt)
+            logger.debug(f"arg_list:{arg_list}")
             bvexchange.run(arg_list)
     logger.debug("end manage.main")
 
