@@ -59,9 +59,9 @@ class dbv2b(baseobject):
         __tablename__='v2binfo'
         txid        = Column(String(64))
         fromaddress = Column(String(64), index=True, nullable=False)
-        toaddress   = Column(String(64), index=True, nullable=False)
+        toaddress   = Column(String(64), index=True, nullable=False) #btc address
         bamount     = Column(Integer, nullable=False)
-        vaddress    = Column(String(64), index=True, nullable=False, primary_key=True)
+        vaddress    = Column(String(64), index=True, nullable=False, primary_key=True) #violas address
         sequence    = Column(Integer, index=True, nullable=False, primary_key=True)
         version     = Column(Integer, index=True, nullable=False, primary_key=True)
         vamount     = Column(Integer, nullable=False)

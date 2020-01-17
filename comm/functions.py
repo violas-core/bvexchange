@@ -8,6 +8,7 @@ import operator
 import signal
 import sys, os
 import log
+import json
 import log.logger
 import threading
 import subprocess
@@ -50,3 +51,6 @@ class filelock:
             self.fobj.close()
         except Exception as e:
             pass
+
+def json_print(data):
+    print(json.dumps(data, sort_keys=True, indent=4))

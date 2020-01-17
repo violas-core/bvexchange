@@ -19,9 +19,9 @@ from comm.result import result, parse_except
 from comm.error import error
 from db.dbv2b import dbv2b
 from btc.btcclient import btcclient
-import violas.violasclient
-from violas.violasclient import violasclient, violaswallet, violasserver
-from violas.violasproof import violasproof
+import vlsopt.violasclient
+from vlsopt.violasclient import violasclient, violaswallet, violasserver
+from vlsopt.violasproof import violasproof
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
@@ -62,7 +62,7 @@ class exv2b(baseobject):
             self._logger.debug("start __merge_v2b_to_rpcparams")
             for info in dbinfos:
                 new_data = {"vaddress":info.vaddress, "sequence":info.sequence, "vtoken":info.vtoken,\
-                        "version":info.version, "baddress":info.toaddress, "vreceiver":info.vreceiver, \
+                        "version":info.version, "to_address":info.toaddress, "vreceiver":info.vreceiver, \
                         "vamount":info.vamount, "times":info.times, "tran_id":info.tranid}
                 if info.vreceiver in rpcparams.keys():
                     rpcparams[info.vreceiver].append(new_data)
@@ -294,14 +294,14 @@ class exv2b(baseobject):
                         fmtamount   = float(vamount) / COINS
                         sequence    = int(data["sequence"])
                         version     = int(data["version"])
-                        baddress    = data["baddress"]
+                        baddress    = data["to_address"]
                         module      = data["vtoken"]
                         vreceiver   = data["vreceiver"]
                         times       = data["times"]
                         tran_id     = data["tran_id"]
     
                         self._logger.info(f"start exchange v2b(times={times}), datas from db. \
-                                receiver = {receiver}, vaddress={vaddress} sequence={sequence} baddress={baddress} \
+                                receiver = {receiver}, vaddress={vaddress} sequence={sequence} to_address={baddress} \
                                 {fmtamount: .8f} version={version} module={module} tran_id={tran_id}") 
     
                         #check version, get transaction list is ordered ?
@@ -400,7 +400,7 @@ class exv2b(baseobject):
                         fmtamount   = float(vamount) / COINS
                         sequence    = data["sequence"] 
                         version     = data["version"]
-                        baddress    = data["baddress"]
+                        baddress    = data["to_address"]
                         tran_id     = data["tran_id"]
     
                         self._logger.info(f"start exchange v2b. receiver = {receiver}, vaddress={vaddress} sequence={sequence} \
