@@ -18,9 +18,9 @@ from comm.result import result, parse_except
 from comm.error import error
 from db.dbb2v import dbb2v
 from btc.btcclient import btcclient
-import violas.violasclient
-from violas.violasclient import violasclient, violaswallet
-from violas.violasproof import violasproof
+import vlsopt.violasclient
+from vlsopt.violasclient import violasclient, violaswallet
+from vlsopt.violasproof import violasproof
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum

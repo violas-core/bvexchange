@@ -16,7 +16,7 @@ import comm.values
 from comm.result import result, parse_except
 from comm.error import error
 from db.dbv2b import dbv2b
-from violas.violasclient import violasclient, violaswallet, violasserver
+from vlsopt.violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
 from db.dbvbase import dbvbase
 from baseobject import baseobject
@@ -144,9 +144,8 @@ class abase(baseobject):
         try:
             datas = {"flag"         : self.trantype.UNKOWN, 
                     "type"          : self.datatype.UNKOWN, 
-                    "btc_address"   : None,
-                    "libra_address" : None,
-                    "vtbc_address"  : None,
+                    "from_address"  : None,
+                    "to_address"    : None,
                     "nettype"       : None,
                     "state"         : None,
                     "sequence"      : -1,
@@ -195,9 +194,8 @@ class abase(baseobject):
             
             datas["flag"]           = self.parse_tran_type(data_dict.get("flag", None))
             datas["type"]           = self.parse_data_type(data_dict.get("type", None))
-            datas["btc_address"]    = data_dict.get("btc_address", None)
-            datas["libra_address"]  = data_dict.get("libra_address", None)
-            datas["vtbc_address"]   = data_dict.get("vtbc_address", None)
+            datas["from_address"]   = data_dict.get("from_address", None)
+            datas["to_address"]     = data_dict.get("to_address", None)
             datas["nettype"]        = data_dict.get("nettype", None)
             datas["state"]          = data_dict.get("state", None)
             datas["amount"]         = event.get("amount", 0)

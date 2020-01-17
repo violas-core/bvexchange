@@ -18,7 +18,7 @@ import comm.values
 from comm.result import result, parse_except
 from comm.error import error
 from db.dbv2b import dbv2b
-from violas.violasclient import violasclient, violaswallet, violasserver
+from vlsopt.violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
 from db.dbvfilter import dbvfilter
 from analysis.analysis_base import abase
