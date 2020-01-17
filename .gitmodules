@@ -1,3 +1,6 @@
 [submodule "libra-client"]
 	path = libra-client
 	url = https://github.com/palliums-developers/libra-client
+[submodule "violas-client"]
+	path = violas-client
+	url = https://github.com/palliums-developers/violas-client
