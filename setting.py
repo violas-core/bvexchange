@@ -29,8 +29,8 @@ violas_nodes=[
 #libra node list, to connect one
 libra_nodes=[
  #       {'host':'51.140.241.96', 'port':40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-         {'host':'ac.testnet.libra.org', 'port':8000, 'validator':'libra_consensus_peers.config.toml', 'faucet':'libra_faucet_keys'}
-         #{'host':'125.39.5.57', 'port':40001, 'validator':'libra_consensus_peers.config.toml','faucet':'libra_faucet_keys'},
+         #{'host':'ac.testnet.libra.org', 'port':8000, 'validator':'libra_consensus_peers.config.toml', 'faucet':'libra_faucet_keys'}
+         {'host':'125.39.5.57', 'port':40001, 'validator':'libra_consensus_peers.config.toml','faucet':'libra_faucet_keys', 'name':'tianjin'},
          #{'host':'125.39.5.57', 'port':40001},
         ]
 
@@ -54,7 +54,7 @@ address_list = {
         'receiver':[
             {'address':'1b3920fb9703cace285ac9ef5b54886b8b7a85442a8b38e06237908c3dfc1e5c', 'type':'v2b', 'chain':'violas'},
             {'address':'1b3920fb9703cace285ac9ef5b54886b8b7a85442a8b38e06237908c3dfc1e5c', 'type':'v2l', 'chain':'violas'},
-            {'address':'1b3920fb9703cace285ac9ef5b54886b8b7a85442a8b38e06237908c3dfc1e5c', 'type':'l2v', 'chain':'libra'},
+            {'address':'61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410', 'type':'l2v', 'chain':'libra'},
             {'address':'2MxBZG7295wfsXaUj69quf8vucFzwG35UWh', 'type':'b2v', 'chain':'btc'},
             {'address':'2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB', 'type':'b2v', 'chain':'btc'},
             ],

@@ -163,7 +163,13 @@ def get_transactions(start_version, limit = 1, fetch_event = True):
     print(f"count: {len(ret.datas)}")
 
     for data in ret.datas:
-        json_print(data.to_json())
+        info = data.to_json()
+        
+        events = data.get_events()
+        if events is not None and len(events) > 0:
+            info["event0"] = str(events[0])
+        info["data"] = data.get_data()
+        json_print(info)
 
 def get_address_version(address):
     logger.debug(f"start get_address_version({address})")

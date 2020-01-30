@@ -75,7 +75,13 @@ class afilter(abase):
                 if self.work() == False:
                     break
 
+                transaction = data
+
                 tran_data = data.to_json()
+                if "data" not in tran_data:
+                    tran_data["data"] = transaction.get_data()
+                if "events" not in tran_data:
+                    tran_data["events"] = transaction.get_events()
     
                 #save to redis db
                 value = json.dumps(tran_data)
