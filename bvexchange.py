@@ -9,7 +9,6 @@ import signal
 import sys, os
 #if len(sys.argv) > 1:
 #    os.chdir(os.path.dirname(sys.argv[0]))
-sys.path.append("./libra-client")
 import traceback
 import log
 import log.logger

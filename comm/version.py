@@ -8,7 +8,7 @@ import json
 BVEXCHANGE_VER = {
         "major"     : 1,
         "minor"     : 1,
-        "revision"  : 0
+        "revision"  : 1
         }
 
 '''

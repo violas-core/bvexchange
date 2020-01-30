@@ -27,16 +27,15 @@ from baseobject import baseobject
 import redis
 
 if version.cmp(1, 1, 1) >= 0:
-    sys.path.append("../violas-client")
-    sys.path.append("{}/violas-client".format(os.getcwd()))
+    sys.path.append("../libviolas")
+    sys.path.append("{}/libviolas".format(os.getcwd()))
     from violas.client import Client
     from violas.wallet import Wallet
 elif version.cmp(1, 1, 0) <= 0:
-    sys.path.append("../libra-client")
-    sys.path.append("{}/libra-client".format(os.getcwd()))
-    import libra
-    from libra import Client
-    from libra import WalletLibrary as Wallet
+    sys.path.append("../liblibra")
+    sys.path.append("{}/liblibra".format(os.getcwd()))
+    from violas.client import Client
+    from violas.wallet import Wallet
 
 #module name
 name="vclient"

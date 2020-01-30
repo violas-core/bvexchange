@@ -170,17 +170,8 @@ class abase(baseobject):
             events = transaction.get("events", None)
             if events is None or len(events) == 0:
                return tran
-    
 
-            if events is None or len(events) == 0:
-               return tran
-
-            event = events[0].get("event", None)
-            if event is None or len(event) == 0:
-                return tran
-    
-            
-            data = event.get("data", None)
+            data = transaction.get("data")
             if data is None or len(data) == 0:
                 return tran
 
@@ -204,7 +195,7 @@ class abase(baseobject):
             datas["token"]          = event.get("token", None)
             tran_id = data_dict.get("tran_id", None)
             datas["tran_id"]        = tran_id
-            datas["sequence"]   = transaction.get("raw_txn").get("sequence_number")
+            datas["sequence"]   = transaction.get("sequence_number")
 
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
