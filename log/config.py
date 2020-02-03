@@ -5,7 +5,8 @@ config = {
    'formatters': {
        'simple': {
            #'format': '%(asctime)s : %(name)s : %(levelname)s : %(message)s',
-           'format':'%(asctime)s:%(levelname)s:%(threadName)s:%(thread)d:%(name)s:%(filename)s:%(lineno)d--: ''%(message)s' 
+           #'format':'%(asctime)s:%(levelname)s:%(threadName)s:%(thread)d:%(name)s:%(filename)s:%(lineno)d--: ''%(message)s' 
+           'format':'%(asctime)s:%(levelname)s:%(name)s:%(filename)s:%(lineno)d--: ''%(message)s' 
            },
        },
    'handlers': {

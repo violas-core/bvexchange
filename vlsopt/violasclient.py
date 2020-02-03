@@ -29,12 +29,11 @@ import redis
 if version.cmp(1, 1, 1) >= 0:
     sys.path.append("../libviolas")
     sys.path.append("{}/libviolas".format(os.getcwd()))
-    from violas.client import Client
+    #from violas.client import Client
     from violas.wallet import Wallet
 elif version.cmp(1, 1, 0) <= 0:
     sys.path.append("../liblibra")
     sys.path.append("{}/liblibra".format(os.getcwd()))
-    from violas.client import Client
     from violas.wallet import Wallet
 
 #module name
@@ -43,21 +42,33 @@ name="vclient"
 class violaswallet(baseobject):
     __wallet_name           = "vwallet"
     
-    def __init__(self, name, wallet_name):
+    def __init__(self, name, wallet_name, chain="violas"):
         assert wallet_name is not None, "wallet_name is None"
         baseobject.__init__(self, name)
         if wallet_name is not None:
-            ret = self.__load_wallet(wallet_name)
+            ret = self.__load_wallet(wallet_name, chain)
             if ret.state != error.SUCCEED:
                 raise Exception("load wallet failed.")
 
     def __del__(self):
         self.dump_wallet()
 
-    def __load_wallet(self, wallet_name):
+    def __load_wallet(self, wallet_name, chain="violas"):
         try:
             self._logger.debug("start load_wallet({})".format(wallet_name))
             self.__wallet_name = wallet_name
+
+            if chain in ("violas"):
+                sys.path.append("../libviolas")
+                sys.path.append("{}/libviolas".format(os.getcwd()))
+                from violas.wallet import Wallet
+            elif chain in ("libra"):
+                sys.path.append("../liblibra")
+                sys.path.append("{}/liblibra".format(os.getcwd()))
+                from violas.wallet import Wallet
+            else:
+                raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas wallet")
+
             if os.path.isfile(self.__wallet_name):
                 self.__wallet = Wallet.recover(self.__wallet_name)
                 ret = result(error.SUCCEED, "", "")
@@ -124,29 +135,40 @@ class violaswallet(baseobject):
 
 class violasclient(baseobject):
     __node = None
-    def __init__(self, name, nodes):
-        baseobject.__init__(self, name)
+    def __init__(self, name, nodes, chain = "violas"):
+        baseobject.__init__(self, name, chain)
         self.__client = None
         if nodes is not None:
-            ret = self.conn_node(nodes)
+            ret = self.conn_node(name, nodes, chain)
             if ret.state != error.SUCCEED:
                 raise Exception("connect violas node failed.")
 
     def __del__(self):
         self.disconn_node()
 
-    def conn_node(self, nodes):
+    def conn_node(self, name, nodes, chain = "violas"):
         try:
             if nodes is None or len(nodes) == 0:
                 return result(error.ARG_INVALID, repr(nodes), "")
             
+            if chain in ("violas"):
+                sys.path.append("../libviolas")
+                sys.path.append("{}/libviolas".format(os.getcwd()))
+                from violas.client import Client
+            elif chain in ("libra"):
+                sys.path.append("../liblibra")
+                sys.path.append("{}/liblibra".format(os.getcwd()))
+                from violas.client import Client
+            else:
+                raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas node")
+
             for node in nodes:
                 try:
                     if self.work() == False:
                         return result(error.FAILED, "connect violas/libra work stop")
 
-                    self._logger.debug("try connect violas node : host = {} port = {} validator={} faucet ={}".format( \
-                            node.get("host", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
+                    self._logger.debug("try connect node({}) : host = {} port = {} validator={} faucet ={}".format( \
+                            node.get("name", ""), node.get("host", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
                     client = Client.new(node.get("host", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
                     client.get_latest_version()
                     self._logger.debug(f"connect violas/libra node succeed.") 

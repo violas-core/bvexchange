@@ -42,12 +42,12 @@ wallet_name = "vwallet"
 
 def get_violasclient():
     if chain == "libra":
-        return violasclient(name, stmanage.get_libra_nodes())
+        return violasclient(name, stmanage.get_libra_nodes(), chain)
 
-    return violasclient(name, stmanage.get_violas_nodes())
+    return violasclient(name, stmanage.get_violas_nodes(), chain)
 
 def get_violaswallet():
-    return violaswallet(name, wallet_name)
+    return violaswallet(name, wallet_name, chain)
 
 def get_violasproof(dtype = "v2b"):
 
