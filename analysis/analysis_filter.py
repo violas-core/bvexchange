@@ -18,7 +18,6 @@ import comm.values
 from comm.result import result, parse_except
 from comm.error import error
 from db.dbv2b import dbv2b
-from vlsopt.violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
 from db.dbvfilter import dbvfilter
 from analysis.analysis_base import abase
@@ -29,9 +28,9 @@ COINS = comm.values.COINS
 #load logging
     
 class afilter(abase):
-    def __init__(self, name = "vfilter", ttype = "violas", dtype = None, dbconf = None, nodes = None):
+    def __init__(self, name = "vfilter", ttype = "violas", dtype = None, dbconf = None, nodes = None, chain="violas"):
         #db user dbvfilter
-        abase.__init__(self, name, ttype, dtype, None, nodes) #no-use defalut db
+        abase.__init__(self, name, ttype, dtype, None, nodes, chain) #no-use defalut db
         if dbconf is not None:
             self._dbclient = dbvfilter(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
 
@@ -81,7 +80,11 @@ class afilter(abase):
                 if "data" not in tran_data:
                     tran_data["data"] = transaction.get_data()
                 if "events" not in tran_data:
-                    tran_data["events"] = transaction.get_events()
+                    events = transaction.get_events()
+                    if events is not None and len(events) > 0:
+                        event = events[0]
+                        event_item = {"data":event.get_data()}
+                        tran_data["events"] = [{"event":event_item}]
     
                 #save to redis db
                 value = json.dumps(tran_data)

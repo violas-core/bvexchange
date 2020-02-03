@@ -38,10 +38,10 @@ class aproof(abase):
         CANCEL = 3
         UNKOWN = 255
 
-    def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, fdbconf = None, nodes = None):
+    def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, fdbconf = None, nodes = None, chain = "violas"):
         self._fdbcliet = None
         #db use dbvproof, dbvfilter, not use violas/libra nodes
-        abase.__init__(self, name, ttype, dtype, None, nodes)
+        abase.__init__(self, name, ttype, dtype, None, nodes, chain)
         if dbconf is not None:
             self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
         if fdbconf is not None:

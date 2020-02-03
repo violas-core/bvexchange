@@ -28,8 +28,8 @@ import redis
 name="violasproof"
 
 class violasproof(violasclient):
-    def __init__(self, name, nodes):
-        violasclient.__init__(self, name, nodes)
+    def __init__(self, name, nodes, chain="violas"):
+        violasclient.__init__(self, name, nodes, chain)
 
     def __del__(self):
         violasclient.__del__(self)
