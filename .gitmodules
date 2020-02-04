@@ -4,3 +4,4 @@
 [submodule "libviolas"]
 	path = libviolas
 	url = https://github.com/palliums-developers/violas-client
+    branch = v0.2
