@@ -178,7 +178,7 @@ class btcclient(baseobject):
             walletinfo = self.__rpc_connection.getwalletinfo()
             balance = walletinfo.get("balance", 0)
             ret = result(error.SUCCEED, "", balance)
-            self._logger.debug(f"result: {ret.datas}")
+            self._logger.debug(f"result: {ret.datas:.8f}")
         except Exception as e:
             ret = parse_except(e)
         return ret

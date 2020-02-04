@@ -98,7 +98,7 @@ def getwalletbalance():
     client = getbtcclient()
     ret = client.getwalletbalance()
     assert ret.state == error.SUCCEED, "getwalletbalance failed"
-    print("wallet balance:{}".format(ret.datas))
+    print(f"wallet balance:{ret.datas:.8f}")
 
 def getwalletaddressbalance(address):
     client = getbtcclient()
