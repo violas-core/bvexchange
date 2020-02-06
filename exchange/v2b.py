@@ -174,11 +174,11 @@ class exv2b(baseobject):
 
     def _rechange_violas_state(self):
             ##update violas blockchain state to end, if sendexproofmark is ok
-            ret = self.__get_reset_history_state_to_resend_tran()
-            if ret.state != error.SUCCEED:
-                return ret
+            ret_datas = self.__get_reset_history_state_to_resend_tran()
+            if ret_datas.state != error.SUCCEED:
+                return ret_datas
             
-            for receiver in ret.datas.keys():
+            for receiver in ret_datas.datas.keys():
                 if not self.work() :
                     break
 
@@ -190,7 +190,7 @@ class exv2b(baseobject):
                     continue
                 vsender = ret.datas
 
-                datas = ret.datas.get(receiver)
+                datas = ret_datas.datas.get(receiver)
                 for data in datas:
                     tran_id = data.get("tran_id")
                     module = data.get("vtoken")
@@ -391,7 +391,6 @@ class exv2b(baseobject):
                     for data in ret.datas:
                         if not self.work() :
                             break
-
 
                         #grant vbtc 
                         ##check 

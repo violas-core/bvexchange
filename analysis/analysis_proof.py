@@ -231,11 +231,11 @@ class aproof(abase):
                     #record last version(parse), maybe version is not exists
                     self._logger.debug(f"parse transaction:{version}")
 
-                    ret = self._fdbcliet.key_is_exists(version)
-                    if ret.state != error.SUCCEED:
-                        return ret
-                    if ret.datas == False:
-                        continue
+                    #ret = self._fdbcliet.key_is_exists(version)
+                    #if ret.state != error.SUCCEED:
+                    #    return ret
+                    #if ret.datas == False:
+                    #    continue
 
                     self._dbclient.set_latest_filter_ver(version)
                     ret = self._fdbcliet.get(version)

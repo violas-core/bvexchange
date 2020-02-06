@@ -141,7 +141,7 @@ class works:
                     dtype = "v2b"   #violas transaction's data types 
                     basedata = "vfilter"
                     vproof = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
-                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata), nodes=stmanage.get_violas_nodes())
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     vproof.set_step(stmanage.get_db(dtype).get("step", 100))
                     self.set_work_obj(vproof)
                     vproof.start()
@@ -162,7 +162,7 @@ class works:
                     dtype = "v2l"   #violas transaction's data types 
                     basedata = "vfilter"
                     vproof = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
-                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata), nodes=stmanage.get_violas_nodes())
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     vproof.set_step(stmanage.get_db(dtype).get("step", 100))
                     self.set_work_obj(vproof)
                     vproof.start()
@@ -197,13 +197,13 @@ class works:
     def work_lproof(self, nsec):
         try:
             logger.critical("start: violas proof")
-            while (self.__work_looping.get(work_mod.VPROOF.name, False)):
+            while (self.__work_looping.get(work_mod.LPROOF.name, False)):
                 logger.debug("looping: lproof")
                 try:
                     dtype = "l2v"   #libra transaction's data types 
                     basedata = "lfilter"
                     lproof = analysis_proof.aproof(name="l2vproof", ttype="libra", dtype=dtype, \
-                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata), nodes=stmanage.get_libra_nodes())
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     lproof.set_step(stmanage.get_db(dtype).get("step", 100))
                     self.set_work_obj(lproof)
                     lproof.start()

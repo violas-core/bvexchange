@@ -180,7 +180,7 @@ def get_address_version(address):
 def get_transaction_version(address, sequence):
     logger.debug(f"start get_address_version({address}, {sequence})")
     client = get_violasclient()
-    ret = client.get_transactions_version(address, sequence)
+    ret = client.get_transaction_version(address, sequence)
     logger.debug("version: {0}".format(ret.datas))
 '''
 *************************************************violaswallet oper*******************************************************
@@ -399,7 +399,7 @@ def run(argc, argv):
                 pargs.exit_error_opt(opt)
             get_address_version(arg_list[0])
         elif pargs.is_matched(opt, ["get_transaction_version"]):
-            if len(arg_list) != 1:
+            if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
             get_transaction_version(arg_list[0], int(arg_list[1]))
     logger.debug("end manage.main")
