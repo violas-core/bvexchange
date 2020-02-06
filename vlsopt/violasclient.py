@@ -299,8 +299,8 @@ class violasclient(baseobject):
     def get_transaction_version(self, address, sequence):
         try:
             self._logger.debug(f"start get_transaction_version(address={address}, sequence={sequence})")
-            num = self.__client.get_account_transaction(address, sequence).get_verson()
-            ret = result(error.SUCCEED, "", num - 1)
+            num = self.__client.get_account_transaction(address, sequence).get_version()
+            ret = result(error.SUCCEED, "", num)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
@@ -308,8 +308,15 @@ class violasclient(baseobject):
     def get_address_version(self, address):
         try:
             self._logger.debug(f"start get_address_version(address={address})")
-            ver = self.__client.get_account_state(address).get_cur_version()
-            ret = result(error.SUCCEED, "", ver)
+            ret = self.get_address_sequence(address)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            ret = self.get_transaction_version(address, ret.datas)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            ret = result(error.SUCCEED, "", ret.datas)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
