@@ -31,6 +31,8 @@ name="b2v"
 wallet_name = "vwallet"
 
 class exb2v(baseobject):
+    __warning_count = {}
+    __show_warning_count = 1
     def __init__(self, name, vnodes , bnode,  module, combin, chain = "violas"):
         baseobject.__init__(self, name);
         self.set_proof_chain(chain)
@@ -44,6 +46,26 @@ class exb2v(baseobject):
     
         self._module_address = module
         self._combineaddress = combin 
+
+    def append_waning(self, key):
+        if key in self.__warning_count:
+            self.__warning_count[key] += 1
+        else:
+            self.__warning_count[key] = 1
+
+    def set_show_warning_count(self, count):
+        self.__show_warning_count = count
+
+    def get_show_warning_count(self):
+        return self.__show_warning_count
+
+    def can_show_waning(self, key, update = True):
+        count = 0
+        if key in self.__warning_count:
+            count = self.__warning_count[key]
+        if update == True:
+            self.append_waning(key)
+        return count < self.__show_warning_count
 
     def __merge_proof_to_rpcparams(self, rpcparams, dbinfos):
         try:
@@ -311,20 +333,22 @@ class exb2v(baseobject):
                         #grant vbtc 
                         ##check 
                         to_address = data["address"]
+                        sequence = int(data["sequence"])
                         to_module_address = data["vtoken"]
                         vamount = int(float(data["amount"]) * COINS)
                         if (len(module_address) != 64 or module_address != to_module_address):
-                            self._logger.warning(f"vtoken({to_module_address}) is invalid.")
+                            if self.can_show_waning(f"vtoken is invalid{to_address}.{sequence}"):
+                               self._logger.warning(f"vtoken({to_module_address}) is invalid.(to_address:{to_address} sequence:{sequence}")
                             continue
     
                         if vamount <= 0:
-                            self._logger.warning(f"amount({vamount}) is invalid.")
+                            self._logger.warning(f"amount({vamount}) is invalid.(to_address:{to_address} sequence:{sequence}")
                             continue
                         
                         #get sender account and address
                         ret = self.__get_violas_sender(vclient, vwallet, to_module_address, vamount, min_gas)
                         if ret.state != error.SUCCEED:
-                            self._logger.debug(f"get violas account failed. {ret.message}")
+                            self._logger.debug(f"get account failed. {ret.message}")
                             continue
     
                         #violas sender, grant vbtc

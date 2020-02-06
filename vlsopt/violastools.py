@@ -75,7 +75,7 @@ def mint_violas_coin(address, amount, module):
     module_account = ret.datas
 
     ret = client.mint_violas_coin(address, amount, module_account)
-    assert ret.state == error.SUCCEED, "mint_platform_coin failed."
+    assert ret.state == error.SUCCEED, "mint_violas_coin failed."
 
     print(client.get_account_state(address).datas)
 
@@ -120,7 +120,7 @@ def send_violas_coin(from_address, to_address, amount, module, data = None):
 
     client = get_violasclient()
     client.send_violas_coin(account, to_address, amount, module, data)
-    print(client.get_account_state(account.address).datas)
+    print(client.get_violas_balance(account.address, module).datas)
 
 def send_platform_coin(from_address, to_address, amount, data = None):
     global wallet_name

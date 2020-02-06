@@ -141,7 +141,7 @@ class violasclient(baseobject):
         if nodes is not None:
             ret = self.conn_node(name, nodes, chain)
             if ret.state != error.SUCCEED:
-                raise Exception("connect violas node failed.")
+                raise Exception(f"connect {chain} node failed.")
 
     def __del__(self):
         self.disconn_node()
@@ -165,22 +165,22 @@ class violasclient(baseobject):
             for node in nodes:
                 try:
                     if self.work() == False:
-                        return result(error.FAILED, "connect violas/libra work stop")
+                        return result(error.FAILED, f"connect {chain} work stop")
 
                     self._logger.debug("try connect node({}) : host = {} port = {} validator={} faucet ={}".format( \
                             node.get("name", ""), node.get("host", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
                     client = Client.new(node.get("host", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
                     client.get_latest_version()
-                    self._logger.debug(f"connect violas/libra node succeed.") 
+                    self._logger.debug(f"connect {chain} node succeed.") 
                 except Exception as e:
-                    self._logger.info(f"connect violas/libra node failed({e}). test next...")
+                    self._logger.info(f"connect {chain} node failed({e}). test next...")
                 else:
                     self.__client = client
                     self.__node = node
                     return result(error.SUCCEED, "", "")
 
             #not connect any violas node
-            ret = result(error.FAILED,  "connect violas/libra node failed.", "")
+            ret = result(error.FAILED,  f"connect {chain} node failed.", "")
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -205,7 +205,7 @@ class violasclient(baseobject):
     def create_violas_coin(self, account, is_blocking = True):
         try:
             self._logger.info("create_violas_coin(account={}, is_blocking={})".format(account, is_blocking))
-            self.__client.publish_module(account, is_blocking)
+            self.__client.publish_module(account, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
@@ -223,7 +223,7 @@ class violasclient(baseobject):
     def bind_module(self, account, module_address, is_blocking=True):
         try:
             self._logger.info("start bind_module(account={}, module_address={}, is_blocking={}".format(account.address.hex(), module_address, is_blocking))
-            self.__client.publish_resource(account, module_address, is_blocking)
+            self.__client.publish_resource(account, module_address, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
@@ -232,7 +232,7 @@ class violasclient(baseobject):
     def mint_violas_coin(self, address, amount, module_account, is_blocking=True):
         try:
             self._logger.info("start mint_violas_coin(address={}, amount={}, module_account=R{}, is_blocking={})".format(address, amount, module_account.address.hex(), is_blocking))
-            self.__client.mint_coin(address, amount, module_account, is_blocking)
+            self.__client.mint_coin(address, amount, module_account, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
@@ -250,7 +250,8 @@ class violasclient(baseobject):
     def send_violas_coin(self, from_account, to_address, amount, module_address, data=None, is_blocking=True):
         try:
             self._logger.info(f"start send_violas_coin(from_account={from_account.address}, to_address={to_address}, amount={amount}, module_address={module_address}, data={data}, is_blocking={is_blocking})")
-            self.__client.transfer_coin(from_account, to_address, amount, module_address, data=data, is_blocking=is_blocking)
+            self.__client.transfer_coin(sender_account=from_account, receiver_address=to_address, \
+                    micro_coins=amount, module_address=module_address, data=data, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)

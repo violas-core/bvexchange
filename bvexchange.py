@@ -33,9 +33,10 @@ class work_mod(Enum):
     B2V     = 1
     V2B     = 2
     VFILTER = 3
-    VPROOF  = 4
+    V2BPROOF= 4
     LFILTER = 5
     LPROOF  = 6
+    V2LPROOF= 7
 
 class works:
     __threads = []
@@ -119,7 +120,7 @@ class works:
                 try:
                     dtype = "vfilter"
                     vfilter = analysis_filter.afilter(name="vfilter", ttype="violas", \
-                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes())
+                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
                     vfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
                     self.set_work_obj(vfilter)
                     vfilter.start()
@@ -131,13 +132,13 @@ class works:
         finally:
             logger.critical("stop: vfilter")
 
-    def work_vproof(self, nsec):
+    def work_v2bproof(self, nsec):
         try:
-            logger.critical("start: violas proof")
-            while (self.__work_looping.get(work_mod.VPROOF.name, False)):
-                logger.debug("looping: vproof")
+            logger.critical("start: violas v2b proof")
+            while (self.__work_looping.get(work_mod.V2BPROOF.name, False)):
+                logger.debug("looping: v2bproof")
                 try:
-                    dtype = "v2b"   #violas transaction's data type 
+                    dtype = "v2b"   #violas transaction's data types 
                     basedata = "vfilter"
                     vproof = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata), nodes=stmanage.get_violas_nodes())
@@ -150,7 +151,28 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: vproof")
+            logger.critical("stop: v2bproof")
+
+    def work_v2lproof(self, nsec):
+        try:
+            logger.critical("start: violas v2l proof")
+            while (self.__work_looping.get(work_mod.V2LPROOF.name, False)):
+                logger.debug("looping: v2lproof")
+                try:
+                    dtype = "v2l"   #violas transaction's data types 
+                    basedata = "vfilter"
+                    vproof = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata), nodes=stmanage.get_violas_nodes())
+                    vproof.set_step(stmanage.get_db(dtype).get("step", 100))
+                    self.set_work_obj(vproof)
+                    vproof.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical("stop: v2lproof")
 
     def work_lfilter(self, nsec):
         try:
@@ -160,7 +182,7 @@ class works:
                 try:
                     dtype = "lfilter"
                     lfilter = analysis_filter.afilter(name="lfilter", ttype="libra", \
-                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_libra_nodes())
+                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_libra_nodes(), chain="libra")
                     lfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
                     self.set_work_obj(lfilter)
                     lfilter.start()
@@ -178,12 +200,12 @@ class works:
             while (self.__work_looping.get(work_mod.VPROOF.name, False)):
                 logger.debug("looping: lproof")
                 try:
-                    dtype = "l2v"   #libra transaction's data type 
+                    dtype = "l2v"   #libra transaction's data types 
                     basedata = "lfilter"
                     lproof = analysis_proof.aproof(name="l2vproof", ttype="libra", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata), nodes=stmanage.get_libra_nodes())
                     lproof.set_step(stmanage.get_db(dtype).get("step", 100))
-                    self.set_work_obj(vproof)
+                    self.set_work_obj(lproof)
                     lproof.start()
                 except Exception as e:
                     parse_except(e)
@@ -239,22 +261,25 @@ class works:
             self.thread_append(self.work_comm, 0, "comm", stmanage.get_looping_sleep("comm"))
 
             if work_mods.get(work_mod.B2V.name, False):
-                self.thread_append(self.work_b2v, 1, "b2v", stmanage.get_looping_sleep("b2v"))
+                self.thread_append(self.work_b2v, work_mod.B2V.value, "b2v", stmanage.get_looping_sleep("b2v"))
 
             if work_mods.get(work_mod.V2B.name, False):
-                self.thread_append(self.work_v2b, 2, "v2b", stmanage.get_looping_sleep("v2b"))
+                self.thread_append(self.work_v2b, work_mod.V2B.value, "v2b", stmanage.get_looping_sleep("v2b"))
 
             if work_mods.get(work_mod.VFILTER.name, False):
-                self.thread_append(self.work_vfilter, 3, "vfilter", stmanage.get_looping_sleep("vfilter"))
+                self.thread_append(self.work_vfilter, work_mod.VFILTER.value, "vfilter", stmanage.get_looping_sleep("vfilter"))
 
-            if work_mods.get(work_mod.VPROOF.name, False):
-                self.thread_append(self.work_vproof, 4, "vproof", stmanage.get_looping_sleep("vproof"))
+            if work_mods.get(work_mod.V2BPROOF.name, False):
+                self.thread_append(self.work_v2bproof, work_mod.V2BPROOF.value, "v2bproof", stmanage.get_looping_sleep("v2bproof"))
+
+            if work_mods.get(work_mod.V2LPROOF.name, False):
+                self.thread_append(self.work_v2lproof, work_mod.V2LPROOF.value, "v2lproof", stmanage.get_looping_sleep("v2lproof"))
 
             if work_mods.get(work_mod.LFILTER.name, False):
-                self.thread_append(self.work_lfilter, 5, "lfilter", stmanage.get_looping_sleep("lfilter"))
+                self.thread_append(self.work_lfilter, work_mod.LFILTER.value, "lfilter", stmanage.get_looping_sleep("lfilter"))
 
             if work_mods.get(work_mod.LPROOF.name, False):
-                self.thread_append(self.work_lproof, 6, "lproof", stmanage.get_looping_sleep("lproof"))
+                self.thread_append(self.work_lproof, work_mod.LPROOF.value, "lproof", stmanage.get_looping_sleep("lproof"))
 
             
             for work in self.__threads:
@@ -301,8 +326,8 @@ def signal_stop(signal, frame):
 
 def run(mods):
     for mod in mods:
-        if mod is None or mod not in ["all", "b2v", "v2b", "vfilter", "vproof", "lfilter", "lproof"]:
-            raise Exception(f"mod({mod}) is invalid [all, b2v, v2b, vfilter, vproof, lfilter, lproof].")
+        if mod is None or mod not in ["all", "b2v", "v2b", "vfilter", "v2bproof", "v2lproof", "lfilter", "lproof"]:
+            raise Exception(f"mod({mod}) is invalid [all, b2v, v2b, vfilter, v2bproof, v2lproof, lfilter, lproof].")
 
     #fn.checkrerun(__file__)
     fn.write_pid(name)

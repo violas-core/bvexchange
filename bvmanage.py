@@ -13,7 +13,7 @@ logger = log.logger.getLogger(name)
 
 def init_args(pargs):
     pargs.append("help", "show args info")
-    pargs.append("mod", "run mod", True, ["all", "b2v", "v2b", "vfilter", "vproof", "lfilter", "lproof"])
+    pargs.append("mod", "run mod", True, ["all", "b2v", "v2b", "vfilter", "v2bproof", "v2lproof" "lfilter", "lproof"])
 
 def main(argc, argv):
     pargs = parseargs()
