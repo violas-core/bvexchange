@@ -57,15 +57,15 @@ class dbvbase(baseobject):
         try:
             self._logger.debug(f"connect db(host={host}, port={port}, db={db}({self.db_name_to_value(db)}), passwd={password})")
             self._client = redis.Redis(host=host, port=port, db=self.db_name_to_value(db), password=password, decode_responses=True)
-            self.set_mod_name()
+            self.set_mod_name(db)
             ret = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def set_mod_name(self):
+    def set_mod_name(self, name):
         try:
-            ret = self.set("mod_name", self.name())
+            ret = self.set("mod_name", name)
         except Exception as e:
             ret = parse_except(e)
         return ret

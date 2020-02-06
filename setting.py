@@ -29,8 +29,8 @@ violas_nodes=[
 #libra node list, to connect one
 libra_nodes=[
  #       {'host':'51.140.241.96', 'port':40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-         #{'host':'ac.testnet.libra.org', 'port':8000, 'validator':'libra_consensus_peers.config.toml', 'faucet':'libra_faucet_keys'}
-         {'host':'125.39.5.57', 'port':40001, 'validator':'libra_consensus_peers.config.toml','faucet':'libra_faucet_keys', 'name':'tianjin'},
+         {'host':'ac.testnet.libra.org', 'port':8000, 'validator':'libra_consensus_peers.config.toml', 'faucet':'libra_faucet_keys', 'name':'libra'},
+         #{'host':'125.39.5.57', 'port':40001, 'validator':'libra_consensus_peers.config.toml','faucet':'libra_faucet_keys', 'name':'tianjin'},
          #{'host':'125.39.5.57', 'port':40001},
         ]
 
@@ -42,8 +42,8 @@ violas_servers=[
 #db info type(vfilter vfilter lfilter v2b  l2b v2l)
 db_list=[
         #'db_transactions':{'host':'127.0.0.1', 'port':6378, 'db':'3', 'password':'123'},
-        {'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':1000},
-        {'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':1000},
+        {'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':100},
+        {'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':100},
         {'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
         {'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
         {'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
@@ -99,11 +99,12 @@ address_list = {
 
 looping_sleep={
         'v2b' : 1,          #violas token exchange btc thread loop time(s)
-        'b2v' : 2,          #btc exchange violas token thread loop time(s)
-        'v2l' : 3,
-        'l2v' : 4,
-        'vfilter' : 5,      #violas blockchain transactions filter
-        'lfilter' : 6,
-        'v2bproof' : 7,     #communication thread loop time
+        'b2v' : 1,          #btc exchange violas token thread loop time(s)
+        'v2l' : 1,
+        'l2v' : 1,
+        'vfilter' : 1,      #violas blockchain transactions filter
+        'lfilter' : 1,
+        'v2bproof' : 1,     #communication thread loop time
+        'v2lproof' : 1,     #communication thread loop time
         'comm': 8,          #communication thread loop time
         }

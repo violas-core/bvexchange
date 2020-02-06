@@ -70,6 +70,7 @@ class btcclient(baseobject):
                 datas = self.__rpc_connection.violas_listexproofforstate(state, extype, receiver, excluded)
 
             ret = result(error.SUCCEED, "", datas)
+            self._logger.info(f"result: {len(ret.datas)}")
         except Exception as e:
             ret = parse_except(e)
         return ret
