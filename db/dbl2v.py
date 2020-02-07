@@ -54,15 +54,16 @@ class dbl2v(baseobject):
         VSUCCEED    = 4  #send change state transaction succeed
         COMPLETE    = 6  #change state is confirmed
     
-    #exc_traceback_objle : v2binfo
-    class v2binfo(__base):
+    #exc_traceback_objle : info
+    class info(__base):
         __tablename__='l2vinfo'
-        fromaddress = Column(String(64), index=True, nullable=False) #libra address
-        toaddress   = Column(String(64), index=True, nullable=False) #libra address
+        sender      = Column(String(64), index=True, nullable=False) #libra address
+        receiver    = Column(String(64), index=True, nullable=False) #libra address
         sequence    = Column(Integer, index=True, nullable=False)
         version     = Column(Integer, index=True, nullable=False, primary_key=True)
         amount      = Column(Integer, nullable=False)
-        receiver    = Column(String(64), index=True, nullable=False)
+        fromaddress   = Column(String(64), index=True, nullable=False)
+        toaddress   = Column(String(64), index=True, nullable=False)
         module      = Column(String(64), nullable=False)
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
@@ -70,8 +71,9 @@ class dbl2v(baseobject):
         tranid      = Column(String(64), nullable=False, primary_key=True)
     
         def __repr__(self):
-            return f"<v2binfo(fromaddress={self.fromaddress}, toaddress={self.toaddress}, sequence={self.sequence}, \
-                    version={self.version}, amount={self.amount}, receiver={self.receiver}, module={self.module}, state={self.state}, \
+            return f"<info(sender={self.sender}, receiver={self.receiver}, sequence={self.sequence}, \
+                    version={self.version}, amount={self.amount}, fromaddress={self.fromaddress}, \
+                    toaddress={self.toaddress}, module={self.module}, state={self.state}, \
                     created={self.created}, times={self.times}, tranid={self.tranid})>"
 
     def __init_db(self, dbfile):
@@ -82,7 +84,7 @@ class dbl2v(baseobject):
             db_echo = stmanage.get_db_echo()
 
         self.__engine = create_engine('sqlite:///%s?check_same_thread=False' % dbfile, echo=db_echo)
-        #self.v2binfo.__table__
+        #self.info.__table__
         self.__base.metadata.create_all(self.__engine)
         Session = sessionmaker(bind=self.__engine)
         self.__session = Session()
@@ -90,13 +92,14 @@ class dbl2v(baseobject):
     def __uninit_db(self):
         pass
         
-    def insert(self, fromaddress, toaddress, sequence, version, amount, receiver, module, state, tranid):
+    def insert(self, sender, receiver, sequence, version, amount, fromaddress, toaddress, module, state, tranid):
         try:
-            self._logger.info(f"start insert(fromaddress={fromaddress}, toaddress={toaddress}, \
-                    sequence={sequence}, version={version}, amount={amount}, module={module}, state={state.name}, tranid={tranid})") 
+            self._logger.info(f"start insert(sender={sender}, receiver={receiver}, \
+                    sequence={sequence}, version={version}, amount={amount}, fromaddress={fromaddress},\
+                    toaddress={toaddress}, module={module}, state={state.name}, tranid={tranid})") 
 
-            data = self.v2binfo(fromaddress=fromaddress, toaddress=toaddress, sequence=vsequence, version=version, \
-                amount=amount, receiver=receiver, module=module, state=state.value, tranid=tranid)
+            data = self.info(sender=sender, receiver=receiver, sequence=sequence, version=version, \
+                amount=amount, fromaddress=fromaddress, toaddress=toaddress, module=module, state=state.value, tranid=tranid)
             self.__session.add(data)
 
             ret = result(error.SUCCEED, "", "")
@@ -104,9 +107,9 @@ class dbl2v(baseobject):
             ret = parse_except(e)
         return ret
 
-    def insert_commit(self, fromaddress, toaddress, sequence, version, amount, receiver, module, state, tranid):
+    def insert_commit(self, sender, receiver, sequence, version, amount, fromaddress, toaddress, module, state, tranid):
         try:
-            ret = self.insert(fromaddress, toaddress, sequence, version, amount, receiver, module, state, tranid)
+            ret = self.insert(sender, receiver, sequence, version, amount, fromaddress, toaddress, module, state, tranid)
             if ret.state != error.SUCCEED:
                 return ret 
             ret = self.commit()
@@ -129,8 +132,8 @@ class dbl2v(baseobject):
         proofs = []
         try:
             self._logger.debug(f"start query(tranid={tranid})")
-            filter_tranid = (self.v2binfo.tranid==tranid)
-            proofs = self.__session.query(self.v2binfo).filter(filter_tranid).all()
+            filter_tranid = (self.info.tranid==tranid)
+            proofs = self.__session.query(self.info).filter(filter_tranid).all()
             ret = result(error.SUCCEED, "", proofs)
         except Exception as e:
             ret = parse_except(e)
@@ -139,8 +142,8 @@ class dbl2v(baseobject):
     def has_info(self, tranid):
         try:
             self._logger.debug(f"start has_info(tranid={tranid})")
-            filter_tranid = (self.v2binfo.tranid==tranid)
-            state = (self.__session.query(self.v2binfo).filter(filter_tranid).count() > 0)
+            filter_tranid = (self.info.tranid==tranid)
+            state = (self.__session.query(self.info).filter(filter_tranid).count() > 0)
             ret = result(error.SUCCEED, "", state) 
         except Exception as e:
             ret = parse_except(e)
@@ -151,9 +154,9 @@ class dbl2v(baseobject):
         proofs = []
         try:
             self._logger.debug(f"start __query_state(state={state}, maxtimes={maxtimes})")
-            filter_state = (self.v2binfo.state==state.value)
-            filter_times = (self.v2binfo.times<=maxtimes)
-            proofs = self.__session.query(self.v2binfo).filter(filter_state).filter(filter_times).all()
+            filter_state = (self.info.state==state.value)
+            filter_times = (self.info.times<=maxtimes)
+            proofs = self.__session.query(self.info).filter(filter_state).filter(filter_times).all()
             ret = result(error.SUCCEED, "", proofs)
             self._logger.debug(f"result: {len(ret.datas)}")
         except Exception as e:
@@ -180,10 +183,10 @@ class dbl2v(baseobject):
 
     def __update(self, tranid, state):
         try:
-            self._logger.info(f"start update(tranid={tranid}, state={state}, txid={txid})")
-            filter_tranid = (self.v2binfo.tranid==tranid)
-            datas = self.__session.query(self.v2binfo).filter(filter_tranid)\
-                    .update({self.v2binfo.state:state.value, self.v2binfo.times:self.v2binfo.times + 1})
+            self._logger.info(f"start update(tranid={tranid}, state={state})")
+            filter_tranid = (self.info.tranid==tranid)
+            datas = self.__session.query(self.info).filter(filter_tranid)\
+                    .update({self.info.state:state.value, self.info.times:self.info.times + 1})
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)
@@ -193,7 +196,7 @@ class dbl2v(baseobject):
         try:
             ret = self.__update(tranid, state)
             if ret.state != error.SUCCEED:
-                self._logger.error("update_v2binfo_commit failed")
+                self._logger.error("update_info_commit failed")
                 return ret
 
             ret = self.commit()
@@ -219,44 +222,51 @@ class dbl2v(baseobject):
     def update_to_vsucceed_commit(self, tranid):
         return self.__update_commit(tranid, self.state.VSUCCEED)
 
-def show_state_count(db):
+    def flushinfo(self):
+        self.__session.execute("delete from l2vinfo")
+
+def show_state_count(db, logger):
     ret = db.query_is_start()
     assert ret.state == error.SUCCEED, "query failed."
-    self._logger.debug(f"query_is_start:{ret.datas}")
+    logger.debug(f"query_is_start:{ret.datas}")
 
     ret = db.query_is_succeed()
     assert ret.state == error.SUCCEED, "query failed."
-    self._logger.debug(f"query_is_succeed:{ret.datas}")
+    logger.debug(f"query_is_succeed:{ret.datas}")
 
     ret = db.query_is_failed()
     assert ret.state == error.SUCCEED, "query failed."
-    self._logger.debug(f"query_is_failed:{ret.datas}")
+    logger.debug(f"query_is_failed:{ret.datas}")
 
     ret = db.query_is_complete()
     assert ret.state == error.SUCCEED, "query failed."
-    self._logger.debug(f"query_is_complete:{ret.datas}")
+    logger.debug(f"query_is_complete:{ret.datas}")
 
     ret = db.query_is_vfailed()
     assert ret.state == error.SUCCEED, "query failed."
-    self._logger.debug(f"query_is_vfailed:{ret.datas}")
+    logger.debug(f"query_is_vfailed:{ret.datas}")
 
     ret = db.query_is_vsucceed()
     assert ret.state == error.SUCCEED, "query failed."
-    self._logger.debug(f"query_is_vsucceed:{ret.datas}")
+    logger.debug(f"query_is_vsucceed:{ret.datas}")
 
 
 def test_dbl2v():
     pass
+    logger = log.logger.getLogger("test_dbl2v")
     db = dbl2v("test_dbl2v", "test_dbl2v.db")
+    db.flushinfo()
+    tran_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     ret = db.insert_commit("b50323341dd6e996d7add7777af0de640ffe1407828cd7db625097b40e6a2c78", \
             "29223f25fe4b74d75ca87527aed560b2826f5da9382e2fb83f9ab740ac40b8f7",\
             9, \
             9999, \
             1000, \
             "fd0426fa9a3ba4fae760d0f614591c61bb53232a3b1138d5078efa11ef07c49c", \
+            "fd0426fa9a3ba4fae760d0f614591c61bb53232a3b1138d5078efa11ef07c49c", \
             "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             dbl2v.state.START, \
-            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            tran_id            
             )
     assert ret.state == error.SUCCEED, "insert_commit failed."
 
@@ -266,38 +276,39 @@ def test_dbl2v():
             99998, \
             2000, \
             "fd0426fa9a3ba4fae760d0f614591c61bb53232a3b1138d5078efa11ef07c49c", \
+            "fd0426fa9a3ba4fae760d0f614591c61bb53232a3b1138d5078efa11ef07c49c", \
             "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             dbl2v.state.START, \
             "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
             )
     assert ret.state == error.SUCCEED, "insert_commit failed."
 
-    ret = db.query("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+    ret = db.query(tran_id)
     assert ret.state == error.SUCCEED, "query failed."
-    self._logger.debug(f"query result: {ret.datas}")
+    logger.debug(f"query result: {ret.datas}")
 
-    self._logger.debug(f"has info(true):{db.has_info(\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")}")
-    self._logger.debug(f"has info(false):{db.has_info(\"VVVVVVVVVVVVVVVVVVVVVVVVV\")}")
+    logger.debug(f"has info(true):{db.has_info(tran_id)}")
+    logger.debug(f"has info(false):{db.has_info('VVVVVVVVVVVVVVVVVVVVVVVVV')}")
     
-    show_state_count(db)
-    tran_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    show_state_count(db, logger)
 
     ret = db.update_to_failed_commit(tran_id)
-    show_state_count(db)
+    show_state_count(db, logger)
 
     ret = db.update_to_succeed_commit(tran_id)
-    show_state_count(db)
+    show_state_count(db, logger)
 
     ret = db.update_to_start_commit(tran_id)
-    show_state_count(db)
+    show_state_count(db, logger)
 
     ret = db.update_to_vfailed_commit(tran_id)
-    show_state_count(db)
+    show_state_count(db, logger)
 
     ret = db.update_to_vsucceed_commit(tran_id)
-    show_state_count(db)
+    show_state_count(db, logger)
 
     ret = db.update_to_complete_commit(tran_id)
-    show_state_count(db)
+    show_state_count(db, logger)
+
 if __name__ == "__main__":
     test_dbl2v()

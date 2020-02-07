@@ -44,9 +44,9 @@ class requestclient(baseobject):
                 address     = data["sender"]
                 amount      = int(data["amount"])
                 sequence    = int(data["sequence"])
-                baddress    = data["to_address"]
+                toaddress    = data["to_address"]
                 tran_id     = data["tran_id"]
-                datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "to_address":baddress, "tran_id":tran_id})
+                datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "to_address":toaddress, "tran_id":tran_id})
             self._logger.debug(f"count={len(datas)}")
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
