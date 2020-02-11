@@ -20,9 +20,10 @@ from enum import Enum
 getlogger = log.logger.getLogger
 class baseobject(object):
     _name = None
-    _btc_chain = "btc"
-    _proof_chain = "violas" #violas/libra 
     _logger = None
+    _from_chain = None
+    _map_chain = None
+
     def __init__(self, name = 'base', work = True):
         self._work = work
         self._name = name
@@ -41,12 +42,19 @@ class baseobject(object):
     def name(self):
         return self._name
 
-    def btc_chain(self):
-        return self._btc_chain
-
-    def proof_chain(self):
-        return self._proof_chain
-
     def set_proof_chain(self, name):
         self._proof_chain = name
+
+    def from_chain(self):
+        return self._from_chain
+
+    def set_from_chain(self, name)
+        return self._from_chain = name
+
+    def map_chain(self);
+        return self._map_chain
+
+    def set_map_chain(self, name):
+        return self._map_chain = name
+
 

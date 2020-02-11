@@ -35,10 +35,11 @@ class exb2v(baseobject):
     __show_warning_count = 1
     def __init__(self, name, vnodes , bnode,  module, combin, chain = "violas"):
         baseobject.__init__(self, name);
-        self.set_proof_chain(chain)
+        self.set_from_chain("btc")
+        self.set_map_chain(chain)
         #btc init
         self._bclient = btcclient(name, bnode)
-        self._b2v = dbb2v(self.name(), f"{self.proof_chain()}_{self.name()}.db")
+        self._b2v = dbb2v(self.name(), f"{self.from_chain.()}_{self.name()}.db")
     
         #violas init
         self._vclient = violasproof(self.name(), vnodes)
@@ -119,15 +120,16 @@ class exb2v(baseobject):
     
     def __checks(self):
         assert (len(stmanage.get_btc_conn()) == 4), "btc_conn is invalid."
-        assert (len(stmanage.get_sender_address_list(self.name(), self.proof_chain())) > 0 ), "violas sender not found."
-        assert (len(stmanage.get_receiver_address_list(self.name(), self.btc_chain())) > 0 ), "btc receiver not found."
-        assert (len(stmanage.get_module_address(self.name(), self.proof_chain())) == 64), "module_address is invalid"
-        assert (len(stmanage.get_violas_nodes()) > 0), "violas_nodes is invalid."
-        for addr in stmanage.get_sender_address_list(self.name(), self.proof_chain()):
+        assert (len(stmanage.get_sender_address_list(self.name(), self.map_chain())) > 0 ), "violas sender not found."
+        for addr in stmanage.get_sender_address_list(self.name(), self.map_chain()):
             assert len(addr) == 64, f"violas address({addr}) is invalid."
-    
-        for addr in stmanage.get_receiver_address_list(self.name(), self.btc_chain()):
+
+        assert (len(stmanage.get_receiver_address_list(self.name(), self.from_chain())) > 0 ), "btc receiver not found."
+        for addr in stmanage.get_receiver_address_list(self.name(), self.from_chain()):
             assert len(addr) >= 20, f"btc address({addr}) is invalid."
+    
+        assert (len(stmanage.get_module_address(self.name(), self.map_chain())) == 64), "module_address is invalid"
+        assert (len(stmanage.get_violas_nodes()) > 0), "violas_nodes is invalid."
     
     def __hasplatformbalance(self, vclient, address, vamount = 0):
         try:
@@ -225,7 +227,7 @@ class exb2v(baseobject):
         return ret
     
     def __get_violas_sender(self, vclient, vwallet, module, vamount, min_gas):
-        for sender in stmanage.get_sender_address_list(self.name(), self.proof_chain()):
+        for sender in stmanage.get_sender_address_list(self.name(), self.map_chain()):
             ret = vwallet.get_account(sender)
             if ret.state != error.SUCCEED:
                 continue
@@ -293,7 +295,7 @@ class exb2v(baseobject):
     
             #update proof state to end, and update db state, prevstate is btcfailed in db. 
             #When this happens, there is not enough Bitcoin, etc.
-            self.__rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, stmanage.get_receiver_address_list(self.name(), self.btc_chain()))
+            self.__rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, stmanage.get_receiver_address_list(self.name(), self.map_chain()))
     
             #get all excluded info from db
             rpcparams = {}
@@ -306,7 +308,7 @@ class exb2v(baseobject):
             min_gas = comm.values.MIN_EST_GAS 
     
             #set receiver: get it from stmanage or get it from blockchain
-            receivers = list(set(stmanage.get_receiver_address_list(self.name(), self.btc_chain())))
+            receivers = list(set(stmanage.get_receiver_address_list(self.name(), self.from_chain())))
     
             #modulti receiver, one-by-one
             for receiver in receivers:
@@ -365,7 +367,7 @@ class exb2v(baseobject):
                            
                         self._logger.info(f"start new btc -> vbtc(address={to_address}, sequence={int(data['sequence'])}, amount={vamount}, module={to_module_address}")
                         ##send vbtc to vaddress, vtoken and amount
-                        tran_data = vclient.create_data_for_mark(self.proof_chain(), self.name(), data["txid"], int(data["sequence"]))
+                        tran_data = vclient.create_data_for_mark(self.map_chain(), self.name(), data["txid"], int(data["sequence"]))
                         ret = vclient.send_violas_coin(vsender, to_address, vamount, to_module_address, data=tran_data)
                         if ret.state != error.SUCCEED:
                             continue
