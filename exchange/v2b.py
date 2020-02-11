@@ -34,13 +34,15 @@ wallet_name = "vwallet"
 COINS = comm.values.COINS
 #load logging
 class exv2b(baseobject):    
+    _latest_version = {}
     def __init__(self, name, vnodes , bnode, proofdb, module, receivers, chain = "violas"):
         baseobject.__init__(self, name)
-        self.set_proof_chain(chain)
+        self.set_from_chain(chain)
+        self.set_map_chain("btc")
         self._vclient = violasproof(name, vnodes)
         #btc init
         self._bclient = btcclient(name, bnode)
-        self._v2b = dbv2b(name, f"{self.proof_chain()}_{self.name()}.db")
+        self._v2b = dbv2b(name, f"{self.from_chain()}_{self.name()}.db")
         self._wallet = violaswallet(name, wallet_name)
     
         #violas init
@@ -209,7 +211,7 @@ class exv2b(baseobject):
                     self._send_violas_coin_and_update_state_to_end(vsender, receiver, module, tran_id)
 
     def _send_violas_coin_and_update_state_to_end(self, vsender, receiver, module,  tran_id, amount = 1):
-            tran_data = self._vclient.create_data_for_end(self.proof_chain(), self.name(), tran_id)
+            tran_data = self._vclient.create_data_for_end(self.from_chain(), self.name(), tran_id)
             ret = self._vclient.send_violas_coin(vsender, receiver, amount, module, tran_data)
             if ret.state == error.SUCCEED:
                 ret = self._v2b.update_v2binfo_to_vsucceed_commit(tran_id)
@@ -217,19 +219,19 @@ class exv2b(baseobject):
             return ret
         
     def __checks(self):
-        assert (len(stmanage.get_sender_address_list(self._name, self.btc_chain())) > 0), "btc senders is invalid"
+        assert (len(stmanage.get_sender_address_list(self._name, self.map_chain())) > 0), "btc senders is invalid"
         assert (len(self._module_address) == 64), "module_address is invalid"
-        assert (len(stmanage.get_receiver_address_list(self._name, self.proof_chain())) > 0), "violas server is invalid."
-        for violas_receiver in stmanage.get_receiver_address_list(self._name, self.proof_chain()):
+        assert (len(stmanage.get_receiver_address_list(self._name, self.from_chain())) > 0), "violas server is invalid."
+        for violas_receiver in stmanage.get_receiver_address_list(self._name, self.from_chain()):
             assert len(violas_receiver) == 64, "violas receiver({}) is invalid".format(violas_receiver)
     
-        for sender in stmanage.get_sender_address_list(self._name, self.btc_chain()):
+        for sender in stmanage.get_sender_address_list(self._name, self.map_chain()):
             assert len(sender) >= 20, "btc address({}) is invalied".format(sender)
     
     def __get_btc_sender_address(self, excludeds, amount, gas):
         try:
             use_sender = None
-            for sender in stmanage.get_sender_address_list(self._name, self.btc_chain()):
+            for sender in stmanage.get_sender_address_list(self._name, self.map_chain()):
                 if sender not in excludeds:
                    #check btc amount
                    ret = self._bclient.has_btc_banlance(sender, amount, gas)
@@ -270,16 +272,13 @@ class exv2b(baseobject):
             for receiver in receivers:
                 if not self.work() :
                     break
-
-                ret = self._v2b.query_latest_version(receiver, self._module_address)
-                assert ret.state == error.SUCCEED, "get latest version error"
-                latest_version = ret.datas + 1
-                max_version = 0
     
                 ret  = self._wallet.get_account(receiver)
                 if ret.state != error.SUCCEED:
                     continue 
                 vsender = ret.datas
+
+                latest_version = self._latest_version.get(receiver, -1)
 
                 #get old transaction from db, check transaction. version and receiver is current value
                 failed = rpcparams.get(receiver)
@@ -305,8 +304,9 @@ class exv2b(baseobject):
                                 {fmtamount: .8f} version={version} module={module} tran_id={tran_id}") 
     
                         #check version, get transaction list is ordered ?
-                        #if version >= (latest_version - 1):
-                        #    continue
+                        if version > latest_version:
+                            self._logger.warning(f"transaction's version must be Less than or equal to latest_version.")
+                            continue
     
                         #match module 
                         if module != self._module_address:
@@ -319,7 +319,7 @@ class exv2b(baseobject):
                             self._logger.warning(f"not found transaction({data}) from violas server.")
                             continue
     
-                        #get btc sender from stmanage.get_sender_address_list(self._name, self.btc_chain())
+                        #get btc sender from stmanage.get_sender_address_list(self._name, self.map_chain())
                         ret = self.__get_btc_sender_address([baddress], vamount, gas) #vamount and gas unit is satoshi
                         if ret.state != error.SUCCEED:
                             self._logger.warning("not found btc sender{baddress} or amount too low. check btc address and amount")
@@ -368,7 +368,7 @@ class exv2b(baseobject):
             ##when change it to complete, can truncature history db
             self._rechange_db_state()
 
-            receivers = list(set(stmanage.get_receiver_address_list(self._name, self.proof_chain())))
+            receivers = list(set(stmanage.get_receiver_address_list(self._name, self.from_chain())))
             #modulti receiver, one-by-one
             for receiver in receivers:
                 if not self.work() :
@@ -379,10 +379,7 @@ class exv2b(baseobject):
                     continue
                 vsender = ret.datas
 
-                ret = self._v2b.query_latest_version(receiver, self._module_address)
-                assert ret.state == error.SUCCEED, "get latest version error"
-                latest_version = ret.datas + 1
-                max_version = 0
+                latest_version = self._latest_version.get(receiver, 0) + 1
 
                 #get new transaction from violas server
                 ret = self._vserver.get_transactions_for_start(receiver, self._module_address, latest_version)
@@ -405,11 +402,8 @@ class exv2b(baseobject):
                         self._logger.info(f"start exchange v2b. receiver = {receiver}, vaddress={vaddress} sequence={sequence} \
                                 baddress={baddress} amount={fmtamount} tran_id={tran_id} datas from server.")
     
-                        max_version = max(version, max_version)
-
-                        #data is save to db, so must be update max version
-                        ret = self._v2b.update_or_insert_version_commit(receiver, self._module_address, max_version)
-                        assert (ret.state == error.SUCCEED), "db error"
+                        latest_version = self._latest_version.get(receiver, -1)
+                        self._latest_version[receiver] = max(version, latest_version)
     
                         #if found transaction in v2b.db, then get_transactions's latest_version is error(too small or other case)'
                         ret = self._v2b.has_v2binfo(tran_id)

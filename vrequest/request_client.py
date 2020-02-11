@@ -31,7 +31,7 @@ class requestclient(baseobject):
             self._rclient = requestproof(name, dbconf.get("host"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password"))
         except Exception as e:
             pass
-    def get_transactions_for_start(self, address, module, start, limit = 10):
+    def get_transactions_for_start(self, address, module, start = -1, limit = 10):
         try:
             self._logger.debug("start get_transactions_for_start(address={}, module={}, start={})".format(address, module, start))
             datas = []

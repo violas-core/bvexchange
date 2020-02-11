@@ -18,7 +18,6 @@ import comm.values
 from comm.result import result, parse_except
 from comm.error import error
 from db.dbv2b import dbv2b
-from btc.btcclient import btcclient
 import vlsopt.violasclient
 from vlsopt.violasclient import violasclient, violaswallet, violasserver
 from vlsopt.violasproof import violasproof
@@ -34,12 +33,14 @@ wallet_name = "vwallet"
 COINS = comm.values.COINS
 #load logging
 class exv2b(baseobject):    
+    _latest_version = {}
     def __init__(self, name, fromnodes , mapnodes, proofdb, module, receivers, senders, fromchain = "libra", mapchain='violas'):
         baseobject.__init__(self, name)
-        self.set_proof_chain(fromchain)
+        self.set_from_chain(fromchain)
+        self.set_map_chain(mapchain)
         self._fromclient = violasproof(name, fromnodes, fromchain)
         self._mapclient = violasproof(name, mapnodes, mapchain)
-        self._db = dbl2v(name, f"{self.proof_chain()}_{self.name()}.db")
+        self._db = dbl2v(name, f"{self.from_chain()}_{self.name()}.db")
         self._wallet = violaswallet(name, wallet_name)
     
         #violas/libra init
@@ -90,7 +91,7 @@ class exv2b(baseobject):
             rpcparams = {}
             #transactions that should be __get_reexchange(dbv2b.db)
             
-            ## btcfailed 
+            ## failed 
             if stmanage.get_max_times(self._name) > 0:
                 maxtimes = stmanage.get_max_times(self._name)
             bflddatas = self._db.query_is_failed(maxtimes)
@@ -112,7 +113,7 @@ class exv2b(baseobject):
             maxtimes = 5
             rpcparams = {}
             
-            ## btcfailed 
+            ## failed 
             if stmanage.get_max_times(self._name) > 0:
                 maxtimes = stmanage.get_max_times(self._name)
             bflddatas = self._v2b.query_is_vsucceed(maxtimes)
@@ -158,9 +159,11 @@ class exv2b(baseobject):
             maxtimes = 5
             rpcparams = {}
             
-            ## btcfailed 
+            ## failed 
             if stmanage.get_max_times(self._name) > 0:
                 maxtimes = stmanage.get_max_times(self._name)
+
+            #change state transaction failed
             vfdatas = self._db.query_is_vfailed(maxtimes)
             if(vfdatas.state != error.SUCCEED):
                 return vfdatas
@@ -219,7 +222,7 @@ class exv2b(baseobject):
                     self._send_coin_and_update_state_to_end(sender, receiver, module, tran_id)
 
     def _send_coin_for_update_state_to_end(self, sender, receiver, module,  tran_id, amount = 1):
-            tran_data = self._fromclient.create_data_for_end(self.proof_chain(), self.name(), tran_id)
+            tran_data = self._fromclient.create_data_for_end(self.from_chain(), self.name(), tran_id)
             if module is None:
                 ret = self._fromclient.send_platform_coin(sender, receiver, amount,  tran_data)
             else: 
@@ -230,14 +233,15 @@ class exv2b(baseobject):
             return ret
         
     def __checks(self):
-        assert (len(stmanage.get_sender_address_list(self._name, self.btc_chain())) > 0), "btc senders is invalid"
-        assert (len(self._module_address) == 64), "module_address is invalid"
-        assert (len(stmanage.get_receiver_address_list(self._name, self.proof_chain())) > 0), "violas server is invalid."
-        for violas_receiver in stmanage.get_receiver_address_list(self._name, self.proof_chain()):
-            assert len(violas_receiver) == 64, "violas receiver({}) is invalid".format(violas_receiver)
+        assert (len(stmanage.get_sender_address_list(self._name, self.map_chain())) > 0), f"{self.map_chain()} senders is invalid"
+        for sender in stmanage.get_sender_address_list(self._name, self.self.map_chain()):
+            assert len(sender) == 64, f"{self.map_chain()} address({f}) is invalied"
+
+        assert (len(stmanage.get_receiver_address_list(self._name, self.from_chain())) > 0), f"{self.from_chain()} receivers is invalid."
+        for receiver in stmanage.get_receiver_address_list(self._name, self.from_chain()):
+            assert len(receiver) == 64, f"{self.from_chain()} receiver({receiver}) is invalid"
     
-        for sender in stmanage.get_sender_address_list(self._name, self.btc_chain()):
-            assert len(sender) >= 20, "btc address({}) is invalied".format(sender)
+        assert (len(self._module_address) == 64), "module_address is invalid"
     
     def stop(self):
         try:
@@ -262,16 +266,14 @@ class exv2b(baseobject):
             for receiver in receivers:
                 if not self.work() :
                     break
-
-                ret = self._db.query_latest_version(receiver, self._module_address)
-                assert ret.state == error.SUCCEED, "get latest version error"
-                latest_version = ret.datas + 1
-                max_version = 0
     
                 ret  = self._wallet.get_account(receiver)
                 if ret.state != error.SUCCEED:
+                    self._logger.warning(f"get receiver({receiver})'s account failed.")
                     continue 
                 mapsender = ret.datas
+
+                latest_version = self._latest_version.get(receiver, -1)
 
                 #get old transaction from db, check transaction. version and receiver is current value
                 failed = rpcparams.get(receiver)
@@ -293,8 +295,9 @@ class exv2b(baseobject):
                                 version={version}, receiver={receiver}, amount={amount}, module={module}, tran_id={tran_id} datas from server.")
 
                         #check version, get transaction list is ordered ?
-                        #if version >= (latest_version - 1):
-                        #    continue
+                        if version > latest_version:
+                            self._logger.warning(f"transaction's version must be Less than or equal to latest_version.")
+                            continue
     
                         #match module 
                         if module != self._module_address:
@@ -307,13 +310,13 @@ class exv2b(baseobject):
                             self._logger.warning(f"not found transaction({data}) from violas server.")
                             continue
     
-                        #get map sender from btc senders
+                        #get map sender from senders
                         ret = self.__get_map_sender_address(amount)
                         if ret.state != error.SUCCEED:
                             continue
                         mapsender = ret.datas
     
-                        ##send btc transaction and mark to OP_RETURN
+                        ##send map transaction and mark to OP_RETURN
                         tran_data = self._mapclient.create_data_for_mark("violas", "l2v", "version", version)
                         ret = self._mapclient.send_violas_coin(mapsender, toaddress, amount, module, tran_data)
                         #update db state
@@ -342,8 +345,8 @@ class exv2b(baseobject):
             self.__checks()
     
             #db state: VFAILED
-            #send btc is succeed, but change transaction state is failed, 
-            ##so re send violas transaction to change state = end
+            #send token is succeed, but change transaction state is failed, 
+            ##so re send transaction to change state = end
             self._rechange_violas_state()
 
             #db state: FAILED
@@ -351,11 +354,11 @@ class exv2b(baseobject):
             self.reexchange_data_from_failed(gas)
     
             #db state: SUCCEED
-            #check state from violas blockchain, and change exchange history data, 
+            #check state from blockchain, and change exchange history data, 
             ##when change it to complete, can truncature history db
             self._rechange_db_state()
 
-            receivers = list(set(stmanage.get_receiver_address_list(self._name, self.proof_chain())))
+            receivers = list(set(stmanage.get_receiver_address_list(self._name, self.from_chain())))
             #modulti receiver, one-by-one
             for receiver in receivers:
                 if not self.work() :
@@ -363,15 +366,12 @@ class exv2b(baseobject):
 
                 ret  = self._wallet.get_account(receiver)
                 if ret.state != error.SUCCEED:
+                    self._logger.warning(f"get receiver({receiver})'s account failed.")
                     continue
                 fromsender = ret.datas
+                latest_version = self._latest_version.get(receiver, 0) + 1
 
-                ret = self._db.query_latest_version(receiver, self._module_address)
-                assert ret.state == error.SUCCEED, "get latest version error"
-                latest_version = ret.datas + 1
-                max_version = 0
-
-                #get new transaction from violas server
+                #get new transaction from server
                 ret = self._pserver.get_transactions_for_start(receiver, self._module_address, latest_version)
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     self._logger.debug("start exchange datas from violas/libra server. receiver={}".format(receiver))
@@ -379,7 +379,7 @@ class exv2b(baseobject):
                         if not self.work() :
                             break
 
-                        #grant vbtc 
+                        #grant token 
                         ##check 
                         fromaddress = data["address"]
                         amount      = int(data["amount"]) 
@@ -391,20 +391,17 @@ class exv2b(baseobject):
                         self._logger.info(f"start exchange l2v.sender={fromaddress},  receiver={receiver}, sequence={sequence} \
                                 version={version}, toaddress={toaddress}, amount={amount}, tran_id={tran_id} datas from server.")
     
-                        max_version = max(version, max_version)
+                        latest_version = self._latest_version.get(receiver, -1)
+                        self._latest_version[receiver] = max(version, latest_version)
 
-                        #data is save to db, so must be update max version
-                        ret = self._db.update_or_insert_version_commit(receiver, self._module_address, max_version)
-                        assert (ret.state == error.SUCCEED), "db error"
-    
                         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
                         ret = self._db.has_info(tran_id)
                         assert ret.state == error.SUCCEED, f"has_info(fromaddress={fromaddress}, sequence={sequence}, version={version}) failed."
                         if ret.datas == True:
-                            self._logger.warning(f"found transaction(tran_id = {tran_id})) in db. ignore it and process next."
+                            self._logger.warning(f"found transaction(tran_id = {tran_id})) in db. ignore it and process next.")
                             continue
     
-                        #get map sender from btc senders
+                        #get map sender from  senders
                         ret = self.__get_map_sender_address(amount)
                         if ret.state != error.SUCCEED:
                             self._logger.warning("not found map sender{toaddress} or amount too low. check address and amount")
@@ -414,9 +411,9 @@ class exv2b(baseobject):
                             continue
                         mapsender = ret.datas
     
-                        ##send btc transaction and mark to OP_RETURN
-                        tran_data = self._mapclient.create_data_for_mark("violas", "l2v", "version", version)
-                        ret = self._mapclient.send_violas_coin(mapsender, toaddress, amount, module, tran_data)
+                        ##send map transaction and mark data
+                        tran_data = self._mapclient.create_data_for_mark(self._map_chain(), "l2v", "version", version)
+                        ret = self._mapclient.send_violas_coin(mapsender, toaddress, amount, self._module_address, tran_data)
 
                         if ret.state != error.SUCCEED:
                             ret = self._db.insert_commit( "", toaddress, sequence, \
