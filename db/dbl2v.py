@@ -62,9 +62,10 @@ class dbl2v(baseobject):
         sequence    = Column(Integer, index=True, nullable=False)
         version     = Column(Integer, index=True, nullable=False, primary_key=True)
         amount      = Column(Integer, nullable=False)
-        fromaddress   = Column(String(64), index=True, nullable=False)
+        fromaddress = Column(String(64), index=True, nullable=False)
         toaddress   = Column(String(64), index=True, nullable=False)
-        module      = Column(String(64), nullable=False)
+        frommodule  = Column(String(64), nullable=True)
+        mapmodule   = Column(String(64), nullable=True)
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
         times       = Column(Integer, nullable=False, default=1)
@@ -73,7 +74,7 @@ class dbl2v(baseobject):
         def __repr__(self):
             return f"<info(sender={self.sender}, receiver={self.receiver}, sequence={self.sequence}, \
                     version={self.version}, amount={self.amount}, fromaddress={self.fromaddress}, \
-                    toaddress={self.toaddress}, module={self.module}, state={self.state}, \
+                    toaddress={self.toaddress}, frommodule={self.frommodule}, mapmodule={self.mapmodule}, state={self.state}, \
                     created={self.created}, times={self.times}, tranid={self.tranid})>"
 
     def __init_db(self, dbfile):
@@ -92,14 +93,14 @@ class dbl2v(baseobject):
     def __uninit_db(self):
         pass
         
-    def insert(self, sender, receiver, sequence, version, amount, fromaddress, toaddress, module, state, tranid):
+    def insert(self, sender, receiver, sequence, version, amount, fromaddress, toaddress, frommodule, mapmodule, state, tranid):
         try:
             self._logger.info(f"start insert(sender={sender}, receiver={receiver}, \
                     sequence={sequence}, version={version}, amount={amount}, fromaddress={fromaddress},\
-                    toaddress={toaddress}, module={module}, state={state.name}, tranid={tranid})") 
+                    toaddress={toaddress}, frommodule={mapmodule}, mapmodule={mapmodule}, state={state.name}, tranid={tranid})") 
 
             data = self.info(sender=sender, receiver=receiver, sequence=sequence, version=version, \
-                amount=amount, fromaddress=fromaddress, toaddress=toaddress, module=module, state=state.value, tranid=tranid)
+                amount=amount, fromaddress=fromaddress, toaddress=toaddress, frommodule=frommodule, mapmodule=mapmodule, state=state.value, tranid=tranid)
             self.__session.add(data)
 
             ret = result(error.SUCCEED, "", "")
@@ -107,9 +108,9 @@ class dbl2v(baseobject):
             ret = parse_except(e)
         return ret
 
-    def insert_commit(self, sender, receiver, sequence, version, amount, fromaddress, toaddress, module, state, tranid):
+    def insert_commit(self, sender, receiver, sequence, version, amount, fromaddress, toaddress, frommodule, mapmodule, state, tranid):
         try:
-            ret = self.insert(sender, receiver, sequence, version, amount, fromaddress, toaddress, module, state, tranid)
+            ret = self.insert(sender, receiver, sequence, version, amount, fromaddress, toaddress, frommodule, mapmodule, state, tranid)
             if ret.state != error.SUCCEED:
                 return ret 
             ret = self.commit()

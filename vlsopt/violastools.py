@@ -154,6 +154,7 @@ def get_latest_transaction_version():
 
 def get_transactions(start_version, limit = 1, fetch_event = True):
     logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
+
     client = get_violasclient()
     ret = client.get_transactions(start_version, limit, fetch_event)
     if ret.state != error.SUCCEED:

@@ -39,7 +39,7 @@ class exb2v(baseobject):
         self.set_map_chain(chain)
         #btc init
         self._bclient = btcclient(name, bnode)
-        self._b2v = dbb2v(self.name(), f"{self.from_chain.()}_{self.name()}.db")
+        self._b2v = dbb2v(self.name(), f"{self.from_chain()}_{self.name()}.db")
     
         #violas init
         self._vclient = violasproof(self.name(), vnodes)
@@ -295,7 +295,7 @@ class exb2v(baseobject):
     
             #update proof state to end, and update db state, prevstate is btcfailed in db. 
             #When this happens, there is not enough Bitcoin, etc.
-            self.__rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, stmanage.get_receiver_address_list(self.name(), self.map_chain()))
+            self.__rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, stmanage.get_receiver_address_list(self.name(), self.from_chain()))
     
             #get all excluded info from db
             rpcparams = {}

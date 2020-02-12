@@ -75,6 +75,11 @@ class afilter(abase):
                     break
 
                 transaction = data
+                version = transaction.get_version()
+
+                ret = self._dbclient.set_latest_filter_ver(version)
+                if ret.state != error.SUCCEED:
+                    return ret
 
                 tran_data = data.to_json()
                 if "data" not in tran_data:
@@ -88,12 +93,8 @@ class afilter(abase):
     
                 #save to redis db
                 value = json.dumps(tran_data)
-                key = tran_data.get("version", 0)
+                key = version
 
-                ret = self._dbclient.set_latest_filter_ver(key)
-                if ret.state != error.SUCCEED:
-                    return ret
-    
                 ret = self.parse_tran(tran_data)
                 if ret.state != error.SUCCEED or \
                         ret.datas.get("flag", None) not in self.get_tran_types() or \
