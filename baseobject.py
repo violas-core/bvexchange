@@ -42,19 +42,16 @@ class baseobject(object):
     def name(self):
         return self._name
 
-    def set_proof_chain(self, name):
-        self._proof_chain = name
-
     def from_chain(self):
         return self._from_chain
 
-    def set_from_chain(self, name)
-        return self._from_chain = name
+    def set_from_chain(self, name):
+        self._from_chain = name
 
-    def map_chain(self);
+    def map_chain(self):
         return self._map_chain
 
     def set_map_chain(self, name):
-        return self._map_chain = name
+        self._map_chain = name
 
 

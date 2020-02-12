@@ -19,7 +19,7 @@ import db
 import db.dbb2v
 import db.dbv2b
 import comm.functions as fn
-from exchange import b2v, v2b
+from exchange import b2v, v2b, exlv
 from comm.result import parse_except
 from analysis import analysis_base, analysis_filter, analysis_proof
 import subprocess
@@ -37,6 +37,8 @@ class work_mod(Enum):
     LFILTER = 5
     LPROOF  = 6
     V2LPROOF= 7
+    L2V     = 8
+    V2L     = 9
 
 class works:
     __threads = []
@@ -215,6 +217,33 @@ class works:
         finally:
             logger.critical("stop: vproof")
 
+    def work_l2v(self, nsec):
+        try:
+            logger.critical("start: l2v")
+            while (self.__work_looping.get(work_mod.L2V.name, False)):
+                logger.debug("looping: l2v")
+                mod = "l2v"
+                try:
+                    v2bobj = exlv.exlv(mod, 
+                            stmanage.get_libra_nodes(),
+                            stmanage.get_violas_nodes(), 
+                            stmanage.get_db(mod), 
+                            None,
+                            stmanage.get_module_address(mod, "violas"), 
+                            list(set(stmanage.get_receiver_address_list(mod, "libra"))),
+                            list(set(stmanage.get_sender_address_list(mod, "violas"))),
+                            "libra",
+                            "violas")
+                    self.set_work_obj(v2bobj)
+                    v2bobj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical("stop: v2b")
+    
     def work_comm(self, nsec):
         try:
             logger.critical("start: comm")
@@ -281,6 +310,8 @@ class works:
             if work_mods.get(work_mod.LPROOF.name, False):
                 self.thread_append(self.work_lproof, work_mod.LPROOF.value, "lproof", stmanage.get_looping_sleep("lproof"))
 
+            if work_mods.get(work_mod.L2V.name, False):
+                self.thread_append(self.work_l2v, work_mod.l2v.value, "l2v", stmanage.get_looping_sleep("l2v"))
             
             for work in self.__threads:
                 work.start() #start work
@@ -326,8 +357,8 @@ def signal_stop(signal, frame):
 
 def run(mods):
     for mod in mods:
-        if mod is None or mod not in ["all", "b2v", "v2b", "vfilter", "v2bproof", "v2lproof", "lfilter", "lproof"]:
-            raise Exception(f"mod({mod}) is invalid [all, b2v, v2b, vfilter, v2bproof, v2lproof, lfilter, lproof].")
+        if mod is None or mod not in ["all", "b2v", "v2b", "vfilter", "v2bproof", "v2lproof", "lfilter", "lproof", "l2v"]:
+            raise Exception(f"mod({mod}) is invalid [all, b2v, v2b, vfilter, v2bproof, v2lproof, lfilter, lproof, l2v].")
 
     #fn.checkrerun(__file__)
     fn.write_pid(name)

@@ -28,7 +28,7 @@ from enum import Enum
 from vrequest.request_client import requestclient
 
 #module self.name
-name="v2b"
+mod_name="v2b"
 wallet_name = "vwallet"
 
 COINS = comm.values.COINS

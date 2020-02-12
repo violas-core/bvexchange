@@ -27,14 +27,14 @@ from enum import Enum
 from vrequest.request_client import requestclient
 
 #module self.name
-name="l2v"
+name="exlv"
 wallet_name = "vwallet"
 
 COINS = comm.values.COINS
 #load logging
-class exv2b(baseobject):    
+class exlv(baseobject):    
     _latest_version = {}
-    def __init__(self, name, fromnodes , mapnodes, proofdb, module, receivers, senders, fromchain = "libra", mapchain='violas'):
+    def __init__(self, name, fromnodes , mapnodes, proofdb, frommodule, mapmodule, receivers, senders, fromchain = "libra", mapchain='violas'):
         baseobject.__init__(self, name)
         self.set_from_chain(fromchain)
         self.set_map_chain(mapchain)
@@ -45,7 +45,8 @@ class exv2b(baseobject):
     
         #violas/libra init
         self._pserver = requestclient(name, proofdb)
-        self._module_address = module
+        self._from_module = frommodule
+        self._map_module = mapmodule
         self._receivers = receivers
         self._senders = senders
 
@@ -73,7 +74,7 @@ class exv2b(baseobject):
             self._logger.debug("start __merge_db_to_rpcparams")
             for info in dbinfos:
                 new_data = {"sender":info.sender, "receiver":info.receiver, "sequence":info.sequence, \
-                        "version":info.version, "module":info.module, "to_address":info.toaddress,  \
+                        "version":info.version, "frommodule":info.frommodule, "mapmodule":self.mapmodule, "to_address":info.toaddress,  \
                         "fromaddress":"fromaddress", "amount":info.amount, "times":info.times, "tran_id":info.tranid}
                 if info.toaddress in rpcparams.keys():
                     rpcparams[info.toaddress].append(new_data)
@@ -206,7 +207,7 @@ class exv2b(baseobject):
                 datas = ret_datas.datas.get(receiver)
                 for data in datas:
                     tran_id = data.get("tran_id")
-                    module = data.get("module")
+                    mapmodule = data.get("mapmodule")
                     if tran_id is None:
                         continue
                     #state is end? maybe changing state rasise except, but transaction is SUCCEED
@@ -216,10 +217,10 @@ class exv2b(baseobject):
                        assert (ret.state == error.SUCCEED), "db error"
                        continue
 
-                    if module != self._module_address:
+                    if module != self._mapmodule:
                         continue
                     #sendexproofmark succeed , change violas state
-                    self._send_coin_and_update_state_to_end(sender, receiver, module, tran_id)
+                    self._send_coin_and_update_state_to_end(sender, receiver, mapmodule, tran_id)
 
     def _send_coin_for_update_state_to_end(self, sender, receiver, module,  tran_id, amount = 1):
             tran_data = self._fromclient.create_data_for_end(self.from_chain(), self.name(), tran_id)
@@ -240,8 +241,6 @@ class exv2b(baseobject):
         assert (len(stmanage.get_receiver_address_list(self._name, self.from_chain())) > 0), f"{self.from_chain()} receivers is invalid."
         for receiver in stmanage.get_receiver_address_list(self._name, self.from_chain()):
             assert len(receiver) == 64, f"{self.from_chain()} receiver({receiver}) is invalid"
-    
-        assert (len(self._module_address) == 64), "module_address is invalid"
     
     def stop(self):
         try:
@@ -287,25 +286,27 @@ class exv2b(baseobject):
                         vamount     = data["amount"]
                         sequence    = int(data["sequence"])
                         version     = int(data["version"])
-                        module      = data["module"]
+                        frommodule   = data["frommodule"]
+                        mapmodule   = data["mapmodule"]
                         times       = data["times"]
                         tran_id     = data["tran_id"]
     
                         self._logger.info(f"start exchange exglv, datas from db. toaddress={toaddress}, sequence={sequence} \
-                                version={version}, receiver={receiver}, amount={amount}, module={module}, tran_id={tran_id} datas from server.")
+                                version={version}, receiver={receiver}, amount={amount}, frommodule={frommodule}, \
+                                mapmodule={mapmodule}, tran_id={tran_id} datas from server.")
 
                         #check version, get transaction list is ordered ?
                         if version > latest_version:
                             self._logger.warning(f"transaction's version must be Less than or equal to latest_version.")
                             continue
     
-                        #match module 
-                        if module != self._module_address:
-                            self._logger.warning(f"module is not match. {module}<->{self._module_address}")
+                        #match map module 
+                        if mapmodule != self.mapmodule_address:
+                            self._logger.warning(f"map module is not match. {mapmodule}<->{self._mapmodule}")
                             continue
     
                         #not found , process next
-                        ret = self._vserver.has_transaction(fromaddress, module, baddress, sequence, vamount, version, vreceiver)
+                        ret = self._vserver.has_transaction(fromaddress, mapmodule, baddress, sequence, vamount, version, vreceiver)
                         if ret.state != error.SUCCEED or ret.datas != True:
                             self._logger.warning(f"not found transaction({data}) from violas server.")
                             continue
@@ -318,7 +319,7 @@ class exv2b(baseobject):
     
                         ##send map transaction and mark to OP_RETURN
                         tran_data = self._mapclient.create_data_for_mark("violas", "l2v", "version", version)
-                        ret = self._mapclient.send_violas_coin(mapsender, toaddress, amount, module, tran_data)
+                        ret = self._mapclient.send_violas_coin(mapsender, toaddress, amount, mapmodule, tran_data)
                         #update db state
                         if ret.state == error.SUCCEED:
                             ret = self._db.update_to_succeed_commit(tran_id)
@@ -329,7 +330,7 @@ class exv2b(baseobject):
                             continue
 
                         #sendexproofmark succeed , send violas/libra coin with data for change violas state
-                        self._send_violas_coin_and_update_state_to_end(fromsender, receiver, module, tran_id)
+                        self._send_violas_coin_and_update_state_to_end(fromsender, receiver, frommodule, tran_id)
 
             ret = result(error.SUCCEED)
         except Exception as e:
@@ -372,7 +373,7 @@ class exv2b(baseobject):
                 latest_version = self._latest_version.get(receiver, 0) + 1
 
                 #get new transaction from server
-                ret = self._pserver.get_transactions_for_start(receiver, self._module_address, latest_version)
+                ret = self._pserver.get_transactions_for_start(receiver, self._from_module, latest_version)
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     self._logger.debug("start exchange datas from violas/libra server. receiver={}".format(receiver))
                     for data in ret.datas:
@@ -406,27 +407,27 @@ class exv2b(baseobject):
                         if ret.state != error.SUCCEED:
                             self._logger.warning("not found map sender{toaddress} or amount too low. check address and amount")
                             ret = self._db.insert_commit( "", toaddress, sequence, \
-                                    version, amount, self._module_address, fromaddress, receiver, dbl2v.state.FAILED, tran_id)
+                                    version, amount, self._from_module, self._map_module, fromaddress, receiver, dbl2v.state.FAILED, tran_id)
                             assert (ret.state == error.SUCCEED), "db error"
                             continue
                         mapsender = ret.datas
     
                         ##send map transaction and mark data
                         tran_data = self._mapclient.create_data_for_mark(self._map_chain(), "l2v", "version", version)
-                        ret = self._mapclient.send_violas_coin(mapsender, toaddress, amount, self._module_address, tran_data)
+                        ret = self._mapclient.send_violas_coin(mapsender, toaddress, amount, self._map_module, tran_data)
 
                         if ret.state != error.SUCCEED:
                             ret = self._db.insert_commit( "", toaddress, sequence, \
-                                    version, amount, self._module_address, fromaddress, receiver, db.state.FAILED, tran_id)
+                                    version, amount, self._from_module, self._map_module, fromaddress, receiver, db.state.FAILED, tran_id)
                             assert (ret.state == error.SUCCEED), "db error"
                             continue
                         else:
                             ret = self._db.insert_commit( sender, toaddress, sequence, \
-                                    version, amount, self._module_address, fromaddress, receiver, db.state.SUCCEED, tran_id)
+                                    version, amount, self._from_module, self._map_module, fromaddress, receiver, db.state.SUCCEED, tran_id)
                             assert (ret.state == error.SUCCEED), "db error"
            
                         #sendexproofmark succeed , send violas/libra coin with data for change violas state
-                        self._send_coin_for_update_state_to_end(fromsender, receiver, self._module_address, tran_id)
+                        self._send_coin_for_update_state_to_end(fromsender, receiver, self._map_module, tran_id)
     
             ret = result(error.SUCCEED) 
     
@@ -439,9 +440,9 @@ class exv2b(baseobject):
     
 def main():
        print("start main")
-       l2v = exl2v()
+       lv = exlv()
        
-       ret = l2v.start()
+       ret = lv.start()
        if ret.state != error.SUCCEED:
            print(ret.message)
 
