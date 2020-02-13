@@ -25,7 +25,6 @@ from analysis import analysis_base, analysis_filter, analysis_proof
 import subprocess
 from enum import Enum
 
-
 name="bvexchange"
 
 class work_mod(Enum):
@@ -45,6 +44,7 @@ class works:
     __work_looping = {}
     __work_obj = {}
 
+    __libra_min_valid_version = 10902683
     def __init__(self):
         logger.debug("works __init__")
         for mod in self.__work_looping:
@@ -186,7 +186,7 @@ class works:
                     obj = analysis_filter.afilter(name="lfilter", ttype="libra", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_libra_nodes(), chain="libra")
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
-                    obj.set_min_valid_version(10227369 - 1)
+                    obj.set_min_valid_version(self.__libra_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
@@ -208,7 +208,7 @@ class works:
                     obj = analysis_proof.aproof(name="l2vproof", ttype="libra", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
-                    obj.set_min_valid_version(10227369 - 1)
+                    obj.set_min_valid_version(self.__libra_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:

@@ -76,7 +76,7 @@ class exlv(baseobject):
             self._logger.debug("start __merge_db_to_rpcparams")
             for info in dbinfos:
                 new_data = {"sender":info.sender, "receiver":info.receiver, "sequence":info.sequence, \
-                        "version":info.version, "frommodule":info.frommodule, "mapmodule":self.mapmodule, "to_address":info.toaddress,  \
+                        "version":info.version, "frommodule":info.frommodule, "mapmodule":info.mapmodule, "to_address":info.toaddress,  \
                         "fromaddress":"fromaddress", "amount":info.amount, "times":info.times, "tran_id":info.tranid}
                 if info.toaddress in rpcparams.keys():
                     rpcparams[info.toaddress].append(new_data)
@@ -296,7 +296,7 @@ class exlv(baseobject):
                         tran_id     = data["tran_id"]
     
                         self._logger.info(f"start exchange exglv, datas from db. toaddress={toaddress}, sequence={sequence} \
-                                version={version}, receiver={receiver}, amount={amount}, frommodule={frommodule}, \
+                                version={version}, receiver={receiver}, amount={vamount}, frommodule={frommodule}, \
                                 mapmodule={mapmodule}, tran_id={tran_id} datas from server.")
 
                         #check version, get transaction list is ordered ?
@@ -341,6 +341,13 @@ class exlv(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret 
+    def chain_data_is_valid(data):
+        try:
+            return len(data["to_address"]) == 64
+        except Exception as e:
+            pass
+        return False
+
     def start(self):
     
         try:
@@ -399,6 +406,10 @@ class exlv(baseobject):
     
                         latest_version = self._latest_version.get(receiver, -1)
                         self._latest_version[receiver] = max(version, latest_version)
+
+                        if self.chain_data_is_valid(data) == True:
+                            self._logger.warning(f"transaction(tran_id = {tran_id})) is invalid. ignore it and process next.")
+                            continue
 
                         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
                         ret = self._db.has_info(tran_id)
