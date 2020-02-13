@@ -20,10 +20,10 @@ btc_conn = {'rpcuser':'btc',
 #violas node list, to connect one
 violas_nodes=[
         #       {'name':'' , 'host':'51.140.241.96', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        {'name':'84', 'host':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
         {'name':'242', 'host':'13.68.141.242', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
         {'name':'50', 'host':'47.52.195.50', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
         {'name':'235', 'host':'18.220.66.235', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        {'name':'84', 'host':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
         ]
 
 #libra node list, to connect one
@@ -53,6 +53,11 @@ db_list=[
         {'host':'192.168.31.37', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
         {'host':'192.168.31.37', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
         {'host':'192.168.31.37', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':200},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
         ]
 
 address_list = {
