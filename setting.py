@@ -14,7 +14,7 @@ v2b_maxtimes = 99999
 #btc connect 
 btc_conn = {'rpcuser':'btc', 
         'rpcpassword':'btc', 
-        'rpcip':'127.0.0.1', 
+        'rpcip':'192.168.31.37', 
         'rpcport':18332}
 
 #violas node list, to connect one
@@ -42,11 +42,22 @@ violas_servers=[
 #db info type(vfilter vfilter lfilter v2b  l2b v2l)
 db_list=[
         #'db_transactions':{'host':'127.0.0.1', 'port':6378, 'db':'3', 'password':'123'},
-        {'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':100},
-        {'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':200},
-        {'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
-        {'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
-        {'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':300},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':300},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
+        #remote
+        {'host':'192.168.31.37', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':300},
+        {'host':'192.168.31.37', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':300},
+        {'host':'192.168.31.37', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
+        {'host':'192.168.31.37', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
+        {'host':'192.168.31.37', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':200},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
         ]
 
 address_list = {
