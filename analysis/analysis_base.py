@@ -29,6 +29,7 @@ class abase(baseobject):
     _step = 1000
     _dtypes = []
     _tran_types = []
+    _min_valid_version = -1
     class datatype(Enum):
         V2B = 1
         V2L = 2
@@ -65,6 +66,15 @@ class abase(baseobject):
         if vnodes is not None:
             self._vclient = violasclient(name, vnodes, chain) 
         return self._vclient
+
+    def set_min_valid_version(self, version):
+        self._min_valid_version = version
+
+    def get_min_valid_version(self):
+        return self._min_valid_version
+
+    def get_start_version(self, version):
+        return max(self.get_min_valid_version(), version)
 
     def _datatype_name_to_type(self, name):
         for ev in self.datatype:

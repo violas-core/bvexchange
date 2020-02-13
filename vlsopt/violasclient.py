@@ -240,7 +240,7 @@ class violasclient(baseobject):
 
     def send_platform_coin(self, from_account, to_address, amount, data=None, is_blocking=True):
         try:
-            self._logger.info(f"start send_platform_coin(from_account={from_account.address}, to_address={to_address}, amount={amount}, data={data}, is_blocking={is_blocking})")
+            self._logger.info(f"start send_platform_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, data={data}, is_blocking={is_blocking})")
             self.__client.transfer_coin(from_account, to_address, amount, data=data, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
@@ -249,7 +249,7 @@ class violasclient(baseobject):
 
     def send_violas_coin(self, from_account, to_address, amount, module_address, data=None, is_blocking=True):
         try:
-            self._logger.info(f"start send_violas_coin(from_account={from_account.address}, to_address={to_address}, amount={amount}, module_address={module_address}, data={data}, is_blocking={is_blocking})")
+            self._logger.info(f"start send_violas_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, module_address={module_address}, data={data}, is_blocking={is_blocking})")
             self.__client.transfer_coin(sender_account=from_account, receiver_address=to_address, \
                     micro_coins=amount, module_address=module_address, data=data, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 

@@ -325,8 +325,8 @@ def run(argc, argv):
             if len(arg_list) not in (3, 4):
                 pargs.exit_error_opt(opt)
             data = None
-            if len(arg_list) == 5:
-                data = json.dumps(arg_list[4])
+            if len(arg_list) == 4:
+                data = json.dumps(arg_list[3])
             ret = send_platform_coin(arg_list[0], arg_list[1], int(arg_list[2]), data)
         elif pargs.is_matched(opt, ["get_account"]):
             if len(arg_list) != 1:

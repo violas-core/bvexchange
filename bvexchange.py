@@ -35,7 +35,7 @@ class work_mod(Enum):
     VFILTER = 3
     V2BPROOF= 4
     LFILTER = 5
-    LPROOF  = 6
+    L2VPROOF  = 6
     V2LPROOF= 7
     L2V     = 8
     V2L     = 9
@@ -73,14 +73,14 @@ class works:
                 try:
                     mod = "b2v"
                     chain = "violas"
-                    b2vobj = b2v.exb2v(mod,
+                    obj = b2v.exb2v(mod,
                             stmanage.get_violas_nodes(), 
                             stmanage.get_btc_conn(), 
                             stmanage.get_module_address(mod, chain), 
                             stmanage.get_combine_address(), 
                             chain=chain)
-                    self.set_work_obj(b2vobj)
-                    b2vobj.start()
+                    self.set_work_obj(obj)
+                    obj.start()
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -97,15 +97,15 @@ class works:
                 mod = "v2b"
                 chain = "violas"
                 try:
-                    v2bobj = v2b.exv2b(mod, 
+                    obj = v2b.exv2b(mod, 
                             stmanage.get_violas_nodes(), 
                             stmanage.get_btc_conn(), 
                             stmanage.get_db(mod), 
                             stmanage.get_module_address(mod, chain), 
                             list(set(stmanage.get_receiver_address_list(mod, chain))),
                             chain=chain)
-                    self.set_work_obj(v2bobj)
-                    v2bobj.start()
+                    self.set_work_obj(obj)
+                    obj.start()
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -121,11 +121,11 @@ class works:
                 logger.debug("looping: vfilter")
                 try:
                     dtype = "vfilter"
-                    vfilter = analysis_filter.afilter(name="vfilter", ttype="violas", \
+                    obj = analysis_filter.afilter(name="vfilter", ttype="violas", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
-                    vfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
-                    self.set_work_obj(vfilter)
-                    vfilter.start()
+                    obj.set_step(stmanage.get_db(dtype).get("step", 1000))
+                    self.set_work_obj(obj)
+                    obj.start()
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -142,11 +142,11 @@ class works:
                 try:
                     dtype = "v2b"   #violas transaction's data types 
                     basedata = "vfilter"
-                    vproof = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
+                    obj = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    vproof.set_step(stmanage.get_db(dtype).get("step", 100))
-                    self.set_work_obj(vproof)
-                    vproof.start()
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    self.set_work_obj(obj)
+                    obj.start()
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -163,11 +163,11 @@ class works:
                 try:
                     dtype = "v2l"   #violas transaction's data types 
                     basedata = "vfilter"
-                    vproof = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
+                    obj = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    vproof.set_step(stmanage.get_db(dtype).get("step", 100))
-                    self.set_work_obj(vproof)
-                    vproof.start()
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    self.set_work_obj(obj)
+                    obj.start()
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -183,11 +183,12 @@ class works:
                 logger.debug("looping: lfilter")
                 try:
                     dtype = "lfilter"
-                    lfilter = analysis_filter.afilter(name="lfilter", ttype="libra", \
+                    obj = analysis_filter.afilter(name="lfilter", ttype="libra", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_libra_nodes(), chain="libra")
-                    lfilter.set_step(stmanage.get_db(dtype).get("step", 1000))
-                    self.set_work_obj(lfilter)
-                    lfilter.start()
+                    obj.set_step(stmanage.get_db(dtype).get("step", 1000))
+                    obj.set_min_valid_version(10227369 - 1)
+                    self.set_work_obj(obj)
+                    obj.start()
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -196,26 +197,27 @@ class works:
         finally:
             logger.critical("stop: lfilter")
 
-    def work_lproof(self, nsec):
+    def work_l2vproof(self, nsec):
         try:
-            logger.critical("start: violas proof")
-            while (self.__work_looping.get(work_mod.LPROOF.name, False)):
-                logger.debug("looping: lproof")
+            logger.critical("start: l2v proof")
+            while (self.__work_looping.get(work_mod.L2VPROOF.name, False)):
+                logger.debug("looping: l2vproof")
                 try:
                     dtype = "l2v"   #libra transaction's data types 
                     basedata = "lfilter"
-                    lproof = analysis_proof.aproof(name="l2vproof", ttype="libra", dtype=dtype, \
+                    obj = analysis_proof.aproof(name="l2vproof", ttype="libra", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    lproof.set_step(stmanage.get_db(dtype).get("step", 100))
-                    self.set_work_obj(lproof)
-                    lproof.start()
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    obj.set_min_valid_version(10227369 - 1)
+                    self.set_work_obj(obj)
+                    obj.start()
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: vproof")
+            logger.critical("stop: l2vproof")
 
     def work_l2v(self, nsec):
         try:
@@ -224,7 +226,7 @@ class works:
                 logger.debug("looping: l2v")
                 mod = "l2v"
                 try:
-                    v2bobj = exlv.exlv(mod, 
+                    obj = exlv.exlv(mod, 
                             stmanage.get_libra_nodes(),
                             stmanage.get_violas_nodes(), 
                             stmanage.get_db(mod), 
@@ -234,15 +236,15 @@ class works:
                             list(set(stmanage.get_sender_address_list(mod, "violas"))),
                             "libra",
                             "violas")
-                    self.set_work_obj(v2bobj)
-                    v2bobj.start()
+                    self.set_work_obj(obj)
+                    obj.start()
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: v2b")
+            logger.critical("stop: l2v")
     
     def work_comm(self, nsec):
         try:
@@ -307,11 +309,11 @@ class works:
             if work_mods.get(work_mod.LFILTER.name, False):
                 self.thread_append(self.work_lfilter, work_mod.LFILTER.value, "lfilter", stmanage.get_looping_sleep("lfilter"))
 
-            if work_mods.get(work_mod.LPROOF.name, False):
-                self.thread_append(self.work_lproof, work_mod.LPROOF.value, "lproof", stmanage.get_looping_sleep("lproof"))
+            if work_mods.get(work_mod.L2VPROOF.name, False):
+                self.thread_append(self.work_l2vproof, work_mod.L2VPROOF.value, "l2vproof", stmanage.get_looping_sleep("l2vproof"))
 
             if work_mods.get(work_mod.L2V.name, False):
-                self.thread_append(self.work_l2v, work_mod.l2v.value, "l2v", stmanage.get_looping_sleep("l2v"))
+                self.thread_append(self.work_l2v, work_mod.L2V.value, "l2v", stmanage.get_looping_sleep("l2v"))
             
             for work in self.__threads:
                 work.start() #start work
@@ -357,8 +359,8 @@ def signal_stop(signal, frame):
 
 def run(mods):
     for mod in mods:
-        if mod is None or mod not in ["all", "b2v", "v2b", "vfilter", "v2bproof", "v2lproof", "lfilter", "lproof", "l2v"]:
-            raise Exception(f"mod({mod}) is invalid [all, b2v, v2b, vfilter, v2bproof, v2lproof, lfilter, lproof, l2v].")
+        if mod is None or mod not in ["all", "b2v", "v2b", "vfilter", "v2bproof", "v2lproof", "lfilter", "l2vproof", "l2v"]:
+            raise Exception(f"mod({mod}) is invalid [all, b2v, v2b, vfilter, v2bproof, v2lproof, lfilter, l2vproof, l2v].")
 
     #fn.checkrerun(__file__)
     fn.write_pid(name)
