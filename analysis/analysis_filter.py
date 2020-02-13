@@ -58,15 +58,17 @@ class afilter(abase):
             db_latest_ver = ret.datas
                 
             if db_latest_ver is None or len(db_latest_ver) == 0:
-                db_latest_ver = '-1'
-            i = int(db_latest_ver) + 1
+                db_latest_ver = str(self.get_min_valid_version() - 1)
+            start_version = int(db_latest_ver) + 1
+            start_version = self.get_start_version(start_version)
     
             latest_saved_ver = str(self._dbclient.get_latest_saved_ver().datas)
-            self._logger.debug(f"latest_saved_ver={latest_saved_ver} start version = {i}  step = {self.get_step()} chain_latest_ver = {chain_latest_ver} ")
-            if i > chain_latest_ver:
+            
+            self._logger.debug(f"latest_saved_ver={latest_saved_ver} start version = {start_version}  step = {self.get_step()} chain_latest_ver = {chain_latest_ver} ")
+            if start_version > chain_latest_ver:
                return result(error.SUCCEED)
     
-            ret = self._vclient.get_transactions(i, self.get_step(), True)
+            ret = self._vclient.get_transactions(start_version, self.get_step(), True)
             if ret.state != error.SUCCEED:
                 return ret
 
