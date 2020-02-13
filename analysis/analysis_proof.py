@@ -167,7 +167,7 @@ class aproof(abase):
             ret = self._dbclient.get_proof_min_version_for_start()
             if ret.state != error.SUCCEED:
                 return ret
-            version = int(ret.datas)
+            version = max(int(ret.datas), self.get_min_valid_version())
             start_version = version
 
             ret = self._dbclient.get_latest_saved_ver()
@@ -175,6 +175,7 @@ class aproof(abase):
                 return ret
             max_version = int(ret.datas)
             while version <= max_version:
+                self._logger.debug(f"check version {version}")
                 ret = self._dbclient.get(version)
                 if ret.state != error.SUCCEED:
                     return ret
@@ -205,7 +206,7 @@ class aproof(abase):
             latest_filter_ver = ret.datas
 
             if latest_filter_ver is None or len(latest_filter_ver) == 0:
-                latest_filter_ver = '-1'
+                latest_filter_ver = str(self.get_min_valid_version() -1)
             start_version = int(latest_filter_ver) + 1
 
             #can get max version 
@@ -218,6 +219,7 @@ class aproof(abase):
             max_version = int(latest_saved_ver)
 
             #not found new transaction to change state
+            start_version = self.get_start_version(start_version)
             if start_version > max_version:
                 self._logger.debug(f"start version:{start_version} max version:{max_version}")
                 return result(error.SUCCEED)

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-btc exchange vtoken db
+vlibra libra exchange vtoken db
 '''
 import operator
 import sys,os
@@ -13,6 +13,7 @@ import datetime
 import sqlalchemy
 import stmanage
 import random
+import comm
 from comm.error import error
 from comm.result import result
 from sqlalchemy import create_engine
@@ -57,13 +58,13 @@ class dbl2v(baseobject):
     #exc_traceback_objle : info
     class info(__base):
         __tablename__='l2vinfo'
-        sender      = Column(String(64), index=True, nullable=False) #libra address
-        receiver    = Column(String(64), index=True, nullable=False) #libra address
+        sender      = Column(String(64), nullable=True) #libra address
+        receiver    = Column(String(64), nullable=False) #libra address
         sequence    = Column(Integer, index=True, nullable=False)
-        version     = Column(Integer, index=True, nullable=False, primary_key=True)
+        version     = Column(Integer, index=True, nullable=False)
         amount      = Column(Integer, nullable=False)
-        fromaddress = Column(String(64), index=True, nullable=False)
-        toaddress   = Column(String(64), index=True, nullable=False)
+        fromaddress = Column(String(64), nullable=False)
+        toaddress   = Column(String(64), nullable=False)
         frommodule  = Column(String(64), nullable=True)
         mapmodule   = Column(String(64), nullable=True)
         state       = Column(Integer, index=True, nullable=False)
@@ -97,7 +98,7 @@ class dbl2v(baseobject):
         try:
             self._logger.info(f"start insert(sender={sender}, receiver={receiver}, \
                     sequence={sequence}, version={version}, amount={amount}, fromaddress={fromaddress},\
-                    toaddress={toaddress}, frommodule={mapmodule}, mapmodule={mapmodule}, state={state.name}, tranid={tranid})") 
+                    toaddress={toaddress}, frommodule={frommodule}, mapmodule={mapmodule}, state={state.name}, tranid={tranid})") 
 
             data = self.info(sender=sender, receiver=receiver, sequence=sequence, version=version, \
                 amount=amount, fromaddress=fromaddress, toaddress=toaddress, frommodule=frommodule, mapmodule=mapmodule, state=state.value, tranid=tranid)
@@ -256,7 +257,7 @@ def test_dbl2v():
     pass
     logger = log.logger.getLogger("test_dbl2v")
     db = dbl2v("test_dbl2v", "test_dbl2v.db")
-    db.flushinfo()
+    #db.flushinfo()
     tran_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     ret = db.insert_commit("b50323341dd6e996d7add7777af0de640ffe1407828cd7db625097b40e6a2c78", \
             "29223f25fe4b74d75ca87527aed560b2826f5da9382e2fb83f9ab740ac40b8f7",\
@@ -265,6 +266,7 @@ def test_dbl2v():
             1000, \
             "fd0426fa9a3ba4fae760d0f614591c61bb53232a3b1138d5078efa11ef07c49c", \
             "fd0426fa9a3ba4fae760d0f614591c61bb53232a3b1138d5078efa11ef07c49c", \
+            "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             dbl2v.state.START, \
             tran_id            
@@ -278,6 +280,7 @@ def test_dbl2v():
             2000, \
             "fd0426fa9a3ba4fae760d0f614591c61bb53232a3b1138d5078efa11ef07c49c", \
             "fd0426fa9a3ba4fae760d0f614591c61bb53232a3b1138d5078efa11ef07c49c", \
+            "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             dbl2v.state.START, \
             "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
