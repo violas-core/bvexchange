@@ -230,7 +230,7 @@ class works:
                             stmanage.get_libra_nodes(),
                             stmanage.get_violas_nodes(), 
                             stmanage.get_db(mod), 
-                            None,
+                            stmanage.get_module_address(mod, "libra"), 
                             stmanage.get_module_address(mod, "violas"), 
                             list(set(stmanage.get_receiver_address_list(mod, "libra"))),
                             list(set(stmanage.get_sender_address_list(mod, "violas"))),

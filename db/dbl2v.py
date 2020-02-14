@@ -43,13 +43,15 @@ class dbl2v(baseobject):
 
     #btc exchange vtoken state
     #state change case:  
-    ##SUCCEED->COMPLETE
-    ##SUCCEED->VFAILED->SUCCEED->COMPLETE
-    ##FAILED->SUCCEED->COMPLETE
+    #->FAILED
+    #->SUCCEED
+    ##SUCCEED->VSUCCEED->COMPLETE
+    ##SUCCEED->VFAILED->VSUCCEED->COMPLETE
+    ##FAILED->SUCCEED->VSUCCEED->COMPLETE
     ##FAILED->SUCCEED->VFAILED->SUCCEED->COMPLETE
     class state(Enum):
         START       = 0  #no use
-        SUCCEED     = 1  #send token ok and send change state transaction succeed but not confirm
+        SUCCEED     = 1  #send token ok 
         FAILED      = 2  #send map token failed
         VFAILED     = 3  #send change state transaction failed
         VSUCCEED    = 4  #send change state transaction succeed

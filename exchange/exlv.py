@@ -211,6 +211,7 @@ class exlv(baseobject):
                 for data in datas:
                     tran_id = data.get("tran_id")
                     mapmodule = data.get("mapmodule")
+                    frommodule = data.get("frommodule")
                     if tran_id is None:
                         continue
                     #state is end? maybe changing state rasise except, but transaction is SUCCEED
@@ -220,17 +221,18 @@ class exlv(baseobject):
                        assert (ret.state == error.SUCCEED), "db error"
                        continue
 
-                    if module != self._mapmodule:
+                    if mapmodule != self._map_module or frommodule != self._from_module:
+                        self._logger.warning(f"mapmodule({mapmodule}) != {self._map_module} or frommodule != {self._from_module}")
                         continue
                     #sendexproofmark succeed , change violas state
-                    self._send_coin_and_update_state_to_end(sender, receiver, mapmodule, tran_id)
+                    self._send_coin_for_update_state_to_end(sender, receiver, frommodule, tran_id)
 
     def _send_coin_for_update_state_to_end(self, sender, receiver, module, tran_id, amount = 1):
             self._logger.debug(f"start _send_coin_for_update_state_to_end(sender={sender.address.hex()},"\
                     f"recever={receiver}, module={module}, tran_id={tran_id}, amount={amount})")
             tran_data = self._fromclient.create_data_for_end(self.from_chain(), self.name(), tran_id)
-            if module is None:
-                ret = self._fromclient.send_platform_coin(sender, receiver, amount,  tran_data)
+            if module is None or module == "0000000000000000000000000000000000000000000000000000000000000000":
+                ret = self._fromclient.send_platform_coin(sender, receiver, amount, tran_data)
             else: 
                 ret = self._fromclient.send_violas_coin(sender, receiver, amount, module, tran_data)
             if ret.state == error.SUCCEED:
@@ -338,21 +340,21 @@ class exlv(baseobject):
                             continue
     
                         #not found , process next
-                        ret = self._pserver.has_transaction(fromaddress, mapmodule, toaddress, sequence, vamount, version, receiver)
+                        ret = self._pserver.has_transaction_for_tranid(tran_id)
                         if ret.state != error.SUCCEED or ret.datas != True:
-                            self._logger.warning(f"not found transaction from violas server.")
+                            self._logger.warning(f"not found transaction from {self.from_chain} server.")
                             continue
     
                         #get map sender from senders
-                        ret = self.__get_map_sender_address(amount)
+                        ret = self.__get_map_sender_address(vamount)
                         if ret.state != error.SUCCEED:
                             continue
                         mapsender = ret.datas
                         self._logger.debug(f"mapsender: {mapsender}")
     
                         ##send map transaction and mark to OP_RETURN
-                        tran_data = self._mapclient.create_data_for_mark("violas", "l2v", "version", version)
-                        ret = self._mapclient.send_violas_coin(mapsender, toaddress, amount, mapmodule, tran_data)
+                        tran_data = self._mapclient.create_data_for_mark(self.map_chain(), self.name(), tran_id, version)
+                        ret = self._mapclient.send_violas_coin(mapsender, toaddress, vamount, mapmodule, tran_data)
                         #update db state
                         if ret.state == error.SUCCEED:
                             ret = self._db.update_to_succeed_commit(tran_id)
@@ -363,7 +365,7 @@ class exlv(baseobject):
                             continue
 
                         #sendexproofmark succeed , send violas/libra coin with data for change violas state
-                        self._send_violas_coin_and_update_state_to_end(fromsender, receiver, frommodule, tran_id)
+                        self._send_coin_for_update_state_to_end(fromsender, receiver, frommodule, tran_id)
 
             ret = result(error.SUCCEED)
         except Exception as e:

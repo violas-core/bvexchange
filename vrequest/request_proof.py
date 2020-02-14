@@ -42,6 +42,22 @@ class requestproof(requestbase):
             parse_except(e)
         return ret
 
+    def has_transaction_for_tranid(self, tranid):
+        try:
+            ret = self.get_proof_by_hash(tranid)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            tran_info = json.loads(ret.datas)
+            beque = tran_info.get("tran_id") == tranid 
+            ret = result(error.SUCCEED, "", beque)
+        except Exception as e:
+            ret = parse_except(e)
+        finally:
+            self._logger.debug("end has_transaction.")
+        return ret
+
+
     def has_transaction(self, address, module, to_address, sequence, amount, version, receiver):
         try:
             ret = self.get(version)

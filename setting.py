@@ -94,7 +94,9 @@ address_list = {
             {'address':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'type':'b2v', 'chain':'violas'},
             #vlibra module
             {'address':'61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410', 'type':'v2l', 'chain':'violas'},
+            {'address':'0000000000000000000000000000000000000000000000000000000000000000', 'type':'v2l', 'chain':'libra'},
             #vlibra module
+            {'address':'0000000000000000000000000000000000000000000000000000000000000000', 'type':'l2v', 'chain':'libra'},
             {'address':'61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410', 'type':'l2v', 'chain':'violas'},
             ],
         #combine coins to 
