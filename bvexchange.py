@@ -44,7 +44,7 @@ class works:
     __work_looping = {}
     __work_obj = {}
 
-    __libra_min_valid_version = 10902683
+    __libra_min_valid_version = 18323504
     def __init__(self):
         logger.debug("works __init__")
         for mod in self.__work_looping:

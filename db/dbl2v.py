@@ -49,8 +49,8 @@ class dbl2v(baseobject):
     ##FAILED->SUCCEED->VFAILED->SUCCEED->COMPLETE
     class state(Enum):
         START       = 0  #no use
-        SUCCEED     = 1  #send btc ok and send change state transaction succeed but not confirm
-        FAILED      = 2  #send btc failed
+        SUCCEED     = 1  #send token ok and send change state transaction succeed but not confirm
+        FAILED      = 2  #send map token failed
         VFAILED     = 3  #send change state transaction failed
         VSUCCEED    = 4  #send change state transaction succeed
         COMPLETE    = 6  #change state is confirmed

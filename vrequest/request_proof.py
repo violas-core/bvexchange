@@ -77,8 +77,7 @@ class requestproof(requestbase):
             ret = result(error.SUCCEED, "", beque)
         except Exception as e:
             ret = parse_except(e)
-        finally:
-            self._logger.debug("end has_transaction.")
+
         return ret
 
     def is_start(self, tran_id):
