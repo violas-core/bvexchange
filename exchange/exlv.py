@@ -76,8 +76,9 @@ class exlv(baseobject):
             self._logger.debug("start __merge_db_to_rpcparams")
             for info in dbinfos:
                 new_data = {"sender":info.sender, "receiver":info.receiver, "sequence":info.sequence, \
-                        "version":info.version, "frommodule":info.frommodule, "mapmodule":info.mapmodule, "to_address":info.toaddress,  \
-                        "fromaddress":"fromaddress", "amount":info.amount, "times":info.times, "tran_id":info.tranid}
+                        "version":info.version, "frommodule":info.frommodule, "mapmodule":info.mapmodule, "toaddress":info.toaddress,  \
+                        "fromaddress":info.fromaddress, "amount":info.amount, "times":info.times, "tran_id":info.tranid}
+                #server receiver address
                 if info.toaddress in rpcparams.keys():
                     rpcparams[info.toaddress].append(new_data)
                 else:
@@ -225,8 +226,8 @@ class exlv(baseobject):
                     self._send_coin_and_update_state_to_end(sender, receiver, mapmodule, tran_id)
 
     def _send_coin_for_update_state_to_end(self, sender, receiver, module, tran_id, amount = 1):
-            self._logger.debug("start _send_coin_for_update_state_to_end(sender={sender.address.hex(), \
-                    recever={receiver}, module={module}, tran_id={tran_id}, amount={amount}})")
+            self._logger.debug(f"start _send_coin_for_update_state_to_end(sender={sender.address.hex()},"\
+                    f"recever={receiver}, module={module}, tran_id={tran_id}, amount={amount})")
             tran_data = self._fromclient.create_data_for_end(self.from_chain(), self.name(), tran_id)
             if module is None:
                 ret = self._fromclient.send_platform_coin(sender, receiver, amount,  tran_data)
@@ -255,6 +256,23 @@ class exlv(baseobject):
         except Exception as e:
             parse_except(e)
 
+    def db_data_is_valid(self, data):
+        try:
+            toaddress   = data["receiver"]
+            vamount     = data["amount"]
+            sequence    = int(data["sequence"])
+            version     = int(data["version"])
+            frommodule   = data["frommodule"]
+            mapmodule   = data["mapmodule"]
+            times       = data["times"]
+            tran_id     = data["tran_id"]
+            fromaddress = data["fromaddress"]
+            self._logger.debug(f"check address{toaddress}. len({toaddress})=64?")
+            return len(toaddress) == 64 
+        except Exception as e:
+            pass
+        return False
+
     def reexchange_data_from_failed(self, gas = 1000):
         try:
             #get all excluded info from db
@@ -266,6 +284,13 @@ class exlv(baseobject):
             receivers = self._receivers
 
             #modulti receiver, one-by-one
+            ret = self._pserver.get_latest_saved_ver()
+            if(ret.state != error.SUCCEED):
+                self._logger.debug(f"get_latest_saved_ver from request client failed.")
+                return ret
+            latest_version = int(ret.datas)
+            self._logger.debug(f"get latest saved version from db is : {latest_version}")
+            
             for receiver in receivers:
                 if not self.work() :
                     break
@@ -274,9 +299,7 @@ class exlv(baseobject):
                 if ret.state != error.SUCCEED:
                     self._logger.warning(f"get receiver({receiver})'s account failed.")
                     continue 
-                mapsender = ret.datas
-
-                latest_version = self._latest_version.get(receiver, -1)
+                fromsender = ret.datas
 
                 #get old transaction from db, check transaction. version and receiver is current value
                 failed = rpcparams.get(receiver)
@@ -290,29 +313,34 @@ class exlv(baseobject):
                         vamount     = data["amount"]
                         sequence    = int(data["sequence"])
                         version     = int(data["version"])
-                        frommodule   = data["frommodule"]
+                        frommodule  = data["frommodule"]
                         mapmodule   = data["mapmodule"]
                         times       = data["times"]
                         tran_id     = data["tran_id"]
+                        fromaddress = data["fromaddress"]
     
-                        self._logger.info(f"start exchange exglv, datas from db. toaddress={toaddress}, sequence={sequence} \
-                                version={version}, receiver={receiver}, amount={vamount}, frommodule={frommodule}, \
-                                mapmodule={mapmodule}, tran_id={tran_id} datas from server.")
+                        self._logger.info(f"start exchange exglv, datas from db. toaddress={toaddress}, sequence={sequence} " + \
+                                f"version={version}, receiver={receiver}, amount={vamount}, frommodule={frommodule}, " + \
+                                f"mapmodule={mapmodule}, tran_id={tran_id} datas from server.")
+
+                        if self.db_data_is_valid(data) == False:
+                            self._logger.warning(f"transaction(tran_id = {tran_id})) is invalid. ignore it and process next.")
+                            continue
 
                         #check version, get transaction list is ordered ?
                         if version > latest_version:
-                            self._logger.warning(f"transaction's version must be Less than or equal to latest_version.")
+                            self._logger.warning(f"transaction's version({version}) must be Less than or equal to latest_version({latest_version}).")
                             continue
     
                         #match map module 
-                        if mapmodule != self.mapmodule_address:
-                            self._logger.warning(f"map module is not match. {mapmodule}<->{self._mapmodule}")
+                        if mapmodule != self._map_module:
+                            self._logger.warning(f"map module is not match. {mapmodule}<->{self._map_module}")
                             continue
     
                         #not found , process next
-                        ret = self._vserver.has_transaction(fromaddress, mapmodule, baddress, sequence, vamount, version, vreceiver)
+                        ret = self._pserver.has_transaction(fromaddress, mapmodule, toaddress, sequence, vamount, version, receiver)
                         if ret.state != error.SUCCEED or ret.datas != True:
-                            self._logger.warning(f"not found transaction({data}) from violas server.")
+                            self._logger.warning(f"not found transaction from violas server.")
                             continue
     
                         #get map sender from senders
@@ -341,8 +369,10 @@ class exlv(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret 
-    def chain_data_is_valid(data):
+
+    def chain_data_is_valid(self, data):
         try:
+            self._logger.debug(f"check address{data['to_address']}. len({data['to_address']})=64?")
             return len(data["to_address"]) == 64
         except Exception as e:
             pass
@@ -382,7 +412,7 @@ class exlv(baseobject):
                     self._logger.warning(f"get receiver({receiver})'s account failed.")
                     continue
                 fromsender = ret.datas
-                latest_version = self._latest_version.get(receiver, 0) + 1
+                latest_version = self._latest_version.get(receiver, -1) + 1
 
                 #get new transaction from server
                 ret = self._pserver.get_transactions_for_start(receiver, self._from_module, latest_version)
@@ -398,26 +428,25 @@ class exlv(baseobject):
                         amount      = int(data["amount"]) 
                         sequence    = data["sequence"] 
                         version     = data["version"]
-                        toaddress   = data["to_address"]
+                        toaddress   = data["to_address"] #map token to
                         tran_id     = data["tran_id"]
     
-                        self._logger.info(f"start exchange l2v.sender={fromaddress},  receiver={receiver}, sequence={sequence} \
-                                version={version}, toaddress={toaddress}, amount={amount}, tran_id={tran_id} datas from server.")
+                        self._logger.info(f"start exchange l2v.sender={fromaddress},  receiver={receiver}, sequence={sequence} " + \
+                                f"version={version}, toaddress={toaddress}, amount={amount}, tran_id={tran_id} datas from server.")
     
-                        latest_version = self._latest_version.get(receiver, -1)
-                        self._latest_version[receiver] = max(version, latest_version)
-
-                        if self.chain_data_is_valid(data) == True:
-                            self._logger.warning(f"transaction(tran_id = {tran_id})) is invalid. ignore it and process next.")
-                            continue
+                        self._latest_version[receiver] = max(version, self._latest_version.get(receiver, -1))
 
                         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
                         ret = self._db.has_info(tran_id)
                         assert ret.state == error.SUCCEED, f"has_info(fromaddress={fromaddress}, sequence={sequence}, version={version}) failed."
                         if ret.datas == True:
-                            self._logger.warning(f"found transaction(tran_id = {tran_id})) in db. ignore it and process next.")
+                            self._logger.warning(f"found transaction(tran_id = {tran_id})) in db(maybe first run l2v). ignore it and process next.")
                             continue
     
+                        if self.chain_data_is_valid(data) == False:
+                            self._logger.warning(f"transaction(tran_id = {tran_id})) is invalid. ignore it and process next.")
+                            continue
+
                         #get map sender from  senders
                         ret = self.__get_map_sender_address(amount)
                         if ret.state != error.SUCCEED:
@@ -430,7 +459,7 @@ class exlv(baseobject):
                         self._logger.debug(f"mapsender({type(mapsender)}): {mapsender.address.hex()}")
     
                         ##send map transaction and mark data
-                        tran_data = self._mapclient.create_data_for_mark(self.map_chain(), "l2v", "version", version)
+                        tran_data = self._mapclient.create_data_for_mark(self.map_chain(), self.name(), tran_id, version)
                         ret = self._mapclient.send_violas_coin(mapsender, toaddress, amount, self._map_module, tran_data)
 
                         if ret.state != error.SUCCEED:

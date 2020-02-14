@@ -78,16 +78,17 @@ class requestclient(baseobject):
         finally:
             self._logger.debug("end get_transactions_for_end.")
         return ret
-    def has_transaction(self, address, module, baddress, sequence, amount, version, receiver):
+    def has_transaction(self, sender, module, toaddress, sequence, amount, version, receiver):
         try:
-            self._logger.debug("start has_transaction(address={}, module={}, baddress={}, sequence={}, amount={}, version={}, receiver={})"\
-                    .format(address, module, baddress, sequence, amount, version, receiver))
-            ret = self._rclient.has_transaction(address, module, baddress, sequence, amount, version, receiver)
+            self._logger.debug("start has_transaction(sender={}, module={}, toaddress={}, sequence={}, amount={}, version={}, receiver={})"\
+                    .format(sender, module, toaddress, sequence, amount, version, receiver))
+            ret = self._rclient.has_transaction(sender, module, toaddress, sequence, amount, version, receiver)
         except Exception as e:
             ret = parse_except(e)
-        finally:
-            self._logger.debug("end has_transaction.")
         return ret
 
     def is_end(self, tran_id):
         return self._rclient.is_end(tran_id)
+
+    def get_latest_saved_ver(self):
+        return self._rclient.get_latest_saved_ver()
