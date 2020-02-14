@@ -46,7 +46,6 @@ def get_module_address(mtype, chain = None):
         parse_except(e)
     return None
 
-
 def get_combine_address(mtype = "b2v", chain = "btc"):
     try:
         ms = __get_address_list("combine", mtype, chain)

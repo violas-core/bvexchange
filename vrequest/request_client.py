@@ -87,6 +87,14 @@ class requestclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def has_transaction_for_tranid(self, tranid):
+        try:
+            self._logger.debug(f"start has_transaction_for_tranid({tranid})")
+            ret = self._rclient.has_transaction_for_tranid(tranid)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def is_end(self, tran_id):
         return self._rclient.is_end(tran_id)
 
