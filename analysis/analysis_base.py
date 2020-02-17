@@ -30,6 +30,7 @@ class abase(baseobject):
     _dtypes = []
     _tran_types = []
     _min_valid_version = -1
+    #enum name must be transaction datas "type"
     class datatype(Enum):
         V2B = 1
         V2L = 2

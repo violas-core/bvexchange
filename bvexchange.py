@@ -219,6 +219,27 @@ class works:
         finally:
             logger.critical("stop: l2vproof")
 
+    def work_v2lproof(self, nsec):
+        try:
+            logger.critical("start: v2l proof")
+            while (self.__work_looping.get(work_mod.V2LPROOF.name, False)):
+                logger.debug("looping: v2lproof")
+                try:
+                    dtype = "v2l"   #libra transaction's data types 
+                    basedata = "vfilter"
+                    obj = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical("stop: v2lproof")
+
     def work_l2v(self, nsec):
         try:
             logger.critical("start: l2v")
@@ -246,6 +267,32 @@ class works:
         finally:
             logger.critical("stop: l2v")
     
+    def work_v2l(self, nsec):
+        try:
+            logger.critical("start: v2l")
+            while (self.__work_looping.get(work_mod.V2L.name, False)):
+                logger.debug("looping: v2l")
+                mod = "v2l"
+                try:
+                    obj = exlv.exlv(mod, 
+                            stmanage.get_violas_nodes(), 
+                            stmanage.get_libra_nodes(),
+                            stmanage.get_db(mod), 
+                            stmanage.get_module_address(mod, "violas"), 
+                            stmanage.get_module_address(mod, "libra"), 
+                            list(set(stmanage.get_sender_address_list(mod, "violas"))),
+                            list(set(stmanage.get_receiver_address_list(mod, "libra"))),
+                            "violas",
+                            "libra")
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical("stop: v2l")
     def work_comm(self, nsec):
         try:
             logger.critical("start: comm")
@@ -314,6 +361,9 @@ class works:
 
             if work_mods.get(work_mod.L2V.name, False):
                 self.thread_append(self.work_l2v, work_mod.L2V.value, "l2v", stmanage.get_looping_sleep("l2v"))
+            
+            if work_mods.get(work_mod.V2L.name, False):
+                self.thread_append(self.work_v2l, work_mod.L2V.value, "v2l", stmanage.get_looping_sleep("v2l"))
             
             for work in self.__threads:
                 work.start() #start work
