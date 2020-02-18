@@ -55,14 +55,9 @@ class afilter(abase):
             ret = self._dbclient.get_latest_filter_ver()
             if ret.state != error.SUCCEED:
                 return ret
-            db_latest_ver = ret.datas
-                
-            if db_latest_ver is None or len(db_latest_ver) == 0:
-                db_latest_ver = str(self.get_min_valid_version() - 1)
-            start_version = int(db_latest_ver) + 1
-            start_version = self.get_start_version(start_version)
+            start_version = self.get_start_version(ret.datas + 1)
     
-            latest_saved_ver = str(self._dbclient.get_latest_saved_ver().datas)
+            latest_saved_ver = self._dbclient.get_latest_saved_ver().datas
             
             self._logger.debug(f"latest_saved_ver={latest_saved_ver} start version = {start_version}  step = {self.get_step()} chain_latest_ver = {chain_latest_ver} ")
             if start_version > chain_latest_ver:
@@ -96,6 +91,9 @@ class afilter(abase):
                 #save to redis db
                 value = json.dumps(tran_data)
                 key = version
+
+                if version == 4518238:
+                    self._logger.debug(f"{tran_data}")
 
                 ret = self.parse_tran(tran_data)
                 if ret.state != error.SUCCEED or \
