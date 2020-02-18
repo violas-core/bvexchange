@@ -44,12 +44,13 @@ class works:
     __work_looping = {}
     __work_obj = {}
 
-    __libra_min_valid_version = 18323504
+    __libra_min_valid_version   = 18323504
+    __violas_min_valid_version  = 2760000
     def __init__(self):
         logger.debug("works __init__")
         for mod in self.__work_looping:
             self.__work_looping[mod.name] = 1
-            
+
         self.__threads = []
 
     def __del__(self):
@@ -88,7 +89,7 @@ class works:
             parse_except(e)
         finally:
             logger.critical("stop: b2v")
-    
+
     def work_v2b(self, nsec):
         try:
             logger.critical("start: v2b")
@@ -113,7 +114,7 @@ class works:
             parse_except(e)
         finally:
             logger.critical("stop: v2b")
-    
+
     def work_vfilter(self, nsec):
         try:
             logger.critical("start: violas filter")
@@ -124,6 +125,7 @@ class works:
                     obj = analysis_filter.afilter(name="vfilter", ttype="violas", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
+                    obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
@@ -145,6 +147,7 @@ class works:
                     obj = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
@@ -154,27 +157,6 @@ class works:
             parse_except(e)
         finally:
             logger.critical("stop: v2bproof")
-
-    def work_v2lproof(self, nsec):
-        try:
-            logger.critical("start: violas v2l proof")
-            while (self.__work_looping.get(work_mod.V2LPROOF.name, False)):
-                logger.debug("looping: v2lproof")
-                try:
-                    dtype = "v2l"   #violas transaction's data types 
-                    basedata = "vfilter"
-                    obj = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
-                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
-                    self.set_work_obj(obj)
-                    obj.start()
-                except Exception as e:
-                    parse_except(e)
-                sleep(nsec)
-        except Exception as e:
-            parse_except(e)
-        finally:
-            logger.critical("stop: v2lproof")
 
     def work_lfilter(self, nsec):
         try:
@@ -221,7 +203,7 @@ class works:
 
     def work_v2lproof(self, nsec):
         try:
-            logger.critical("start: v2l proof")
+            logger.critical("start: violas v2l proof")
             while (self.__work_looping.get(work_mod.V2LPROOF.name, False)):
                 logger.debug("looping: v2lproof")
                 try:
@@ -230,6 +212,7 @@ class works:
                     obj = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
@@ -266,7 +249,7 @@ class works:
             parse_except(e)
         finally:
             logger.critical("stop: l2v")
-    
+
     def work_v2l(self, nsec):
         try:
             logger.critical("start: v2l")
@@ -280,8 +263,8 @@ class works:
                             stmanage.get_db(mod), 
                             stmanage.get_module_address(mod, "violas"), 
                             stmanage.get_module_address(mod, "libra"), 
-                            list(set(stmanage.get_sender_address_list(mod, "violas"))),
-                            list(set(stmanage.get_receiver_address_list(mod, "libra"))),
+                            list(set(stmanage.get_receiver_address_list(mod, "violas"))),
+                            list(set(stmanage.get_sender_address_list(mod, "libra"))),
                             "violas",
                             "libra")
                     self.set_work_obj(obj)
@@ -303,7 +286,7 @@ class works:
             parse_except(e)
         finally:
             logger.critical("stop: comm")
-    
+
     class work_thread(threading.Thread):
         __name = ""
         __threadId = 0
@@ -320,7 +303,7 @@ class works:
         def run(self):
             logger.debug("work thread run")
             self.__work(self.__nsec)
-            
+
     def thread_append(self, work, threadId, name, nsec):
         try:
             b2v = self.work_thread(work, threadId, name, nsec)
@@ -333,7 +316,7 @@ class works:
     def start(self, work_mods):
         try:
             logger.debug("start works")
-    
+
             self.__work_looping = work_mods
 
             self.thread_append(self.work_comm, 0, "comm", stmanage.get_looping_sleep("comm"))
@@ -361,10 +344,10 @@ class works:
 
             if work_mods.get(work_mod.L2V.name, False):
                 self.thread_append(self.work_l2v, work_mod.L2V.value, "l2v", stmanage.get_looping_sleep("l2v"))
-            
+
             if work_mods.get(work_mod.V2L.name, False):
                 self.thread_append(self.work_v2l, work_mod.L2V.value, "v2l", stmanage.get_looping_sleep("v2l"))
-            
+
             for work in self.__threads:
                 work.start() #start work
 
@@ -376,19 +359,19 @@ class works:
     def join(self):
         try:
             logger.debug("start join")
-    
+
             for work in self.__threads:
                 work.join() # work finish
         except Exception as e:
             parse_except(e)
         finally:
             logger.critical("end join")
-    
+
     def stop(self):
         logger.debug("stop works")
         for mod in self.__work_looping.keys():
             self.__work_looping[mod] = False
-        
+
         for key in self.__work_obj:
             obj = self.__work_obj.get(key)
             if obj is not None:
@@ -408,9 +391,13 @@ def signal_stop(signal, frame):
         logger.debug("end signal")
 
 def run(mods):
+    valid_mods = ["all"]
+    for mod in work_mod:
+        valid_mods.append(mod.name.lower())
+
     for mod in mods:
-        if mod is None or mod not in ["all", "b2v", "v2b", "vfilter", "v2bproof", "v2lproof", "lfilter", "l2vproof", "l2v"]:
-            raise Exception(f"mod({mod}) is invalid [all, b2v, v2b, vfilter, v2bproof, v2lproof, lfilter, l2vproof, l2v].")
+        if mod is None or mod not in valid_mods:
+            raise Exception(f"mod({mod}) is invalid {valid_mods}.")
 
     #fn.checkrerun(__file__)
     fn.write_pid(name)

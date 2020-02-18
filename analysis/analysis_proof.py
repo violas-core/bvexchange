@@ -92,9 +92,10 @@ class aproof(abase):
 
     def update_proof_info(self, tran_info):
         try:
-            self._logger.debug(f"start update_proof_info{tran_info}")
+            self._logger.debug(f"start update_proof_info version: {tran_info}")
             version = tran_info.get("version", None)
 
+            tran_id = None
             new_proof = False
             new_proofstate = self.proofstate_name_to_value(tran_info.get("state", ""))
             if new_proofstate == self.proofstate.START:
@@ -156,7 +157,7 @@ class aproof(abase):
                 self._dbclient.set_proof(db_tran_info.get("version"), json.dumps(db_tran_info))
                 self._logger.info(f"change state succeed. version = {db_tran_info.get('version')} tran_id = {db_tran_id} state={db_tran_info['state']}")
 
-            ret = result(error.SUCCEED, "", new_proof)
+            ret = result(error.SUCCEED, "", {"new_proof":new_proof, "tran_id":tran_id})
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -173,8 +174,8 @@ class aproof(abase):
             ret = self._dbclient.get_latest_saved_ver()
             if ret.state != error.SUCCEED:
                 return ret
-            max_version = int(ret.datas)
-            while version <= max_version:
+            max_version = ret.datas
+            while version <= max_version and self.work():
                 self._logger.debug(f"check version {version}")
                 ret = self._dbclient.get(version)
                 if ret.state != error.SUCCEED:
@@ -196,6 +197,54 @@ class aproof(abase):
             ret = parse_except(e)
         return ret
 
+    def create_haddress_name(self, tran_info):
+        return f"{tran_info['sender']}_{tran_info['token']}"
+
+    def create_haddress_key(self, tran_info):
+        return f"{tran_info['version']}"
+
+    def create_haddress_value(self, tran_info):
+        return json.dumps({"version":tran_info["version"], "type":tran_info["type"], "state":tran_info["state"]})
+
+    def update_address_info(self, tran_info):
+        try:
+            self._logger.debug(f"start update_address_info:{tran_info['version']}")
+            version = tran_info.get("version", None)
+
+            new_proof = False
+            new_proofstate = self.proofstate_name_to_value(tran_info.get("state", ""))
+            if new_proofstate == self.proofstate.START:
+                new_proof = True
+
+            name = self.create_haddress_name(tran_info)
+            key = self.create_haddress_key(tran_info)
+            ret = self._dbclient.hexists(name, key)
+            if ret.state != error.SUCCEED:
+                self._logger.error(f"check state info <name={name}> failed, check db is run. messge:{ret.message}")
+                return ret
+
+            if ret.datas == True:
+                info = self._dbclient.hget(name, key)
+                if info.state != error.SUCCEED or info.datas is None:
+                    self._logger.error(f"get state info <name={name}, key={key}> failed, check db is run. messge:{ret.message}")
+                    return ret
+                data = json.loads(ret.datas)
+                data["state"] = tran_info["state"]
+                self._dbclient.hset(name, key, json.dumps(data))
+                if ret.state != error.SUCCEED:
+                    self._logger.error(f"update state info <name={name}, key={key}, data={json.dumps(data)}> failed, check db is run. messge:{ret.message}")
+                    return ret
+            else:
+                data = self.create_haddress_value(tran_info)
+                ret = self._dbclient.hset(name, key, data)
+                if ret.state != error.SUCCEED:
+                    self._logger.error(f"set state info <name={name}, key={key}, data={data}> failed, check db is run. messge:{ret.message}")
+                    return ret
+
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def start(self):
         try:
             self._logger.debug("start vproof work")
@@ -203,23 +252,17 @@ class aproof(abase):
             ret = self._dbclient.get_latest_filter_ver()
             if ret.state != error.SUCCEED:
                 return ret
-            latest_filter_ver = ret.datas
 
-            if latest_filter_ver is None or len(latest_filter_ver) == 0:
-                latest_filter_ver = str(self.get_min_valid_version() -1)
-            start_version = int(latest_filter_ver) + 1
+            start_version = self.get_start_version(ret.datas + 1)
 
             #can get max version 
             ret = self._fdbcliet.get_latest_saved_ver()
             if ret.state != error.SUCCEED:
                 return ret
             latest_saved_ver = ret.datas
-            if latest_saved_ver is None or len(latest_saved_ver) == 0:
-                latest_saved_ver = '-1'
-            max_version = int(latest_saved_ver)
+            max_version = latest_saved_ver
 
             #not found new transaction to change state
-            start_version = self.get_start_version(start_version)
             if start_version > max_version:
                 self._logger.debug(f"start version:{start_version} max version:{max_version}")
                 return result(error.SUCCEED)
@@ -232,12 +275,6 @@ class aproof(abase):
                 try:
                     #record last version(parse), maybe version is not exists
                     self._logger.debug(f"parse transaction:{version}")
-
-                    #ret = self._fdbcliet.key_is_exists(version)
-                    #if ret.state != error.SUCCEED:
-                    #    return ret
-                    #if ret.datas == False:
-                    #    continue
 
                     self._dbclient.set_latest_filter_ver(version)
                     ret = self._fdbcliet.get(version)
@@ -256,7 +293,7 @@ class aproof(abase):
                     self._logger.debug(f"transaction parse: {tran_filter}")
 
                     if self.check_tran_is_valid(tran_filter) != True:
-                         self._logger.debug(error.TRAN_INFO_INVALID, f"tran is valid(check flag type). violas tran info : {tran_info}")
+                         self._logger.debug(error.TRAN_INFO_INVALID, f"tran is valid(check flag type). violas tran info : {tran_filter}")
                          continue
 
                     #this is target transaction, todo work here
@@ -265,9 +302,21 @@ class aproof(abase):
                         self._logger.error(ret.message)
                         continue
 
-                    #mark it, watch only
-                    if ret.datas == True:
+                    #mark it, watch only, True: new False: update
+                    if ret.datas.get("new_proof") == True:
                         self._dbclient.set_latest_saved_ver(version)
+
+                    tran_id = ret.datas.get("tran_id")
+                    print(tran_id)
+                    ret = self._dbclient.get_proof_by_hash(tran_id)
+                    if ret.state != error.SUCCEED:
+                        return ret
+
+                    
+                    if ret.datas is not None or len(ret.datas) > 0:
+                        ret = self.update_address_info(json.loads(ret.datas))
+                        if ret.state != error.SUCCEED:
+                            return ret
                     count += 1
                 except Exception as e:
                     ret = parse_except(e)

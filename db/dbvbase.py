@@ -257,7 +257,7 @@ class dbvbase(baseobject):
             datas = self._client.get(self.__key_latest_filter_ver)
             if datas is None:
                 datas = '-1'
-            ret = result(error.SUCCEED, "", datas)
+            ret = result(error.SUCCEED, "", int(datas))
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -275,7 +275,7 @@ class dbvbase(baseobject):
             datas = self._client.get(self.__key_latest_saved_ver)
             if datas is None:
                 datas = '-1'
-            ret = result(error.SUCCEED, "", datas)
+            ret = result(error.SUCCEED, "", int(datas))
         except Exception as e:
             ret = parse_except(e)
         return ret

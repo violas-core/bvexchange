@@ -290,7 +290,7 @@ class exlv(baseobject):
             if(ret.state != error.SUCCEED):
                 self._logger.debug(f"get_latest_saved_ver from request client failed.")
                 return ret
-            latest_version = int(ret.datas)
+            latest_version = ret.datas
             self._logger.debug(f"get latest saved version from db is : {latest_version}")
             
             for receiver in receivers:
@@ -350,7 +350,7 @@ class exlv(baseobject):
                         if ret.state != error.SUCCEED:
                             continue
                         mapsender = ret.datas
-                        self._logger.debug(f"mapsender: {mapsender}")
+                        self._logger.debug(f"mapsender: {mapsender.address.hex()}")
     
                         ##send map transaction and mark to OP_RETURN
                         tran_data = self._mapclient.create_data_for_mark(self.map_chain(), self.name(), tran_id, version)
@@ -452,7 +452,7 @@ class exlv(baseobject):
                         #get map sender from  senders
                         ret = self.__get_map_sender_address(amount)
                         if ret.state != error.SUCCEED:
-                            self._logger.warning("not found map sender{toaddress} or amount too low. check address and amount")
+                            self._logger.warning(f"not found map sender{toaddress} or amount too low. check address and amount")
                             ret = self._db.insert_commit( "", toaddress, sequence, \
                                     version, amount, fromaddress, receiver, self._from_module, self._map_module,  dbl2v.state.FAILED, tran_id)
                             assert (ret.state == error.SUCCEED), "db error"

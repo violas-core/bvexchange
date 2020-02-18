@@ -257,6 +257,9 @@ class violasclient(baseobject):
             if len(to_address) != 64 or amount < 1 or len(module_address) != 64:
                 return result(error.ARG_INVALID)
 
+            if module_address == "0000000000000000000000000000000000000000000000000000000000000000":
+                module_address = None
+
             self.__client.transfer_coin(sender_account=from_account, receiver_address=to_address, \
                     micro_coins=amount, module_address=module_address, data=data, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 

@@ -70,8 +70,10 @@ class abase(baseobject):
 
     def set_min_valid_version(self, version):
         self._min_valid_version = version
+        self._logger.debug(f"set min valid version {self.get_min_valid_version()}")
 
     def get_min_valid_version(self):
+        self._logger.debug(f"get min valid version {self._min_valid_version}")
         return self._min_valid_version
 
     def get_start_version(self, version):

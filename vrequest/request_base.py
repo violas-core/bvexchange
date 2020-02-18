@@ -47,7 +47,7 @@ class requestbase(dbvproof):
             ret = self.get_latest_saved_ver()
             if ret.state != error.SUCCEED:
                 return ret
-            max_version = int(ret.datas)
+            max_version = ret.datas
 
             count = 0
             for version in range(start_version ,max_version + 1):
