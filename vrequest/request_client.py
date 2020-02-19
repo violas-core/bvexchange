@@ -33,7 +33,6 @@ class requestclient(baseobject):
             pass
     def get_transactions_for_start(self, address, module, start = -1, limit = 10):
         try:
-            self._logger.debug("start get_transactions_for_start(address={}, module={}, start={})".format(address, module, start))
             datas = []
             ret = self._rclient.get_transactions_for_start(address, module, start, limit)
             if ret.state != error.SUCCEED:
@@ -57,7 +56,6 @@ class requestclient(baseobject):
 
     def get_transactions_for_end(self, address, module, start, limit = 10):
         try:
-            self._logger.debug("start get_transactions_end(address={}, module={}, start={})".format(address, module, start))
             datas = []
             ret = self._rclient.get_transactions_for_end(address, module, start, limit)
             if ret.state != error.SUCCEED:

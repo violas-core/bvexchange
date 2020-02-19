@@ -30,6 +30,7 @@ class requestproof(requestbase):
             if ret.state == error.SUCCEED:
                 start = max(start, int(ret.datas))
 
+            self._logger.debug(f"get transactions for {proofstate.START.name}. receiver = {receiver} start = {start} module={module}, limit = {limit}")
             ret = self._get_transaction_for_state(proofstate.START, receiver, module, start, limit)
         except Exception as e:
             parse_except(e)
