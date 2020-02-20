@@ -30,7 +30,6 @@ from vrequest.request_client import requestclient
 #name="exlv"
 wallet_name = "vwallet"
 
-COINS = comm.values.COINS
 #load logging
 class exlv(baseobject):    
     _latest_version = {}

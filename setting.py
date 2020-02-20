@@ -9,7 +9,7 @@ traceback_limit = 4
 db_echo=False
 
 #v2b max replay exchange count(state = faild)
-v2b_maxtimes = 99999
+v2b_maxtimes = 99
 
 #btc connect 
 btc_conn = {'rpcuser':'btc', 
@@ -89,9 +89,10 @@ address_list = {
         #module address for type(violas nodes's vbtc or vlibra ...), type must be unique
         'module':[
             #vbtc module
-            {'address':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'type':'v2b', 'chain':'violas'},
+            #{'address':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'type':'v2b-old', 'chain':'violas'},
+            {'address':'2236322cf1e35198302919c2c1b1e4bf5be07359c8995c6a13ec53c17579c768', 'type':'v2b', 'chain':'violas'},
             #vbtc module
-            {'address':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'type':'b2v', 'chain':'violas'},
+            {'address':'2236322cf1e35198302919c2c1b1e4bf5be07359c8995c6a13ec53c17579c768', 'type':'b2v', 'chain':'violas'},
             #vlibra module
             {'address':'61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410', 'type':'v2l', 'chain':'violas'},
             {'address':'0000000000000000000000000000000000000000000000000000000000000000', 'type':'v2l', 'chain':'libra'},
