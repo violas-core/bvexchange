@@ -54,6 +54,7 @@ db_list=[
         {'host':'192.168.31.37', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
         {'host':'192.168.31.37', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
         {'host':'192.168.31.37', 'port':6378, 'db':'b2v', 'password':'violas', 'step':100},
+        {'host':'192.168.31.37', 'port':6378, 'db':'record', 'password':'violas', 'step':100},
         #{'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':100},
         #{'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':200},
         #{'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
@@ -92,6 +93,7 @@ address_list = {
             #vbtc module
             #{'address':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'type':'v2b-old', 'chain':'violas'},
             {'address':'2236322cf1e35198302919c2c1b1e4bf5be07359c8995c6a13ec53c17579c768', 'type':'v2b', 'chain':'violas'},
+            {'address':'0000000000000000000000000000000000000000000000000000000000000000', 'type':'b2v', 'chain':'btc'},
             #vbtc module
             {'address':'2236322cf1e35198302919c2c1b1e4bf5be07359c8995c6a13ec53c17579c768', 'type':'b2v', 'chain':'violas'},
             #vlibra module

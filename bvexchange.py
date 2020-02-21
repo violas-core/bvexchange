@@ -139,16 +139,17 @@ class works:
     def work_v2bproof(self, nsec):
         try:
             logger.critical("start: violas v2b proof")
-            dtype = "v2b"   #violas transaction's data types 
-            basedata = "vfilter"
-            obj = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
-                    dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-            obj.set_step(stmanage.get_db(dtype).get("step", 100))
-            obj.set_min_valid_version(self.__violas_min_valid_version - 1)
-            self.set_work_obj(obj)
             while (self.__work_looping.get(work_mod.V2BPROOF.name, False)):
                 logger.debug("looping: v2bproof")
                 try:
+                    dtype = "v2b"   #violas transaction's data types 
+                    basedata = "vfilter"
+                    obj = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+                    obj.set_record(stmanage.get_db("record"))
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    obj.set_min_valid_version(self.__violas_min_valid_version - 1)
+                    self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
                     parse_except(e)
@@ -189,6 +190,7 @@ class works:
                     basedata = "lfilter"
                     obj = analysis_proof.aproof(name="l2vproof", ttype="libra", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+                    obj.set_record(stmanage.get_db("record"))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
                     self.set_work_obj(obj)
@@ -204,16 +206,17 @@ class works:
     def work_v2lproof(self, nsec):
         try:
             logger.critical("start: violas v2l proof")
-            dtype = "v2l"   #libra transaction's data types 
-            basedata = "vfilter"
-            obj = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
-                    dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-            obj.set_step(stmanage.get_db(dtype).get("step", 100))
-            obj.set_min_valid_version(self.__violas_min_valid_version - 1)
-            self.set_work_obj(obj)
             while (self.__work_looping.get(work_mod.V2LPROOF.name, False)):
                 logger.debug("looping: v2lproof")
                 try:
+                    dtype = "v2l"   #libra transaction's data types 
+                    basedata = "vfilter"
+                    obj = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+                    obj.set_record(stmanage.get_db("record"))
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    obj.set_min_valid_version(self.__violas_min_valid_version - 1)
+                    self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
                     parse_except(e)

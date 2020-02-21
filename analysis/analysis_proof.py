@@ -36,10 +36,12 @@ class aproof(abase):
         CANCEL = 3
         UNKOWN = 255
 
-    def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, fdbconf = None, nodes = None, chain = "violas"):
+    def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, fdbconf = None, rdbconf = None, nodes = None, chain = "violas"):
         self._fdbcliet = None
         #db use dbvproof, dbvfilter, not use violas/libra nodes
         super().__init__(name, ttype, dtype, None, nodes, chain)
+        self._dbclient = None
+        self._fdbcliet = None
         if dbconf is not None:
             self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port"), dbconf.get("db"), dbconf.get("password"))
         if fdbconf is not None:
@@ -195,41 +197,6 @@ class aproof(abase):
             ret = parse_except(e)
         return ret
 
-
-    def update_address_info(self, tran_info):
-        try:
-            self._logger.debug(f"start update_address_info:{tran_info['version']}, state:{tran_info['state']}")
-            version = tran_info.get("version", None)
-
-            name = self._dbclient.create_haddress_name(tran_info)
-            key = self._dbclient.create_haddress_key(tran_info)
-            ret = self._dbclient.hexists(name, key)
-            if ret.state != error.SUCCEED:
-                self._logger.error(f"check state info <name={name}> failed, check db is run. messge:{ret.message}")
-                return ret
-
-            if ret.datas == 1:
-                info = self._dbclient.hget(name, key)
-                if info.state != error.SUCCEED or info.datas is None:
-                    self._logger.error(f"get state info <name={name}, key={key}> failed, check db is run. messge:{info.message}")
-                    return info
-                data = json.loads(info.datas)
-                data["state"] = tran_info["state"]
-                ret = self._dbclient.hset(name, key, json.dumps(data))
-                if ret.state != error.SUCCEED:
-                    self._logger.error(f"update state info <name={name}, key={key}, data={json.dumps(data)}> failed, check db is run. messge:{ret.message}")
-                    return ret
-            else:
-                data = self._dbclient.create_haddress_value(tran_info)
-                ret = self._dbclient.hset(name, key, data)
-                if ret.state != error.SUCCEED:
-                    self._logger.error(f"set state info <name={name}, key={key}, data={data}> failed, check db is run. messge:{ret.message}")
-                    return ret
-
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
     def start(self):
         try:
             self._logger.debug("start vproof work")
@@ -296,8 +263,8 @@ class aproof(abase):
                     if ret.state != error.SUCCEED:
                         return ret
                     
-                    if ret.datas is not None or len(ret.datas) > 0:
-                        ret = self.update_address_info(json.loads(ret.datas))
+                    if (ret.datas is not None or len(ret.datas) > 0) and self.can_record():
+                        ret = self._rdbclient.update_address_info(json.loads(ret.datas))
                         if ret.state != error.SUCCEED:
                             return ret
                     count += 1

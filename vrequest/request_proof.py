@@ -103,9 +103,9 @@ class requestproof(requestbase):
     def is_end(self, tran_id):
         return self._is_target_state(proofstate.END, tran_id)
 
-    def get_transaction_record(self, sender, module, cursor = 0, match = None, limit = 10):
+    def get_transaction_record(self, sender, flag, cursor = 0, match = None, limit = 10):
         try:
-            tran_info = {"sender":sender, "token":module}
+            tran_info = {"flag":flag,"sender":sender}
             
             name = self.create_haddress_name(tran_info)
             ret = self.hscan(name, cursor, match, limit)

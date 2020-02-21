@@ -20,6 +20,7 @@ from vlsopt.violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
 from db.dbvbase import dbvbase
 from baseobject import baseobject
+from analysis.analysis_record import record
 
 #module name
 name="abase"
@@ -47,6 +48,7 @@ class abase(baseobject):
         self._min_valid_version = -1
         self._vclient = None
         self._dbclient = None
+        self._rdbclient = None
         self._connect_db(name, dbconf)
         self._connect_violas(name, vnodes, chain)
         self.append_data_type(dtype)
@@ -69,6 +71,12 @@ class abase(baseobject):
         if vnodes is not None:
             self._vclient = violasclient(name, vnodes, chain) 
         return self._vclient
+
+    def set_record(self, rdbconf):
+        self._rdbclient = record(self.name(), rdbconf)
+
+    def can_record(self):
+        return self._rdbclient is not None and self._rdbclient.can_record()
 
     def set_min_valid_version(self, version):
         self._min_valid_version = version
@@ -109,7 +117,6 @@ class abase(baseobject):
             return None
             
         self.__dtypes.append(self._datatype_name_to_type(dtype))
-        print(f"datatype:{self.__dtypes}")
 
     def get_data_types(self):
         return self.__dtypes
