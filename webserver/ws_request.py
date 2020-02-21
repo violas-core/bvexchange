@@ -38,20 +38,41 @@ logger = log.logger.getLogger(mod_name)
 def test():
     return "hello world."
 
-@app.route('/tranrecord/<string:dtype>/<string:sender>/<string:module>/<int:cursor>/<int:limit>', methods=['GET', 'POST'])
-def get_transaction_record(dtype, sender, module, cursor = 0, limit = 10):
+@app.route('/tranrecord/<string:sender>/<int:cursor>/<int:limit>/', methods=['GET'])
+def get_transaction_record(sender, cursor = 0, limit = 99999999):
     try:
-        logger.debug(f"get {dtype} record(sender={sender}, module={module}, cursor={cursor}, limit={limit})")
-        if dtype == "v2l":
-            ret = get_v2l_record(sender, module, cursor, limit)
-        elif dtype == "l2v":
-            ret = get_l2v_record(sender, module, cursor, limit)
-        elif dtype == "v2b":
-            ret = get_v2b_record(sender, module, cursor, limit)
-        elif dtype == "b2v":
-            ret = get_b2v_record(sender, module, cursor, limit)
-        else:
-            ret = result(error.ARG_INVALID, f"dtype = {dytpe} not found.")
+        module = None
+        logger.debug(f"get record(sender={sender}, cursor={cursor}, limit={limit})")
+        ret_violas = get_violas_record(sender, cursor, limit)
+        if ret_violas.state != error.SUCCEED:
+            raise "get transaction record failed.{chain = violas, sender = {sender}}"
+
+        ret_libra = get_libra_record(sender, cursor, limit)
+        if ret_libra.state != error.SUCCEED:
+            raise "get transaction record failed.{chain = libra, sender = {sender}}"
+
+        ret_btc = get_btc_record(sender, cursor, limit)
+        if ret_btc.state != error.SUCCEED:
+            raise "get transaction record failed.{chain = btc, sender = {sender}}"
+
+        violas_datas = {}
+        libra_datas = {}
+        btc_datas = {}
+        violas_datas.update(ret_violas.datas.get("datas"))
+        libra_datas.update(ret_libra.datas.get("datas"))
+        btc_datas.update(ret_btc.datas.get("datas"))
+            
+        datas = {"violas":[violas_datas[key] for key in sorted(violas_datas.keys())], \
+                "libra":{(key, libra_datas[key]) for key in sorted(libra_datas.keys())}, \
+                "btc":{(key, btc_datas[key]) for key in sorted(btc_datas.keys())} \
+                }
+
+        for key in list(datas.keys()):
+            if len(datas[key]) == 0:
+                del datas[key]
+
+        ret =  result(error.SUCCEED, "", datas)
+
     except Exception as e:
         ret = parse_except(e)
     return ret.__repr__()
@@ -59,34 +80,37 @@ def get_transaction_record(dtype, sender, module, cursor = 0, limit = 10):
 def get_proofdb(dtype):
     return stmanage.get_db(dtype)
 
-def get_l2v_record(sender, module, cursor, limit):
+def get_libra_record(sender, cursor, limit):
     try:
-        rclient = requestclient("l2vrecord", get_proofdb("l2v"))
-        ret = rclient.get_transaction_record(sender, module, cursor = cursor, limit=limit)
+        flag = "LIBRA"
+        rclient = requestclient("l2vrecord", get_proofdb("record"))
+        ret = rclient.get_transaction_record(sender, flag, cursor = cursor, limit=limit)
+        if ret.state != error.SUCCEED:
+            raise f"get transaction record failed.chain = {flag}, sender = {sender}"
+
     except Exception as e:
         ret = parse_except(e)
     return ret
 
-def get_v2l_record(sender, module, cursor, limit):
+def get_violas_record(sender, cursor, limit):
     try:
-        rclient = requestclient("v2lrecord", get_proofdb("v2l"))
-        ret = rclient.get_transaction_record(sender, module, cursor = cursor, limit=limit)
+        flag = "VIOLAS"
+        rclient = requestclient("v2lrecord", get_proofdb("record"))
+        ret = rclient.get_transaction_record(sender, flag, cursor = cursor, limit=limit)
+        if ret.state != error.SUCCEED:
+            raise f"get transaction record failed.chain = {flag}, sender = {sender}"
+
     except Exception as e:
         ret = parse_except(e)
     return ret
 
-def get_v2b_record(sender, module, cursor, limit):
+def get_btc_record(sender, cursor, limit):
     try:
-        rclient = requestclient("v2brecord", get_proofdb("v2b"))
-        ret = rclient.get_transaction_record(sender, module, cursor = cursor, limit=limit)
-    except Exception as e:
-        ret = parse_except(e)
-    return ret
-
-def get_b2v_record(sender, module, cursor, limit):
-    try:
-        rclient = requestclient("b2vrecord", get_proofdb("b2v"))
-        ret = rclient.get_transaction_record(sender, module, cursor = cursor, limit=limit)
+        flag = "BTC"
+        rclient = requestclient("b2vrecord", get_proofdb("record"))
+        ret = rclient.get_transaction_record(sender, flag, cursor = cursor, limit=limit)
+        if ret.state != error.SUCCEED:
+            raise f"get transaction record failed.chain = {flag}, sender = {sender}"
     except Exception as e:
         ret = parse_except(e)
     return ret

@@ -32,6 +32,7 @@ class dbvbase(baseobject):
     __key_latest_saved_ver = "latest_saved_ver"
 
     class dbindex(Enum):
+        RECORD  = 0
         VFILTER = 1
         V2B     = 2
         V2L     = 3

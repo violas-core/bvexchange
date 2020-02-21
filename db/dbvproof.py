@@ -94,10 +94,10 @@ class dbvproof(dbvbase):
         return ret
 
     def create_haddress_name(self, tran_info):
-        return f"{tran_info['sender']}_{tran_info['token']}"
+        return f"{tran_info['sender']}_{tran_info['flag']}"
 
     def create_haddress_key(self, tran_info):
         return f"{tran_info['version']}"
 
     def create_haddress_value(self, tran_info):
-        return json.dumps({"version":tran_info["version"], "type":tran_info["type"], "state":tran_info["state"], "to_address":tran_info["to_address"]})
+        return json.dumps({"version":tran_info["version"], "type":tran_info["type"], "state":tran_info["state"], "to_address":tran_info["to_address"], "amount":tran_info["amount"]})
