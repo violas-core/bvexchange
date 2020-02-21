@@ -31,9 +31,9 @@ name="b2v"
 wallet_name = "vwallet"
 
 class exb2v(baseobject):
-    __warning_count = {}
-    __show_warning_count = 1
     def __init__(self, name, vnodes , bnode,  module, combin, chain = "violas"):
+        self.__warning_count = {}
+        self.__show_warning_count = 1
         baseobject.__init__(self, name);
         self.set_from_chain("btc")
         self.set_map_chain(chain)

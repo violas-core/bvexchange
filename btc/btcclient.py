@@ -29,12 +29,6 @@ name="bclient"
 
 
 class btcclient(baseobject):
-    __btc_url               = "http://%s:%s@%s:%i"
-    __rpcuser               = "btc"
-    __rpcpassword           = "btc"
-    __rpcip                 = "127.0.0.1"
-    __rpcport               = 9409
-    __rpc_connection        = ""
 
     class proofstate(Enum):
         START   = "start"
@@ -43,6 +37,12 @@ class btcclient(baseobject):
         MARK    = "mark"
 
     def __init__(self, name, btc_conn):
+        self.__btc_url               = "http://%s:%s@%s:%i"
+        self.__rpcuser               = "btc"
+        self.__rpcpassword           = "btc"
+        self.__rpcip                 = "127.0.0.1"
+        self.__rpcport               = 9409
+        self.__rpc_connection        = ""
         baseobject.__init__(self, name)
 
         if btc_conn :

@@ -29,9 +29,7 @@ from analysis.analysis_base import abase
 name="aproof"
 
 COINS = comm.values.COINS
-    
 class aproof(abase):
-
     class proofstate(Enum):
         START = 1
         END = 2
@@ -41,19 +39,19 @@ class aproof(abase):
     def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, fdbconf = None, nodes = None, chain = "violas"):
         self._fdbcliet = None
         #db use dbvproof, dbvfilter, not use violas/libra nodes
-        abase.__init__(self, name, ttype, dtype, None, nodes, chain)
+        super().__init__(name, ttype, dtype, None, nodes, chain)
         if dbconf is not None:
-            self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
+            self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port"), dbconf.get("db"), dbconf.get("password"))
         if fdbconf is not None:
-            self._fdbcliet = dbvfilter(name, fdbconf.get("host", "127.0.0.1"), fdbconf.get("port", 6378), fdbconf.get("db"), fdbconf.get("password", None))
+            self._fdbcliet = dbvfilter(name, fdbconf.get("host", "127.0.0.1"), fdbconf.get("port"), fdbconf.get("db"), fdbconf.get("password"))
 
     def __del__(self):
-        abase.__del__(self)
+        super().__del__()
         if self._fdbcliet is not None:
             self._fdbcliet.save()
 
     def stop(self):
-        abase.stop(self)
+        super().stop()
 
     def proofstate_name_to_value(self, name):
         if name is None or len(name) == 0:
@@ -197,22 +195,14 @@ class aproof(abase):
             ret = parse_except(e)
         return ret
 
-    def create_haddress_name(self, tran_info):
-        return f"{tran_info['sender']}_{tran_info['token']}"
-
-    def create_haddress_key(self, tran_info):
-        return f"{tran_info['version']}"
-
-    def create_haddress_value(self, tran_info):
-        return json.dumps({"version":tran_info["version"], "type":tran_info["type"], "state":tran_info["state"]})
 
     def update_address_info(self, tran_info):
         try:
             self._logger.debug(f"start update_address_info:{tran_info['version']}, state:{tran_info['state']}")
             version = tran_info.get("version", None)
 
-            name = self.create_haddress_name(tran_info)
-            key = self.create_haddress_key(tran_info)
+            name = self._dbclient.create_haddress_name(tran_info)
+            key = self._dbclient.create_haddress_key(tran_info)
             ret = self._dbclient.hexists(name, key)
             if ret.state != error.SUCCEED:
                 self._logger.error(f"check state info <name={name}> failed, check db is run. messge:{ret.message}")
@@ -230,7 +220,7 @@ class aproof(abase):
                     self._logger.error(f"update state info <name={name}, key={key}, data={json.dumps(data)}> failed, check db is run. messge:{ret.message}")
                     return ret
             else:
-                data = self.create_haddress_value(tran_info)
+                data = self._dbclient.create_haddress_value(tran_info)
                 ret = self._dbclient.hset(name, key, data)
                 if ret.state != error.SUCCEED:
                     self._logger.error(f"set state info <name={name}, key={key}, data={data}> failed, check db is run. messge:{ret.message}")

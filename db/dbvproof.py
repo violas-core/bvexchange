@@ -92,3 +92,12 @@ class dbvproof(dbvbase):
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def create_haddress_name(self, tran_info):
+        return f"{tran_info['sender']}_{tran_info['token']}"
+
+    def create_haddress_key(self, tran_info):
+        return f"{tran_info['version']}"
+
+    def create_haddress_value(self, tran_info):
+        return json.dumps({"version":tran_info["version"], "type":tran_info["type"], "state":tran_info["state"], "to_address":tran_info["to_address"]})

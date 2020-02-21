@@ -40,10 +40,10 @@ elif version.cmp(1, 1, 0) <= 0:
 name="vclient"
 
 class violaswallet(baseobject):
-    __wallet_name           = "vwallet"
     
     def __init__(self, name, wallet_name, chain="violas"):
         assert wallet_name is not None, "wallet_name is None"
+        self.__wallet_name = "vwallet"
         baseobject.__init__(self, name)
         if wallet_name is not None:
             ret = self.__load_wallet(wallet_name, chain)

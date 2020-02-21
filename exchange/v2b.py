@@ -34,9 +34,9 @@ wallet_name = "vwallet"
 COINS = comm.values.COINS
 #load logging
 class exv2b(baseobject):    
-    _latest_version = {}
     def __init__(self, name, vnodes , bnode, proofdb, module, receivers, chain = "violas"):
         baseobject.__init__(self, name)
+        self._latest_version = {}
         self.set_from_chain(chain)
         self.set_map_chain("btc")
         self._vclient = violasproof(name, vnodes)

@@ -37,6 +37,7 @@ class dbvbase(baseobject):
         V2L     = 3
         LFILTER = 4
         L2V     = 5
+        B2V     = 6
 
     def __init__(self, name, host, port, db, passwd = None):
         baseobject.__init__(self, name)
@@ -220,7 +221,7 @@ class dbvbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def hscan(name, cursor, match = None, count = None):
+    def hscan(self, name, cursor=0, match = None, count = None):
         try:
             pos, datas = self._client.hscan(name, cursor, match, count)
             ret = result(error.SUCCEED, "", (pos, datas))

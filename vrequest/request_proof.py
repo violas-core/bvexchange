@@ -103,6 +103,23 @@ class requestproof(requestbase):
     def is_end(self, tran_id):
         return self._is_target_state(proofstate.END, tran_id)
 
+    def get_transaction_record(self, sender, module, cursor = 0, match = None, limit = 10):
+        try:
+            tran_info = {"sender":sender, "token":module}
+            
+            name = self.create_haddress_name(tran_info)
+            ret = self.hscan(name, cursor, match, limit)
+            if ret.state != error.SUCCEED:
+                return ret
+            next_cursor = ret.datas[0]
+            datas = ret.datas[1]
+
+            ret = result(error.SUCCEED, "", {"cursor": next_cursor, "datas":datas})
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+
 def main():
     try:
         pass

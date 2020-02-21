@@ -53,6 +53,7 @@ db_list=[
         {'host':'192.168.31.37', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
         {'host':'192.168.31.37', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
         {'host':'192.168.31.37', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
+        {'host':'192.168.31.37', 'port':6378, 'db':'b2v', 'password':'violas', 'step':100},
         #{'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':100},
         #{'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':200},
         #{'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},

@@ -26,10 +26,6 @@ name="abase"
 
 COINS = comm.values.COINS
 class abase(baseobject):
-    _step = 1000
-    _dtypes = []
-    _tran_types = []
-    _min_valid_version = -1
     #enum name must be transaction datas "type"
     class datatype(Enum):
         V2B = 1
@@ -45,12 +41,17 @@ class abase(baseobject):
 
     def __init__(self, name, ttype, dtype, dbconf, vnodes, chain="violas"):
         baseobject.__init__(self, name)
+        self._step = 1000
+        self.__dtypes = []
+        self._tran_types = []
+        self._min_valid_version = -1
         self._vclient = None
         self._dbclient = None
         self._connect_db(name, dbconf)
         self._connect_violas(name, vnodes, chain)
         self.append_data_type(dtype)
         self.append_tran_type(ttype)
+        pass
 
     def __del__(self):
         if self._vclient is not None:
@@ -59,6 +60,7 @@ class abase(baseobject):
             self._dbclient.save()
 
     def _connect_db(self, name, rconf):
+        self._dbclient = None
         if rconf is not None:
             self._dbclient = dbvbase(name, rconf.get("host", "127.0.0.1"), rconf.get("port", 6378), rconf.get("db"), rconf.get("password", None))
         return self._dbclient
@@ -106,10 +108,11 @@ class abase(baseobject):
         if dtype is None:
             return None
             
-        self._dtypes.append(self._datatype_name_to_type(dtype))
+        self.__dtypes.append(self._datatype_name_to_type(dtype))
+        print(f"datatype:{self.__dtypes}")
 
     def get_data_types(self):
-        return self._dtypes
+        return self.__dtypes
 
     def set_step(self, step):
         if step is None or step <= 0:
