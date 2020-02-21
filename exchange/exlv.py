@@ -32,9 +32,9 @@ wallet_name = "vwallet"
 
 #load logging
 class exlv(baseobject):    
-    _latest_version = {}
     def __init__(self, name, fromnodes , mapnodes, proofdb, frommodule, mapmodule, receivers, senders, fromchain = "libra", mapchain='violas'):
         baseobject.__init__(self, name)
+        self._latest_version = {}
         self.set_from_chain(fromchain)
         self.set_map_chain(mapchain)
         self._fromclient = violasproof(name, fromnodes, fromchain)

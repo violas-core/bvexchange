@@ -18,6 +18,11 @@ class result:
             self.state = state 
             self.message = message
             self.datas = datas
+        def to_map(self):
+            return {"state": "self.state.name", "message":self.message, "datas":self.datas}
+        
+        def __repr__(self):
+            return f"state={self.state.name}, message={self.message}, datas:{self.datas}"
 
 def parse_except(e, msg = None, datas = None):
     try:

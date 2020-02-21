@@ -19,12 +19,11 @@ from comm.error import error
 from enum import Enum
 getlogger = log.logger.getLogger
 class baseobject(object):
-    _name = None
-    _logger = None
-    _from_chain = None
-    _map_chain = None
-
     def __init__(self, name = 'base', work = True):
+        self._name = None
+        self._logger = None
+        self._from_chain = None
+        self._map_chain = None
         self._work = work
         self._name = name
         if self._logger is None:

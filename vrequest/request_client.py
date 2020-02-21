@@ -98,3 +98,10 @@ class requestclient(baseobject):
 
     def get_latest_saved_ver(self):
         return self._rclient.get_latest_saved_ver()
+
+    def get_transaction_record(self, sender, module, cursor = 0, match=None, limit = 10):
+        try:
+            ret = self._rclient.get_transaction_record(sender, module, cursor, match, limit)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret

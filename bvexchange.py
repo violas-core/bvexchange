@@ -45,7 +45,7 @@ class works:
     __work_obj = {}
 
     __libra_min_valid_version   = 18323504
-    __violas_min_valid_version  = 2760000
+    __violas_min_valid_version  = 2000000
     def __init__(self):
         logger.debug("works __init__")
         for mod in self.__work_looping:
@@ -139,16 +139,16 @@ class works:
     def work_v2bproof(self, nsec):
         try:
             logger.critical("start: violas v2b proof")
+            dtype = "v2b"   #violas transaction's data types 
+            basedata = "vfilter"
+            obj = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
+                    dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+            obj.set_step(stmanage.get_db(dtype).get("step", 100))
+            obj.set_min_valid_version(self.__violas_min_valid_version - 1)
+            self.set_work_obj(obj)
             while (self.__work_looping.get(work_mod.V2BPROOF.name, False)):
                 logger.debug("looping: v2bproof")
                 try:
-                    dtype = "v2b"   #violas transaction's data types 
-                    basedata = "vfilter"
-                    obj = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
-                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
-                    obj.set_min_valid_version(self.__violas_min_valid_version - 1)
-                    self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
                     parse_except(e)
@@ -204,16 +204,16 @@ class works:
     def work_v2lproof(self, nsec):
         try:
             logger.critical("start: violas v2l proof")
+            dtype = "v2l"   #libra transaction's data types 
+            basedata = "vfilter"
+            obj = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
+                    dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+            obj.set_step(stmanage.get_db(dtype).get("step", 100))
+            obj.set_min_valid_version(self.__violas_min_valid_version - 1)
+            self.set_work_obj(obj)
             while (self.__work_looping.get(work_mod.V2LPROOF.name, False)):
                 logger.debug("looping: v2lproof")
                 try:
-                    dtype = "v2l"   #libra transaction's data types 
-                    basedata = "vfilter"
-                    obj = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
-                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
-                    obj.set_min_valid_version(self.__violas_min_valid_version - 1)
-                    self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
                     parse_except(e)
@@ -330,11 +330,11 @@ class works:
             if work_mods.get(work_mod.VFILTER.name, False):
                 self.thread_append(self.work_vfilter, work_mod.VFILTER.value, "vfilter", stmanage.get_looping_sleep("vfilter"))
 
-            if work_mods.get(work_mod.V2BPROOF.name, False):
-                self.thread_append(self.work_v2bproof, work_mod.V2BPROOF.value, "v2bproof", stmanage.get_looping_sleep("v2bproof"))
-
             if work_mods.get(work_mod.V2LPROOF.name, False):
                 self.thread_append(self.work_v2lproof, work_mod.V2LPROOF.value, "v2lproof", stmanage.get_looping_sleep("v2lproof"))
+
+            if work_mods.get(work_mod.V2BPROOF.name, False):
+                self.thread_append(self.work_v2bproof, work_mod.V2BPROOF.value, "v2bproof", stmanage.get_looping_sleep("v2bproof"))
 
             if work_mods.get(work_mod.LFILTER.name, False):
                 self.thread_append(self.work_lfilter, work_mod.LFILTER.value, "lfilter", stmanage.get_looping_sleep("lfilter"))
@@ -346,7 +346,7 @@ class works:
                 self.thread_append(self.work_l2v, work_mod.L2V.value, "l2v", stmanage.get_looping_sleep("l2v"))
 
             if work_mods.get(work_mod.V2L.name, False):
-                self.thread_append(self.work_v2l, work_mod.L2V.value, "v2l", stmanage.get_looping_sleep("v2l"))
+                self.thread_append(self.work_v2l, work_mod.V2L.value, "v2l", stmanage.get_looping_sleep("v2l"))
 
             for work in self.__threads:
                 work.start() #start work
