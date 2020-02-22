@@ -32,7 +32,7 @@ class requestbase(dbvproof):
         except Exception as e:
             ret = parse_except(e)
         return ret
-
+        
     def _get_transaction_for_state(self, proofstate = None, receiver = None, module = None, start = -1, limit = 10):
         try:
             trans = []

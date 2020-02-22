@@ -65,6 +65,21 @@ class dbvbase(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_mod_name(self):
+        try:
+            ret = self.get("mod_name")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+            
+    def select(self, name):
+        try:
+            self._client.select(self.db_name_to_value(name))
+            ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def set_mod_name(self, name):
         try:
             ret = self.set("mod_name", name)
@@ -78,7 +93,7 @@ class dbvbase(baseobject):
                 return di.value
         raise ValueError(f"db name({name} unkown)")
     
-    def pipeline():
+    def pipeline(self):
         try:
             datas = self._client.pipeline(transaction = true)
             ret = result(error.SUCCEED, "", datas)
@@ -86,7 +101,7 @@ class dbvbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def pipeline():
+    def pipeline(self):
         try:
             self._client.execute()
             ret = result(error.SUCCEED)
@@ -150,9 +165,10 @@ class dbvbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def scan(cursor, match = None, count = None):
+    def scan(self, cursor, match = None, count = None):
         try:
             pos, datas = self._client.scan(cursor, match, count)
+            print(datas)
             ret = result(error.SUCCEED, "", (pos, datas))
         except Exception as e:
             ret = parse_except(e)

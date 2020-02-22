@@ -94,14 +94,44 @@ class requestclient(baseobject):
         return ret
 
     def is_end(self, tran_id):
-        return self._rclient.is_end(tran_id)
-
-    def get_latest_saved_ver(self):
-        return self._rclient.get_latest_saved_ver()
-
-    def get_transaction_record(self, sender, flag, cursor = 0, match=None, limit = 10):
         try:
-            ret = self._rclient.get_transaction_record(sender, flag, cursor, match, limit)
+            ret = self._rclient.is_end(tran_id)
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def get_latest_saved_ver(self):
+        try:
+         ret = self._rclient.get_latest_saved_ver()
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_tran(self, version):
+        try:
+            ret = self._rclient.get(version)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def select(self, name):
+        try:
+            ret = self._rclient.select(name)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_transaction_record(self, sender, flag, cursor = 0, match=None, limit = 10):
+        try:
+            ret = self._rclient.get_transaction_record(sender, flag.upper(), cursor, match, limit)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def list_record_address_for_chain(self, chain, cursor = 0, limit = 10):
+        try:
+            ret = self._rclient.scan(cursor, f"*_{chain.upper()}", limit)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
