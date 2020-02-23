@@ -13,23 +13,26 @@ v2b_maxtimes = 99
 
 #btc connect 
 btc_conn = {'rpcuser':'btc', 
-        'rpcpassword':'btc', 
+        'rpcpassword':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 
         'rpcip':'127.0.0.1', 
         'rpcport':18332}
 
 #violas node list, to connect one
 violas_nodes=[
         #       {'name':'' , 'host':'51.140.241.96', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        {'name':'84', 'host':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        {'name':'242', 'host':'13.68.141.242', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        {'name':'50', 'host':'47.52.195.50', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        {'name':'235', 'host':'18.220.66.235', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        #{'name':'84', 'host':'52.27.228.84', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        #{'name':'242', 'host':'13.68.141.242', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        #{'name':'50', 'host':'47.52.195.50', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        #{'name':'235', 'host':'18.220.66.235', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
+        {'name':'84', 'host':'52.27.228.84', "port":40001},
+        {'name':'235', 'host':'18.220.66.235', "port":40001} ,
         ]
 
 #libra node list, to connect one
 libra_nodes=[
  #       {'host':'51.140.241.96', 'port':40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-         {'host':'ac.testnet.libra.org', 'port':8000, 'validator':'libra_consensus_peers.config.toml', 'faucet':'libra_faucet_keys', 'name':'libra'},
+         #{'host':'ac.testnet.libra.org', 'port':8000, 'validator':'libra_consensus_peers.config.toml', 'faucet':'libra_faucet_keys', 'name':'libra'},
+         {'host':'ac.testnet.libra.org', 'port':8000, 'name':'libra'},
          #{'host':'125.39.5.57', 'port':40001, 'validator':'libra_consensus_peers.config.toml','faucet':'libra_faucet_keys', 'name':'tianjin'},
          #{'host':'125.39.5.57', 'port':40001},
         ]
@@ -42,24 +45,18 @@ violas_servers=[
 #db info type(vfilter vfilter lfilter v2b  l2b v2l)
 db_list=[
         #'db_transactions':{'host':'127.0.0.1', 'port':6378, 'db':'3', 'password':'123'},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':300},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':300},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
-        #remote
-        {'host':'192.168.31.37', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':300},
-        {'host':'192.168.31.37', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':300},
-        {'host':'192.168.31.37', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
-        {'host':'192.168.31.37', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
-        {'host':'192.168.31.37', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
-        {'host':'192.168.31.37', 'port':6378, 'db':'b2v', 'password':'violas', 'step':100},
-        {'host':'192.168.31.37', 'port':6378, 'db':'record', 'password':'violas', 'step':100},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':100},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':200},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':500},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':500},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':100},
+        {'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':500},
+        {'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':500},
+        {'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
+        {'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
+        {'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
+        {'host':'127.0.0.1', 'port':6378, 'db':'b2v', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
+        {'host':'127.0.0.1', 'port':6378, 'db':'record', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
         ]
 
 address_list = {
@@ -93,7 +90,6 @@ address_list = {
             #vbtc module
             #{'address':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'type':'v2b-old', 'chain':'violas'},
             {'address':'2236322cf1e35198302919c2c1b1e4bf5be07359c8995c6a13ec53c17579c768', 'type':'v2b', 'chain':'violas'},
-            {'address':'0000000000000000000000000000000000000000000000000000000000000000', 'type':'b2v', 'chain':'btc'},
             #vbtc module
             {'address':'2236322cf1e35198302919c2c1b1e4bf5be07359c8995c6a13ec53c17579c768', 'type':'b2v', 'chain':'violas'},
             #vlibra module
