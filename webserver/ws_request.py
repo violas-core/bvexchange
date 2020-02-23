@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-from flask import Flask
+from flask import Flask , url_for
+from markupsafe import escape
 app = Flask(__name__)
 
 import operator
@@ -39,8 +40,8 @@ def test():
     return "violas record webserver."
 
 
-@app.route('/trandetail/<string:dtype>/<string:version>/', methods=['GET'])
-def get_record_detail(dtype, version):
+@app.route('/trandetail/<string:dtype>/<string:version>', methods=['GET'])
+def trandetail(dtype, version):
     try:
         logger.debug(f"get record detail(dtype = {dtype}, version={version})")
         rclient = requestclient("l2vrecord", get_proofdb(dtype))
@@ -56,8 +57,8 @@ def get_record_detail(dtype, version):
         ret = parse_except(e)
     return ret.__repr__()
 
-@app.route('/tranaddress/<string:chain>/<int:cursor>/<int:limit>/', methods=['GET'])
-def get_addresses(chain, cursor = 0, limit = 99999999):
+@app.route('/tranaddress/<string:chain>/<int:cursor>/<int:limit>', methods=['GET'])
+def tranaddress(chain, cursor = 0, limit = 99999999):
     try:
         logger.debug(f"get record address(chain = {chain}, cursor={cursor}, limit={limit})")
 
@@ -75,8 +76,8 @@ def get_addresses(chain, cursor = 0, limit = 99999999):
         ret = parse_except(e)
     return ret.__repr__()
 
-@app.route('/tranrecord/<string:chain>/<string:sender>/<int:cursor>/<int:limit>/', methods=['GET'])
-def get_transaction_record(chain, sender, cursor = 0, limit = 99999999):
+@app.route('/tranrecord/<string:chain>/<string:sender>/<int:cursor>/<int:limit>', methods=['GET'])
+def tranrecord(chain, sender, cursor = 0, limit = 99999999):
     try:
         logger.debug(f"get record(chain = {chain} sender={sender}, cursor={cursor}, limit={limit})")
 
@@ -88,7 +89,8 @@ def get_transaction_record(chain, sender, cursor = 0, limit = 99999999):
             raise f"get transaction record failed.chain = {chain}, sender = {sender}, cursor={cursor}, limit={limit}"
         datas = {"cursor": ret.datas[0],\
                 "count": len(ret.datas[1]), \
-                "datas": ret.datas[1]}
+                "datas":{(key, ret.datas[1][key]) for key in sorted(ret.datas[1].keys())} \
+                }
         ret = result(error.SUCCEED, "", datas)
     except Exception as e:
         ret = parse_except(e)
@@ -112,10 +114,13 @@ def get_chain_record(flag, sender, cursor, limit):
 def get_proofdb(dtype):
     return stmanage.get_db(dtype)
 
+with app.test_request_context():
+    logger.debug(url_for('tranaddress', chain = "violas", cursor = 0, limit = 10))
+    logger.debug(url_for('tranrecord', chain = "violas", sender="af5bd475aafb3e4fe82cf0d6fcb0239b3fe11cef5f9a650e830c2a2b89c8798f", cursor=0, limit=10))
+    logger.debug(url_for('trandetail', dtype="v2b", version="5075154"))
 '''
 def get_transaction_record(chain, sender, cursor = 0, limit = 99999999):
     try:
-        module = None
         logger.debug(f"get record(chain = {chain} sender={sender}, cursor={cursor}, limit={limit})")
         if chain.upper() == "VIOLAS":
             ret_violas = get_violas_record(sender, cursor, limit)
