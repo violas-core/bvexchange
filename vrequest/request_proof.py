@@ -81,6 +81,25 @@ class requestproof(requestbase):
             self._logger.debug("end has_transaction.")
         return ret
 
+    def get_transaction_record(self, sender, flag, cursor = 0, match = None, limit = 10):
+        try:
+            tran_info = {"flag":flag,"sender":sender}
+            
+            name = self.create_haddress_name(tran_info)
+            ret = self.hscan(name, cursor, match, limit)
+            if ret.state != error.SUCCEED:
+                return ret
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def list_keys_for_substr(self, substr, cursor = 0, limit = 10):
+        try:
+            ret = self.scan(cursor, sbustr, limit)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def _is_target_state(self, state, tran_id):
         try:
             ret = self.get_proof_by_hash(tran_id)
@@ -102,23 +121,6 @@ class requestproof(requestbase):
 
     def is_end(self, tran_id):
         return self._is_target_state(proofstate.END, tran_id)
-
-    def get_transaction_record(self, sender, flag, cursor = 0, match = None, limit = 10):
-        try:
-            tran_info = {"flag":flag,"sender":sender}
-            
-            name = self.create_haddress_name(tran_info)
-            ret = self.hscan(name, cursor, match, limit)
-            if ret.state != error.SUCCEED:
-                return ret
-            next_cursor = ret.datas[0]
-            datas = ret.datas[1]
-
-            ret = result(error.SUCCEED, "", {"cursor": next_cursor, "datas":datas})
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
 
 def main():
     try:
