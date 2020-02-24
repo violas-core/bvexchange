@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from flask import Flask , url_for
+from flask import Flask , url_for, request
 from markupsafe import escape
 app = Flask(__name__)
 
@@ -55,7 +55,7 @@ def trandetail(dtype, version):
         ret = result(error.SUCCEED, "", datas)
     except Exception as e:
         ret = parse_except(e)
-    return ret.__repr__()
+    return ret.to_json()
 
 @app.route('/tranaddress/<string:chain>/<int:cursor>/<int:limit>', methods=['GET'])
 def tranaddress(chain, cursor = 0, limit = 99999999):
@@ -74,7 +74,7 @@ def tranaddress(chain, cursor = 0, limit = 99999999):
         ret = result(error.SUCCEED, "", datas)
     except Exception as e:
         ret = parse_except(e)
-    return ret.__repr__()
+    return ret.to_json()
 
 @app.route('/tranrecord/<string:chain>/<string:sender>/<int:cursor>/<int:limit>', methods=['GET'])
 def tranrecord(chain, sender, cursor = 0, limit = 99999999):
@@ -89,12 +89,12 @@ def tranrecord(chain, sender, cursor = 0, limit = 99999999):
             raise f"get transaction record failed.chain = {chain}, sender = {sender}, cursor={cursor}, limit={limit}"
         datas = {"cursor": ret.datas[0],\
                 "count": len(ret.datas[1]), \
-                "datas":{(key, ret.datas[1][key]) for key in sorted(ret.datas[1].keys())} \
+                "datas":[json.loads(ret.datas[1][key]) for key in sorted(ret.datas[1].keys())] \
                 }
         ret = result(error.SUCCEED, "", datas)
     except Exception as e:
         ret = parse_except(e)
-    return ret.__repr__()
+    return ret.to_json()
 
 def check_chain(chain):
     if chain.upper() not in ("VIOLAS", "LIBRA", "BTC"):

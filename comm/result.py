@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys
+import sys, json
 from . import error
 sys.path.append("..")
 import traceback
@@ -23,6 +23,10 @@ class result:
         
         def __repr__(self):
             return f"state={self.state.name}, message={self.message}, datas:{self.datas}"
+
+        def to_json(self):
+            return {"state":self.state.name, "message":self.message, "datas":self.datas}
+
 
 def parse_except(e, msg = None, datas = None):
     try:
