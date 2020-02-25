@@ -17,6 +17,7 @@ from comm.result import result, parse_except
 from comm.error import error
 from db.dbv2b import dbv2b
 from vlsopt.violasclient import violasclient, violaswallet, violasserver
+from btc.btcclient import btcclient
 from enum import Enum
 from db.dbvbase import dbvbase
 from baseobject import baseobject
@@ -38,6 +39,7 @@ class abase(baseobject):
     class trantype(Enum):
         VIOLAS = 1
         LIBRA  = 2
+        BTC    = 3
         UNKOWN = 255
 
     def __init__(self, name, ttype, dtype, dbconf, vnodes, chain="violas"):
@@ -50,7 +52,11 @@ class abase(baseobject):
         self._dbclient = None
         self._rdbclient = None
         self._connect_db(name, dbconf)
-        self._connect_violas(name, vnodes, chain)
+        if chain == "btc":
+            self._connect_btc(name, vnodes, chain)
+        else:
+            self._connect_violas(name, vnodes, chain)
+
         self.append_data_type(dtype)
         self.append_tran_type(ttype)
         pass
@@ -70,6 +76,11 @@ class abase(baseobject):
     def _connect_violas(self, name, vnodes, chain="violas"):
         if vnodes is not None:
             self._vclient = violasclient(name, vnodes, chain) 
+        return self._vclient
+
+    def _connect_btc(self, name, nodes, chain="btc"):
+        if vnodes is not None:
+            self._vclient = btcclient(name, nodes, chain) 
         return self._vclient
 
     def set_record(self, rdbconf):

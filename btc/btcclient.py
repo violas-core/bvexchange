@@ -75,6 +75,18 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def __listexproof(self, extype, cursor = 0, limit = 10):
+        try:
+            self._logger.debug(f"start __listexproof(type={extype} cursor={cursor} limit={limit})")
+            
+            datas = self.__rpc_connection.violas_listexproof(extype, cursor, limit)
+
+            ret = result(error.SUCCEED, "", datas)
+            self._logger.info(f"result: {len(ret.datas)}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def isexproofcomplete(self, address, sequence):
         try:
             self._logger.debug(f"start isexproofcomplete(address = {address} sequence={sequence})")
@@ -99,6 +111,51 @@ class btcclient(baseobject):
 
     def listexproofformark(self, receiver, excluded):
         return self.__listexproofforstate(self.proofstate.MARK.value, comm.values.EX_TYPE_V2B, receiver, excluded)
+
+    def listexproofforb2v(self, cursor, limit):
+        return self.__listexproof(comm.values.EX_TYPE_B2V, cursor, limit)
+
+    def __map_tran(self, data):
+        tran_data = json.dumps({"flag":"btc", "type":"b2v", "state":data.get("state"), "to_address":data.get("address"), "to_module":data.get("vtoken")})
+        return {
+                "version": data.get("index"),\
+                "success":True,\
+                "events":[{"event":tran_data}],\
+                "data":tran_data,\
+                "amount":data.get("amount"),\
+                "sequence_number":data.get("height"),\
+                "txid":data.get("txid"),\
+                "tran_id":data.get("txid"),\
+                "creation_block":data.get("creation_block"),\
+                "update_block":data.get("update_block"),\
+                "sender":data.get("issuer"), \
+                "receiver":data.get("receiver"),\
+                "module_address":"000000000000000000000000000000000"
+                }
+
+    def get_transactions(self, cursor, limit, pass=True):
+        try:
+            ret = self.listexproofforb2v(cursor, limit)
+            if ret.state != error.SUCCEED:
+                return ret
+            datas = []
+            for data in ret.datas:
+                tran = self.__map_tran(data)
+                datas.append(tran)
+            ret = result(error.SUCCEED, "", datas)
+            self._logger.debug(f"result: {len(ret.datas)}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_latest_transaction_version():
+        try:
+            latest_index = self.__rpc_connection.getexprooflatestindex(comm.values.EX_TYPE_B2V)
+            ret = result(error.SUCCEED, "", latest_index.get("index", -1))
+            self._logger.debug(f"result: {ret.datas}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
 
     def sendexproofstart(self, fromaddress, toaddress, amount, vaddress, sequence, vtoken):
         try:
@@ -218,6 +275,27 @@ class btcclient(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def has_v2b_mark(self, address, version):
+        try:
+            self._logger.debug(f"start has_v2b_mark(address = {address}, version={version})")
+            datas = self.__rpc_connection.violas_getexproofforaddress(address, version, comm.values.EX_TYPE_V2B)
+            ret = result(error.SUCCEED, "", datas)
+            self._logger.info(f"result: {ret.datas}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def has_b2v_mark(self, address, version):
+        try:
+            self._logger.debug(f"start has_b2v_mark(address = {address}, version={version})")
+            datas = self.__rpc_connection.violas_getexproofforaddress(address, version, comm.values.EX_TYPE_B2V)
+            ret = result(error.SUCCEED, "", datas)
+            self._logger.info(f"result: {ret.datas}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
 
 def main():
     try:

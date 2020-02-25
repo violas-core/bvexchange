@@ -39,6 +39,7 @@ class dbvbase(baseobject):
         LFILTER = 4
         L2V     = 5
         B2V     = 6
+        BFILTER = 7
 
     def __init__(self, name, host, port, db, passwd = None):
         baseobject.__init__(self, name)
