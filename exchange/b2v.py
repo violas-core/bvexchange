@@ -72,6 +72,7 @@ class exb2v(baseobject):
         try:
             self._logger.debug("start __merge_proof_to_rpcparams")
             for info in dbinfos:
+                #append key for excluded, must be dict {"address":"xxx" , "sequence":"xxx"} ,match btc rpc excluded params format
                 if info.toaddress in rpcparams.keys():
                     rpcparams[info.toaddress].append({"address":"%s"%(info.vaddress), "sequence":info.sequence})
                 else:

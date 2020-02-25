@@ -88,6 +88,13 @@ def listexproofformark(receiver, excluded = None):
     for data in ret.datas:
         print(data)
 
+def listexproofforb2v(cursor, limit = 10):
+    client = getbtcclient()
+    ret = client.listexproofforb2v(cursor, limit)
+    assert ret.state == error.SUCCEED, " listexproofforb2v failed"
+    for data in ret.datas:
+        print(data)
+
 def btchelp():
     client = getbtcclient()
     ret = client.help()
@@ -117,6 +124,7 @@ def init_args(pargs):
     pargs.append("listexproofforstart", "returns array of proof state is start .", True, ["receiver"])
     pargs.append("listexproofforend", "returns array of proof state is end .", True, ["receiver"])
     pargs.append("listexproofformark", "returns array of proof state is mark .", True, ["receiver"])
+    pargs.append("listexproofforb2v", "returns array of proof list type = b2v. .", True, ["cursor", "limit"])
     pargs.append("btchelp", "returns bitcoin-cli help.")
     pargs.append("getwalletbalance", "returns wallet balance.")
     pargs.append("getwalletaddressbalance", "returns wallet target address's balance.", True, ["address"])
@@ -186,6 +194,14 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             ret = listexproofformark(arg_list[0])
+        elif pargs.is_matched(opt, ["listexproofforb2v"]):
+            if len(arg_list) != 1 and len(arg_list) != 2:
+                pargs.exit_error_opt(opt)
+            if len(arg_list) == 2:
+                limit = int(arg_list[1])
+                ret = listexproofforb2v(int(arg_list[0]), limit)
+            else:
+                ret = listexproofforb2v(int(arg_list[0]))
         elif pargs.is_matched(opt, ["btchelp"]):
             ret = btchelp()
         elif pargs.is_matched(opt, ["getwalletbalance"]):

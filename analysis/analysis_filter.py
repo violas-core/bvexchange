@@ -45,7 +45,7 @@ class afilter(abase):
         i = 0
         #init
         try:
-            self._logger.debug("start vfilter work")
+            self._logger.debug("start filter work")
             ret = self._vclient.get_latest_transaction_version();
             if ret.state != error.SUCCEED:
                 return ret
@@ -92,9 +92,6 @@ class afilter(abase):
                 value = json.dumps(tran_data)
                 key = version
 
-                if version == 4518238:
-                    self._logger.debug(f"{tran_data}")
-
                 ret = self.parse_tran(tran_data)
                 if ret.state != error.SUCCEED or \
                         ret.datas.get("flag", None) not in self.get_tran_types() or \
@@ -113,7 +110,7 @@ class afilter(abase):
         except Exception as e:
             ret = parse_except(e)
         finally:
-            self._logger.debug("end vfilter work")
+            self._logger.debug("end filter work")
         return ret
         
 def works(ttype, dtype):
