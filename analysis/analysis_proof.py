@@ -112,8 +112,11 @@ class aproof(abase):
                     return result(error.TRAN_INFO_INVALID, f"key{version} is exists. violas tran info : {tran_info}")
 
                 #create tran id
-                tran_id = self.create_tran_id(tran_info["flag"], tran_info["type"], tran_info['sender'], \
-                        tran_info['receiver'], tran_info['token'], tran_info['version'])
+                if tran_info["flag"] == self.trantype.BTC.name.lower():
+                    tran_id = tran_info["txid"]
+                else:
+                    tran_id = self.create_tran_id(tran_info["flag"], tran_info["type"], tran_info['sender'], \
+                            tran_info['receiver'], tran_info['token'], tran_info['version'])
 
                 tran_info["flag"] = tran_info["flag"].name
                 tran_info["type"] = tran_info["type"].name
@@ -134,6 +137,13 @@ class aproof(abase):
                     return ret
 
                 if ret.datas is None or len(ret.datas) == 0:
+                    #btc transaction is end , diff libra and violas
+                    if tran_info["flag"] == self.trantype.BTC.name.lower():
+                        ret = self._dbclient.set_proof(version, json.dumps(tran_info))
+                        if ret.state != error.SUCCEED:
+                            return ret
+                        return result(error.SUCCEED, "", {"new_proof":new_proof, "tran_id":tran_id})
+
                     return result(error.TRAN_INFO_INVALID, 
                             f"tran_id {tran_id} not found value or key is not found.tran version : {tran_info.get('version')}")
 
@@ -255,7 +265,8 @@ class aproof(abase):
                         continue
 
                     #mark it, watch only, True: new False: update
-                    if ret.datas.get("new_proof") == True:
+                    # maybe btc not save when state == end, because start - > end some minue time
+                    if ret.datas.get("new_proof") == True or train_filter.get("flag") == self.trantype.BTC:  
                         self._dbclient.set_latest_saved_ver(version)
 
                     tran_id = ret.datas.get("tran_id")
