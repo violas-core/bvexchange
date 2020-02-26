@@ -42,6 +42,7 @@ class aproof(abase):
         super().__init__(name, ttype, dtype, None, nodes, chain)
         self._dbclient = None
         self._fdbcliet = None
+        self._module = None
         if dbconf is not None:
             self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port"), dbconf.get("db"), dbconf.get("password"))
         if fdbconf is not None:
@@ -54,6 +55,15 @@ class aproof(abase):
 
     def stop(self):
         super().stop()
+
+    def set_module(self, module):
+        self._module = module
+
+    def get_module(self):
+        return self._module
+
+    def is_valid_moudle(self, module):
+        return self._module == module and module is not None
 
     def proofstate_name_to_value(self, name):
         if name is None or len(name) == 0:
@@ -77,7 +87,7 @@ class aproof(abase):
     def check_tran_is_valid(self, tran_info):
         return tran_info.get("flag", None) in self.get_tran_types() and \
                self.proofstate_name_to_value(tran_info.get("state", None)) != self.proofstate.UNKOWN and \
-               self.is_valid_datatype(tran_info.get("type"))
+               self.is_valid_datatype(tran_info.get("type") and self.is_valid_moudle(tran_info.get("token")))
 
     def is_valid_proofstate_change(self, new_state, old_state):
         if new_state == self.proofstate.UNKOWN:
@@ -185,8 +195,15 @@ class aproof(abase):
             if ret.state != error.SUCCEED:
                 return ret
             max_version = ret.datas
+
+            use_keys = (max_version - start_version) > 100
+            if usekeys:
+                keys = slef._dbcliet.list_version_keys(start_version)
             while version <= max_version and self.work():
                 #self._logger.debug(f"check version {version}")
+                if use_keys and str(version) not in keys:
+                    continue
+
                 ret = self._dbclient.get(version)
                 if ret.state != error.SUCCEED:
                     return ret
@@ -233,17 +250,19 @@ class aproof(abase):
             count = 0
             self._logger.debug(f"proof latest_saved_ver={self._dbclient.get_latest_saved_ver().datas} start version = {start_version}  \
                     step = {self.get_step()} valid transaction latest_saved_ver = {latest_saved_ver} ")
-            fkeys = set(elf._fdbcliet.keys().datas)
+            use_keys = (max_version - start_version) > 100
+            if use_keys:
+                keys = self._fdbcliet.list_version_keys(start_version)
+
             while(version <= max_version and count < self.get_step() and self.work()):
                 try:
                     #record last version(parse), maybe version is not exists
                     #self._logger.debug(f"parse transaction:{version}")
 
-                    self._dbclient.set_latest_filter_ver(version)
-
-                    if str(version) not in fkeys:
+                    if use_keys and str(version) not in keys:
                         continue
 
+                    print(version)
                     ret = self._fdbcliet.get(version)
                     if ret.state != error.SUCCEED:
                         return ret
@@ -289,6 +308,8 @@ class aproof(abase):
                 finally:
                     version += 1
 
+            #here version is not analysis, work stop or version = max_version + 1
+            self._dbclient.set_latest_filter_ver(version - 1)
             self.update_min_version_for_start()
             ret = result(error.SUCCEED)
         except Exception as e:

@@ -49,12 +49,15 @@ class requestbase(dbvproof):
                 return ret
             max_version = ret.datas
 
+            use_keys = (max_version - start_version) > 100
+
+            if use_keys:
+                keys = self.list_version_keys(start_version)
+                print(keys)
             count = 0
-            keys = set(self.keys().datas)
             for version in range(start_version ,max_version + 1):
-                if str(version) not in keys:
+                if use_keys and str(version) not in keys:
                     continue
-                print(version)
 
                 if count >= limit:
                     break
