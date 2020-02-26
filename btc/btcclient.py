@@ -133,7 +133,7 @@ class btcclient(baseobject):
                 "module_address":"000000000000000000000000000000000"
                 }
 
-    def get_transactions(self, cursor, limit, pass=True):
+    def get_transactions(self, cursor, limit, nouse=True):
         try:
             ret = self.listexproofforb2v(cursor, limit)
             if ret.state != error.SUCCEED:
