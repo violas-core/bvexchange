@@ -58,7 +58,7 @@ class works:
         del self.__threads
 
     def record_db_name(self):
-        return __record_db
+        return self.__record_db
     
     def set_work_obj(self, obj):
         old_obj = self.__work_obj.get(obj.name())

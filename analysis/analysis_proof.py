@@ -37,21 +37,21 @@ class aproof(abase):
         UNKOWN = 255
 
     def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, fdbconf = None, rdbconf = None, nodes = None, chain = "violas"):
-        self._fdbcliet = None
+        self._fdbclient = None
         #db use dbvproof, dbvfilter, not use violas/libra nodes
         super().__init__(name, ttype, dtype, None, nodes, chain)
         self._dbclient = None
-        self._fdbcliet = None
+        self._fdbclient = None
         self._module = None
         if dbconf is not None:
             self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port"), dbconf.get("db"), dbconf.get("password"))
         if fdbconf is not None:
-            self._fdbcliet = dbvfilter(name, fdbconf.get("host", "127.0.0.1"), fdbconf.get("port"), fdbconf.get("db"), fdbconf.get("password"))
+            self._fdbclient = dbvfilter(name, fdbconf.get("host", "127.0.0.1"), fdbconf.get("port"), fdbconf.get("db"), fdbconf.get("password"))
 
     def __del__(self):
         super().__del__()
-        if self._fdbcliet is not None:
-            self._fdbcliet.save()
+        if self._fdbclient is not None:
+            self._fdbclient.save()
 
     def stop(self):
         super().stop()
@@ -63,7 +63,9 @@ class aproof(abase):
         return self._module
 
     def is_valid_moudle(self, module):
-        return self._module == module and module is not None
+        state = self._module == module and module is not None
+        print(f"result: {state} {self._module} == {module}")
+        return state
 
     def proofstate_name_to_value(self, name):
         if name is None or len(name) == 0:
@@ -87,7 +89,8 @@ class aproof(abase):
     def check_tran_is_valid(self, tran_info):
         return tran_info.get("flag", None) in self.get_tran_types() and \
                self.proofstate_name_to_value(tran_info.get("state", None)) != self.proofstate.UNKOWN and \
-               self.is_valid_datatype(tran_info.get("type") and self.is_valid_moudle(tran_info.get("token")))
+               self.is_valid_datatype(tran_info.get("type")) and \
+               self.is_valid_moudle(tran_info.get("token"))
 
     def is_valid_proofstate_change(self, new_state, old_state):
         if new_state == self.proofstate.UNKOWN:
@@ -119,7 +122,7 @@ class aproof(abase):
 
                 #found key = version info, db has old datas , must be flush db?
                 if ret.datas == True:
-                    return result(error.TRAN_INFO_INVALID, f"key{version} is exists. violas tran info : {tran_info}")
+                    return result(error.TRAN_INFO_INVALID, f"key{version} is exists, db datas is old, flushdb ?. violas tran info : {tran_info}")
 
                 #create tran id
                 if tran_info["flag"] == self.trantype.BTC.name.lower():
@@ -184,43 +187,41 @@ class aproof(abase):
         
     def update_min_version_for_start(self):
         try:
+            self._logger.debug(f"start update_min_version_for_start")
             #update min version for state is start
             ret = self._dbclient.get_proof_min_version_for_start()
             if ret.state != error.SUCCEED:
                 return ret
-            version = max(int(ret.datas), self.get_min_valid_version())
-            start_version = version
+            start_version = max(int(ret.datas), self.get_min_valid_version())
 
             ret = self._dbclient.get_latest_saved_ver()
             if ret.state != error.SUCCEED:
                 return ret
             max_version = ret.datas
 
-            use_keys = (max_version - start_version) > 100
-            if usekeys:
-                keys = slef._dbcliet.list_version_keys(start_version)
-                version = min(start_version, min(keys))
-            while version <= max_version and self.work():
+            keys = self._dbclient.list_version_keys(start_version)
+            new_version = start_version
+            for version in keys:
+                if self.work() != True:
+                    break
+                    
                 #self._logger.debug(f"check version {version}")
-                if use_keys and version not in keys:
-                    continue
 
                 ret = self._dbclient.get(version)
                 if ret.state != error.SUCCEED:
                     return ret
 
                 if ret.datas is None:
-                    version +=1
                     continue
 
+                new_version = version
                 tran_data = json.loads(ret.datas)
                 if self.proofstate_name_to_value(tran_data.get("state")) == self.proofstate.START and \
                         self.is_valid_moudle(tran_data.get("token")):
                     break
 
-                version += 1
-            ret = self._dbclient.set_proof_min_version_for_start(version)
-            if ret.state == error.SUCCEED and start_version != version:
+            ret = self._dbclient.set_proof_min_version_for_start(new_version)
+            if ret.state == error.SUCCEED and start_version != new_version:
                 self._logger.info(f"update min version for start(proof state) {start_version} -> {version}")
         except Exception as e:
             ret = parse_except(e)
@@ -237,7 +238,7 @@ class aproof(abase):
             start_version = self.get_start_version(ret.datas + 1)
 
             #can get max version 
-            ret = self._fdbcliet.get_latest_saved_ver()
+            ret = self._fdbclient.get_latest_saved_ver()
             if ret.state != error.SUCCEED:
                 return ret
             latest_saved_ver = ret.datas
@@ -253,21 +254,18 @@ class aproof(abase):
             self._logger.debug(f"proof latest_saved_ver={self._dbclient.get_latest_saved_ver().datas} start version = {start_version}  \
                     step = {self.get_step()} valid transaction latest_saved_ver = {latest_saved_ver} ")
 
-            use_keys = (max_version - start_version) > 100
-            if use_keys:
-                keys = self._fdbcliet.list_version_keys(start_version)
-                version = min(start_version, min(keys))
-
-            while(version <= max_version and count < self.get_step() and self.work()):
+            keys = self._fdbclient.list_version_keys(start_version)
+            latest_filter_ver = start_version
+            for version in keys:
                 try:
+                    if count >= self.get_step() and self.work() == False:
+                        break
                     #record last version(parse), maybe version is not exists
                     #self._logger.debug(f"parse transaction:{version}")
 
-                    if use_keys and version not in keys:
-                        continue
+                    latest_filter_ver = version
 
-                    print(version)
-                    ret = self._fdbcliet.get(version)
+                    ret = self._fdbclient.get(version)
                     if ret.state != error.SUCCEED:
                         return ret
 
@@ -280,11 +278,10 @@ class aproof(abase):
                         continue
 
                     tran_filter = ret.datas
-                    self._logger.debug(f"transaction parse: {tran_filter}")
-
                     if self.check_tran_is_valid(tran_filter) != True:
-                         self._logger.debug(f"tran is invalid(check flag type). violas tran version : {tran_filter['version']}")
-                         continue
+                        continue
+
+                    self._logger.debug(f"transaction parse: {tran_filter}")
 
                     #this is target transaction, todo work here
                     ret = self.update_proof_info(tran_filter)
@@ -294,7 +291,7 @@ class aproof(abase):
 
                     #mark it, watch only, True: new False: update
                     # maybe btc not save when state == end, because start - > end some minue time
-                    if ret.datas.get("new_proof") == True or train_filter.get("flag") == self.trantype.BTC:  
+                    if ret.datas.get("new_proof") == True or tran_filter.get("flag") == self.trantype.BTC:  
                         self._dbclient.set_latest_saved_ver(version)
 
                     tran_id = ret.datas.get("tran_id")
@@ -310,10 +307,11 @@ class aproof(abase):
                 except Exception as e:
                     ret = parse_except(e)
                 finally:
-                    version += 1
+                    #version += 1
+                    pass
 
-            #here version is not analysis, work stop or version = max_version + 1
-            self._dbclient.set_latest_filter_ver(version - 1)
+            #here version is not analysis
+            self._dbclient.set_latest_filter_ver(latest_filter_ver)
             self.update_min_version_for_start()
             ret = result(error.SUCCEED)
         except Exception as e:
