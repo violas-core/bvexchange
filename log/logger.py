@@ -13,6 +13,11 @@ def getLogger(name):
     if name not in log.config.config.get("loggers"):
         log.config.config.get("loggers")[name] = default
 
+    #default = log.config.config.get("loggers").get("bvelog")
+    #file_tmp = dict(log.config.config["handlers"].get("file"))
+    #file_tmp.update("filename", f"{name}.log")
+    #log.config.config.get("loggers").update(name, {"handlers":['console', name], 'level':default.get("level")})
+
     logging.config.dictConfig(log.config.config)
     logger = logging.getLogger(name)
 

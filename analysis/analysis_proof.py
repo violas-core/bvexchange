@@ -233,12 +233,17 @@ class aproof(abase):
             count = 0
             self._logger.debug(f"proof latest_saved_ver={self._dbclient.get_latest_saved_ver().datas} start version = {start_version}  \
                     step = {self.get_step()} valid transaction latest_saved_ver = {latest_saved_ver} ")
+            fkeys = set(elf._fdbcliet.keys().datas)
             while(version <= max_version and count < self.get_step() and self.work()):
                 try:
                     #record last version(parse), maybe version is not exists
                     #self._logger.debug(f"parse transaction:{version}")
 
                     self._dbclient.set_latest_filter_ver(version)
+
+                    if str(version) not in fkeys:
+                        continue
+
                     ret = self._fdbcliet.get(version)
                     if ret.state != error.SUCCEED:
                         return ret
