@@ -298,3 +298,8 @@ class dbvbase(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def list_version_keys(self, start = 0):
+        keys = self.keys().datas
+        return  sorted([key for key in keys if key.isdigit() and int(key) >= start])
+

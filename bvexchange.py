@@ -43,6 +43,7 @@ class works:
     __threads = []
     __work_looping = {}
     __work_obj = {}
+    __record_db = "record"
 
     __libra_min_valid_version   = 18323504
     __violas_min_valid_version  = 2000000
@@ -56,6 +57,9 @@ class works:
     def __del__(self):
         del self.__threads
 
+    def record_db_name(self):
+        return __record_db
+    
     def set_work_obj(self, obj):
         old_obj = self.__work_obj.get(obj.name())
         if old_obj is not None:
@@ -146,7 +150,8 @@ class works:
                     basedata = "vfilter"
                     obj = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.set_record(stmanage.get_db("record"))
+                    obj.set_module(stmanage.get_module_address(dtype, "violas"))
+                    obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     self.set_work_obj(obj)
@@ -190,7 +195,8 @@ class works:
                     basedata = "lfilter"
                     obj = analysis_proof.aproof(name="l2vproof", ttype="libra", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.set_record(stmanage.get_db("record"))
+                    obj.set_module(stmanage.get_module_address(dtype, "libra"))
+                    obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
                     self.set_work_obj(obj)
@@ -213,7 +219,8 @@ class works:
                     basedata = "vfilter"
                     obj = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.set_record(stmanage.get_db("record"))
+                    obj.set_module(stmanage.get_module_address(dtype, "violas"))
+                    obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     self.set_work_obj(obj)
