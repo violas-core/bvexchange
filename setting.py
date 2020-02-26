@@ -41,26 +41,21 @@ violas_servers=[
 
 #db info type(vfilter vfilter lfilter v2b  l2b v2l)
 db_list=[
-        #'db_transactions':{'host':'127.0.0.1', 'port':6378, 'db':'3', 'password':'123'},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':300},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':300},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
-        #{'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
         #remote
         {'host':'18.136.139.151', 'port':6378, 'db':'lfilter', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':300},
         {'host':'18.136.139.151', 'port':6378, 'db':'vfilter', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':300},
-        #{'host':'18.136.139.151', 'port':6378, 'db':'v2b', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
-        #{'host':'18.136.139.151', 'port':6378, 'db':'l2v', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
-        #{'host':'18.136.139.151', 'port':6378, 'db':'v2l', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
+        {'host':'18.136.139.151', 'port':6378, 'db':'vbtc', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':300},
+        {'host':'18.136.139.151', 'port':6378, 'db':'v2b', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
+        {'host':'18.136.139.151', 'port':6378, 'db':'l2v', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
+        {'host':'18.136.139.151', 'port':6378, 'db':'v2l', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
         {'host':'18.136.139.151', 'port':6378, 'db':'b2v', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
-        #{'host':'18.136.139.151', 'port':6378, 'db':'record', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
+        {'host':'18.136.139.151', 'port':6378, 'db':'record', 'password':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'step':10},
         #{'host':'127.0.0.1', 'port':6378, 'db':'lfilter', 'password':'violas', 'step':100},
         #{'host':'127.0.0.1', 'port':6378, 'db':'vfilter', 'password':'violas', 'step':200},
-        {'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
-        {'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
-        {'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
-        {'host':'127.0.0.1', 'port':6378, 'db':'record', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'v2b', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'l2v', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'v2l', 'password':'violas', 'step':100},
+        #{'host':'127.0.0.1', 'port':6378, 'db':'record', 'password':'violas', 'step':100},
         ]
 
 address_list = {
