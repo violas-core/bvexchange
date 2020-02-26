@@ -199,9 +199,10 @@ class aproof(abase):
             use_keys = (max_version - start_version) > 100
             if usekeys:
                 keys = slef._dbcliet.list_version_keys(start_version)
+                version = min(start_version, min(keys))
             while version <= max_version and self.work():
                 #self._logger.debug(f"check version {version}")
-                if use_keys and str(version) not in keys:
+                if use_keys and version not in keys:
                     continue
 
                 ret = self._dbclient.get(version)
@@ -213,7 +214,8 @@ class aproof(abase):
                     continue
 
                 tran_data = json.loads(ret.datas)
-                if self.proofstate_name_to_value(tran_data.get("state")) == self.proofstate.START:
+                if self.proofstate_name_to_value(tran_data.get("state")) == self.proofstate.START and \
+                        self.is_valid_moudle(tran_data.get("token")):
                     break
 
                 version += 1
@@ -250,16 +252,18 @@ class aproof(abase):
             count = 0
             self._logger.debug(f"proof latest_saved_ver={self._dbclient.get_latest_saved_ver().datas} start version = {start_version}  \
                     step = {self.get_step()} valid transaction latest_saved_ver = {latest_saved_ver} ")
+
             use_keys = (max_version - start_version) > 100
             if use_keys:
                 keys = self._fdbcliet.list_version_keys(start_version)
+                version = min(start_version, min(keys))
 
             while(version <= max_version and count < self.get_step() and self.work()):
                 try:
                     #record last version(parse), maybe version is not exists
                     #self._logger.debug(f"parse transaction:{version}")
 
-                    if use_keys and str(version) not in keys:
+                    if use_keys and version not in keys:
                         continue
 
                     print(version)

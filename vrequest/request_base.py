@@ -53,10 +53,10 @@ class requestbase(dbvproof):
 
             if use_keys:
                 keys = self.list_version_keys(start_version)
-                print(keys)
+                start_version = min(start_version, min(keys)) 
             count = 0
             for version in range(start_version ,max_version + 1):
-                if use_keys and str(version) not in keys:
+                if use_keys and version not in keys:
                     continue
 
                 if count >= limit:
