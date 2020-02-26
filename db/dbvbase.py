@@ -301,5 +301,5 @@ class dbvbase(baseobject):
 
     def list_version_keys(self, start = 0):
         keys = self.keys().datas
-        return  sorted([key for key in keys if key.isdigit() and int(key) >= start])
+        return  sorted([int(key) for key in keys if key.isdigit() and int(key) >= start])
 
