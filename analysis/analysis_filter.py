@@ -72,13 +72,13 @@ class afilter(abase):
                     break
 
                 transaction = data
+                tran_data = data.to_json()
                 version = transaction.get_version()
 
                 ret = self._dbclient.set_latest_filter_ver(version)
                 if ret.state != error.SUCCEED:
                     return ret
 
-                tran_data = data.to_json()
                 if "data" not in tran_data:
                     tran_data["data"] = transaction.get_data()
                 if "events" not in tran_data:

@@ -44,7 +44,7 @@ def test():
 def trandetail(dtype, version):
     try:
         logger.debug(f"get record detail(dtype = {dtype}, version={version})")
-        rclient = requestclient("l2vrecord", get_proofdb(dtype))
+        rclient = requestclient(f"{dtype}record", get_proofdb(dtype))
 
         ret = rclient.get_tran(version)
         if ret.state != error.SUCCEED:

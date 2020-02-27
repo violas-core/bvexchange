@@ -78,9 +78,9 @@ class abase(baseobject):
             self._vclient = violasclient(name, vnodes, chain) 
         return self._vclient
 
-    def _connect_btc(self, name, nodes, chain="btc"):
-        if vnodes is not None:
-            self._vclient = btcclient(name, nodes, chain) 
+    def _connect_btc(self, name, node, chain="btc"):
+        if node is not None:
+            self._vclient = btcclient(name, node) 
         return self._vclient
 
     def set_record(self, rdbconf):
@@ -227,7 +227,7 @@ class abase(baseobject):
             datas["sender"]         = transaction.get("sender", None)
             datas["receiver"]       = transaction.get("receiver", None)
             datas["token"]          = transaction.get("module_address", None)
-            tran_id = data_dict.get("tran_id", None)
+            tran_id                 = data_dict.get("tran_id", None)
             datas["tran_id"]        = tran_id
             datas["sequence"]   = transaction.get("sequence_number")
 
