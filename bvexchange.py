@@ -28,16 +28,18 @@ from enum import Enum
 name="bvexchange"
 
 class work_mod(Enum):
-    COMM    = 0
-    B2V     = 1
-    V2B     = 2
-    VFILTER = 3
-    V2BPROOF= 4
-    LFILTER = 5
-    L2VPROOF  = 6
-    V2LPROOF= 7
-    L2V     = 8
-    V2L     = 9
+    COMM        = 0
+    B2V         = 1
+    V2B         = 2
+    VFILTER     = 3
+    V2BPROOF    = 4
+    LFILTER     = 5
+    L2VPROOF    = 6
+    V2LPROOF    = 7
+    L2V         = 8
+    V2L         = 9
+    BFILTER     = 10
+    B2VPROOF    = 11
 
 class works:
     __threads = []
@@ -47,6 +49,7 @@ class works:
 
     __libra_min_valid_version   = 18323504
     __violas_min_valid_version  = 2000000
+    __btc_min_valid_version     = 0
     def __init__(self):
         logger.debug("works __init__")
         for mod in self.__work_looping:
@@ -286,6 +289,52 @@ class works:
             parse_except(e)
         finally:
             logger.critical("stop: v2l")
+
+    def work_bfilter(self, nsec):
+        try:
+            logger.critical("start: btc filter")
+            while (self.__work_looping.get(work_mod.BFILTER.name, False)):
+                logger.debug("looping: bfilter")
+                try:
+                    dtype = "bfilter"
+                    obj = analysis_filter.afilter(name="bfilter", ttype="btc", \
+                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_btc_conn(), chain="btc")
+                    obj.set_step(stmanage.get_db(dtype).get("step", 1000))
+                    obj.set_min_valid_version(self.__btc_min_valid_version - 1)
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical("stop: bfilter")
+
+    def work_b2vproof(self, nsec):
+        try:
+            logger.critical("start: btc b2v proof")
+            while (self.__work_looping.get(work_mod.B2VPROOF.name, False)):
+                logger.debug("looping: b2vproof")
+                try:
+                    dtype = "b2v"   #libra transaction's data types 
+                    basedata = "bfilter"
+                    obj = analysis_proof.aproof(name="b2vproof", ttype="btc", dtype=dtype, \
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+                    obj.set_module(stmanage.get_module_address(dtype, "btc"))
+                    obj.set_record(stmanage.get_db(self.record_db_name()))
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    obj.set_min_valid_version(self.__btc_min_valid_version - 1)
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical("stop: v2lproof")
+
     def work_comm(self, nsec):
         try:
             logger.critical("start: comm")
@@ -314,10 +363,11 @@ class works:
             logger.debug("work thread run")
             self.__work(self.__nsec)
 
-    def thread_append(self, work, threadId, name, nsec):
+    def thread_append(self, work, mod):
         try:
-            b2v = self.work_thread(work, threadId, name, nsec)
-            self.__threads.append(b2v)
+            #b2v = self.work_thread(work, threadId, name, nsec)
+            obj = self.work_thread(work, mod.value, mod.name.lower(), stmanage.get_looping_sleep(mod.name.lower()))
+            self.__threads.append(obj)
         except Exception as e:
             parse_except(e)
         finally:
@@ -329,34 +379,40 @@ class works:
 
             self.__work_looping = work_mods
 
-            self.thread_append(self.work_comm, 0, "comm", stmanage.get_looping_sleep("comm"))
+            self.thread_append(self.work_comm, work_mod.COMM)
 
             if work_mods.get(work_mod.B2V.name, False):
-                self.thread_append(self.work_b2v, work_mod.B2V.value, "b2v", stmanage.get_looping_sleep("b2v"))
+                self.thread_append(self.work_b2v, work_mod.B2V)
 
             if work_mods.get(work_mod.V2B.name, False):
-                self.thread_append(self.work_v2b, work_mod.V2B.value, "v2b", stmanage.get_looping_sleep("v2b"))
+                self.thread_append(self.work_v2b, work_mod.V2B)
 
             if work_mods.get(work_mod.VFILTER.name, False):
-                self.thread_append(self.work_vfilter, work_mod.VFILTER.value, "vfilter", stmanage.get_looping_sleep("vfilter"))
+                self.thread_append(self.work_vfilter, work_mod.VFILTER)
 
             if work_mods.get(work_mod.V2LPROOF.name, False):
-                self.thread_append(self.work_v2lproof, work_mod.V2LPROOF.value, "v2lproof", stmanage.get_looping_sleep("v2lproof"))
+                self.thread_append(self.work_v2lproof, work_mod.V2LPROOF)
 
             if work_mods.get(work_mod.V2BPROOF.name, False):
-                self.thread_append(self.work_v2bproof, work_mod.V2BPROOF.value, "v2bproof", stmanage.get_looping_sleep("v2bproof"))
+                self.thread_append(self.work_v2bproof, work_mod.V2BPROOF)
 
             if work_mods.get(work_mod.LFILTER.name, False):
-                self.thread_append(self.work_lfilter, work_mod.LFILTER.value, "lfilter", stmanage.get_looping_sleep("lfilter"))
+                self.thread_append(self.work_lfilter, work_mod.LFILTER)
 
             if work_mods.get(work_mod.L2VPROOF.name, False):
-                self.thread_append(self.work_l2vproof, work_mod.L2VPROOF.value, "l2vproof", stmanage.get_looping_sleep("l2vproof"))
+                self.thread_append(self.work_l2vproof, work_mod.L2VPROOF)
 
             if work_mods.get(work_mod.L2V.name, False):
-                self.thread_append(self.work_l2v, work_mod.L2V.value, "l2v", stmanage.get_looping_sleep("l2v"))
+                self.thread_append(self.work_l2v, work_mod.L2V)
 
             if work_mods.get(work_mod.V2L.name, False):
-                self.thread_append(self.work_v2l, work_mod.V2L.value, "v2l", stmanage.get_looping_sleep("v2l"))
+                self.thread_append(self.work_v2l, work_mod.V2L)
+
+            if work_mods.get(work_mod.BFILTER.name, False):
+                self.thread_append(self.work_bfilter, work_mod.BFILTER)
+
+            if work_mods.get(work_mod.B2VPROOF.name, False):
+                self.thread_append(self.work_b2vproof, work_mod.B2VPROOF)
 
             for work in self.__threads:
                 work.start() #start work
@@ -400,11 +456,14 @@ def signal_stop(signal, frame):
     finally:
         logger.debug("end signal")
 
-def run(mods):
+def list_valid_mods():
     valid_mods = ["all"]
     for mod in work_mod:
         valid_mods.append(mod.name.lower())
+    return valid_mods
 
+def run(mods):
+    valid_mods = list_valid_mods()
     for mod in mods:
         if mod is None or mod not in valid_mods:
             raise Exception(f"mod({mod}) is invalid {valid_mods}.")

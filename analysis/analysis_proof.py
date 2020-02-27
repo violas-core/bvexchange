@@ -105,7 +105,7 @@ class aproof(abase):
 
     def update_proof_info(self, tran_info):
         try:
-            self._logger.debug(f"start update_proof_info version: {tran_info}")
+            self._logger.debug(f"start update_proof_info tran info: {tran_info}")
             version = tran_info.get("version", None)
 
             tran_id = None
@@ -145,18 +145,22 @@ class aproof(abase):
                     return result(error.TRAN_INFO_INVALID, f"new tran data info is invalid, tran info : {tran_info}")
 
                 #get tran info from db(tran_id -> version -> tran info)
+
                 ret = self._dbclient.get_proof_by_hash(tran_id)
                 if ret.state != error.SUCCEED:
-                    return ret
-
-                if ret.datas is None or len(ret.datas) == 0:
                     #btc transaction is end , diff libra and violas
-                    if tran_info["flag"] == self.trantype.BTC.name.lower():
+                    if tran_info["flag"] == self.trantype.BTC:
+                        tran_info["flag"] = tran_info["flag"].name
+                        tran_info["type"] = tran_info["type"].name
                         ret = self._dbclient.set_proof(version, json.dumps(tran_info))
                         if ret.state != error.SUCCEED:
                             return ret
                         return result(error.SUCCEED, "", {"new_proof":new_proof, "tran_id":tran_id})
 
+                    self._logger.debug(f"get_proof_by_hash({tran_id}) failed.")
+                    return ret
+
+                if ret.datas is None or len(ret.datas) == 0:
                     return result(error.TRAN_INFO_INVALID, 
                             f"tran_id {tran_id} not found value or key is not found.tran version : {tran_info.get('version')}")
 

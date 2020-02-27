@@ -27,8 +27,16 @@ name="bclient"
 
 #btc_url = "http://%s:%s@%s:%i"
 
-
+COINS = int(comm.values.COINS * (100000000/comm.values.COINS))
 class btcclient(baseobject):
+
+    class transaction(object):
+        def __init__(self, datas):
+            self.__datas = dict(datas)
+        def get_version(self):
+            return self.__datas.get("version")
+        def to_json(self):
+            return self.__datas
 
     class proofstate(Enum):
         START   = "start"
@@ -58,6 +66,9 @@ class btcclient(baseobject):
         self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__rpcuser, self.__rpcpassword, self.__rpcip, self.__rpcport))
         self._logger.debug(f"connection succeed.")
 
+    def disconn_node(self):
+        pass
+
     def __listexproofforstate(self, state, extype, receiver, excluded):
         try:
             self._logger.debug(f"start __listexproofforstate(state={state} type={extype} receiver={receiver} excluded={excluded})")
@@ -74,6 +85,9 @@ class btcclient(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def stop(self):
+        self.work_stop()
 
     def __listexproof(self, extype, cursor = 0, limit = 10):
         try:
@@ -116,13 +130,13 @@ class btcclient(baseobject):
         return self.__listexproof(comm.values.EX_TYPE_B2V, cursor, limit)
 
     def __map_tran(self, data):
-        tran_data = json.dumps({"flag":"btc", "type":"b2v", "state":data.get("state"), "to_address":data.get("address"), "to_module":data.get("vtoken")})
+        tran_data = json.dumps({"flag":"btc", "type":"b2v", "state":data.get("state"), "to_address":data.get("address"), "to_module":data.get("vtoken"), "tran_id":data.get("txid")})
         return {
                 "version": data.get("index"),\
                 "success":True,\
                 "events":[{"event":tran_data}],\
                 "data":tran_data,\
-                "amount":data.get("amount"),\
+                "amount":int(data.get("amount") * COINS),\
                 "sequence_number":data.get("height"),\
                 "txid":data.get("txid"),\
                 "tran_id":data.get("txid"),\
@@ -130,7 +144,7 @@ class btcclient(baseobject):
                 "update_block":data.get("update_block"),\
                 "sender":data.get("issuer"), \
                 "receiver":data.get("receiver"),\
-                "module_address":"000000000000000000000000000000000"
+                "module_address":data.get("vtoken")
                 }
 
     def get_transactions(self, cursor, limit, nouse=True):
@@ -141,16 +155,16 @@ class btcclient(baseobject):
             datas = []
             for data in ret.datas:
                 tran = self.__map_tran(data)
-                datas.append(tran)
+                datas.append(self.transaction(tran))
             ret = result(error.SUCCEED, "", datas)
             self._logger.debug(f"result: {len(ret.datas)}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def get_latest_transaction_version():
+    def get_latest_transaction_version(self):
         try:
-            latest_index = self.__rpc_connection.getexprooflatestindex(comm.values.EX_TYPE_B2V)
+            latest_index = self.__rpc_connection.violas_getexprooflatestindex(comm.values.EX_TYPE_B2V)
             ret = result(error.SUCCEED, "", latest_index.get("index", -1))
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
