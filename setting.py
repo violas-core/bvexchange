@@ -24,14 +24,13 @@ violas_nodes=[
         {'name':'242', 'host':'13.68.141.242', "port":40001},
         {'name':'50', 'host':'47.52.195.50', "port":40001}, 
         {'name':'235', 'host':'18.220.66.235', "port":40001},
+        {'host':'125.39.5.57', 'port':40001, 'validator':'libra_consensus_peers.config.toml','faucet':'mint_test.key', 'name':'tianjin'},
         ]
 
 #libra node list, to connect one
 libra_nodes=[
  #       {'host':'51.140.241.96', 'port':40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
          {'host':'ac.testnet.libra.org', 'port':8000,  'name':'libra'},
-         #{'host':'125.39.5.57', 'port':40001, 'validator':'libra_consensus_peers.config.toml','faucet':'libra_faucet_keys', 'name':'tianjin'},
-         #{'host':'125.39.5.57', 'port':40001},
         ]
 
 #vioals server list. violas provides query of historical transactions. to connect one 
@@ -105,7 +104,7 @@ address_list = {
         'combine':[
             #vbtc
             {'address':'0bd77c4687547a66337c71532188dc88c76c59da4d6960fc82d72a2b15b06449', 'type':'v2b', 'chain':'violas'},
-            {'address':'', 'type':'v2l', 'chain':'violas'},
+            {'address':'0bd77c4687547a66337c71532188dc88c76c59da4d6960fc82d72a2b15b06449', 'type':'v2l', 'chain':'violas'},
             #vlibra
             {'address':'8cd3e23af9408d730b08684252871c370c9cd53bae2602face990473f4b2f9f8', 'type':'l2v', 'chain':'libra'},
             {'address':'2N9gZbqRiLKAhYCBFu3PquZwmqCBEwu1ien', 'type':'b2v', 'chain':'btc'},

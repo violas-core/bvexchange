@@ -48,7 +48,7 @@ class violaswallet(baseobject):
         if wallet_name is not None:
             ret = self.__load_wallet(wallet_name, chain)
             if ret.state != error.SUCCEED:
-                raise Exception("load wallet failed.")
+                raise Exception(f"load wallet[{wallet_name}] failed.")
 
     def __del__(self):
         self.dump_wallet()
