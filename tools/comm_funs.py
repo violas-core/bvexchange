@@ -44,6 +44,25 @@ class walletreg(violaswallet):
     def __del__(self):
         violaswallet.__del__(self)
 
+def get_address_info(vclient, wclient, address):
+    plat_balance = vclient.get_platform_balance(address)
+    infos = {}
+    infos["plat balance"] = plat_balance.datas
+    infos["is module"] = is_module_address(vclient, address)
+    infos["resources"] = vclient.get_scoin_resources(address).datas
+    resources = infos.get("resources")
+    if resources is not None:
+        balances = {}
+        for module in resources:
+            balances[f"{module}"] = f"{vclient.get_violas_balance(address, module).datas}"
+        infos["balances"] = balances
+    return infos
+    
+def list_address_info(vclient, wclient, addresses, ret):
+    for address in addresses:
+        info = get_address_info(vclient, wclient, address)
+        ret.update({address:info})
+
 def mint_platform_coin_for_address(vclient, wclient, address, amount=1000000, newcoin = False):
     vclient._logger.debug(f"start mint_platform_coin_for_address({address}, {amount})")
     assert address is not None and len(address) == 64, f"address({address}) is invalid."
@@ -68,14 +87,14 @@ def create_token(vclient, wclient, address, amount = 1000000, newcoin = False):
     vclient._logger.debug(f"start create token {address}")
     assert address is not None and len(address) == 64, f"address({address}) is invalid."
 
-    if is_module_address(address):
+    if is_module_address(vclient, address):
         vclient._logger.debug(f"address({address}) is a module")
         return 
 
     ret = wclient.has_account_by_address(address)
     assert ret.state == error.SUCCEED and ret.datas == True, f"not found address {address} in wallet"
    
-    mint_platform_coin_for_address(vclient, wclient, address, minpamount, newcoin)
+    mint_platform_coin_for_address(vclient, wclient, address, amount, newcoin)
 
     ret = wclient.get_account(address)
     assert ret.state == error.SUCCEED, f"get_account({address}) failed"
@@ -87,7 +106,7 @@ def create_token(vclient, wclient, address, amount = 1000000, newcoin = False):
     ret = vclient.bind_module(account, address)
     assert ret.state == error.SUCCEED, f"bind_module({address}, {address}) failed."
 
-    vclient._logger.info(f"new module: {module}")
+    vclient._logger.info(f"new module: {address}")
 
 def bind_module(vclient, wclient, address, module):
     vclient._logger.debug(f"start bind_module({address}, {module})")
@@ -163,5 +182,5 @@ def init_address_list(vclient, wclient, senders, module, minamount= 1000000000):
         assert ret.state == error.SUCCEED, f"get_violas_balance({sender}, {module}) failed."
         if minamount is not None and ret.datas < min_balance:
             mint_violas_coin(vclient, wclient, sender, module, min_balance - ret.datas)
-            vclient.debug(f"mint violas coin {min_balance - ret.datas}")
+            vclient._logger.debug(f"mint violas coin {min_balance - ret.datas}")
 
