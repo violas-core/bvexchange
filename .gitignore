@@ -5,6 +5,7 @@ __pycache__/
 
 violas-client
 libra-client
+*.key
 *.rdb
 *.pid
 *.log*
