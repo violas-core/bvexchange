@@ -82,7 +82,7 @@ def reg_run():
 
     logger.debug("start bind dtype = v2b chain = violas combin")
     combin = stmanage.get_combine_address("v2b", "violas")
-    assert combin is not None and len(combin) > 0, f"v2b combin not found or is invalid."
+    assert combin is not None and len(combin) == 64, f"v2b combin not found or is invalid."
     comm_funs.address_list_bind_module(vclient, wclient, [combin], vbtc_module)
 
     logger.debug("start bind dtype = v2l chain = violas combin")

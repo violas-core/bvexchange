@@ -43,7 +43,6 @@ class violaswallet(baseobject):
     
     def __init__(self, name, wallet_name, chain="violas"):
         assert wallet_name is not None, "wallet_name is None"
-        self.__wallet_name = "vwallet"
         baseobject.__init__(self, name)
         if wallet_name is not None:
             ret = self.__load_wallet(wallet_name, chain)
@@ -73,8 +72,9 @@ class violaswallet(baseobject):
                 self.__wallet = Wallet.recover(self.__wallet_name)
                 ret = result(error.SUCCEED, "", "")
             else:
-                ret = result(error.ARG_INVALID, "not found wallet file", "")
+                ret = result(error.SUCCEED, "not found wallet file", "")
                 self.__wallet = Wallet.new()
+                self._logger.warning("new wallet created")
 
         except Exception as e:
             ret = parse_except(e)
@@ -83,7 +83,7 @@ class violaswallet(baseobject):
     def dump_wallet(self):
         try:
             if self.__wallet is not None:
-                #self.__wallet.write_recovery(self.__wallet_name)
+                self.__wallet.write_recovery(self.__wallet_name)
                 pass
             ret = result(error.SUCCEED)
         except Exception as e:
@@ -92,7 +92,7 @@ class violaswallet(baseobject):
 
     def new_account(self):
         try:
-            self._logger.info("start new_wallet")
+            self._logger.info("start new_account")
             account = self.__wallet.new_account();
             ret = result(error.SUCCEED, "", account)
         except Exception as e:
