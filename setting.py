@@ -20,11 +20,11 @@ btc_conn = {'rpcuser':'btc',
 #violas node list, to connect one
 violas_nodes=[
         #       {'name':'' , 'host':'51.140.241.96', "port":40001, 'validator':'consensus_peers.config.toml', 'faucet':'faucet_keys'},
-        {'name':'84', 'host':'52.27.228.84', "port":40001}, 
-        {'name':'242', 'host':'13.68.141.242', "port":40001},
-        {'name':'50', 'host':'47.52.195.50', "port":40001}, 
-        {'name':'235', 'host':'18.220.66.235', "port":40001},
-        {'host':'125.39.5.57', 'port':40001, 'validator':'libra_consensus_peers.config.toml','faucet':'mint_test.key', 'name':'tianjin'},
+        #{'name':'84', 'host':'52.27.228.84', "port":40001}, 
+        #{'name':'242', 'host':'13.68.141.242', "port":40001},
+        #{'name':'50', 'host':'47.52.195.50', "port":40001}, 
+        #{'name':'235', 'host':'18.220.66.235', "port":40001, 'faucet':'faucet_keys'},
+        {'host':'125.39.5.57', 'port':40001, 'faucet':'mint_tianjin.key', 'name':'tianjin'},
         ]
 
 #libra node list, to connect one
