@@ -114,9 +114,9 @@ class violaswallet(baseobject):
         try:
             (index, account) = self.__wallet.find_account_by_address_hex(address)
             if account is None:
-                ret = result(error.SUCCEED, "", True)
-            else:
                 ret = result(error.SUCCEED, "", False)
+            else:
+                ret = result(error.SUCCEED, "", True)
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -169,10 +169,15 @@ class violasclient(baseobject):
 
                     self._logger.debug("try connect node({}) : host = {} port = {} validator={} faucet ={}".format( \
                             node.get("name", ""), node.get("host", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
-                    client = Client.new(node.get("host", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None))
-                    client.get_latest_version()
+                    client = Client.new(host=node.get("host", "127.0.0.1"), \
+                            port=node.get("port", 4001), \
+                            faucet_file = node.get("faucet", None), \
+                            timeout = node.get("timeout", 30), \
+                            debug = node.get("debug", False))
+                    #client.get_latest_version()
                     self._logger.debug(f"connect {chain} node succeed.") 
                 except Exception as e:
+                    parse_except(e)
                     self._logger.info(f"connect {chain} node failed({e}). test next...")
                 else:
                     self.__client = client
@@ -342,6 +347,15 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_scoin_resources(self, address):
+        try:
+            self._logger.debug(f"start get_scoin_resources(address={address})")
+            vres = self.__client.get_account_state(address).get_scoin_resources().keys()
+            ret = result(error.SUCCEED, "", list(vres))
+            self._logger.debug(f"result: {len(ret.datas)}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
     def account_has_violas_module(self, address, module):
         try:
             self._logger.debug("start account_has_violas_module(address={}, module={})".format(address, module))
