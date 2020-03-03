@@ -174,7 +174,7 @@ class violasclient(baseobject):
                             faucet_file = node.get("faucet", None), \
                             timeout = node.get("timeout", 30), \
                             debug = node.get("debug", False))
-                    #client.get_latest_version()
+                    client.get_latest_version()
                     self._logger.debug(f"connect {chain} node succeed.") 
                 except Exception as e:
                     parse_except(e)
@@ -209,7 +209,7 @@ class violasclient(baseobject):
    
     def create_violas_coin(self, account, is_blocking = True):
         try:
-            self._logger.info("create_violas_coin(account={}, is_blocking={})".format(account, is_blocking))
+            self._logger.info("create_violas_coin(account={}, is_blocking={})".format(account.address.hex(), is_blocking))
             self.__client.publish_module(account, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
