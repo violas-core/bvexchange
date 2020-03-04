@@ -41,6 +41,27 @@ class afilter(abase):
         abase.stop(self)
         self.work_stop()
 
+    def get_tran_data(self, data):
+        tran_data = data.to_json()
+        if "data" not in tran_data:
+            tran_data["data"] = data.get_data()
+        if "events" not in tran_data:
+            events = data.get_events()
+            if events is not None and len(events) > 0:
+                event = events[0]
+                event_item = {"data":event.get_data()}
+                tran_data["events"] = [{"event":event_item}]
+        return tran_data
+
+    def is_target_tran(self, tran_data):
+        ret = self.parse_tran(tran_data)
+        if ret.state != error.SUCCEED or \
+                ret.datas.get("flag", None) not in self.get_tran_types() or \
+                ret.datas.get("type") == self.datatype.UNKOWN or \
+                not ret.datas.get("tran_state", False):
+                return False
+        return True
+
     def start(self):
         i = 0
         #init
@@ -71,40 +92,23 @@ class afilter(abase):
                 if self.work() == False:
                     break
 
-                transaction = data
-                tran_data = data.to_json()
-                version = transaction.get_version()
+                version = data.get_version()
 
                 ret = self._dbclient.set_latest_filter_ver(version)
                 if ret.state != error.SUCCEED:
                     return ret
 
-                if "data" not in tran_data:
-                    tran_data["data"] = transaction.get_data()
-                if "events" not in tran_data:
-                    events = transaction.get_events()
-                    if events is not None and len(events) > 0:
-                        event = events[0]
-                        event_item = {"data":event.get_data()}
-                        tran_data["events"] = [{"event":event_item}]
-    
-                #save to redis db
-                value = json.dumps(tran_data)
-                key = version
+                tran_data = self.get_tran_data(data)   
 
-                ret = self.parse_tran(tran_data)
-                if ret.state != error.SUCCEED or \
-                        ret.datas.get("flag", None) not in self.get_tran_types() or \
-                        ret.datas.get("type") == self.datatype.UNKOWN or \
-                        not ret.datas.get("tran_state", False):
+                if self.is_target_tran(tran_data) == False:
                     continue
-                tran_filter = ret.datas
-                self._logger.info(f"save transaction to db: {tran_filter}")
 
-                ret = self._dbclient.set(key, value)
+                #save to redis db
+                ret = self._dbclient.set(version, json.dumps(tran_data))
                 if ret.state != error.SUCCEED:
                     return ret
-                self._dbclient.set_latest_saved_ver(key)
+                self._dbclient.set_latest_saved_ver(version)
+                self._logger.info(f"save transaction to db. version : {version}")
  
             ret = result(error.SUCCEED)
         except Exception as e:

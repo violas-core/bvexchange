@@ -23,18 +23,19 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 from baseobject import baseobject
 from vlsopt.violasclient import violasclient, violaswallet
+from vlsopt.violasproof  import violasproof
 import stmanage
 import redis
 #module name
 name="commfuns"
 wallet_name="vwallet"
 
-class violasreg(violasclient):
+class violasreg(violasproof):
     def __init__(self, name, nodes, chain="violas"):
-        violasclient.__init__(self, name, nodes, chain)
+        violasproof.__init__(self, name, nodes, chain)
 
     def __del__(self):
-        violasclient.__del__(self)
+        violasproof.__del__(self)
 
 
 class walletreg(violaswallet):
