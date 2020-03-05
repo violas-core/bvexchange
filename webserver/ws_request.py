@@ -118,77 +118,8 @@ with app.test_request_context():
     logger.debug(url_for('tranaddress', chain = "violas", cursor = 0, limit = 10))
     logger.debug(url_for('tranrecord', chain = "violas", sender="af5bd475aafb3e4fe82cf0d6fcb0239b3fe11cef5f9a650e830c2a2b89c8798f", cursor=0, limit=10))
     logger.debug(url_for('trandetail', dtype="v2b", version="5075154"))
-'''
-def get_transaction_record(chain, sender, cursor = 0, limit = 99999999):
-    try:
-        logger.debug(f"get record(chain = {chain} sender={sender}, cursor={cursor}, limit={limit})")
-        if chain.upper() == "VIOLAS":
-            ret_violas = get_violas_record(sender, cursor, limit)
-            if ret_violas.state != error.SUCCEED:
-                raise "get transaction record failed.{chain = violas, sender = {sender}}"
-        elif chain.upper == "LIBRA":
 
-        ret_libra = get_libra_record(sender, cursor, limit)
-        if ret_libra.state != error.SUCCEED:
-            raise "get transaction record failed.{chain = libra, sender = {sender}}"
-
-        ret_btc = get_btc_record(sender, cursor, limit)
-        if ret_btc.state != error.SUCCEED:
-            raise "get transaction record failed.{chain = btc, sender = {sender}}"
-
-        violas_datas = {}
-        libra_datas = {}
-        btc_datas = {}
-        violas_datas.update(ret_violas.datas.get("datas"))
-        libra_datas.update(ret_libra.datas.get("datas"))
-        btc_datas.update(ret_btc.datas.get("datas"))
-            
-        datas = {"violas":[violas_datas[key] for key in sorted(violas_datas.keys())], \
-                "libra":{(key, libra_datas[key]) for key in sorted(libra_datas.keys())}, \
-                "btc":{(key, btc_datas[key]) for key in sorted(btc_datas.keys())} \
-                }
-
-        for key in list(datas.keys()):
-            if len(datas[key]) == 0:
-                del datas[key]
-
-        ret =  result(error.SUCCEED, "", datas)
-
-    except Exception as e:
-        ret = parse_except(e)
-    return ret.__repr__()
-
-def get_libra_record(sender, cursor, limit):
-    try:
-        flag = "LIBRA"
-        rclient = requestclient("l2vrecord", get_proofdb("record"))
-        ret = rclient.get_transaction_record(sender, flag, cursor = cursor, limit=limit)
-        if ret.state != error.SUCCEED:
-            raise f"get transaction record failed.chain = {flag}, sender = {sender}"
-
-    except Exception as e:
-        ret = parse_except(e)
-    return ret
-def get_violas_record(sender, cursor, limit):
-    try:
-        flag = "VIOLAS"
-        rclient = requestclient("v2lrecord", get_proofdb("record"))
-        ret = rclient.get_transaction_record(sender, flag, cursor = cursor, limit=limit)
-        if ret.state != error.SUCCEED:
-            raise f"get transaction record failed.chain = {flag}, sender = {sender}"
-
-    except Exception as e:
-        ret = parse_except(e)
-    return ret
-
-def get_btc_record(sender, cursor, limit):
-    try:
-        flag = "BTC"
-        rclient = requestclient("b2vrecord", get_proofdb("record"))
-        ret = rclient.get_transaction_record(sender, flag, cursor = cursor, limit=limit)
-        if ret.state != error.SUCCEED:
-            raise f"get transaction record failed.chain = {flag}, sender = {sender}"
-    except Exception as e:
-        ret = parse_except(e)
-    return ret
-'''
+if __name__ == "__main__":
+    from werkzeug.contrib.fixers import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app)
+    app.run()
