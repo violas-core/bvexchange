@@ -39,8 +39,11 @@ logger = log.logger.getLogger(mod_name)
 def test():
     return "violas record webserver."
 
+@app.route('/hello/')
+def test_hello():
+    return "violas record hello."
 
-@app.route('/trandetail/<string:dtype>/<string:version>', methods=['GET'])
+@app.route('/trandetail/<string:dtype>/<string:version>/', methods=['GET'])
 def trandetail(dtype, version):
     try:
         logger.debug(f"get record detail(dtype = {dtype}, version={version})")
@@ -57,7 +60,7 @@ def trandetail(dtype, version):
         ret = parse_except(e)
     return ret.to_json()
 
-@app.route('/tranaddress/<string:chain>/<int:cursor>/<int:limit>', methods=['GET'])
+@app.route('/tranaddress/<string:chain>/<int:cursor>/<int:limit>/', methods=['GET'])
 def tranaddress(chain, cursor = 0, limit = 99999999):
     try:
         logger.debug(f"get record address(chain = {chain}, cursor={cursor}, limit={limit})")
@@ -76,7 +79,7 @@ def tranaddress(chain, cursor = 0, limit = 99999999):
         ret = parse_except(e)
     return ret.to_json()
 
-@app.route('/tranrecord/<string:chain>/<string:sender>/<int:cursor>/<int:limit>', methods=['GET'])
+@app.route('/tranrecord/<string:chain>/<string:sender>/<int:cursor>/<int:limit>/', methods=['GET'])
 def tranrecord(chain, sender, cursor = 0, limit = 99999999):
     try:
         logger.debug(f"get record(chain = {chain} sender={sender}, cursor={cursor}, limit={limit})")
