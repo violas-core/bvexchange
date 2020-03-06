@@ -36,12 +36,27 @@ mod_name="webserver"
 logger = log.logger.getLogger(mod_name)
 
 @app.route('/')
-def test():
-    return "violas record webserver."
+def main():
+    args    = request.args
+    opt     = args.get("opt")
+    chain   = args.get("chain")
+    cursor  = int(args.get("cursor", 0))
+    limit   = int(args.get("limit", 10))
+    dtype   = args.get("dtype")
+    sender  = args.get("sender")
+    version = args.get("version")
 
-@app.route('/hello/')
-def test_hello():
-    return "violas record hello."
+    if opt is None:
+        raise Exception("opt not found.")
+    if opt == "address":
+        return tranaddress(chain, cursor, limit)
+    elif opt == "record":
+        return tranrecord(chain, sender, cursor, limit)
+    elif opt == "detail":
+        return trandetail(dtype, version)
+    else:
+        raise Exception("opt not found.")
+
 
 @app.route('/trandetail/<string:dtype>/<string:version>/', methods=['GET'])
 def trandetail(dtype, version):
@@ -100,8 +115,8 @@ def tranrecord(chain, sender, cursor = 0, limit = 99999999):
     return ret.to_json()
 
 def check_chain(chain):
-    if chain.upper() not in ("VIOLAS", "LIBRA", "BTC"):
-        raise f"{chain} is invalid. must be [VIOLAS, LIBRA, BTC]"
+    if chain is None or chain.upper() not in ("VIOLAS", "LIBRA", "BTC"):
+        raise Exception(f"{chain} is invalid. must be [VIOLAS, LIBRA, BTC]")
 
 def get_chain_record(flag, sender, cursor, limit):
     try:
@@ -109,18 +124,19 @@ def get_chain_record(flag, sender, cursor, limit):
         rclient = requestclient("l2vrecord", get_proofdb("record"))
         ret = rclient.get_transaction_record(sender, flag, cursor = cursor, limit=limit)
         if ret.state != error.SUCCEED:
-            raise f"get transaction record failed.chain = {flag}, sender = {sender}"
+            raise Exception(f"get transaction record failed.chain = {flag}, sender = {sender}")
 
     except Exception as e:
         ret = parse_except(e)
     return ret
 def get_proofdb(dtype):
     return stmanage.get_db(dtype)
-
+'''
 with app.test_request_context():
     logger.debug(url_for('tranaddress', chain = "violas", cursor = 0, limit = 10))
     logger.debug(url_for('tranrecord', chain = "violas", sender="af5bd475aafb3e4fe82cf0d6fcb0239b3fe11cef5f9a650e830c2a2b89c8798f", cursor=0, limit=10))
     logger.debug(url_for('trandetail', dtype="v2b", version="5075154"))
+'''
 
 if __name__ == "__main__":
     from werkzeug.contrib.fixers import ProxyFix
