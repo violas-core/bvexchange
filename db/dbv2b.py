@@ -159,6 +159,19 @@ class dbv2b(baseobject):
         return ret
 
 
+    def query_state_count(self, state):
+        proofs = []
+        try:
+            self._logger.debug(f"start (state={state})")
+            filter_state = (self.v2binfo.state==state.value)
+            filter_times = (self.v2binfo.times<=maxtimes)
+            proofs = self.__session.query(self.v2binfo).filter(filter_state).filter(filter_times).count()
+            ret = result(error.SUCCEED, "", proofs)
+            self._logger.debug(f"result: {len(ret.datas)}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def __query_v2binfo_state(self, state, maxtimes=999999999):
         proofs = []
         try:
