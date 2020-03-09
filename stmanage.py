@@ -117,6 +117,26 @@ def get_max_times(mtype):
         parse_except(e)
     return 0
 
+def show():
+    infos = []
+    infos.append()
+    mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
+    for mtype in mtypes:
+        infos.append(get_receiver_address_list(mtype))
+        infos.append(get_sender_address_list(mtype))
+        infos.append(get_module_address(mtype))
+        infos.append(get_db(mtype))
+        infos.append(get_looping_sleep(mtype))
+        infos.append(get_max_times(mtype))
+        infos.append(get_combine_address(mtype))
+    infos.append(get_traceback_limit())
+    infos.append(get_btc_conn())
+    infos.append(get_violas_nodes())
+    infos.append(get_violas_servers())
+    infos.append(get_libra_nodes())
+    infos.append(get_db_echo())
+
+
 def main():
     mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
 

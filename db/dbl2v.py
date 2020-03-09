@@ -167,6 +167,18 @@ class dbl2v(baseobject):
             ret = parse_except(e)
         return ret
 
+    def __query_state(self, state):
+        try:
+            self._logger.debug(f"start __query_state(state={state}, maxtimes={maxtimes})")
+            filter_state = (self.info.state==state.value)
+            filter_times = (self.info.times<=maxtimes)
+            proofs = self.__session.query(self.info).filter(filter_state).filter(filter_times).count()
+            ret = result(error.SUCCEED, "", proofs)
+            self._logger.debug(f"result: {len(ret.datas)}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def query_is_start(self, maxtimes = 999999999):
         return self.__query_state(self.state.START, maxtimes)
 

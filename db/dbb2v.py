@@ -162,6 +162,17 @@ class dbb2v(baseobject):
             ret = parse_except(e)
         return ret
 
+    def query_state_count(self, state):
+        try:
+            self._logger.debug(f"start query_state_count({state.name})")
+            filter_state = (self.b2vinfo.state==state.value)
+            proofs = self.__session.query(self.b2vinfo).filter(filter_state).count()
+            ret = result(error.SUCCEED, "", proofs)
+            self._logger.debug(f"result: {len(ret.datas)}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def query_b2vinfo_is_start(self):
         return self.__query_b2vinfo_state(self.state.START)
 
