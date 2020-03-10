@@ -14,6 +14,7 @@ import stmanage
 import random
 from comm.error import error
 from comm.result import result
+from comm.result import parse_except
 import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -168,7 +169,7 @@ class dbb2v(baseobject):
             filter_state = (self.b2vinfo.state==state.value)
             proofs = self.__session.query(self.b2vinfo).filter(filter_state).count()
             ret = result(error.SUCCEED, "", proofs)
-            self._logger.debug(f"result: {len(ret.datas)}")
+            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret

@@ -16,6 +16,7 @@ import random
 import comm
 from comm.error import error
 from comm.result import result
+from comm.result import parse_except
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
@@ -55,7 +56,7 @@ class dbl2v(baseobject):
         FAILED      = 2  #send map token failed
         VFAILED     = 3  #send change state transaction failed
         VSUCCEED    = 4  #send change state transaction succeed
-        COMPLETE    = 6  #change state is confirmed
+        COMPLETE    = 128  #change state is confirmed
     
     #exc_traceback_objle : info
     class info(__base):
@@ -167,14 +168,13 @@ class dbl2v(baseobject):
             ret = parse_except(e)
         return ret
 
-    def __query_state(self, state):
+    def query_state_count(self, state):
         try:
-            self._logger.debug(f"start __query_state(state={state}, maxtimes={maxtimes})")
+            self._logger.debug(f"start __query_state(state={state})")
             filter_state = (self.info.state==state.value)
-            filter_times = (self.info.times<=maxtimes)
-            proofs = self.__session.query(self.info).filter(filter_state).filter(filter_times).count()
+            proofs = self.__session.query(self.info).filter(filter_state).count()
             ret = result(error.SUCCEED, "", proofs)
-            self._logger.debug(f"result: {len(ret.datas)}")
+            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret

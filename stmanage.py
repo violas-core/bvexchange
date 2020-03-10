@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import setting
 from comm import result
+from comm.result import parse_except
 
 def check_setting():
     pass
@@ -40,7 +41,7 @@ def get_module_address(mtype, chain = None):
         ms = __get_address_list("module", mtype, chain)
         if ms is None or len(ms) == 0:
             return None
-        assert len(ms) == 1, f"coin type({mtype}) found multi module found, check it"
+        assert len(ms) == 1, f"coin type({mtype}) chain({chain}) found multi module found, check it"
         return ms[0]
     except Exception as e:
         parse_except(e)
@@ -117,24 +118,25 @@ def get_max_times(mtype):
         parse_except(e)
     return 0
 
-def show():
-    infos = []
-    infos.append()
+def get_conf():
+    infos = {}
     mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
     for mtype in mtypes:
-        infos.append(get_receiver_address_list(mtype))
-        infos.append(get_sender_address_list(mtype))
-        infos.append(get_module_address(mtype))
-        infos.append(get_db(mtype))
-        infos.append(get_looping_sleep(mtype))
-        infos.append(get_max_times(mtype))
-        infos.append(get_combine_address(mtype))
-    infos.append(get_traceback_limit())
-    infos.append(get_btc_conn())
-    infos.append(get_violas_nodes())
-    infos.append(get_violas_servers())
-    infos.append(get_libra_nodes())
-    infos.append(get_db_echo())
+        info = {}
+        info["receiver"] = get_receiver_address_list(mtype)
+        info["sender"] = get_sender_address_list(mtype)
+        info["module"] = get_module_address(mtype, 'violas')
+        info["db"] = get_db(mtype)
+        info["loop sleep"] = get_looping_sleep(mtype)
+        info["max times"] = get_max_times(mtype)
+        info["combine"] = get_combine_address(mtype)
+        infos[mtype] = info
+    infos["traceback limit"] = get_traceback_limit()
+    infos["btc conn"] = get_btc_conn()
+    infos["violas nodes"] = get_violas_nodes()
+    infos["violas server"] = get_violas_servers()
+    infos["libra nodes"] = get_libra_nodes()
+    return infos
 
 
 def main():
@@ -143,7 +145,7 @@ def main():
     for mtype in mtypes:
         print(f"receiver address({mtype}): {get_receiver_address_list(mtype)}")
         print(f"sender address({mtype}): {get_sender_address_list(mtype)}")
-        print(f"module address({mtype}): {get_module_address(mtype)}")
+        print(f"module address({mtype}): {get_module_address(mtype, 'violas')}")
         print(f"get db({mtype}): {get_db(mtype)}")
         print(f"get looping sleep({mtype}):{get_looping_sleep(mtype)}")
         print(f"get max times({mtype})):{get_max_times(mtype)}")

@@ -20,6 +20,8 @@ from comm.functions import json_print
 from comm.result import result, parse_except
 from comm.error import error
 from db.dbb2v import dbb2v
+from db.dbv2b import dbv2b
+from db.dbl2v import dbl2v
 from db.dbvfilter import dbvfilter
 from db.dbvproof import dbvproof
 from db.dbvbase import dbvbase
@@ -29,7 +31,7 @@ from baseobject import baseobject
 from vlsopt.violasclient import violasclient, violaswallet
 import stmanage
 import redis
-import comm_funs
+from tools import comm_funs
 #module name
 name="showworkenv"
 wallet_name="vwallet"
@@ -37,18 +39,19 @@ wallet_name="vwallet"
 logger = log.logger.getLogger(name)
 
 def show_db():
-    infos = []
+    infos = {}
     for idx in dbvbase.dbindex:
         dbconf = stmanage.get_db(idx.name.lower())
-        db = dbvbase(name, dbconf.get("host"), dbconf.get("port"), dbconf.db_name_to_value(idx.name.lower()), dbconf.get(passwd))
+        db = dbvbase(name, dbconf.get("host"), dbconf.get("port"), idx.name.lower(), dbconf.get("password"))
         info = { \
-                "mod_name" = db.get_mod_name(), \
-                "latest_filter_ver": db.get_latest_filter_ver(), \
-                "latest_saved_ver": db.get_latest_saved_ver(), \
-                "min_valid_ver": db.get_min_valid_ver()
-                "index":dbconf.db_name_to_value(idx.name.lower())
-                "db":dbconf
+                "mod_name" : db.get_mod_name().datas, \
+                "latest_filter_ver": db.get_latest_filter_ver().datas, \
+                "latest_saved_ver": db.get_latest_saved_ver().datas, \
+                "min_valid_ver": db.get_min_valid_ver().datas, \
+                "index": idx.value, \
+                "db":dbconf, \
                 }
+        infos[idx.name.lower()] = info
     json_print(infos)
 
 def show_address():
@@ -101,31 +104,97 @@ def show_address():
     json_print(infos)
 
 def show_config():
-    stmanage.show()
+    infos = stmanage.get_conf()
+    json_print(infos)
 
-def create_local_db_name(name, form_chain):
+def __create_local_db_name(name, from_chain):
     return f"{from_chain}_{name}.db"
 
-def get_local_state_info(db, states)
+def __get_local_state_info(db, states):
     info = {}
-    for state in dbv2b.state:
-        info[state.name] = dbv2b.query_state_count(state).datas
+    for state in db.state:
+        info[state.name] = db.query_state_count(state).datas
     return info
 
 def get_local_v2b_info(name, chain):
-    filename = create_local_db_name(name, chain)
+    filename = __create_local_db_name(name, chain)
     db = dbv2b(name, filename)
-    infos = []
-    infos.append(get_local_state_info(db, dbv2b.state))
+    return __get_local_state_info(db, db.state)
+
+def get_local_b2v_info(name, chain):
+    filename = __create_local_db_name(name, chain)
+    db = dbb2v(name, filename)
+    return __get_local_state_info(db, db.state)
+
+def get_local_exlv_info(name, chain):
+    filename = __create_local_db_name(name, chain)
+    db = dbl2v(name, filename)
+    return __get_local_state_info(db, db.state)
 
 def show_local_db():
     confs = [('violas', 'v2b'), ('violas', 'v2l'), ('btc', 'b2v'), ('libra', 'l2v')]
-    infos = []
+    infos = {}
     for conf in confs:
         if conf[1] == "v2b":
-            infos.extend(get_local_v2b_info(conf[1], conf[0]))
+            infos[conf[1]] = get_local_v2b_info(conf[1], conf[0])
+        elif conf[1] in ['v2l', 'l2v']:
+            infos[conf[1]] = get_local_exlv_info(conf[1], conf[0])
+        elif conf[1] == "b2v":
+            infos[conf[1]] = get_local_b2v_info(conf[1], conf[0])
     json_print(infos)
 
-def run():
+class work_mod(Enum):
+    CONF      = 0
+    LDB       = 1
+    RDB       = 2
+    ADDR      = 3
+
+def list_valid_mods():
+    valid_mods = ["all"]
+    for mod in work_mod:
+        valid_mods.append(mod.name.lower())
+    return valid_mods
+
+def start(work_mods):
+    if work_mods.get(work_mod.LDB.name, False):
+        show_local_db()
+
+    if work_mods.get(work_mod.RDB.name, False):
+        show_db()
+
+    if work_mods.get(work_mod.CONF.name, False):
+        show_config()
+
+    if work_mods.get(work_mod.ADDR.name, False):
+        show_address()
+
+
+def run(mods):
+    valid_mods = list_valid_mods()
+    for mod in mods:
+        if mod is None or mod not in valid_mods:
+            raise Exception(f"mod({mod}) is invalid {valid_mods}.")
+
+    work_mods = {}
+    for mod in mods:
+        work_mods[mod.upper()] = True
+        if mod == "all":
+            for wm in work_mod:
+                work_mods[wm.name.upper()] = True
+            break
+
+    start(work_mods)
+
+def main(argc, argv):
+
+    try:
+        if argc < 1:
+             raise Exception(f"argument is invalid")
+        run(argv)
+    except Exception as e:
+        parse_except(e)
+    finally:
+        logger.critical("main end")
+
 if __name__ == "__main__":
-    run()
+    main(len(sys.argv) - 1, sys.argv[1:])

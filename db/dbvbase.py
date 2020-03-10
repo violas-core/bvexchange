@@ -28,8 +28,9 @@ from enum import Enum
 name="dbvbase"
 
 class dbvbase(baseobject):
-    __key_latest_filter_ver = "latest_filter_ver"
-    __key_latest_saved_ver = "latest_saved_ver"
+    __key_latest_filter_ver     = "latest_filter_ver"
+    __key_latest_saved_ver      = "latest_saved_ver"
+    __key_min_valid_ver         = "min_valid_ver"
 
     class dbindex(Enum):
         RECORD  = 0
@@ -302,4 +303,22 @@ class dbvbase(baseobject):
     def list_version_keys(self, start = 0):
         keys = self.keys().datas
         return  sorted([int(key) for key in keys if key.isdigit() and int(key) >= start])
+
+    def get_min_valid_ver(self):
+        try:
+            datas = self._client.get(self.__key_min_valid_ver)
+            if datas is None:
+                datas = '0'
+            ret = result(error.SUCCEED, "", int(datas))
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def set_min_valid_ver(self, ver):
+        try:
+            self._client.set(self.__key_min_valid_ver, ver)
+            ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
 
