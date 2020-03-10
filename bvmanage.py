@@ -5,6 +5,7 @@ import log
 import json
 import log.logger
 from comm.parseargs import parseargs
+from tools import show_workenv
 import bvexchange
 
 name = "bvexchange"
@@ -14,6 +15,7 @@ logger = log.logger.getLogger(name)
 def init_args(pargs):
     pargs.append("help", "show args info")
     pargs.append("mod", "run mod", True, bvexchange.list_valid_mods())
+    pargs.append("info", "show info", True, show_workenv.list_valid_mods())
 
 def main(argc, argv):
     pargs = parseargs()
@@ -41,6 +43,12 @@ def main(argc, argv):
                 pargs.exit_error_opt(opt)
             logger.debug(f"arg_list:{arg_list}")
             bvexchange.run(arg_list)
+
+        if pargs.is_matched(opt, ["info"]) :
+            if count < 1:
+                pargs.exit_error_opt(opt)
+            logger.debug(f"arg_list:{arg_list}")
+            show_workenv.run(arg_list)
     logger.debug("end manage.main")
 
 if __name__ == '__main__':

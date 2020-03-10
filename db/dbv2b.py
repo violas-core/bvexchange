@@ -13,6 +13,7 @@ import datetime
 import sqlalchemy
 import stmanage
 import random
+from comm.result import parse_except
 from comm.error import error
 from comm.result import result
 from sqlalchemy import create_engine
@@ -52,7 +53,7 @@ class dbv2b(baseobject):
         FAILED      = 2  #send btc failed
         VFAILED     = 3  #send change state transaction failed
         VSUCCEED    = 4  #send change state transaction succeed
-        COMPLETE    = 6  #change state is confirmed
+        COMPLETE    = 128  #change state is confirmed
     
     #exc_traceback_objle : v2binfo
     class v2binfo(__base):
@@ -158,16 +159,13 @@ class dbv2b(baseobject):
             ret = parse_except(e)
         return ret
 
-
     def query_state_count(self, state):
-        proofs = []
         try:
             self._logger.debug(f"start (state={state})")
             filter_state = (self.v2binfo.state==state.value)
-            filter_times = (self.v2binfo.times<=maxtimes)
-            proofs = self.__session.query(self.v2binfo).filter(filter_state).filter(filter_times).count()
+            proofs = self.__session.query(self.v2binfo).filter(filter_state).count()
             ret = result(error.SUCCEED, "", proofs)
-            self._logger.debug(f"result: {len(ret.datas)}")
+            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
