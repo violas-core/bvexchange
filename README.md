@@ -4,7 +4,10 @@ btc violas token exchange
 ## depends
 bvlscore: [https://github.com/palliums-developers/bvlscore.git]
 violas nodes:[]
-violas server: [https://github.com/palliums-developers/violas-webservice.git]
+version:v0.5.0
+
+violas-client: [https://github.com/palliums-developers/violas-client.git]
+version:v4.0
 
 ## To run
 git clone https://github.com/palliums-developers/bvexchange
@@ -18,7 +21,7 @@ sudo apt install python3.6 sqlite3 redis-server python3
 python3 install python3.6-dev
 pip3 install python-bitcoinrpc sqlalchemy redis
 
-cd libra-client/
+cd violas-client/
 pip3 install -r requirements.txt
 
 git clone https://github.com/palliums-developers/bvexchange.git
@@ -47,8 +50,8 @@ cd bvexchange
 ### log
     Log configuration and output classification
 
-### libra-client
-    Dependent libraries(libra)
+### libvioals/liblibra
+    Dependent libraries(libra/violas)
 
 ### setting.py
     Main configuration file
@@ -57,9 +60,9 @@ cd bvexchange
     Manage configuration file
 
 ### test
-    test 
+    violas chain test 
 
-### violas
+### vlsopt
     violas related operations. violas client、server、wallet
 
 ### vwallet
@@ -67,3 +70,12 @@ cd bvexchange
 
 ### analysis
     violas/libra transaction filter , state parse
+
+### vrequest
+    request transaction info from db
+
+### tools
+    violas chain init   
+
+### webserver
+    transaction record webserver(flask)

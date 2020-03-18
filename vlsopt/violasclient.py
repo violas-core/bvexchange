@@ -44,13 +44,14 @@ class violaswallet(baseobject):
     def __init__(self, name, wallet_name, chain="violas"):
         assert wallet_name is not None, "wallet_name is None"
         baseobject.__init__(self, name)
+        self.__wallet = None
         if wallet_name is not None:
             ret = self.__load_wallet(wallet_name, chain)
             if ret.state != error.SUCCEED:
                 raise Exception(f"load wallet[{wallet_name}] failed.")
 
     def __del__(self):
-        self.dump_wallet()
+        pass
 
     def __load_wallet(self, wallet_name, chain="violas"):
         try:
@@ -84,6 +85,7 @@ class violaswallet(baseobject):
         try:
             if self.__wallet is not None:
                 self.__wallet.write_recovery(self.__wallet_name)
+                self.__wallet = None
                 pass
             ret = result(error.SUCCEED)
         except Exception as e:
