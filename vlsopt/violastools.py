@@ -190,6 +190,7 @@ def new_account():
     global wallet_name
     wallet = get_violaswallet()
     ret = wallet.new_account()
+    wallet.dump_wallet()
     assert ret.state == error.SUCCEED, "new_account failed"
     logger.debug("account address : {}".format(ret.datas.address.hex()))
 
