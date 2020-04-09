@@ -130,7 +130,7 @@ class btcclient(baseobject):
         return self.__listexproof(comm.values.EX_TYPE_B2V, cursor, limit)
 
     def __map_tran(self, data):
-        tran_data = json.dumps({"flag":"btc", "type":"b2v", "state":data.get("state"), "to_address":data.get("address"), "to_module":data.get("vtoken"), "tran_id":data.get("txid")})
+        tran_data = json.dumps({"flag":"btc", "type":"b2v", "state":data.get("state"), "to_address":data.get("address"), "to_module":data.get("vtoken"), "tran_id":data.get("txid"), "sequence":data.get("sequence")})
         return {
                 "version": data.get("index"),\
                 "success":True,\
@@ -147,7 +147,7 @@ class btcclient(baseobject):
                 "module_address":data.get("vtoken")
                 }
 
-    def get_transactions(self, cursor, limit, nouse=True):
+    def get_transactions(self, cursor, limit = 1, nouse=True):
         try:
             ret = self.listexproofforb2v(cursor, limit)
             if ret.state != error.SUCCEED:
