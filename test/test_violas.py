@@ -17,6 +17,7 @@ import random
 import comm
 import comm.error
 import comm.result
+import comm.values
 from comm.functions import json_print
 from comm.result import result, parse_except
 from comm.error import error
@@ -30,6 +31,8 @@ from analysis.analysis_filter import afilter
 import stmanage
 import redis
 import tools.comm_funs as comm_funs
+
+VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #module name
 name="testviolas"
 wallet_name= "wallet" + time.strftime("%Y%m%d_%H%M%S", time.localtime()) + ".wlt"
@@ -94,72 +97,78 @@ def run():
         laddr_list = []
 
         #create vbtc module
-        vbtc_module = new_account_for_address(wclient)
-        assert vbtc_module is not None and len(vbtc_module) == 64, f"vbtc address[{vbtc_module}] is not found"
+        logger.debug("****create module\n")
+        module = new_account_for_address(wclient)
+        assert module is not None and len(module) in VIOLAS_ADDRESS_LEN , f"module address[{module}] is not found"
+        comm_funs.publish_module(vclient, wclient, module)
 
-        if comm_funs.is_module_address(vclient, vbtc_module) == False:
-            comm_funs.create_token(vclient, wclient, vbtc_module)
-            logger.debug("create vbtc ok")
-        else:
-            logger.debug("vbtc is exists")
+        #create vbtc module
+        logger.debug("\n\n****start create vbtc\n")
+        vbtc_module = new_account_for_address(wclient)
+        assert vbtc_module is not None and len(vbtc_module) in VIOLAS_ADDRESS_LEN, f"vbtc address[{vbtc_module}] is not found"
+
+        (seq, vbtc_id) = comm_funs.create_token(vclient, wclient, vbtc_module, module)
+        logger.debug(f"****create vbtc ok. seq = {seq} btc_id = {vbtc_id}\n")
 
         #create vlibra module
+        logger.debug("\n\n****start create vlibra\n")
         vlibra_module = new_account_for_address(wclient)
-        assert vbtc_module is not None and len(vbtc_module) == 64, "vlibra module is not found"
+        assert vbtc_module is not None and len(vbtc_module) in VIOLAS_ADDRESS_LEN, "vlibra module is not found"
 
-        if comm_funs.is_module_address(vclient, vlibra_module) == False:
-            comm_funs.create_token(vclient, wclient, vlibra_module)
-            logger.debug("create vlibra ok")
-        else:
-            logger.debug("vlibra is exists")
+        (seq, vlibra_id) = comm_funs.create_token(vclient, wclient, vlibra_module, module)
+        logger.debug("****create vlibra ok seq = {seq} vlibra_id = {vlibra_id}\n")
 
+        addr_list.extend([module])
         addr_list.extend([vbtc_module])
         addr_list.extend([vlibra_module])
 
         #vbtc sender bind  module
+        logger.debug("\n\n****start vbtc sender bind module\n")
         senders_vbtc = new_account_for_address_list(wclient)
         assert senders_vbtc is not None and len(senders_vbtc) > 0, f"v2b senders[{senders_vbtc}] not found."
-        comm_funs.init_address_list(vclient, wclient, senders_vbtc, vbtc_module)
-        logger.debug("init b2v senders ok")
+        comm_funs.init_address_list(vclient, wclient, senders_vbtc, vbtc_module, vbtc_id, module)
+        logger.debug("****init b2v senders ok")
         addr_list.extend(senders_vbtc)
 
         #vlibra sender bind module
+        logger.debug("\n\n****start vlibra sender bind module\n")
         senders_vlibra = new_account_for_address_list(wclient)
         assert senders_vlibra is not None and len(senders_vlibra) > 0, f"v2l senders not found."
-        comm_funs.init_address_list(vclient, wclient, senders_vlibra, vlibra_module)
-        logger.debug("init l2v senders ok")
+        comm_funs.init_address_list(vclient, wclient, senders_vlibra, vlibra_module, vlibra_id, module)
+        logger.debug("\n\n****init l2v senders ok")
         addr_list.extend(senders_vlibra)
 
-        comm_funs.init_address_list(vclient, wclient, senders_vlibra, vlibra_module)
-
-        logger.debug("start bind dtype = v2l chain = violas receiver")
+        logger.debug("\n\n****start bind dtype = v2l chain = violas receiver\n")
         receivers_v2l = new_account_for_address_list(wclient)
         assert receivers_v2l is not None and len(receivers_v2l) > 0, f"v2l receiver not found."
-        comm_funs.address_list_bind_module(vclient, wclient, receivers_v2l, vlibra_module)
+        comm_funs.address_list_bind_module(vclient, wclient, receivers_v2l, module)
+        comm_funs.init_address_list(vclient, wclient, receivers_v2l, vlibra_module, vlibra_id, module)
         addr_list.extend(receivers_v2l)
 
-        logger.debug("start bind dtype = v2b chain = violas receiver")
+        logger.debug("\n\n****start bind dtype = v2b chain = violas receiver\n")
         receivers_v2b = new_account_for_address_list(wclient)
         assert receivers_v2b is not None and len(receivers_v2b) > 0, f"v2b receiver not found."
-        comm_funs.address_list_bind_module(vclient, wclient, receivers_v2b, vbtc_module)
+        comm_funs.address_list_bind_module(vclient, wclient, receivers_v2b, module)
+        comm_funs.init_address_list(vclient, wclient, receivers_v2b, vbtc_module, vbtc_id, module)
         addr_list.extend(receivers_v2b)
 
-        logger.debug("start bind dtype = v2b chain = violas combin")
+        logger.debug("\n\n****start bind dtype = v2b chain = violas combin\n")
         combin = new_account_for_address_list(wclient)
         assert combin is not None and len(combin) > 0, f"v2b combin not found or is invalid."
-        comm_funs.address_list_bind_module(vclient, wclient, combin, vbtc_module)
+        comm_funs.address_list_bind_module(vclient, wclient, combin, module)
         addr_list.extend(combin)
 
-        logger.debug("start bind dtype = v2l chain = violas combin")
+        logger.debug("\n\n****start bind dtype = v2l chain = violas combin\n")
         combin = new_account_for_address_list(wclient)
         assert combin is not None and len(combin) > 0, f"v2l combin not found or is invalid."
-        comm_funs.address_list_bind_module(vclient, wclient, combin, vlibra_module)
+        comm_funs.address_list_bind_module(vclient, wclient, combin, module)
         addr_list.extend(combin)
 
         receivers_l2v = new_account_for_address_list(wclient)
         assert combin is not None and len(combin) > 0, f"v2b combin not found or is invalid."
         laddr_list.extend(receivers_l2v)
 
+        logger.debug("\n\n****get libra address and coin(libra)\n")
         addresses_libra = new_account_for_address_list(wclient)
         assert addresses_libra is not None and len(addresses_libra) > 0, f"libra addresses not found or is invalid."
         _get_platform_coin(lclient, addresses_libra[0])
@@ -167,14 +176,16 @@ def run():
 
         addresses_violas = new_account_for_address_list(wclient)
         assert addresses_violas is not None and len(addresses_violas) > 0, f"violas address not found or is invalid."
-        comm_funs.init_address_list(vclient, wclient, addresses_violas, vlibra_module)
+        comm_funs.init_address_list(vclient, wclient, addresses_violas, module)
+        comm_funs.address_list_bind_module(vclient, wclient, addresses_violas, module)
         addr_list.extend(addresses_violas)
 
-
         #v2l 
+        logger.debug("\n\n****test send tran exg(violas)\n")
         _test_send_tran_exg(vclient, wclient, "violas", "v2l", addresses_violas[0], receivers_v2l[0], vlibra_module, addresses_libra[0])
         
         #test l2v
+        logger.debug("\n\n****test send tran exg(libra)\n")
         _test_send_tran_exg(lclient, wclient, "libra", "l2v", addresses_libra[0], receivers_l2v[0], None, addresses_violas[0])
 
         infos = {}

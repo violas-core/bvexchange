@@ -32,6 +32,7 @@ mod_name="v2b"
 wallet_name = "vwallet"
 
 COINS = comm.values.COINS
+VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 class exv2b(baseobject):    
     def __init__(self, name, vnodes , bnode, proofdb, module, receivers, chain = "violas"):
@@ -220,10 +221,10 @@ class exv2b(baseobject):
         
     def __checks(self):
         assert (len(stmanage.get_sender_address_list(self._name, self.map_chain())) > 0), "btc senders is invalid"
-        assert (len(self._module_address) == 64), "module_address is invalid"
+        assert (len(self._module_address) in VIOLAS_ADDRESS_LEN), "module_address is invalid"
         assert (len(stmanage.get_receiver_address_list(self._name, self.from_chain())) > 0), "violas server is invalid."
         for violas_receiver in stmanage.get_receiver_address_list(self._name, self.from_chain()):
-            assert len(violas_receiver) == 64, "violas receiver({}) is invalid".format(violas_receiver)
+            assert len(violas_receiver) in VIOLAS_ADDRESS_LEN, "violas receiver({}) is invalid".format(violas_receiver)
     
         for sender in stmanage.get_sender_address_list(self._name, self.map_chain()):
             assert len(sender) >= 20, "btc address({}) is invalied".format(sender)

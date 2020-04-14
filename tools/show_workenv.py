@@ -16,6 +16,7 @@ import random
 import comm
 import comm.error
 import comm.result
+import comm.values
 from comm.functions import json_print
 from comm.result import result, parse_except
 from comm.error import error
@@ -35,7 +36,7 @@ from tools import comm_funs
 #module name
 name="showworkenv"
 wallet_name="vwallet"
-
+VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 logger = log.logger.getLogger(name)
 
 def show_db():
@@ -61,13 +62,13 @@ def show_address():
     infos = {}
     #create vbtc module
     module = stmanage.get_module_address("v2b", "violas")
-    assert module is not None and len(module) == 64, f"vbtc address[{module}] is not found"
+    assert module is not None and len(module) in VIOLAS_ADDRESS_LEN, f"vbtc address[{module}] is not found"
 
     comm_funs.list_address_info(vclient, wclient, [module], ret = infos)
 
     #create vlibra module
     module = stmanage.get_module_address("v2l", "violas")
-    assert module is not None and len(module) == 64, "vlibra module is not found"
+    assert module is not None and len(module) in VIOLAS_ADDRESS_LEN, "vlibra module is not found"
 
     comm_funs.list_address_info(vclient, wclient, [module], ret = infos)
 
@@ -98,7 +99,7 @@ def show_address():
 
     logger.debug("start bind dtype = v2l chain = violas combin")
     combin = stmanage.get_combine_address("v2l", "violas")
-    assert combin is not None and len(combin) == 64, f"v2l combin not found or is invalid."
+    assert combin is not None and len(combin) in VIOLAS_ADDRESS_LEN, f"v2l combin not found or is invalid."
     comm_funs.list_address_info(vclient, wclient, [combin], ret = infos)
 
     json_print(infos)

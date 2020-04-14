@@ -30,6 +30,7 @@ from vrequest.request_client import requestclient
 #name="exlv"
 wallet_name = "vwallet"
 
+VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 class exlv(baseobject):    
     def __init__(self, name, fromnodes , mapnodes, proofdb, frommodule, mapmodule, receivers, senders, fromchain = "libra", mapchain='violas'):
@@ -242,11 +243,11 @@ class exlv(baseobject):
     def __checks(self):
         assert (len(stmanage.get_sender_address_list(self.name(), self.map_chain())) > 0), f"{self.map_chain()} senders is invalid"
         for sender in stmanage.get_sender_address_list(self.name(), self.map_chain()):
-            assert len(sender) == 64, f"{self.map_chain()} address({f}) is invalied"
+            assert len(sender) in VIOLAS_ADDRESS_LEN, f"{self.map_chain()} address({f}) is invalied"
 
         assert (len(stmanage.get_receiver_address_list(self.name(), self.from_chain())) > 0), f"{self.from_chain()} receivers is invalid."
         for receiver in stmanage.get_receiver_address_list(self.name(), self.from_chain()):
-            assert len(receiver) == 64, f"{self.from_chain()} receiver({receiver}) is invalid"
+            assert len(receiver) in VIOLAS_ADDRESS_LEN, f"{self.from_chain()} receiver({receiver}) is invalid"
     
     def stop(self):
         try:
@@ -268,8 +269,8 @@ class exlv(baseobject):
             times       = data["times"]
             tran_id     = data["tran_id"]
             fromaddress = data["fromaddress"]
-            self._logger.debug(f"check address{toaddress}. len({toaddress})=64?")
-            return len(toaddress) == 64 
+            self._logger.debug(f"check address{toaddress}. len({toaddress}) in {VIOLAS_ADDRESS_LEN}?")
+            return len(toaddress) in VIOLAS_ADDRESS_LEN
         except Exception as e:
             pass
         return False
@@ -373,8 +374,8 @@ class exlv(baseobject):
 
     def chain_data_is_valid(self, data):
         try:
-            self._logger.debug(f"check address{data['to_address']}. len({data['to_address']})=64?")
-            return len(data["to_address"]) == 64
+            self._logger.debug(f"check address{data['to_address']}. len({data['to_address']}) in {VIOLAS_ADDRESS_LEN}?")
+            return len(data["to_address"]) in VIOLAS_ADDRESS_LEN
         except Exception as e:
             pass
         return False

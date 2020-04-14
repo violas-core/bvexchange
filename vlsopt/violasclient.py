@@ -208,20 +208,47 @@ class violasclient(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
-   
-    def create_violas_coin(self, account, is_blocking = True):
+
+    def is_module_address(vclient, address):
         try:
-            self._logger.info("create_violas_coin(account={}, is_blocking={})".format(account.address.hex(), is_blocking))
-            self.__client.publish_module(account, is_blocking=is_blocking)
-            ret = result(error.SUCCEED) 
+            state = vclient.get_account_state(address).datas.is_published(address)
+            ret = result(error.SUCCEED, datas = state) 
+            print(f"]]] {state}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def mint_platform_coin(self, address, amount, is_blocking = True):
+    def has_module(vclient, address, module):
         try:
-            self._logger.info("start mint_platform_coin(address={}, amount={}, is_blocking={})".format(address, amount, is_blocking))
-            self.__client.mint_coin(address, amount, is_blocking = is_blocking)
+            state = vclient.get_account_state(address).datas.is_published(module)
+            ret = result(error.SUCCEED, datas = state) 
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def publish_module(self, account,  is_blocking = True):
+        try:
+            self._logger.info(f"publish_module(account address={account.address_hex}, is_blocking={is_blocking})")
+            seq = self.__client.publish_module(account, is_blocking=is_blocking)
+            ret = result(error.SUCCEED) 
+            self._logger.info(f"sequence: {seq}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def create_violas_coin(self, module_account, address,  is_blocking = True):
+        try:
+            self._logger.info("create_violas_coin(module_account={}, address={}, is_blocking={})".format(module_account.address.hex(), address, is_blocking))
+            datas = self.__client.create_token(module_account, address)
+            ret = result(error.SUCCEED, datas = datas) 
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def mint_platform_coin(self, address, amount, auth_key_prefix, is_blocking = True):
+        try:
+            self._logger.info("start mint_platform_coin(address={}, amount={}, auth_key_prefix={} is_blocking={})".format(address, amount, auth_key_prefix, is_blocking))
+            self.__client.mint_coin(address, amount, auth_key_prefix = auth_key_prefix, is_blocking = is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
@@ -229,17 +256,17 @@ class violasclient(baseobject):
 
     def bind_module(self, account, module_address, is_blocking=True):
         try:
-            self._logger.info("start bind_module(account={}, module_address={}, is_blocking={}".format(account.address.hex(), module_address, is_blocking))
+            self._logger.info(f"start bind_module(account={account.address.hex}, module_address={module_address}, is_blocking={is_blocking}")
             self.__client.publish_resource(account, module_address, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def mint_violas_coin(self, address, amount, module_account, is_blocking=True):
+    def mint_violas_coin(self, address, amount, owner_account, token_id, module, auth_key_prefix = None, is_blocking=True):
         try:
-            self._logger.info("start mint_violas_coin(address={}, amount={}, module_account=R{}, is_blocking={})".format(address, amount, module_account.address.hex(), is_blocking))
-            self.__client.mint_coin(address, amount, module_account, is_blocking=is_blocking)
+            self._logger.info("start mint_violas_coin(address={}, amount={}, token_id={}, owner_account={}, auth_key_prefix={}, is_blocking={})".format(address, amount, token_id, owner_account.address.hex(), auth_key_prefix, is_blocking))
+            self.__client.mint_coin(address, amount, owner_account, token_id, module, auth_key_prefix = auth_key_prefix, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)

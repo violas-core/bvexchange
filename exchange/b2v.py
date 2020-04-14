@@ -26,6 +26,7 @@ from baseobject import baseobject
 from enum import Enum
 
 COINS = comm.values.COINS
+VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 name="b2v"
 wallet_name = "vwallet"
@@ -123,13 +124,13 @@ class exb2v(baseobject):
         assert (len(stmanage.get_btc_conn()) == 4), "btc_conn is invalid."
         assert (len(stmanage.get_sender_address_list(self.name(), self.map_chain())) > 0 ), "violas sender not found."
         for addr in stmanage.get_sender_address_list(self.name(), self.map_chain()):
-            assert len(addr) == 64, f"violas address({addr}) is invalid."
+            assert len(addr) in VIOLAS_ADDRESS_LEN, f"violas address({addr}) is invalid."
 
         assert (len(stmanage.get_receiver_address_list(self.name(), self.from_chain())) > 0 ), "btc receiver not found."
         for addr in stmanage.get_receiver_address_list(self.name(), self.from_chain()):
             assert len(addr) >= 20, f"btc address({addr}) is invalid."
     
-        assert (len(stmanage.get_module_address(self.name(), self.map_chain())) == 64), "module_address is invalid"
+        assert (len(stmanage.get_module_address(self.name(), self.map_chain())) in VIOLAS_ADDRESS_LEN), "module_address is invalid"
         assert (len(stmanage.get_violas_nodes()) > 0), "violas_nodes is invalid."
     
     def __hasplatformbalance(self, vclient, address, vamount = 0):
@@ -339,7 +340,7 @@ class exb2v(baseobject):
                         sequence = int(data["sequence"])
                         to_module_address = data["vtoken"]
                         vamount = int(float(data["amount"]) * COINS)
-                        if (len(module_address) != 64 or module_address != to_module_address):
+                        if (len(module_address) not in VIOLAS_ADDRESS_LEN or module_address != to_module_address):
                             if self.can_show_waning(f"vtoken is invalid{to_address}.{sequence}"):
                                self._logger.warning(f"vtoken({to_module_address}) is invalid.(to_address:{to_address} sequence:{sequence}")
                             continue
