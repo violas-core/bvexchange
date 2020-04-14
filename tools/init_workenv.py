@@ -16,6 +16,7 @@ import random
 import comm
 import comm.error
 import comm.result
+import comm.values
 from comm.result import result, parse_except
 from comm.error import error
 from db.dbb2v import dbb2v
@@ -29,7 +30,7 @@ import comm_funs
 #module name
 name="initworkenv"
 wallet_name="vwallet"
-
+VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 logger = log.logger.getLogger(name)
 def reg_run():
     vclient = comm_funs.violasreg(name, stmanage.get_violas_nodes())
@@ -37,7 +38,7 @@ def reg_run():
 
     #create vbtc module
     vbtc_module = stmanage.get_module_address("v2b", "violas")
-    assert vbtc_module is not None and len(vbtc_module) == 64, f"vbtc address[{vbtc_module}] is not found"
+    assert vbtc_module is not None and len(vbtc_module) in VIOLAS_ADDRESS_LEN, f"vbtc address[{vbtc_module}] is not found"
 
     if comm_funs.is_module_address(vclient, vbtc_module) == False:
         comm_funs.create_token(vclient, wclient, vbtc_module)
@@ -48,7 +49,7 @@ def reg_run():
 
     #create vlibra module
     vlibra_module = stmanage.get_module_address("v2l", "violas")
-    assert vbtc_module is not None and len(vbtc_module) == 64, "vlibra module is not found"
+    assert vbtc_module is not None and len(vbtc_module) in VIOLAS_ADDRESS_LEN, "vlibra module is not found"
 
     if comm_funs.is_module_address(vclient, vlibra_module) == False:
         comm_funs.create_token(vclient, wclient, vlibra_module)
@@ -82,12 +83,12 @@ def reg_run():
 
     logger.debug("start bind dtype = v2b chain = violas combin")
     combin = stmanage.get_combine_address("v2b", "violas")
-    assert combin is not None and len(combin) == 64, f"v2b combin not found or is invalid."
+    assert combin is not None and len(combin) in VIOLAS_ADDRESS_LEN, f"v2b combin not found or is invalid."
     comm_funs.address_list_bind_module(vclient, wclient, [combin], vbtc_module)
 
     logger.debug("start bind dtype = v2l chain = violas combin")
     combin = stmanage.get_combine_address("v2l", "violas")
-    assert combin is not None and len(combin) == 64, f"v2l combin not found or is invalid."
+    assert combin is not None and len(combin) in VIOLAS_ADDRESS_LEN, f"v2l combin not found or is invalid."
     comm_funs.address_list_bind_module(vclient, wclient, [combin], vlibra_module)
 if __name__ == "__main__":
     reg_run()

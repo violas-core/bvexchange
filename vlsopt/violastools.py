@@ -5,6 +5,8 @@ import json
 import os
 sys.path.append(os.getcwd())
 sys.path.append("..")
+print(sys.path)
+sys.path.append("../libviolas")
 
 import log
 import log.logger
