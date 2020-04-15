@@ -17,6 +17,7 @@ import random
 import comm
 import comm.error
 import comm.result
+import comm.values
 from comm import version
 from comm.result import result, parse_except
 from comm.error import error
@@ -25,6 +26,8 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 from baseobject import baseobject
 import redis
+
+VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
 if version.cmp(1, 1, 1) >= 0:
     sys.path.append("../libviolas")
@@ -226,6 +229,25 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def split_receiver_address(self, address, auth_key_prefix = None):
+        try:
+            self._logger.debug(f"start split_receiver_address({address}, {auth_key_prefix})")
+            if len(address) not in VIOLAS_ADDRESS_LEN:
+                return result(error.ARG_INVALID)
+
+       
+            datas = (None, address)
+            if len(address) == max(VIOLAS_ADDRESS_LEN):
+                datas = (address[:32], address[32:])
+
+            if auth_key_prefix is not None:
+                datas[0] = auth_key_prefix
+
+            ret = result(error.SUCCEED, datas = datas) 
+            self._logger.debug(f"split receiver address: address ={datas[1]}, auth_key_prefix: {datas[0]}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
     def publish_module(self, account,  is_blocking = True):
         try:
             self._logger.info(f"publish_module(account address={account.address_hex}, is_blocking={is_blocking})")
@@ -272,30 +294,40 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def send_platform_coin(self, from_account, to_address, amount, data=None, is_blocking=True):
+    def send_platform_coin(self, from_account, to_address, amount, data=None, auth_key_prefix = None, is_blocking=True):
         try:
-            self._logger.info(f"start send_platform_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, data={data}, is_blocking={is_blocking})")
-            if len(to_address) != 64 or amount < 1:
+            self._logger.info(f"start send_platform_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, data={data}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
+            if len(to_address) not in VIOLAS_ADDRESS_LEN or amount < 1:
                 return result(error.ARG_INVALID)
 
-            self.__client.transfer_coin(from_account, to_address, amount, data=data, is_blocking=is_blocking)
+            ret = self.split_receiver_address(to_address, auth_key_prefix)
+            if ret.state != error.SUCCEED:
+                return ret
+            fulladdress = ret.datas
+
+            self.__client.transfer_coin(from_account, fulladdress[1], amount, data=data, auth_key_prefix=fulladdress[0], is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def send_violas_coin(self, from_account, to_address, amount, module_address, data=None, is_blocking=True):
+    def send_violas_coin(self, from_account, to_address, amount, token_id, module_address, data=None, auth_key_prefix = None, is_blocking=True):
         try:
-            self._logger.info(f"start send_violas_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, module_address={module_address}, data={data}, is_blocking={is_blocking})")
+            self._logger.info(f"start send_violas_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, token_id = {token_id}, module_address={module_address}, data={data}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
 
-            if len(to_address) != 64 or amount < 1 or len(module_address) != 64:
+            if len(to_address) not in VIOLAS_ADDRESS_LEN or amount < 1 or len(module_address) not in VIOLAS_ADDRESS_LEN:
                 return result(error.ARG_INVALID)
 
-            if module_address == "0000000000000000000000000000000000000000000000000000000000000000":
+            if module_address == "00000000000000000000000000000000":
                 module_address = None
 
-            self.__client.transfer_coin(sender_account=from_account, receiver_address=to_address, \
-                    micro_coins=amount, module_address=module_address, data=data, is_blocking=is_blocking)
+            ret = self.split_receiver_address(to_address, auth_key_prefix)
+            if ret.state != error.SUCCEED:
+                return ret
+            fulladdress = ret.datas
+
+            self.__client.transfer_coin(sender_account=from_account, receiver_address=fulladdress[1], \
+                    micro_coins=amount, token_id = token_id, module_address=module_address, data=data, auth_key_prefix = fulladdress[0], is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
