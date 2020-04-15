@@ -133,7 +133,8 @@ def send_platform_coin(from_address, to_address, amount, data = None):
     account = ret.datas
 
     client = get_violasclient()
-    client.send_platform_coin(account, to_address, amount, data)
+    ret = client.send_platform_coin(account, to_address, amount, data)
+    assert ret.state == error.SUCCEED, ret.message
     print(client.get_account_state(account.address).datas)
 
 def get_platform_balance(address):
@@ -211,7 +212,7 @@ def show_accounts():
         if ret.state != error.SUCCEED:
            break 
         account = ret.datas
-        logger.debug("account.address({0}): {1}".format(i, account.address.hex()))
+        logger.debug("account.address({0}): {1}  auth_key_prefix: {2}".format(i, account.address.hex(), account.auth_key_prefix.hex()))
         i += 1
 
 def get_account(address):
