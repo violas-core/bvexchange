@@ -40,7 +40,8 @@ def reg_run():
     vbtc_module = stmanage.get_module_address("v2b", "violas")
     assert vbtc_module is not None and len(vbtc_module) in VIOLAS_ADDRESS_LEN, f"vbtc address[{vbtc_module}] is not found"
 
-    if comm_funs.is_module_address(vclient, vbtc_module) == False:
+    if not comm_funs.is_module_address(vclient, vbtc_module):
+        comm_funs.publish_module(vclient, wclient, vbtc_module)
         comm_funs.create_token(vclient, wclient, vbtc_module)
         logger.debug("create vbtc ok")
     else:

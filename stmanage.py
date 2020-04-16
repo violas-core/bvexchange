@@ -21,6 +21,14 @@ def __get_address_list(atype, mtype, chain = None):
         parse_except(e)
     return None
 
+def __get_tokenid_list(atype, mtype, chain = None):
+    try:
+        return [dict.get("tokenid") for dict in setting.address_list.get(atype) \
+                if dict["type"] == mtype and mtype is not None and (chain is None or dict["chain"] == chain)]
+    except Exception as e:
+        parse_except(e)
+    return None
+
 def get_receiver_address_list(mtype, chain = None):
     try:
         return __get_address_list("receiver", mtype, chain)
@@ -42,6 +50,17 @@ def get_module_address(mtype, chain = None):
         if ms is None or len(ms) == 0:
             return None
         assert len(ms) == 1, f"coin type({mtype}) chain({chain}) found multi module found, check it"
+        return ms[0]
+    except Exception as e:
+        parse_except(e)
+    return None
+
+def get_token_address(mtype, chain = None):
+    try:
+        ms = __get_tokenid_list_list("coin", mtype, chain)
+        if ms is None or len(ms) == 0:
+            return None
+        assert len(ms) == 1, f"coin type({mtype}) chain({chain}) found multi coins found, check it"
         return ms[0]
     except Exception as e:
         parse_except(e)
