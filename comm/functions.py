@@ -13,6 +13,9 @@ import log.logger
 import threading
 import subprocess
 import fcntl
+import comm.values
+
+VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
 def checkrerun(rfile):
     print(f"*************************{rfile}")
@@ -54,3 +57,26 @@ class filelock:
 
 def json_print(data):
     print(json.dumps(data, sort_keys=True, indent=4))
+
+def split_full_address(address, auth_key_prefix = None):
+    try:
+
+        if len(address) not in VIOLAS_ADDRESS_LEN:
+            raise Exception("ARG_INVALID")
+   
+        new_address = address
+        new_auth_key_prefix = None
+        if address is not None and len(address) == max(VIOLAS_ADDRESS_LEN):
+            new_address = address[32:]
+            new_auth_key_prefix = address[:32]
+
+        if auth_key_prefix is not None:
+            if isinstance(auth_key_prefix, bytes):
+                new_auth_key_prefix = auth_key_prefix.hex()
+            else:
+                new_auth_key_prefix = auth_key_prefix
+
+        return (new_auth_key_prefix, new_address) 
+    except Exception as e:
+        ret = parse_except(e)
+    return None

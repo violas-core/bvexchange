@@ -25,6 +25,7 @@ from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 from baseobject import baseobject
+from comm.functions import split_full_address
 import redis
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
@@ -109,7 +110,15 @@ class violaswallet(baseobject):
 
     def get_account(self, addressorid):
         try:
-            account = self.__wallet.get_account_by_address_or_refid(addressorid)
+            address = addressorid
+            if isinstance(addressorid, int):
+                address = str(addressorid)
+            elif isinstance(addressorid, str) and len(addressorid) >= min(VIOLAS_ADDRESS_LEN):
+                auth, addr = self.split_full_address(addressorid).datas
+                address = addr
+                print(f"auth_key_prefix: {auth} ,address: {addr}")
+
+            account = self.__wallet.get_account_by_address_or_refid(address)
             ret = result(error.SUCCEED, "", account)
         except Exception as e:
             ret = parse_except(e)
@@ -117,7 +126,8 @@ class violaswallet(baseobject):
 
     def has_account_by_address(self, address):
         try:
-            (index, account) = self.__wallet.find_account_by_address_hex(address)
+            (auth_key_prefix, addr) = self.split_full_address(address).datas
+            (index, account) = self.__wallet.find_account_by_address_hex(addr)
             if account is None:
                 ret = result(error.SUCCEED, "", False)
             else:
@@ -136,7 +146,13 @@ class violaswallet(baseobject):
             ret = parse_except(e)
         return ret
 
-
+    def split_full_address(self, address, auth_key_prefix = None):
+        try:
+            (auth, addr) = split_full_address(address, auth_key_prefix)
+            ret = result(error.SUCCEED, datas = (auth, addr))
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
 
 class violasclient(baseobject):
     __node = None
@@ -212,42 +228,35 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def is_module_address(vclient, address):
+    def is_module_address(self, address):
         try:
-            state = vclient.get_account_state(address).datas.is_published(address)
+            (_, addr) = self.split_full_address(address).datas
+            state = self.get_account_state(addr).datas.is_published(addr)
             ret = result(error.SUCCEED, datas = state) 
             print(f"]]] {state}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def has_module(vclient, address, module):
+    def has_module(self, address, module):
         try:
-            state = vclient.get_account_state(address).datas.is_published(module)
+            (_, addr) = self.split_full_address(address).datas
+            (_, mod) = self.split_full_address(module).datas
+            state = self.get_account_state(addr).datas.is_published(mod)
             ret = result(error.SUCCEED, datas = state) 
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def split_receiver_address(self, address, auth_key_prefix = None):
+    def split_full_address(self, address, auth_key_prefix = None):
         try:
-            self._logger.debug(f"start split_receiver_address({address}, {auth_key_prefix})")
-            if len(address) not in VIOLAS_ADDRESS_LEN:
-                return result(error.ARG_INVALID)
-
-       
-            datas = (None, address)
-            if len(address) == max(VIOLAS_ADDRESS_LEN):
-                datas = (address[:32], address[32:])
-
-            if auth_key_prefix is not None:
-                datas[0] = auth_key_prefix
-
-            ret = result(error.SUCCEED, datas = datas) 
-            self._logger.debug(f"split receiver address: address ={datas[1]}, auth_key_prefix: {datas[0]}")
+            datas = split_full_address(address, auth_key_prefix)
+            ret = result(error.SUCCEED, datas = datas)
+            self._logger.debug(f"split full address: address ={datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
+
     def publish_module(self, account,  is_blocking = True):
         try:
             self._logger.info(f"publish_module(account address={account.address_hex}, is_blocking={is_blocking})")
@@ -261,7 +270,9 @@ class violasclient(baseobject):
     def create_violas_coin(self, module_account, address,  is_blocking = True):
         try:
             self._logger.info("create_violas_coin(module_account={}, address={}, is_blocking={})".format(module_account.address.hex(), address, is_blocking))
-            datas = self.__client.create_token(module_account, address)
+            (_, addr) = self.split_full_address(address).datas
+
+            datas = self.__client.create_token(module_account, addr)
             ret = result(error.SUCCEED, datas = datas) 
         except Exception as e:
             ret = parse_except(e)
@@ -270,7 +281,9 @@ class violasclient(baseobject):
     def mint_platform_coin(self, address, amount, auth_key_prefix, is_blocking = True):
         try:
             self._logger.info("start mint_platform_coin(address={}, amount={}, auth_key_prefix={} is_blocking={})".format(address, amount, auth_key_prefix, is_blocking))
-            self.__client.mint_coin(address, amount, auth_key_prefix = auth_key_prefix, is_blocking = is_blocking)
+            (auth, addr) = self.split_full_address(address, auth_key_prefix).datas
+
+            self.__client.mint_coin(addr, amount, auth_key_prefix = auth, is_blocking = is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
@@ -279,7 +292,8 @@ class violasclient(baseobject):
     def bind_module(self, account, module_address, is_blocking=True):
         try:
             self._logger.info(f"start bind_module(account={account.address.hex}, module_address={module_address}, is_blocking={is_blocking}")
-            self.__client.publish_resource(account, module_address, is_blocking=is_blocking)
+            (auth, addr) = self.split_full_address(module_address).datas
+            self.__client.publish_resource(account, addr, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
@@ -288,7 +302,10 @@ class violasclient(baseobject):
     def mint_violas_coin(self, address, amount, owner_account, token_id, module, auth_key_prefix = None, is_blocking=True):
         try:
             self._logger.info("start mint_violas_coin(address={}, amount={}, token_id={}, owner_account={}, auth_key_prefix={}, is_blocking={})".format(address, amount, token_id, owner_account.address.hex(), auth_key_prefix, is_blocking))
-            self.__client.mint_coin(address, amount, owner_account, token_id, module, auth_key_prefix = auth_key_prefix, is_blocking=is_blocking)
+            (auth, addr) = self.split_full_address(address, auth_key_prefix).datas
+            (_, mod) = self.split_full_address(module).datas
+
+            self.__client.mint_coin(addr, amount, owner_account, token_id, mod, auth_key_prefix = auth, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
@@ -300,12 +317,9 @@ class violasclient(baseobject):
             if len(to_address) not in VIOLAS_ADDRESS_LEN or amount < 1:
                 return result(error.ARG_INVALID)
 
-            ret = self.split_receiver_address(to_address, auth_key_prefix)
-            if ret.state != error.SUCCEED:
-                return ret
-            fulladdress = ret.datas
+            (auth, addr) = self.split_full_address(to_address, auth_key_prefix).datas
 
-            self.__client.transfer_coin(from_account, fulladdress[1], amount, data=data, auth_key_prefix=fulladdress[0], is_blocking=is_blocking)
+            self.__client.transfer_coin(from_account, addr, amount, data=data, auth_key_prefix=auth, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
@@ -315,19 +329,18 @@ class violasclient(baseobject):
         try:
             self._logger.info(f"start send_violas_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, token_id = {token_id}, module_address={module_address}, data={data}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
 
-            if len(to_address) not in VIOLAS_ADDRESS_LEN or amount < 1 or len(module_address) not in VIOLAS_ADDRESS_LEN:
+            if (len(to_address) not in VIOLAS_ADDRESS_LEN) or (amount < 1) or (len(module_address) not in VIOLAS_ADDRESS_LEN):
                 return result(error.ARG_INVALID)
 
-            if module_address == "00000000000000000000000000000000":
+            (_, mod) = self.split_full_address(module_address).datas
+            if mod == "0000000000000000000000000000000000000000000000000000000000000000":
                 module_address = None
 
-            ret = self.split_receiver_address(to_address, auth_key_prefix)
-            if ret.state != error.SUCCEED:
-                return ret
-            fulladdress = ret.datas
+            (auth, addr) = self.split_full_address(to_address, auth_key_prefix).datas
+            (_, module_addr) = self.split_full_address(module_address).datas
 
-            self.__client.transfer_coin(sender_account=from_account, receiver_address=fulladdress[1], \
-                    micro_coins=amount, token_id = token_id, module_address=module_address, data=data, auth_key_prefix = fulladdress[0], is_blocking=is_blocking)
+            self.__client.transfer_coin(sender_account=from_account, receiver_address=addr, \
+                    micro_coins=amount, token_id = token_id, module_address=module_addr, data=data, auth_key_prefix = auth_key_prefix, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
@@ -336,17 +349,22 @@ class violasclient(baseobject):
     def get_platform_balance(self, account_address):
         try:
             self._logger.debug("get_platform_balance(address={})".format(account_address))
-            balance = self.__client.get_balance(account_address)
+            (_, addr) = self.split_full_address(account_address).datas
+
+            balance = self.__client.get_balance(addr)
             ret = result(error.SUCCEED, "", balance)
             self._logger.debug(f"resulst: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def get_violas_balance(self, account_address, module_address):
+    def get_violas_balance(self, account_address, module_address, token_id):
         try:
             self._logger.debug("get_balance(address={}, module={})".format(account_address, module_address))
-            balance = self.__client.get_balance(account_address, module_address)
+            (_, addr) = self.split_full_address(account_address).datas
+            (_, module_addr) = self.split_full_address(module_address).datas
+
+            balance = self.__client.get_balance(address = addr, token_id = token_id, module_address = module_addr)
             ret = result(error.SUCCEED, "", balance)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
@@ -356,7 +374,8 @@ class violasclient(baseobject):
     def get_account_state(self, address):
         try:
             self._logger.debug("start get_account_state(address={})".format(address))
-            state =  self.__client.get_account_state(address)
+            (_, addr) = self.split_full_address(address).datas
+            state =  self.__client.get_account_state(addr)
             ret = result(error.SUCCEED, "", state)
         except Exception as e:
             ret = parse_except(e)
@@ -365,7 +384,8 @@ class violasclient(baseobject):
     def get_address_sequence(self, address):
         try:
             self._logger.debug("start get_address_sequence(address={})".format(address))
-            num = self.__client.get_account_sequence_number(address)
+            (_, addr) = self.split_full_address(address).datas
+            num = self.__client.get_account_sequence_number(addr)
             ret = result(error.SUCCEED, "", num - 1)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
@@ -375,7 +395,8 @@ class violasclient(baseobject):
     def get_transaction_version(self, address, sequence):
         try:
             self._logger.debug(f"start get_transaction_version(address={address}, sequence={sequence})")
-            num = self.__client.get_account_transaction(address, sequence).get_version()
+            (_, addr) = self.split_full_address(address).datas
+            num = self.__client.get_account_transaction(addr, sequence).get_version()
             ret = result(error.SUCCEED, "", num)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
@@ -384,7 +405,8 @@ class violasclient(baseobject):
     def get_address_version(self, address):
         try:
             self._logger.debug(f"start get_address_version(address={address})")
-            ret = self.get_address_sequence(address)
+            (_, addr) = self.split_full_address(address).datas
+            ret = self.get_address_sequence(addr)
             if ret.state != error.SUCCEED:
                 return ret
 
@@ -411,7 +433,8 @@ class violasclient(baseobject):
     def get_scoin_resources(self, address):
         try:
             self._logger.debug(f"start get_scoin_resources(address={address})")
-            vres = self.__client.get_account_state(address).get_scoin_resources().keys()
+            (_, addr) = self.split_full_address(address).datas
+            vres = self.__client.get_account_state(addr).get_scoin_resources().keys()
             ret = result(error.SUCCEED, "", list(vres))
             self._logger.debug(f"result: {len(ret.datas)}")
         except Exception as e:
@@ -420,7 +443,9 @@ class violasclient(baseobject):
     def account_has_violas_module(self, address, module):
         try:
             self._logger.debug("start account_has_violas_module(address={}, module={})".format(address, module))
-            vres = self.__client.get_account_state(address).get_scoin_resource(module)
+            (_, addr) = self.split_full_address(address).datas
+            (_, mod) = self.split_full_address(module).datas
+            vres = self.__client.get_account_state(addr).get_scoin_resource(mod)
             if vres is not None:
                 ret = result(error.SUCCEED, "", True)
             else:
