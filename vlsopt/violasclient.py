@@ -233,17 +233,46 @@ class violasclient(baseobject):
             (_, addr) = self.split_full_address(address).datas
             state = self.get_account_state(addr).datas.is_published(addr)
             ret = result(error.SUCCEED, datas = state) 
-            print(f"]]] {state}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
+    def get_token_num(self, address):
+        try:
+            (_, addr) = self.split_full_address(address).datas
+            state = self.__client.get_token_num(addr)
+            ret = result(error.SUCCEED, datas = state) 
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_token_data(self, address, token_id, module = None):
+        try:
+            (_, addr) = self.split_full_address(address).datas
+            (_, mod) = self.split_full_address(module).datas
+            state = self.get_account_state(addr).datas.get_token_data(token_id, mod)
+            ret = result(error.SUCCEED, datas = state) 
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_tokens(self, address, module = None):
+        try:
+            (_, addr) = self.split_full_address(address).datas
+            (_, mod) = self.split_full_address(module).datas
+            state = self.get_account_state(addr).datas.get_scoin_resources().get_all_tokens()
+            print(state)
+            ret = result(error.SUCCEED, datas = state) 
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
     def has_module(self, address, module):
         try:
             (_, addr) = self.split_full_address(address).datas
             (_, mod) = self.split_full_address(module).datas
             state = self.get_account_state(addr).datas.is_published(mod)
             ret = result(error.SUCCEED, datas = state) 
+            self._logger.debug(f"result: {state}")
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -267,18 +296,18 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def create_violas_coin(self, module_account, address,  is_blocking = True):
+    def create_violas_coin(self, module_account, address, name = None, is_blocking = True):
         try:
-            self._logger.info("create_violas_coin(module_account={}, address={}, is_blocking={})".format(module_account.address.hex(), address, is_blocking))
+            self._logger.info(f"create_violas_coin(module_account={module_account.address.hex()}, address={address}, name={name}, is_blocking={is_blocking})")
             (_, addr) = self.split_full_address(address).datas
 
-            datas = self.__client.create_token(module_account, addr)
+            datas = self.__client.create_token(module_account, addr, data=name)
             ret = result(error.SUCCEED, datas = datas) 
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def mint_platform_coin(self, address, amount, auth_key_prefix, is_blocking = True):
+    def mint_platform_coin(self, address, amount, auth_key_prefix=None, is_blocking = True):
         try:
             self._logger.info("start mint_platform_coin(address={}, amount={}, auth_key_prefix={} is_blocking={})".format(address, amount, auth_key_prefix, is_blocking))
             (auth, addr) = self.split_full_address(address, auth_key_prefix).datas
@@ -291,7 +320,7 @@ class violasclient(baseobject):
 
     def bind_module(self, account, module_address, is_blocking=True):
         try:
-            self._logger.info(f"start bind_module(account={account.address.hex}, module_address={module_address}, is_blocking={is_blocking}")
+            self._logger.info(f"start bind_module(account={account.address.hex()}, module_address={module_address}, is_blocking={is_blocking}")
             (auth, addr) = self.split_full_address(module_address).datas
             self.__client.publish_resource(account, addr, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
@@ -301,7 +330,7 @@ class violasclient(baseobject):
 
     def mint_violas_coin(self, address, amount, owner_account, token_id, module, auth_key_prefix = None, is_blocking=True):
         try:
-            self._logger.info("start mint_violas_coin(address={}, amount={}, token_id={}, owner_account={}, auth_key_prefix={}, is_blocking={})".format(address, amount, token_id, owner_account.address.hex(), auth_key_prefix, is_blocking))
+            self._logger.info(f"start mint_violas_coin(address={address}, amount={amount}, owner_account={owner_account.address.hex()}, token_id={token_id}, module={module}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
             (auth, addr) = self.split_full_address(address, auth_key_prefix).datas
             (_, mod) = self.split_full_address(module).datas
 
@@ -360,7 +389,7 @@ class violasclient(baseobject):
 
     def get_violas_balance(self, account_address, module_address, token_id):
         try:
-            self._logger.debug("get_balance(address={}, module={})".format(account_address, module_address))
+            self._logger.debug(f"get_balance(address={account_address}, module={module_address}, token_id={token_id})")
             (_, addr) = self.split_full_address(account_address).datas
             (_, module_addr) = self.split_full_address(module_address).datas
 
@@ -371,11 +400,12 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def get_account_state(self, address):
+    def get_account_state(self, address, module = None):
         try:
-            self._logger.debug("start get_account_state(address={})".format(address))
+            self._logger.debug(f"start get_account_state(address={address}, modlue = {module})")
             (_, addr) = self.split_full_address(address).datas
-            state =  self.__client.get_account_state(addr)
+            (_, mod) = self.split_full_address(module).datas
+            state =  self.__client.get_account_state(addr, mod)
             ret = result(error.SUCCEED, "", state)
         except Exception as e:
             ret = parse_except(e)

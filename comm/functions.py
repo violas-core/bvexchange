@@ -14,6 +14,7 @@ import threading
 import subprocess
 import fcntl
 import comm.values
+from comm.result import result, parse_except
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
@@ -60,13 +61,12 @@ def json_print(data):
 
 def split_full_address(address, auth_key_prefix = None):
     try:
-
-        if len(address) not in VIOLAS_ADDRESS_LEN:
-            raise Exception("ARG_INVALID")
-   
         new_address = address
+        if address is not None and isinstance(address, bytes):
+            new_address = address.hex()
+
         new_auth_key_prefix = None
-        if address is not None and len(address) == max(VIOLAS_ADDRESS_LEN):
+        if address is not None and len(new_address) == max(VIOLAS_ADDRESS_LEN):
             new_address = address[32:]
             new_auth_key_prefix = address[:32]
 
@@ -78,5 +78,5 @@ def split_full_address(address, auth_key_prefix = None):
 
         return (new_auth_key_prefix, new_address) 
     except Exception as e:
-        ret = parse_except(e)
+        pass
     return None
