@@ -99,7 +99,8 @@ def mint_platform_coin_for_address(vclient, wclient, address, amount=1000000, ne
         ret = vclient.mint_platform_coin(address, new_amount, auth_key_prefix=auth_key_prefix)
         assert ret.state == error.SUCCEED, f"mint_platform_coin({address}, {amount}, {auth_key_prefix}) failed."
 
-    vclient._logger.info(f"mint platform coin({address}, {new_amount}, {auth_key_prefix})")
+    ret = vclient.get_platform_balance(address)
+    vclient._logger.info(f"mint platform coin({address}, {ret.datas}, {auth_key_prefix})")
     ret = vclient.get_platform_balance(address)
     vclient._logger.info(f"platform coin: {ret.datas}")
 
@@ -213,3 +214,6 @@ def init_address_list(vclient, wclient, senders, owner, token_id, module, auth_k
             mint_violas_coin(vclient, wclient, sender, min_balance - ret.datas, owner, token_id, module, auth_key_prefix)
             vclient._logger.debug(f"mint violas coin {min_balance - ret.datas}")
 
+        ret = vclient.get_violas_balance(sender, module, token_id)
+        assert ret.state == error.SUCCEED, f"get_violas_balance({sender}, {module}, {token_id}) failed."
+        vclient._logger.debug(f"mint_violas_coin result address: {sender}   violas coin token id:{token_id} balance: {ret.datas}   module:{module}")
