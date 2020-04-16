@@ -208,7 +208,7 @@ def show_accounts():
     i = 0
     account_count = wallet.get_account_count()
     while True and i < account_count:
-        ret = wallet.get_account(str(i))
+        ret = wallet.get_account(i)
         if ret.state != error.SUCCEED:
            break 
         account = ret.datas

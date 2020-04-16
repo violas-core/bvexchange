@@ -82,7 +82,7 @@ def publish_module(vclient, wclient, address):
     assert ret.state == error.SUCCEED, f"bind_module({address}, {module}) failed."
 
 def mint_platform_coin_for_address(vclient, wclient, address, amount=1000000, newcoin = False, auth_key_prefix=None):
-    vclient._logger.debug(f"start mint_platform_coin_for_address({address}, {amount})")
+    vclient._logger.debug(f"start mint_platform_coin_for_address({address}, {amount}, {auth_key_prefix})")
     assert address is not None and len(address) in VIOLAS_ADDRESS_LEN, f"address({address}) is invalid."
     
     new_amount = amount
@@ -207,8 +207,8 @@ def init_address_list(vclient, wclient, senders, owner, token_id, module, auth_k
     min_balance = minamount
     #mimt vbtc coin
     for sender in senders:
-        ret = vclient.get_violas_balance(sender, module)
-        assert ret.state == error.SUCCEED, f"get_violas_balance({sender}, {module}) failed."
+        ret = vclient.get_violas_balance(sender, module, token_id)
+        assert ret.state == error.SUCCEED, f"get_violas_balance({sender}, {module}, {token_id}) failed."
         if minamount is not None and ret.datas < min_balance:
             mint_violas_coin(vclient, wclient, sender, min_balance - ret.datas, owner, token_id, module, auth_key_prefix)
             vclient._logger.debug(f"mint violas coin {min_balance - ret.datas}")
