@@ -55,8 +55,22 @@ def get_violasproof(dtype = "v2b"):
 
     return requestclient(name, stmanage.get_db(dtype))
 
+def publish_module(module):
+    logger.debug(f"start publish_module({module})")
+    client = get_violasclient()
+    wallet = get_violaswallet()
+
+    ret = wallet.get_account(module)
+    if ret.state != error.SUCCEED:
+        logger.error(ret.datas)
+        return
+    assert ret.state == error.SUCCEED, "publish module failed."
+    ret = client.publish_module(account)
+
+    print(client.get_account_state(address).datas)
+
 def mint_platform_coin(address, amount):
-    logger.debug("start mcreate_violas_coin otform_coin = {} amount={}".format(address, address))
+    logger.debug(f"start mint_platform_coin({address}, {amount})")
     client = get_violasclient()
 
     ret = client.mint_platform_coin(address, amount)
@@ -64,24 +78,24 @@ def mint_platform_coin(address, amount):
 
     print(client.get_account_state(address).datas)
 
-def mint_violas_coin(address, amount, module):
-    logger.debug("start mcreate_violas_coin otform_coin = {} amount={} module={}".format(address, amount, module))
+def mint_violas_coin(address, amount, owner, token_id, module):
+    logger.debug("start min_violas_coin({address}, {amount}, {owner}, {token_id}, {module})")
     global wallet_name
     client = get_violasclient()
     wallet = get_violaswallet()
-    ret = wallet.get_account(module)
+    ret = wallet.get_account(owner)
     if ret.state != error.SUCCEED:
         logger.error(ret.datas)
         return
 
-    module_account = ret.datas
+    account = ret.datas
 
-    ret = client.mint_violas_coin(address, amount, module_account)
+    ret = client.mint_violas_coin(address, amount, account, token_id, module)
     assert ret.state == error.SUCCEED, "mint_violas_coin failed."
 
     print(client.get_account_state(address).datas)
 
-def create_violas_coin(module):
+def create_violas_coin(module, address):
     logger.debug("start create_violas_coin module = {}".format(module))
     global wallet_name
     wallet = get_violaswallet()
@@ -92,14 +106,14 @@ def create_violas_coin(module):
 
     client = get_violasclient()
 
-    ret = client.create_violas_coin(account)
+    ret = client.create_violas_coin(account, address)
     if(ret.state != error.SUCCEED):
         return
 
-    print(client.get_account_state(account.address).datas)
+    print(ret.datas)
 
 def bind_module(address, module):
-    logger.debug("start bind_module address= {} module = {}".format(address, module))
+    logger.debug(f"start bind_module address= {address} module = {module}")
     global wallet_name
     wallet = get_violaswallet()
     client = get_violasclient()
@@ -112,7 +126,7 @@ def bind_module(address, module):
     assert ret.state == error.SUCCEED
     print(client.get_account_state(account.address).datas)
 
-def send_violas_coin(from_address, to_address, amount, module, data = None):
+def send_violas_coin(from_address, to_address, amount, token_id, module, data = None):
     global wallet_name
     wallet = get_violaswallet()
     ret = wallet.get_account(from_address)
@@ -121,8 +135,8 @@ def send_violas_coin(from_address, to_address, amount, module, data = None):
     account = ret.datas
 
     client = get_violasclient()
-    client.send_violas_coin(account, to_address, amount, module, data)
-    print(client.get_violas_balance(account.address, module).datas)
+    client.send_violas_coin(account, to_address, amount, token_id, module, data)
+    print(client.get_violas_balance(account.address, module, token_id).datas)
 
 def send_platform_coin(from_address, to_address, amount, data = None):
     global wallet_name
@@ -143,10 +157,10 @@ def get_platform_balance(address):
     ret = client.get_platform_balance(address)
     logger.debug("balance: {0}".format(ret.datas))
 
-def get_violas_balance(address, module):
-    logger.debug("start get_violas_balance address= {} module = {}".format(address, module))
+def get_violas_balance(address, module, token_id):
+    logger.debug("start get_violas_balance address= {address} module = {module} token_id= {token_id}")
     client = get_violasclient()
-    ret = client.get_violas_balance(address, module)
+    ret = client.get_violas_balance(address, module, token_id)
     logger.debug("balance: {0}".format(ret.datas))
 
 def get_latest_transaction_version():
@@ -215,6 +229,18 @@ def show_accounts():
         logger.debug("account.address({0}): {1}  auth_key_prefix: {2}".format(i, account.address.hex(), account.auth_key_prefix.hex()))
         i += 1
 
+def show_accounts_full():
+    global wallet_name
+    wallet = get_violaswallet()
+    i = 0
+    account_count = wallet.get_account_count()
+    while True and i < account_count:
+        ret = wallet.get_account(i)
+        if ret.state != error.SUCCEED:
+           break 
+        account = ret.datas
+        logger.debug(f"({i:03}): {account.auth_key_prefix.hex()}{account.address.hex()}")
+        i += 1
 def get_account(address):
     client = get_violasclient()
     print(client.get_account_state(address).datas)
@@ -252,21 +278,26 @@ def has_transaction(address, module, baddress, sequence, amount, version, receiv
 '''
 def init_args(pargs):
     pargs.append("help", "show arg list.")
-    pargs.append("mint_platform_coin", "mint vtoken(amount) to target address.", True, ["address", "amount"])
-    pargs.append("create_violas_coin", "create new token(module) in violas blockchain", True, ["module"])
-    pargs.append("bind_module", "bind address to module.", True, ["address", "module"])
-    pargs.append("mint_violas_coin", "mint some(amount) token(module) to target address.", True, ["address", "amount", "module"])
-    pargs.append("send_violas_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "module", "data[default = None  ex: "])
-    pargs.append("send_platform_coin", "send platform coin to target address", True, ["form_address", "to_address", "amount", "data[default = None  ex: "])
+    #wallet 
     pargs.append("new_account", "new account and save to local wallet.")
     pargs.append("get_account", "show account info.", True, ["address"])
     pargs.append("has_account", "has target account in wallet.", True, ["address"])
     pargs.append("show_accounts", "show all counts address list(local wallet).")
+    pargs.append("show_accounts_full", "show all counts address list(local wallet) with auth_key_prefix.")
+
+    #client
+    pargs.append("publish_module", "publish new module'.", True, ["address"])
+    pargs.append("mint_platform_coin", "mint vtoken(amount) to target address.", True, ["address", "amount"])
+    pargs.append("create_violas_coin", "create new token(module, address) in violas blockchain", True, ["module", "address"])
+    pargs.append("bind_module", "bind address to module.", True, ["address", "module"])
+    pargs.append("mint_violas_coin", "mint some(amount) token(module) to target address.", True, ["address", "amount", "owner", "token_id", "module"])
+    pargs.append("send_violas_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "token_id", "module", "data[default = None  ex: "])
+    pargs.append("send_platform_coin", "send platform coin to target address", True, ["form_address", "to_address", "amount", "data[default = None  ex: "])
     pargs.append("get_violas_balance", "get address's token(module) amount.", True, ["address", "module"])
     pargs.append("get_platform_balance", "get address's platform coin amount.", True, ["address"])
     pargs.append("get_account_transactions", "get account's transactions from violas server.", True, ["address", "module", "start", "limit", "state=(start/end)"])
     pargs.append("has_transaction", "check transaction is valid from violas server.", True, ["address", "module", "btcaddress", "sequence", "amount","version", "receiver"])
-    pargs.append("account_has_violas_module", "check address binded module.", True, ["address", "module"])
+    pargs.append("account_has_module", "check address binded module.", True, ["address", "module"])
     pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=True"])
     pargs.append("get_latest_transaction_version", "show latest transaction version.")
     pargs.append("chain", "work chain name(violas/libra, default : violas). must be first argument", True, ["chain=violas"])
@@ -303,9 +334,9 @@ def run(argc, argv):
 
             print("opt = {}, arg = {}".format(opt, arg_list))
         if pargs.is_matched(opt, ["create_violas_coin"]):
-            if len(arg_list) != 1:
+            if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
-            ret = create_violas_coin(arg_list[0])
+            ret = create_violas_coin(arg_list[0], arg_list[1])
         elif pargs.is_matched(opt, ["bind_module"]):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
@@ -315,16 +346,16 @@ def run(argc, argv):
                 pargs.exit_error_opt(opt)
             ret = mint_platform_coin(arg_list[0], int(arg_list[1]))
         elif pargs.is_matched(opt, ["mint_violas_coin"]):
-            if len(arg_list) != 3:
+            if len(arg_list) != 5:
                 pargs.exit_error_opt(opt)
-            ret = mint_violas_coin(arg_list[0], int(arg_list[1]), arg_list[2])
+            ret = mint_violas_coin(arg_list[0], int(arg_list[1]), arg_list[2], int(arg_list[3]), arg_list[4])
         elif pargs.is_matched(opt, ["send_violas_coin"]):
-            if len(arg_list) != 4 and len(arg_list) != 5:
+            if len(arg_list) not in (5,6):
                 pargs.exit_error_opt(opt)
-            if len(arg_list) == 5:
-                ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3], json.dumps(arg_list[4]))
+            if len(arg_list) == 6:
+                ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), int(arg_list[3]), arg_list[4], json.dumps(arg_list[5]))
             else:
-                ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), arg_list[3])
+                ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), int(arg_list[3]), arg_list[3])
         elif pargs.is_matched(opt, ["send_platform_coin"]):
             if len(arg_list) not in (3, 4):
                 pargs.exit_error_opt(opt)
@@ -344,14 +375,18 @@ def run(argc, argv):
             if len(arg) != 0:
                 pargs.exit_error_opt(opt)
             show_accounts()
+        elif pargs.is_matched(opt, ["show_accounts_full"]):
+            if len(arg) != 0:
+                pargs.exit_error_opt(opt)
+            show_accounts_full()
         elif pargs.is_matched(opt, ["new_account"]):
             if len(arg) != 0:
                 pargs.exit_error_opt(opt)
             ret = new_account()
         elif pargs.is_matched(opt, ["get_violas_balance"]):
-            if len(arg_list) != 2:
+            if len(arg_list) != 3:
                 pargs.exit_error_opt(opt)
-            get_violas_balance(arg_list[0], arg_list[1])
+            get_violas_balance(arg_list[0], arg_list[1], int(arg_list[2]))
         elif pargs.is_matched(opt, ["get_platform_balance"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
@@ -359,6 +394,10 @@ def run(argc, argv):
         elif pargs.is_matched(opt, ["get_account_transactions"]):
             if len(arg_list) < 2 or len(arg_list) > 5:
                 pargs.exit_error_opt(opt)
+        elif pargs.is_matched(opt, ["publish_module"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            get_platform_balance(arg)
 
             receiver = arg_list[0]
             module = arg_list[1]
