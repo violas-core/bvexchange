@@ -246,12 +246,54 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def get_token_data(self, address, token_id, module = None):
+    def get_token_name(self, address, token_id):
         try:
             (_, addr) = self.split_full_address(address).datas
-            (_, mod) = self.split_full_address(module).datas
-            state = self.get_account_state(addr).datas.get_token_data(token_id, mod)
+            state = self.get_account_state(addr).datas.get_token_data(token_id, addr)
             ret = result(error.SUCCEED, datas = state) 
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_token_data(self, address, token_id):
+        try:
+            (_, addr) = self.split_full_address(address).datas
+            state = self.get_account_state(addr).datas.get_token_data(token_id, addr)
+            ret = result(error.SUCCEED, datas = state) 
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_token_id(self, address, token_name):
+        try:
+            token_id = -1 
+            token_list = self.get_token_list(address)
+            for key in token_list.keys():
+                if token_list[key] == token_name:
+                    token_id = key
+                    break
+            ret = result(error.SUCCEED, datas = token_id)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_token_list(self, address):
+        try:
+            token_list = {}
+            num = self.get_token_num(address).datas
+            for i in range(num):
+                name = self.get_token_name(address, i).datas
+                token_list[i] = name
+            ret = result(error.SUCCEED, datas = token_list)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def has_token_name(self, address, token_name):
+        try:
+            state = False
+            ret = self.get_token_list(address)
+            ret = result(error.SUCCEED, datas = token_name in ret.datas.values())
         except Exception as e:
             ret = parse_except(e)
         return ret

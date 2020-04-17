@@ -92,12 +92,26 @@ def create_violas_coin(module, address, name = None):
 
     print(ret.datas)
 
-def show_token_info(address, token_id, module):
-    logger.debug(f"start show_token_info({address}, {token_id}, {module})")
+def get_token_name(address, token_id):
+    logger.debug(f"start get_token_name({address}, {token_id})")
     client = get_violasclient()
-    ret = client.get_token_data(address, token_id, module)
+    ret = client.get_token_data(address, token_id)
     assert ret.state == error.SUCCEED, "get token data failed."
     print(ret.datas)
+
+def get_token_id(address, token_name):
+    logger.debug(f"start get_token_id({address}, {token_name})")
+    client = get_violasclient()
+    ret = client.get_token_id(address, token_name)
+    assert ret.state == error.SUCCEED, "get token data failed."
+    print(ret.datas)
+
+def show_token_list(module):
+    logger.debug(f"start show_token_name({module})")
+    client = get_violasclient()
+    ret = client.get_token_list(module)
+    assert ret.state == error.SUCCEED, "get tokens failed."
+    json_print(ret.datas)
 
 def show_tokens_info(address, module):
     logger.debug(f"start show_tokens_info({address}, {module})")
@@ -248,7 +262,7 @@ def new_account():
 def account_has_violas_module(address, module):
     logger.debug("start account_has_violas_module address= {} module = {}".format(address, module))
     client = get_violasclient()
-    logger.debug(client.account_has_violas_module(address, module).datas)
+    logger.debug(client.has_module(address, module).datas)
 
 def show_accounts():
     global wallet_name
@@ -283,6 +297,13 @@ def has_account(address):
     global wallet_name
     wallet = get_violaswallet()
     logger.debug(wallet.has_account_by_address(address).datas)
+
+def get_account_prefix(address):
+    global wallet_name
+    wallet = get_violaswallet()
+    account = wallet.get_account(address).datas
+    logger.debug(f"address: {account.address.hex()}, auth_key_prefix: {account.auth_key_prefix.hex()}")
+
 '''
 *************************************************violasserver oper*******************************************************
 '''
@@ -337,9 +358,12 @@ def init_args(pargs):
     pargs.append("chain", "work chain name(violas/libra, default : violas). must be first argument", True, ["chain=violas"])
     pargs.append("get_address_version", "get address's latest version'.", True, ["address"])
     pargs.append("get_transaction_version", "get address's version'.", True, ["address", "sequence"])
-    pargs.append("show_token_info", "show token info.", True, ["address", "tokenid", "module"])
+    pargs.append("get_token_name", "show token name.", True, ["address", "token_id"])
+    pargs.append("get_token_id", "show token id.", True, ["address", "token_name"])
     pargs.append("get_token_num", "get token num.", True, ["address"])
     pargs.append("show_tokens_info", "show tokens info.", True, ["address", "module"])
+    pargs.append("show_token_list", "show token list.", True, ["module"])
+    pargs.append("get_account_prefix", "get account prefix.", True, ["address"])
 
 
 def run(argc, argv):
@@ -464,7 +488,7 @@ def run(argc, argv):
             if len(arg_list) != 7:
                 pargs.exit_error_opt(opt)
             has_transaction(arg_list[0], arg_list[1], arg_list[2], int(arg_list[3]), int(arg_list[4]), int(arg_list[5]), arg_list[6])
-        elif pargs.is_matched(opt, ["account_has_violas_module"]):
+        elif pargs.is_matched(opt, ["account_has_module"]):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
             account_has_violas_module(arg_list[0], arg_list[1])
@@ -482,18 +506,30 @@ def run(argc, argv):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
             get_transaction_version(arg_list[0], int(arg_list[1]))
-        elif pargs.is_matched(opt, ["show_token_info"]):
-            if len(arg_list) != 3:
+        elif pargs.is_matched(opt, ["get_token_name"]):
+            if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
-            show_token_info(arg_list[0], int(arg_list[1]), arg_list[2])
+            get_token_name(arg_list[0], int(arg_list[1]))
+        elif pargs.is_matched(opt, ["get_token_id"]):
+            if len(arg_list) != 2:
+                pargs.exit_error_opt(opt)
+            get_token_id(arg_list[0], arg_list[1])
         elif pargs.is_matched(opt, ["show_tokens_info"]):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
             show_tokens_info(arg_list[0], arg_list[1])
+        elif pargs.is_matched(opt, ["show_token_list"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            show_token_list(arg_list[0])
         elif pargs.is_matched(opt, ["get_token_num"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             get_token_num(arg_list[0])
+        elif pargs.is_matched(opt, ["get_account_prefix"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            get_account_prefix(arg_list[0])
     logger.debug("end manage.main")
 
 if __name__ == "__main__":

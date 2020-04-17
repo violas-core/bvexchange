@@ -107,8 +107,8 @@ address_list = {
             {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 0, 'type':'v2b', 'chain':'violas'},
             {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 0, 'type':'b2v', 'chain':'btc'},
             #vlibra owner
-            {'address':'395296950160fa6e7ba54e462ed1252870a13cb640e062f89b32bcb489d39ded', 'tokenid': 1, 'type':'v2l', 'chain':'violas'},
-            {'address':'395296950160fa6e7ba54e462ed1252870a13cb640e062f89b32bcb489d39ded', 'tokenid': 1, 'type':'v2l', 'chain':'violas'},
+            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 1, 'type':'v2l', 'chain':'violas'},
+            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 1, 'type':'l2v', 'chain':'violas'},
             ],
         #combine coins to 
         'combine':[

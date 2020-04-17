@@ -57,10 +57,10 @@ def get_module_address(mtype, chain = None):
 
 def get_token_address(mtype, chain = None):
     try:
-        ms = __get_tokenid_list_list("coin", mtype, chain)
+        ms = __get_address_list("token", mtype, chain)
         if ms is None or len(ms) == 0:
             return None
-        assert len(ms) == 1, f"coin type({mtype}) chain({chain}) found multi coins found, check it"
+        assert len(ms) == 1, f"token type({mtype}) chain({chain}) found multi coins found, check it"
         return ms[0]
     except Exception as e:
         parse_except(e)

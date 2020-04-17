@@ -105,7 +105,7 @@ def mint_platform_coin_for_address(vclient, wclient, address, amount=1000000, ne
     vclient._logger.info(f"platform coin: {ret.datas}")
 
 
-def create_token(vclient, wclient, address, module, amount = 1000000, newcoin = False):
+def create_token(vclient, wclient, address, module, name = None, amount = 1000000, newcoin = False):
     vclient._logger.debug(f"start create_token({address}, {module}, {amount}, {newcoin})")
     assert address is not None and len(address) in VIOLAS_ADDRESS_LEN, f"address({address}) is invalid."
     assert module is not None and len(module) in VIOLAS_ADDRESS_LEN, f"module({module}) is invalid."
@@ -126,11 +126,13 @@ def create_token(vclient, wclient, address, module, amount = 1000000, newcoin = 
     assert ret.state == error.SUCCEED, f"get_account({address}) failed"
     account = ret.datas 
 
+    #make all address had platform coin and min count is amount(1000000)
     mint_platform_coin_for_address(vclient, wclient, address, amount, newcoin = newcoin, auth_key_prefix = account.auth_key_prefix)
+    mint_platform_coin_for_address(vclient, wclient, module, amount, newcoin = newcoin, auth_key_prefix = module_account.auth_key_prefix)
 
     bind_module(vclient, wclient, address, module)
 
-    ret = vclient.create_violas_coin(module_account, address)
+    ret = vclient.create_violas_coin(module_account, address, name=name)
     assert ret.state == error.SUCCEED, f"create_violas_coin({address}) failed."
 
     vclient._logger.info(f"create token ok: {address} {module} : {ret.datas}")
@@ -192,8 +194,8 @@ def address_list_bind_module(vclient, wclient, senders, module):
     for sender in senders:
         bind_module(vclient, wclient, sender, module)
 
-def init_address_list(vclient, wclient, senders, owner, token_id, module, auth_key_prefix = None, minamount= 1000000000):
-    vclient._logger.debug(f"start init_address_list(address, {owner}, {token_id}, {module}, {auth_key_prefix} {minamount})")
+def init_address_list(vclient, wclient, senders, owner, token_id, module, minamount= 1000000000):
+    vclient._logger.debug(f"start init_address_list(address, {owner}, {token_id}, {module}, {minamount})")
     assert senders is not None and len(senders) > 0, f"senders is empty."
     for address in senders:
         assert address is not None and len(address) in VIOLAS_ADDRESS_LEN, f"address({address}) is invalid."
@@ -201,8 +203,15 @@ def init_address_list(vclient, wclient, senders, owner, token_id, module, auth_k
     assert owner is not None and len(owner) in VIOLAS_ADDRESS_LEN, f"owner({owner}) is invalid."
     assert minamount >= 0 or minamount is None, f"min amount({minamount} must be > 0)"
 
+    #makesure address had platform balance
+    mint_platform_coin_for_address(vclient, wclient, owner)
+    for sender in senders:
+        mint_platform_coin_for_address(vclient, wclient, sender)
+
     #must bind one or more module
     address_list_bind_module(vclient, wclient, senders, module)
+    address_list_bind_module(vclient, wclient, [owner], module)
+
 
     #set address min coin is amount
     min_balance = minamount
@@ -211,7 +220,7 @@ def init_address_list(vclient, wclient, senders, owner, token_id, module, auth_k
         ret = vclient.get_violas_balance(sender, module, token_id)
         assert ret.state == error.SUCCEED, f"get_violas_balance({sender}, {module}, {token_id}) failed."
         if minamount is not None and ret.datas < min_balance:
-            mint_violas_coin(vclient, wclient, sender, min_balance - ret.datas, owner, token_id, module, auth_key_prefix)
+            mint_violas_coin(vclient, wclient, sender, min_balance - ret.datas, owner, token_id, module)
             vclient._logger.debug(f"mint violas coin {min_balance - ret.datas}")
 
         ret = vclient.get_violas_balance(sender, module, token_id)
