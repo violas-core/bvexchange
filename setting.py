@@ -24,7 +24,7 @@ violas_nodes=[
         #{'name':'242', 'host':'13.68.141.242', "port":40001,'faucet':'mint_test.key'},
         #{'name':'50', 'host':'47.52.195.50', "port":40001}, 
         #{'name':'235', 'host':'18.220.66.235', "port":40001, 'faucet':'mint_test.key'},
-        {'host':'125.39.5.57', 'port':40001, 'faucet':'mint_tianjin.key', 'name':'tianjin'},
+        #{'host':'125.39.5.57', 'port':40001, 'faucet':'mint_tianjin.key', 'name':'tianjin'},
         #{'host':'192.168.31.18', 'port':8000, 'faucet':'mint_local.key', 'name':'local'},
         ]
 
