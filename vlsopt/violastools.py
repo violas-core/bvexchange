@@ -197,7 +197,8 @@ def send_platform_coin(from_address, to_address, amount, data = None):
     client = get_violasclient()
     ret = client.send_platform_coin(account, to_address, amount, data)
     assert ret.state == error.SUCCEED, ret.message
-    print(client.get_account_state(account.address).datas)
+    #print(client.get_account_state(account.address).datas)
+    print(client.get_platform_balance(account.address).datas)
 
 def get_platform_balance(address):
     logger.debug("start get_platform_balance address= {}".format(address))
@@ -416,7 +417,7 @@ def run(argc, argv):
             if len(arg_list) == 6:
                 ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), int(arg_list[3]), arg_list[4], json.dumps(arg_list[5]))
             else:
-                ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), int(arg_list[3]), arg_list[3])
+                ret = send_violas_coin(arg_list[0], arg_list[1], int(arg_list[2]), int(arg_list[3]), arg_list[4])
         elif pargs.is_matched(opt, ["send_platform_coin"]):
             if len(arg_list) not in (3, 4):
                 pargs.exit_error_opt(opt)
