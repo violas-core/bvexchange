@@ -61,46 +61,46 @@ def show_address():
 
     infos = {}
     #create vbtc module
-    module = stmanage.get_module_address("v2b", "violas")
-    assert module is not None and len(module) in VIOLAS_ADDRESS_LEN, f"vbtc address[{module}] is not found"
+    vbtc_module = stmanage.get_module_address("v2b", "violas")
+    assert vbtc_module is not None and len(vbtc_module) in VIOLAS_ADDRESS_LEN, f"vbtc address[{vbtc_module}] is not found"
 
-    comm_funs.list_address_info(vclient, wclient, [module], ret = infos)
+    comm_funs.list_address_info(vclient, wclient, [vbtc_module], vbtc_module, ret = infos)
 
     #create vlibra module
-    module = stmanage.get_module_address("v2l", "violas")
-    assert module is not None and len(module) in VIOLAS_ADDRESS_LEN, "vlibra module is not found"
+    vlibra_module = stmanage.get_module_address("v2l", "violas")
+    assert vlibra_module is not None and len(vlibra_module) in VIOLAS_ADDRESS_LEN, "vlibra module is not found"
 
-    comm_funs.list_address_info(vclient, wclient, [module], ret = infos)
+    comm_funs.list_address_info(vclient, wclient, [vlibra_module], vlibra_module, ret = infos)
 
     #vbtc sender bind  module
     senders = stmanage.get_sender_address_list("b2v", "violas")
     assert senders is not None and len(senders) > 0, f"v2b senders[{senders}] not found."
 
-    comm_funs.list_address_info(vclient, wclient, senders, ret = infos)
+    comm_funs.list_address_info(vclient, wclient, senders, vbtc_module, ret = infos)
 
     #vlibra sender bind module
     senders = stmanage.get_sender_address_list("l2v", "violas")
     assert senders is not None and len(senders) > 0, f"v2l senders not found."
 
-    comm_funs.list_address_info(vclient, wclient, senders, ret = infos)
+    comm_funs.list_address_info(vclient, wclient, senders, vlibra_module, ret = infos)
 
     receivers = stmanage.get_receiver_address_list("v2l", "violas")
     assert receivers is not None and len(receivers) > 0, f"v2l receiver not found."
 
-    comm_funs.list_address_info(vclient, wclient, receivers, ret = infos)
+    comm_funs.list_address_info(vclient, wclient, receivers, vlibra_module, ret = infos)
 
     receivers = stmanage.get_receiver_address_list("v2b", "violas")
     assert receivers is not None and len(receivers) > 0, f"v2b receiver not found."
-    comm_funs.list_address_info(vclient, wclient, receivers, ret = infos)
+    comm_funs.list_address_info(vclient, wclient, receivers, vbtc_module, ret = infos)
 
     combin = stmanage.get_combine_address("v2b", "violas")
     assert combin is not None and len(combin) > 0, f"v2b combin not found or is invalid."
-    comm_funs.list_address_info(vclient, wclient, [combin], ret = infos)
+    comm_funs.list_address_info(vclient, wclient, [combin], vbtc_module, ret = infos)
 
     logger.debug("start bind dtype = v2l chain = violas combin")
     combin = stmanage.get_combine_address("v2l", "violas")
     assert combin is not None and len(combin) in VIOLAS_ADDRESS_LEN, f"v2l combin not found or is invalid."
-    comm_funs.list_address_info(vclient, wclient, [combin], ret = infos)
+    comm_funs.list_address_info(vclient, wclient, [combin], vlibra_module, ret = infos)
 
     json_print(infos)
 
@@ -190,7 +190,7 @@ def main(argc, argv):
 
     try:
         if argc < 1:
-             raise Exception(f"argument is invalid")
+            raise Exception(f"argument is invalid. args:{list_valid_mods()}")
         run(argv)
     except Exception as e:
         parse_except(e)
