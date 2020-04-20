@@ -409,7 +409,7 @@ class violasclient(baseobject):
                 return result(error.ARG_INVALID)
 
             (_, mod) = self.split_full_address(module_address).datas
-            if mod == "0000000000000000000000000000000000000000000000000000000000000000":
+            if mod in ("0000000000000000000000000000000000000000000000000000000000000000", "00000000000000000000000000000000"):
                 module_address = None
 
             (auth, addr) = self.split_full_address(to_address, auth_key_prefix).datas
