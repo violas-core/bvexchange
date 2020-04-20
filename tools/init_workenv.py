@@ -33,6 +33,7 @@ wallet_name="vwallet"
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 logger = log.logger.getLogger(name)
 def reg_run():
+    logger.debug("***************************************init workenv start*****************************")
     vclient = comm_funs.violasreg(name, stmanage.get_violas_nodes())
     wclient = comm_funs.walletreg(name, wallet_name)
 
@@ -126,5 +127,6 @@ def reg_run():
     combin = stmanage.get_combine_address("v2l", "violas")
     assert combin is not None and len(combin) in VIOLAS_ADDRESS_LEN, f"v2l combin not found or is invalid."
     comm_funs.address_list_bind_module(vclient, wclient, [combin], vlibra_module)
+    logger.debug("***************************************init workenv end*****************************")
 if __name__ == "__main__":
     reg_run()

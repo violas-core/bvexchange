@@ -67,8 +67,9 @@ class violaswallet(baseobject):
                 sys.path.append("{}/libviolas".format(os.getcwd()))
                 from violas.wallet import Wallet
             elif chain in ("libra"):
-                sys.path.append("../liblibra")
-                sys.path.append("{}/liblibra".format(os.getcwd()))
+                sys.path.append("../libra-client")
+                sys.path.append("../libra-client/libra_client")
+                sys.path.append("{}/libra-client/libra_client".format(os.getcwd()))
                 from violas.wallet import Wallet
             else:
                 raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas wallet")
@@ -267,7 +268,10 @@ class violasclient(baseobject):
     def get_token_id(self, address, token_name):
         try:
             token_id = -1 
-            token_list = self.get_token_list(address)
+            ret = self.get_token_list(address)
+            if ret.state != error.SUCCEED:
+                return ret
+            token_list = ret.datas
             for key in token_list.keys():
                 if token_list[key] == token_name:
                     token_id = key
@@ -293,6 +297,8 @@ class violasclient(baseobject):
         try:
             state = False
             ret = self.get_token_list(address)
+            if ret.state != error.SUCCEED:
+                return ret
             ret = result(error.SUCCEED, datas = token_name in ret.datas.values())
         except Exception as e:
             ret = parse_except(e)
