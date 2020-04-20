@@ -308,8 +308,7 @@ class violasclient(baseobject):
         try:
             (_, addr) = self.split_full_address(address).datas
             (_, mod) = self.split_full_address(module).datas
-            state = self.get_account_state(addr).datas.get_scoin_resources().get_all_tokens()
-            print(state)
+            state = self.get_account_state(addr, mod).datas.get_scoin_resources().get_all_tokens()
             ret = result(error.SUCCEED, datas = state) 
         except Exception as e:
             ret = parse_except(e)

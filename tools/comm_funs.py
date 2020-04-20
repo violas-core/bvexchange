@@ -47,23 +47,24 @@ class walletreg(violaswallet):
     def __del__(self):
         violaswallet.__del__(self)
 
-def get_address_info(vclient, wclient, address):
+def get_address_info(vclient, wclient, address, module=None):
     plat_balance = vclient.get_platform_balance(address)
     infos = {}
     infos["plat balance"] = plat_balance.datas
     infos["is module"] = is_module_address(vclient, address)
-    infos["resources"] = vclient.get_scoin_resources(address).datas
-    resources = infos.get("resources")
-    if resources is not None:
+    infos["module"] = module
+    tokens = vclient.get_tokens(address, module).datas
+    if tokens is not None:
         balances = {}
-        for module in resources:
-            balances[f"{module}"] = f"{vclient.get_violas_balance(address, module).datas}"
+        for token_id in tokens:
+            token_name = vclient.get_token_name(module, token_id).datas
+            balances[f"{token_name}({token_id})"] = f"{vclient.get_violas_balance(address, module, token_id).datas}"
         infos["balances"] = balances
     return infos
     
-def list_address_info(vclient, wclient, addresses, ret):
+def list_address_info(vclient, wclient, addresses, module, ret):
     for address in addresses:
-        info = get_address_info(vclient, wclient, address)
+        info = get_address_info(vclient, wclient, address, module)
         ret.update({address:info})
 
 def publish_module(vclient, wclient, address):
