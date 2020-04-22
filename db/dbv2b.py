@@ -72,11 +72,12 @@ class dbv2b(baseobject):
         created     = Column(DateTime, default=datetime.datetime.now)
         times       = Column(Integer, nullable=False, default=1)
         tranid      = Column(String(64), nullable=False, primary_key=True)
+        tokenid     = Column(Integer)
     
         def __repr__(self):
             return "<v2binfo(txid=%s,fromaddress={}, toaddress={}, bamount={}, vaddress={}, sequence={}, \
-                    vamount={}, vtoken={}, state={}, version={}, vreceiver={})>".format(self.txid, self.fromaddress, self.toaddress, \
-                    self.bamount, self.vaddres, self.sequence, self.vamount, self.vtoken, self.state, self.version, self.vreceiver)
+                    vamount={}, vtoken={}, state={}, version={}, vreceiver={}, tokenid)>".format(self.txid, self.fromaddress, self.toaddress, \
+                    self.bamount, self.vaddres, self.sequence, self.vamount, self.vtoken, self.state, self.version, self.vreceiver, self.tokenid)
     
     class versions(__base):
         __tablename__='versions'
@@ -103,13 +104,13 @@ class dbv2b(baseobject):
     def __uninit_db(self):
         pass
         
-    def insert_v2binfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state, tranid):
+    def insert_v2binfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state, tranid, tokenid):
         try:
             self._logger.info(f"start insert_v2binfo (vtxid={vtxid}, vfromaddress={vfromaddress}, vtoaddress={vtoaddress}, vbamount={vbamount}, \
-                    vvaddress={vvaddress}, vsequence={vsequence}, version={version}, vvamount={vvamount}, vvtoken={vvtoken}, vreceiver={vreceiver}, state={state.name}, tranid={tranid})") 
+                    vvaddress={vvaddress}, vsequence={vsequence}, version={version}, vvamount={vvamount}, vvtoken={vvtoken}, vreceiver={vreceiver}, state={state.name}, tranid={tranid}, tokenid={tokenid})") 
 
             v2bi = self.v2binfo(txid=vtxid, fromaddress=vfromaddress, toaddress=vtoaddress, bamount=vbamount, vaddress=vvaddress, sequence=vsequence, \
-                vamount=vvamount, vtoken=vvtoken, state=state.value, version=version, vreceiver=vreceiver, tranid=tranid)
+                vamount=vvamount, vtoken=vvtoken, state=state.value, version=version, vreceiver=vreceiver, tranid=tranid, tokenid=tokenid)
             self.__session.add(v2bi)
 
             ret = result(error.SUCCEED, "", "")
@@ -117,9 +118,9 @@ class dbv2b(baseobject):
             ret = parse_except(e)
         return ret
 
-    def insert_v2binfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state, tranid):
+    def insert_v2binfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state, tranid, tokenid):
         try:
-            ret = self.insert_v2binfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state, tranid)
+            ret = self.insert_v2binfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, version, vvamount, vvtoken, vreceiver, state, tranid, tokenid)
             if ret.state != error.SUCCEED:
                 return ret 
             ret = self.commit()

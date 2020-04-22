@@ -69,13 +69,14 @@ class dbb2v(baseobject):
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
         detail      = Column(String(256))
+        tokenid     = Column(Integer)
 
     
         def __repr__(self):
             return "<b2vinfo(txid=%s,fromaddress = %s, toaddress = %s, bamount = %i, vaddress = %s, sequence=%i, \
-                    vamount = %i, vtoken = %s, createblock = %s, updateblock = %s, state = %i)>" % (
+                    vamount = %i, vtoken = %s, createblock = %s, updateblock = %s, state = %i, tokenid = %i)>" % (
                     self.txid, self.fromaddress, self.toaddress, self.bamount, self.vaddres, self.sequence, \
-                    self.vamount, self.vbt, self.createblock, self.updateblock, self.state)
+                    self.vamount, self.vbt, self.createblock, self.updateblock, self.state, tokenid)
     
     def __init_db(self, dbfile):
         self._logger.debug("start __init_db")
@@ -93,14 +94,14 @@ class dbb2v(baseobject):
     def __uninit_db(self):
         pass
         
-    def insert_b2vinfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock):
+    def insert_b2vinfo(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock, tokenid):
         try:
             self._logger.info(f"start insert_b2vinfo (vtxid={vtxid}, vfromaddress={vfromaddress}, vtoaddress={vtoaddress}, \
                     vbamount={vbamount}, vvaddress={vvaddress}, vsequence={vsequence}, vvamount={vvamount}, vvtoken={vvtoken}, \
-                    vcreateblock={vcreateblock}, vupdateblock={vupdateblock}, vstate={self.state.START.name})")
+                    vcreateblock={vcreateblock}, vupdateblock={vupdateblock}, vstate={self.state.START.name}, token_id={tokenid})")
 
             b2vi = self.b2vinfo(txid=vtxid, fromaddress=vfromaddress, toaddress=vtoaddress, bamount=vbamount, vaddress=vvaddress, sequence=vsequence, \
-                vamount=vvamount, vtoken=vvtoken, createblock=vcreateblock, updateblock=vupdateblock, state=self.state.SUCCEED.value, height=0)
+                vamount=vvamount, vtoken=vvtoken, createblock=vcreateblock, updateblock=vupdateblock, state=self.state.SUCCEED.value, height=0, tokenid = tokenid)
             self.__session.add(b2vi)
 
             ret = result(error.SUCCEED, "", "")
@@ -108,10 +109,10 @@ class dbb2v(baseobject):
             ret = parse_except(e)
         return ret
 
-    def insert_b2vinfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock):
+    def insert_b2vinfo_commit(self, vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock, tokenid):
         try:
             self._logger.debug("start insert_b2vinfo_commit")
-            result = self.insert_b2vinfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock)
+            result = self.insert_b2vinfo(vtxid, vfromaddress, vtoaddress, vbamount, vvaddress, vsequence, vvamount, vvtoken, vcreateblock, vupdateblock, tokenid)
             if result.state != error.SUCCEED:
                 return result
             self.__session.flush()

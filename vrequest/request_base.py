@@ -33,7 +33,7 @@ class requestbase(dbvproof):
             ret = parse_except(e)
         return ret
         
-    def _get_transaction_for_state(self, proofstate = None, receiver = None, module = None, start = -1, limit = 10):
+    def _get_transaction_for_state(self, proofstate = None, receiver = None, module = None, token_id = -1, start = -1, limit = 10):
         try:
             trans = []
 
@@ -81,7 +81,10 @@ class requestbase(dbvproof):
                 if receiver is not None and tran_info.get("receiver") != receiver:
                     continue
 
-                if module is not None and tran_info.get("token") != module:
+                if module is not None and tran_info.get("module") != module:
+                    continue
+
+                if token_id >= 0 and tran_info.get("token_id") != module:
                     continue
 
                 #data is valid, return it

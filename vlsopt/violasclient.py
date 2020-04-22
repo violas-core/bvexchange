@@ -265,6 +265,15 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_token_owner(self, address, token_id):
+        try:
+            (_, addr) = self.split_full_address(address).datas
+            state = self.get_account_state(addr).datas.get_scoin_resources(addr).get_owner(token_id)
+            ret = result(error.SUCCEED, datas = state) 
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def get_token_id(self, address, token_name):
         try:
             token_id = -1 
@@ -288,6 +297,19 @@ class violasclient(baseobject):
             for i in range(num):
                 name = self.get_token_name(address, i).datas
                 token_list[i] = name
+            ret = result(error.SUCCEED, datas = token_list)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_tokens_info(self, address):
+        try:
+            token_list = {}
+            num = self.get_token_num(address).datas
+            for i in range(num):
+                name = self.get_token_name(address, i).datas
+                owner = self.get_token_owner(address, i).datas
+                token_list[i] = {"token_id": i, "name":name, "owner":owner}
             ret = result(error.SUCCEED, datas = token_list)
         except Exception as e:
             ret = parse_except(e)
@@ -318,6 +340,17 @@ class violasclient(baseobject):
             (_, addr) = self.split_full_address(address).datas
             (_, mod) = self.split_full_address(module).datas
             state = self.get_account_state(addr).datas.is_published(mod)
+            ret = result(error.SUCCEED, datas = state) 
+            self._logger.debug(f"result: {state}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def is_found_address(self, address, module):
+        try:
+            (_, addr) = self.split_full_address(address).datas
+            (_, mod) = self.split_full_address(module).datas
+            state = self.get_account_state(addr, module).datas.exists()
             ret = result(error.SUCCEED, datas = state) 
             self._logger.debug(f"result: {state}")
         except Exception as e:
@@ -387,7 +420,7 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def send_platform_coin(self, from_account, to_address, amount, data=None, auth_key_prefix = None, is_blocking=True):
+    def send_platform_coin(self, from_account, to_address, amount, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000):
         try:
             self._logger.info(f"start send_platform_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, data={data}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
             if len(to_address) not in VIOLAS_ADDRESS_LEN or amount < 1:
@@ -395,13 +428,13 @@ class violasclient(baseobject):
 
             (auth, addr) = self.split_full_address(to_address, auth_key_prefix).datas
 
-            self.__client.transfer_coin(from_account, addr, amount, data=data, auth_key_prefix=auth, is_blocking=is_blocking)
+            self.__client.transfer_coin(from_account, addr, amount, data=data, auth_key_prefix=auth, is_blocking=is_blocking, max_gas_amount = max_gas_amount)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def send_violas_coin(self, from_account, to_address, amount, token_id, module_address, data=None, auth_key_prefix = None, is_blocking=True):
+    def send_violas_coin(self, from_account, to_address, amount, token_id, module_address, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000):
         try:
             self._logger.info(f"start send_violas_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, token_id = {token_id}, module_address={module_address}, data={data}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
 
@@ -416,7 +449,7 @@ class violasclient(baseobject):
             (_, module_addr) = self.split_full_address(module_address).datas
 
             self.__client.transfer_coin(sender_account=from_account, receiver_address=addr, \
-                    micro_coins=amount, token_id = token_id, module_address=module_addr, data=data, auth_key_prefix = auth_key_prefix, is_blocking=is_blocking)
+                    micro_coins=amount, token_id = token_id, module_address=module_addr, data=data, auth_key_prefix = auth_key_prefix, is_blocking=is_blocking, max_gas_amount = max_gas_amount)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
@@ -520,14 +553,7 @@ class violasclient(baseobject):
     def account_has_violas_module(self, address, module):
         try:
             self._logger.debug("start account_has_violas_module(address={}, module={})".format(address, module))
-            (_, addr) = self.split_full_address(address).datas
-            (_, mod) = self.split_full_address(module).datas
-            vres = self.__client.get_account_state(addr).get_scoin_resource(mod)
-            if vres is not None:
-                ret = result(error.SUCCEED, "", True)
-            else:
-                ret = result(error.SUCCEED, "", False)
-            self._logger.debug(f"result: {ret.datas}")
+            ret = self.is_found_address(address, module)
         except Exception as e:
             ret = parse_except(e)
         return ret

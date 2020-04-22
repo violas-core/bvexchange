@@ -33,7 +33,7 @@ wallet_name = "vwallet"
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 class exlv(baseobject):    
-    def __init__(self, name, fromnodes , mapnodes, proofdb, frommodule, mapmodule, receivers, senders, fromchain = "libra", mapchain='violas'):
+    def __init__(self, name, fromnodes , mapnodes, proofdb, frommodule, fromtokenid, mapmodule, maptokenid, receivers, senders, fromchain = "libra", mapchain='violas'):
         baseobject.__init__(self, name)
         self._latest_version = {}
         self.set_from_chain(fromchain)
@@ -49,6 +49,8 @@ class exlv(baseobject):
         self._map_module = mapmodule
         self._receivers = receivers
         self._senders = senders
+        self._from_token_id = fromtokenid
+        self._map_token_id = maptokenid
 
     def __del__(self):
         del self._fromclient
@@ -57,6 +59,14 @@ class exlv(baseobject):
         del self._db
         del self._pserver
         del self._receivers
+
+    @property
+    def from_token_id(self):
+        return self._from_token_id
+
+    @property
+    def map_token_id(self):
+        return self.map_token_id
 
     def __get_map_sender_address(self, amount, module=None, gas=28_000):
         try:
@@ -417,7 +427,7 @@ class exlv(baseobject):
                 latest_version = self._latest_version.get(receiver, -1) + 1
 
                 #get new transaction from server
-                ret = self._pserver.get_transactions_for_start(receiver, self._from_module, latest_version)
+                ret = self._pserver.get_transactions_for_start(receiver, self._from_module, self.from_token_id, latest_version)
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     self._logger.debug("start exchange datas from violas/libra server. receiver={}".format(receiver))
                     for data in ret.datas:
@@ -432,9 +442,10 @@ class exlv(baseobject):
                         version     = data["version"]
                         toaddress   = data["to_address"] #map token to
                         tran_id     = data["tran_id"]
+                        token_id    = data["token_id"]
     
                         self._logger.info(f"start exchange l2v.sender={fromaddress},  receiver={receiver}, sequence={sequence} " + \
-                                f"version={version}, toaddress={toaddress}, amount={amount}, tran_id={tran_id} datas from server.")
+                                f"version={version}, toaddress={toaddress}, amount={amount}, tran_id={tran_id}, token_id={token_id} datas from server.")
     
                         self._latest_version[receiver] = max(version, self._latest_version.get(receiver, -1))
 
@@ -466,16 +477,16 @@ class exlv(baseobject):
 
                         if ret.state != error.SUCCEED:
                             ret = self._db.insert_commit(mapsender.address.hex(), toaddress, sequence, \
-                                    version, amount, fromaddress, receiver, self._from_module, self._map_module, dbl2v.state.FAILED, tran_id)
+                                    version, amount, fromaddress, receiver, self._from_module, self._map_module, dbl2v.state.FAILED, tran_id, token_id)
                             assert (ret.state == error.SUCCEED), "db error"
                             continue
                         else:
                             ret = self._db.insert_commit(mapsender.address.hex(), toaddress, sequence, \
-                                    version, amount, fromaddress, receiver, self._from_module, self._map_module, dbl2v.state.SUCCEED, tran_id)
+                                    version, amount, fromaddress, receiver, self._from_module, self._map_module, dbl2v.state.SUCCEED, tran_id, token_id)
                             assert (ret.state == error.SUCCEED), "db error"
            
                         #sendexproofmark succeed , send violas/libra coin with data for change violas state
-                        self._send_coin_for_update_state_to_end(fromsender, receiver, self._from_module, tran_id)
+                        self._send_coin_for_update_state_to_end(fromsender, receiver, self._from_module, tran_id, token_id)
     
             ret = result(error.SUCCEED) 
     

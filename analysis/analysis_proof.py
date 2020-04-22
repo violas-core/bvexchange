@@ -42,7 +42,6 @@ class aproof(abase):
         super().__init__(name, ttype, dtype, None, nodes, chain)
         self._dbclient = None
         self._fdbclient = None
-        self._module = None
         if dbconf is not None:
             self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port"), dbconf.get("db"), dbconf.get("password"))
         if fdbconf is not None:
@@ -56,16 +55,6 @@ class aproof(abase):
     def stop(self):
         super().stop()
 
-    def set_module(self, module):
-        self._module = module
-
-    def get_module(self):
-        return self._module
-
-    def is_valid_moudle(self, module):
-        state = self._module == module and module is not None
-        print(f"result: {state} {self._module} == {module}")
-        return state
 
     def proofstate_name_to_value(self, name):
         if name is None or len(name) == 0:
@@ -90,7 +79,8 @@ class aproof(abase):
         return tran_info.get("flag", None) in self.get_tran_types() and \
                self.proofstate_name_to_value(tran_info.get("state", None)) != self.proofstate.UNKOWN and \
                self.is_valid_datatype(tran_info.get("type")) and \
-               self.is_valid_moudle(tran_info.get("token"))
+               self.is_valid_token_id(tran_info.get("token_id")) and \
+               self.is_valid_module(tran_info.get("module"))
 
     def is_valid_proofstate_change(self, new_state, old_state):
         if new_state == self.proofstate.UNKOWN:
@@ -129,7 +119,7 @@ class aproof(abase):
                     tran_id = tran_info["txid"]
                 else:
                     tran_id = self.create_tran_id(tran_info["flag"], tran_info["type"], tran_info['sender'], \
-                            tran_info['receiver'], tran_info['token'], tran_info['version'])
+                            tran_info['receiver'], tran_info['module'], tran_info['version'])
 
                 tran_info["flag"] = tran_info["flag"].name
                 tran_info["type"] = tran_info["type"].name
@@ -221,7 +211,8 @@ class aproof(abase):
                 new_version = version
                 tran_data = json.loads(ret.datas)
                 if self.proofstate_name_to_value(tran_data.get("state")) == self.proofstate.START and \
-                        self.is_valid_moudle(tran_data.get("token")):
+                        self.is_valid_moudle(tran_data.get("module")) and \
+                        self.is_valid_token_id(tran_data.get("token_id")):
                     break
 
             ret = self._dbclient.set_proof_min_version_for_start(new_version)
