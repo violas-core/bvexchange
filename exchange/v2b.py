@@ -26,6 +26,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
+from comm.functions import split_full_address, merge_full_address
 
 #module self.name
 mod_name="v2b"
@@ -35,7 +36,7 @@ COINS = comm.values.COINS
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 class exv2b(baseobject):    
-    def __init__(self, name, vnodes , bnode, proofdb, module, receivers, chain = "violas"):
+    def __init__(self, name, vnodes , bnode, proofdb, module, token_id, receivers, chain = "violas"):
         baseobject.__init__(self, name)
         self._latest_version = {}
         self.set_from_chain(chain)
@@ -45,12 +46,21 @@ class exv2b(baseobject):
         self._bclient = btcclient(name, bnode)
         self._v2b = dbv2b(name, f"{self.from_chain()}_{self.name()}.db")
         self._wallet = violaswallet(name, wallet_name)
+        self.token_id = token_id
     
         #violas init
-        #vserver = violasserver(self.name(), stmanage.get_violas_servers())
         self._vserver = requestclient(name, proofdb)
-        self._module_address = module
-        self._receivers = receivers
+        _, mod = split_full_address(module)
+        self._module_address = mod
+        assert self._module_address is not None, f" module({self._module_address}) address is invalid."
+
+        self._receivers = []
+        for receiver in receivers:
+            _, addr = split_full_address(receiver)
+            if addr is not None:
+                self._receivers.append(addr)
+        assert len(self._receivers) > 0, f"receiver address({self._receivers}) is empty."
+
 
     def __del__(self):
         del self._vclient
@@ -60,13 +70,21 @@ class exv2b(baseobject):
         del self._vserver
         del self._receivers
 
+    @property
+    def token_id(self):
+        return self._token_id
+
+    @token_id.setter
+    def token_id(self, value):
+        self._token_id = value
+
     def __merge_v2b_to_rpcparams(self, rpcparams, dbinfos):
         try:
             self._logger.debug("start __merge_v2b_to_rpcparams")
             for info in dbinfos:
                 new_data = {"vaddress":info.vaddress, "sequence":info.sequence, "vtoken":info.vtoken,\
                         "version":info.version, "to_address":info.toaddress, "vreceiver":info.vreceiver, \
-                        "vamount":info.vamount, "times":info.times, "tran_id":info.tranid}
+                        "vamount":info.vamount, "times":info.times, "tran_id":info.tranid, "token_id":info.tokenid}
                 if info.vreceiver in rpcparams.keys():
                     rpcparams[info.vreceiver].append(new_data)
                 else:
@@ -197,6 +215,7 @@ class exv2b(baseobject):
                 for data in datas:
                     tran_id = data.get("tran_id")
                     module = data.get("vtoken")
+                    token_id = data.get("token_id")
                     if tran_id is None:
                         continue
                     #state is end? maybe changing state rasise except, but transaction is SUCCEED
@@ -209,11 +228,11 @@ class exv2b(baseobject):
                     if module != self._module_address:
                         continue
                     #sendexproofmark succeed , change violas state
-                    self._send_violas_coin_and_update_state_to_end(vsender, receiver, module, tran_id)
+                    self._send_violas_coin_and_update_state_to_end(vsender, receiver, module, tran_id, token_id)
 
-    def _send_violas_coin_and_update_state_to_end(self, vsender, receiver, module,  tran_id, amount = 1):
+    def _send_violas_coin_and_update_state_to_end(self, vsender, receiver, module,  tran_id, token_id, amount = 1):
             tran_data = self._vclient.create_data_for_end(self.from_chain(), self.name(), tran_id)
-            ret = self._vclient.send_violas_coin(vsender, receiver, amount, module, tran_data)
+            ret = self._vclient.send_violas_coin(vsender, receiver, amount, token_id, module, tran_data)
             if ret.state == error.SUCCEED:
                 ret = self._v2b.update_v2binfo_to_vsucceed_commit(tran_id)
                 assert (ret.state == error.SUCCEED), "db error"
@@ -299,6 +318,7 @@ class exv2b(baseobject):
                         vreceiver   = data["vreceiver"]
                         times       = data["times"]
                         tran_id     = data["tran_id"]
+                        token_id    = data["token_id"]
     
                         self._logger.info(f"start exchange v2b(times={times}), datas from db. \
                                 receiver = {receiver}, vaddress={vaddress} sequence={sequence} to_address={baddress} \
@@ -309,6 +329,10 @@ class exv2b(baseobject):
                             self._logger.warning(f"transaction's version must be Less than or equal to latest_version.")
                             continue
     
+                        if self.token_id != token_id:
+                            self._logger.warning(f"transaction token_id(token_id) no match target token_id({self.token_id})")
+                            continue
+
                         #match module 
                         if module != self._module_address:
                             self._logger.warning(f"module is not match. {module}<->{self._module_address}")
@@ -328,7 +352,8 @@ class exv2b(baseobject):
                         sender = ret.datas
     
                         #send btc and mark it in OP_RETURN
-                        ret = self._bclient.sendexproofmark(sender, baddress, fmtamount, vaddress, sequence, version)
+                        full_addr = merge_full_address(vaddress)
+                        ret = self._bclient.sendexproofmark(sender, baddress, fmtamount, full_addr, sequence, version)
                         txid = ret.datas
                         #update db state
                         if ret.state == error.SUCCEED:
@@ -340,7 +365,7 @@ class exv2b(baseobject):
                             continue
 
                         #sendexproofmark succeed , change violas state
-                        self._send_violas_coin_and_update_state_to_end(vsender, receiver, module, tran_id)
+                        self._send_violas_coin_and_update_state_to_end(vsender, receiver, module, tran_id, token_id)
 
             ret = result(error.SUCCEED)
         except Exception as e:
@@ -369,7 +394,7 @@ class exv2b(baseobject):
             ##when change it to complete, can truncature history db
             self._rechange_db_state()
 
-            receivers = list(set(stmanage.get_receiver_address_list(self._name, self.from_chain())))
+            receivers = self._receivers
             #modulti receiver, one-by-one
             for receiver in receivers:
                 if not self.work() :
@@ -383,7 +408,7 @@ class exv2b(baseobject):
                 latest_version = self._latest_version.get(receiver, 0) + 1
 
                 #get new transaction from violas server
-                ret = self._vserver.get_transactions_for_start(receiver, self._module_address, latest_version)
+                ret = self._vserver.get_transactions_for_start(receiver, self._module_address, self.token_id, latest_version)
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     self._logger.debug("start exchange datas from violas server. receiver={}".format(receiver))
                     for data in ret.datas:
@@ -399,6 +424,7 @@ class exv2b(baseobject):
                         version     = data["version"]
                         baddress    = data["to_address"]
                         tran_id     = data["tran_id"]
+                        token_id    = data["token_id"]
     
                         self._logger.info(f"start exchange v2b. receiver = {receiver}, vaddress={vaddress} sequence={sequence} \
                                 baddress={baddress} amount={fmtamount} tran_id={tran_id} datas from server.")
@@ -406,6 +432,10 @@ class exv2b(baseobject):
                         latest_version = self._latest_version.get(receiver, -1)
                         self._latest_version[receiver] = max(version, latest_version)
     
+                        if self.token_id != token_id:
+                            self._logger.warning(f"transaction token_id(token_id) no match target token_id({self.token_id})")
+                            continue
+
                         #if found transaction in v2b.db, then get_transactions's latest_version is error(too small or other case)'
                         ret = self._v2b.has_v2binfo(tran_id)
                         assert ret.state == error.SUCCEED, "has_v2binfo(vaddress={}, sequence={}) failed.".format(vaddress, sequence)
@@ -418,28 +448,29 @@ class exv2b(baseobject):
                         if ret.state != error.SUCCEED:
                             self._logger.warning("not found btc sender{baddress} or amount too low. check btc address and amount")
                             ret = self._v2b.insert_v2binfo_commit("", "", baddress, vamount, vaddress, sequence, \
-                                    version, vamount, self._module_address, receiver, dbv2b.state.FAILED, tran_id)
+                                    version, vamount, self._module_address, receiver, dbv2b.state.FAILED, tran_id, token_id)
                             assert (ret.state == error.SUCCEED), "db error"
                             continue
                         sender = ret.datas
     
                         ##send btc transaction and mark to OP_RETURN
-                        ret = self._bclient.sendexproofmark(sender, baddress, fmtamount, vaddress, sequence, version)
+                        full_addr = merge_full_address(vaddress)
+                        ret = self._bclient.sendexproofmark(sender, baddress, fmtamount, full_addr, sequence, version)
                         txid = ret.datas
 
                         #save db amount is satoshi, so db value's violas's amount == btc's amount 
                         if ret.state != error.SUCCEED:
                             ret = self._v2b.insert_v2binfo_commit("", sender, baddress, vamount, vaddress, sequence, \
-                                    version, vamount, self._module_address, receiver, dbv2b.state.FAILED, tran_id)
+                                    version, vamount, self._module_address, receiver, dbv2b.state.FAILED, tran_id, token_id)
                             assert (ret.state == error.SUCCEED), "db error"
                             continue
                         else:
                             ret = self._v2b.insert_v2binfo_commit(txid, sender, baddress, vamount, vaddress, sequence, \
-                                    version, vamount, self._module_address, receiver, dbv2b.state.SUCCEED, tran_id)
+                                    version, vamount, self._module_address, receiver, dbv2b.state.SUCCEED, tran_id, token_id)
                             assert (ret.state == error.SUCCEED), "db error"
            
                         #sendexproofmark succeed , change violas state
-                        self._send_violas_coin_and_update_state_to_end(vsender, receiver, self._module_address, tran_id)
+                        self._send_violas_coin_and_update_state_to_end(vsender, receiver, self._module_address, token_id, tran_id)
     
             ret = result(error.SUCCEED) 
     

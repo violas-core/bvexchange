@@ -41,16 +41,17 @@ class afilter(abase):
         abase.stop(self)
         self.work_stop()
 
+    @classmethod
     def get_tran_data(self, data):
         tran_data = data.to_json()
+        if "token_id" not in tran_data:
+            tran_data["token_id"] = data.get_token_id()
         if "data" not in tran_data:
             tran_data["data"] = data.get_data()
-        if "events" not in tran_data:
-            events = data.get_events()
-            if events is not None and len(events) > 0:
-                event = events[0]
-                event_item = {"data":event.get_data()}
-                tran_data["events"] = [{"event":event_item}]
+        events = data.get_events()
+        if events is not None and len(events) > 0:
+            event = events[0]
+            tran_data["events"] = [json.loads(str(event))]
         return tran_data
 
     def is_target_tran(self, tran_data):
@@ -58,7 +59,8 @@ class afilter(abase):
         if ret.state != error.SUCCEED or \
                 ret.datas.get("flag", None) not in self.get_tran_types() or \
                 ret.datas.get("type") == self.datatype.UNKOWN or \
-                not ret.datas.get("tran_state", False):
+                not ret.datas.get("tran_state", False) or \
+                not self.is_valid_module(ret.datas.get("module")):
                 return False
         return True
 

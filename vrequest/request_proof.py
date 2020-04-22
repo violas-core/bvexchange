@@ -24,21 +24,21 @@ class requestproof(requestbase):
     def __init__(self, name, host, port, db, passwd = None):
         requestbase.__init__(self, name, host, port, db, passwd)
     
-    def get_transactions_for_start(self, receiver = None, module = None, start = -1, limit = 10):
+    def get_transactions_for_start(self, receiver = None, module = None, token_id = -1, start = -1, limit = 10):
         try:
             ret = self.get_proof_min_version_for_start()
             if ret.state == error.SUCCEED:
                 start = max(start, int(ret.datas))
 
-            self._logger.debug(f"get transactions for {proofstate.START.name}. receiver = {receiver} start = {start} module={module}, limit = {limit}")
-            ret = self._get_transaction_for_state(proofstate.START, receiver, module, start, limit)
+            self._logger.debug(f"get transactions for {proofstate.START.name}. receiver = {receiver} module={module} token_id = {token_id} start = {start} limit = {limit}")
+            ret = self._get_transaction_for_state(proofstate.START, receiver, module, token_id, start, limit)
         except Exception as e:
             parse_except(e)
         return ret
 
-    def get_transactions_for_end(self, receiver = None, module = None, start = -1, limit = 10):
+    def get_transactions_for_end(self, receiver = None, module = None, token_id = -1, start = -1, limit = 10):
         try:
-            ret = self._get_transaction_for_state(proofstate.END, receiver, module, start, limit)
+            ret = self._get_transaction_for_state(proofstate.END, receiver, module, token_id, start, limit)
         except Exception as e:
             parse_except(e)
         return ret
@@ -67,7 +67,7 @@ class requestproof(requestbase):
 
             tran_info = json.loads(ret.datas)
             beque = tran_info.get("sender") == address and \
-                    tran_info.get("token") == module and \
+                    tran_info.get("module") == module and \
                     tran_info.get("to_address") == to_address and \
                     tran_info.get("sequence") == sequence and \
                     tran_info.get("amount") == amount and \

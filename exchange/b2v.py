@@ -24,6 +24,7 @@ from vlsopt.violasproof import violasproof
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
+from comm.functions import split_full_address, merge_full_address
 
 COINS = comm.values.COINS
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
@@ -32,7 +33,7 @@ name="b2v"
 wallet_name = "vwallet"
 
 class exb2v(baseobject):
-    def __init__(self, name, vnodes , bnode,  module, combin, chain = "violas"):
+    def __init__(self, name, vnodes , bnode,  module, token_id, combin, chain = "violas"):
         self.__warning_count = {}
         self.__show_warning_count = 1
         baseobject.__init__(self, name);
@@ -46,8 +47,20 @@ class exb2v(baseobject):
         self._vclient = violasproof(self.name(), vnodes)
         self._vwallet = violaswallet(self.name(), wallet_name)
     
-        self._module_address = module
-        self._combineaddress = combin 
+        _, mod = split_full_address(module)
+        self._module_address = mod
+        self._combineaddress = combin
+        print(token_id)
+        self.token_id = token_id
+
+    @property
+    def token_id(self):
+        return self._token_id
+
+    @token_id.setter
+    def token_id(self, value):
+        self._token_id = value
+        assert self._token_id >=0, f"token id({self._token_id}) is invalid."
 
     def append_waning(self, key):
         if key in self.__warning_count:
@@ -149,9 +162,9 @@ class exb2v(baseobject):
             ret = parse_except(e)
         return ret
     
-    def __hasviolasbalance(self, vclient, address, module, vamount):
+    def __hasviolasbalance(self, vclient, address, module, vamount, token_id):
         try:
-            ret = vclient.get_violas_balance(address, module)
+            ret = vclient.get_violas_balance(address, module, token_id)
             if ret.state != error.SUCCEED:
                 return ret
     
@@ -216,7 +229,8 @@ class exb2v(baseobject):
                     continue
     
                 #The receiver of the start state can change the state to end
-                ret = bclient.sendexproofend(receiver, combineaddress, vaddress, sequence, float(bamount)/COINS, height)
+                full_addr = merge_full_address(vaddress)
+                ret = bclient.sendexproofend(receiver, combineaddress, full_addr, sequence, float(bamount)/COINS, height)
                 if ret.state != error.SUCCEED:
                     ret = b2v.update_b2vinfo_to_btcfailed_commit(vaddress, sequence)
                     assert (ret.state == error.SUCCEED), "db error"
@@ -228,8 +242,8 @@ class exb2v(baseobject):
             ret = parse_except(e)
         return ret
     
-    def __get_violas_sender(self, vclient, vwallet, module, vamount, min_gas):
-        for sender in stmanage.get_sender_address_list(self.name(), self.map_chain()):
+    def __get_violas_sender(self, vclient, vwallet, module, vamount, min_gas, token_id):
+        for sender in stmanage.get_sender_address_list(self.name(), self.map_chain(), False):
             ret = vwallet.get_account(sender)
             if ret.state != error.SUCCEED:
                 continue
@@ -255,12 +269,12 @@ class exb2v(baseobject):
                 continue
     
             #make sure sender address has enough violas coins
-            ret = self.__hasviolasbalance(vclient, sender, module, vamount)
+            ret = self.__hasviolasbalance(vclient, sender, module, vamount, token_id)
             if ret.state != error.SUCCEED:
                 continue
     
             if ret.datas != True:
-                self._logger.warning(f"{sender} not enough {module} coins {vamount}, next ...")
+                self._logger.warning(f"{sender} not enough {module} coins {vamount}, token_id {token_id} next ...")
                 continue
             return result(error.SUCCEED, "", (asender, sender))
     
@@ -338,8 +352,9 @@ class exb2v(baseobject):
                         ##check 
                         to_address = data["address"]
                         sequence = int(data["sequence"])
-                        to_module_address = data["vtoken"]
+                        _, to_module_address = split_full_address(data["vtoken"])
                         vamount = int(float(data["amount"]) * COINS)
+                        
                         if (len(module_address) not in VIOLAS_ADDRESS_LEN or module_address != to_module_address):
                             if self.can_show_waning(f"vtoken is invalid{to_address}.{sequence}"):
                                self._logger.warning(f"vtoken({to_module_address}) is invalid.(to_address:{to_address} sequence:{sequence}")
@@ -349,8 +364,17 @@ class exb2v(baseobject):
                             self._logger.warning(f"amount({vamount}) is invalid.(to_address:{to_address} sequence:{sequence}")
                             continue
                         
+                        ret = self._vclient.account_has_violas_module(to_address, to_module_address)
+                        if ret.state != error.SUCCEED:
+                            self._logger.warning(f"call account_has_violas_module failed.")
+                            continue
+
+                        if not ret.datas:
+                            self._logger.warning(f"violas {to_address} not publish_resource({to_module_address})")
+                            continue
+
                         #get sender account and address
-                        ret = self.__get_violas_sender(vclient, vwallet, to_module_address, vamount, min_gas)
+                        ret = self.__get_violas_sender(vclient, vwallet, to_module_address, vamount, min_gas, self.token_id)
                         if ret.state != error.SUCCEED:
                             self._logger.debug(f"get account failed. {ret.message}")
                             continue
@@ -366,11 +390,11 @@ class exb2v(baseobject):
                         if ret.datas != True:
                             self._logger.warning(f"account {to_address} not bind module {to_module_address}")
                             continue
-                           
+
                         self._logger.info(f"start new btc -> vbtc(address={to_address}, sequence={int(data['sequence'])}, amount={vamount}, module={to_module_address}")
                         ##send vbtc to vaddress, vtoken and amount
                         tran_data = vclient.create_data_for_mark(self.map_chain(), self.name(), data["txid"], int(data["sequence"]))
-                        ret = vclient.send_violas_coin(vsender, to_address, vamount, to_module_address, data=tran_data)
+                        ret = vclient.send_violas_coin(vsender, to_address, amount = vamount, module_address = to_module_address, token_id = self.token_id, data=tran_data)
                         if ret.state != error.SUCCEED:
                             continue
                         
@@ -380,7 +404,7 @@ class exb2v(baseobject):
     
                         if ret.datas == False:
                             ret = b2v.insert_b2vinfo_commit(data["txid"], data["issuer"], data["receiver"], int(float(data["amount"]) * COINS), 
-                                    data["address"], int(data["sequence"]), int(float(data["amount"]) * COINS), data["vtoken"], data["creation_block"], data["update_block"])
+                                    data["address"], int(data["sequence"]), int(float(data["amount"]) * COINS), data["vtoken"], data["creation_block"], data["update_block"], self.token_id)
                             assert (ret.state == error.SUCCEED), "db error"
     
                         rettmp = vclient.get_address_version(vsender_address)
@@ -389,16 +413,17 @@ class exb2v(baseobject):
                         ###succeed:dbb2v state = succeed
                         if rettmp.state == error.SUCCEED:
                             height =  rettmp.datas
-                            ret =b2v.update_b2vinfo_to_succeed_commit(data["address"], int(data["sequence"]), height)
+                            ret =b2v.update_b2vinfo_to_succeed_commit(to_address, int(data["sequence"]), height)
                             assert (ret.state == error.SUCCEED), "db error"
                         
                         #The receiver of the start state can change the state to end
-                        ret = bclient.sendexproofend(receiver, combineaddress, data["address"], int(data["sequence"]), float(vamount)/COINS, height)
+                        full_addr = merge_full_address(to_address)
+                        ret = bclient.sendexproofend(receiver, combineaddress, full_addr, int(data["sequence"]), float(vamount)/COINS, height)
                         if ret.state != error.SUCCEED:
-                            ret = b2v.update_b2vinfo_to_btcfailed_commit(data["address"], int(data["sequence"]))
+                            ret = b2v.update_b2vinfo_to_btcfailed_commit(to_address, int(data["sequence"]))
                             assert (ret.state == error.SUCCEED), "db error"
                         else:
-                            ret = b2v.update_b2vinfo_to_btcsucceed_commit(data["address"], int(data["sequence"]), ret.datas)
+                            ret = b2v.update_b2vinfo_to_btcsucceed_commit(to_address, int(data["sequence"]), ret.datas)
                             assert (ret.state == error.SUCCEED), "db error"
     
             ret = result(error.SUCCEED) 

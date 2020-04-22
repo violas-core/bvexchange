@@ -52,6 +52,8 @@ class abase(baseobject):
         self._dbclient = None
         self._rdbclient = None
         self._connect_db(name, dbconf)
+        self._modules = {}
+        self._token_id = {}
         if chain == "btc":
             self._connect_btc(name, vnodes, chain)
         else:
@@ -137,6 +139,23 @@ class abase(baseobject):
             return
         self._step = step
 
+    def append_module(self, name, address):
+        if self._modules is None:
+            self._modules = {name:address}
+        self._modules.update({name:address})
+
+    def is_valid_module(self, module):
+        return self._modules is None or module in self._modules.values()
+
+    def append_token_id(self, name, token_id):
+        self._token_id.update({name:token_id}) 
+
+    def get_token_id(self, name):
+        return self.get(name, -1)
+
+    def is_valid_token_id(self, token_id):
+        return token_id in self._token_id.values()
+
     def get_step(self):
         return self._step
 
@@ -163,8 +182,8 @@ class abase(baseobject):
             parse_except(e)
         return self.trantype.UNKOWN
 
-    def create_tran_id(self, flag, dtype, sender, receiver, vtoken, version):
-        return hashlib.sha3_256(f"{flag}.{dtype}.{sender}.{receiver}.{vtoken}.{version}".encode("UTF-8")).hexdigest()
+    def create_tran_id(self, flag, dtype, sender, receiver, module, version):
+        return hashlib.sha3_256(f"{flag}.{dtype}.{sender}.{receiver}.{module}.{version}".encode("UTF-8")).hexdigest()
 
     def json_to_dict(self, data):
         try:
@@ -186,6 +205,8 @@ class abase(baseobject):
                     "amount"        : 0,
                     "sender"        : None,
                     "receiver"      : None,
+                    "module"        : None,
+                    "token_id"      : 0,
                     "token"         : None,
                     "version"       : 0,
                     "tran_id"       : None,
@@ -226,10 +247,12 @@ class abase(baseobject):
             datas["amount"]         = transaction.get("amount", 0)
             datas["sender"]         = transaction.get("sender", None)
             datas["receiver"]       = transaction.get("receiver", None)
-            datas["token"]          = transaction.get("module_address", None)
+            datas["token"]          = transaction.get("token_owner", None)
+            datas["token_id"]       = transaction.get("token_id", None)
             tran_id                 = data_dict.get("tran_id", None)
             datas["tran_id"]        = tran_id
-            datas["sequence"]   = transaction.get("sequence_number")
+            datas["sequence"]       = transaction.get("sequence_number")
+            datas["module"]         =  transaction.get("module_address", False)
 
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:

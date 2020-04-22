@@ -123,9 +123,9 @@ def getwalletaddressbalance(address):
 def init_args(pargs):
     pargs.append("help", "show arg list")
     pargs.append("sendtoaddress", "send to address.format.", True, ["address", "count"])
-    pargs.append("endexproofstart", "create new exchange start proof.", True, ["fromaddress", "toaddress", "amount", "vaddress", "sequence", "vtoken"])
+    pargs.append("sendexproofstart", "create new exchange start proof.", True, ["fromaddress", "toaddress", "amount", "vaddress", "sequence", "vtoken"])
     pargs.append("sendexproofend", "create new exchange end proof.", True, ["fromaddress", "toaddress", "vaddress", "sequence", "vamount", "version"])
-    pargs.append("endexproofmark", "create new exchange mark proof.", True, ["fromaddress", "toaddress", "toamount", "vaddress", "sequence", "version"])
+    pargs.append("sendexproofmark", "create new exchange mark proof.", True, ["fromaddress", "toaddress", "toamount", "vaddress", "sequence", "version"])
     pargs.append("generatetoaddress", "generate new block to address.", True, ["count", "address"])
     pargs.append("listunspent", "returns array of unspent transaction outputs.", True, ["minconf", "maxconf", "addresses", "include_unsafe", "query_options"])
     pargs.append("listexproofforstart", "returns array of proof state is start .", True, ["receiver"])

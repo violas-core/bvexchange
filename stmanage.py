@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 import setting
+import comm.values
 from comm import result
 from comm.result import parse_except
+ 
 
+VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 def check_setting():
     pass
 
@@ -13,10 +16,17 @@ def get_looping_sleep(mtype):
         sleep = 1
     return sleep
 
-def __get_address_list(atype, mtype, chain = None):
+def __get_address_list(atype, mtype, chain = None, full = True):
     try:
-        return [dict.get("address") for dict in setting.address_list.get(atype) \
+        addresses =  [dict.get("address") for dict in setting.address_list.get(atype) \
                 if dict["type"] == mtype and mtype is not None and (chain is None or dict["chain"] == chain)]
+        if addresses is not None and len(addresses) > 0:
+            if full:
+                return addresses
+            else:
+                min_len = min(VIOLAS_ADDRESS_LEN)
+                assert min_len > 0 , "address min(VIOLAS_ADDRESS_LEN) is invalid."
+                return [addr[:min_len] for addr in addresses]
     except Exception as e:
         parse_except(e)
     return None
@@ -29,14 +39,14 @@ def __get_tokenid_list(atype, mtype, chain = None):
         parse_except(e)
     return None
 
-def get_receiver_address_list(mtype, chain = None):
+def get_receiver_address_list(mtype, chain = None, full = True):
     try:
         return __get_address_list("receiver", mtype, chain)
     except Exception as e:
         parse_except(e)
     return None
 
-def get_sender_address_list(mtype, chain = None):
+def get_sender_address_list(mtype, chain = None, full = True):
     try:
         return __get_address_list("sender", mtype, chain)
     except Exception as e:
@@ -44,7 +54,7 @@ def get_sender_address_list(mtype, chain = None):
     return None
 
 
-def get_module_address(mtype, chain = None):
+def get_module_address(mtype, chain = None, full = True):
     try:
         ms = __get_address_list("module", mtype, chain)
         if ms is None or len(ms) == 0:
@@ -55,7 +65,7 @@ def get_module_address(mtype, chain = None):
         parse_except(e)
     return None
 
-def get_token_address(mtype, chain = None):
+def get_token_address(mtype, chain = None, full = True):
     try:
         ms = __get_address_list("token", mtype, chain)
         if ms is None or len(ms) == 0:
@@ -66,12 +76,23 @@ def get_token_address(mtype, chain = None):
         parse_except(e)
     return None
 
-def get_combine_address(mtype = "b2v", chain = "btc"):
+def get_combine_address(mtype = "b2v", chain = "btc", full = True):
     try:
         ms = __get_address_list("combine", mtype, chain)
         if ms is None or len(ms) == 0:
-            return None
+            return none
         assert len(ms) == 1, f"({mtype}) chain({chain}) found multi combin address , check it"
+        return ms[0]
+    except Exception as e:
+        parse_except(e)
+    return None
+
+def get_token_id(mtype = "b2v", chain = "btc"):
+    try:
+        ms = __get_tokenid_list("token", mtype, chain)
+        if ms is None or len(ms) == 0:
+            return None
+        assert len(ms) == 1, f"({mtype}) chain({chain}) found multi token id({ms}), check it"
         return ms[0]
     except Exception as e:
         parse_except(e)

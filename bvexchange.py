@@ -85,6 +85,7 @@ class works:
                             stmanage.get_violas_nodes(), 
                             stmanage.get_btc_conn(), 
                             stmanage.get_module_address(mod, chain), 
+                            stmanage.get_token_id(mod, chain), 
                             stmanage.get_combine_address(), 
                             chain=chain)
                     self.set_work_obj(obj)
@@ -110,6 +111,7 @@ class works:
                             stmanage.get_btc_conn(), 
                             stmanage.get_db(mod), 
                             stmanage.get_module_address(mod, chain), 
+                            stmanage.get_token_id(mod, chain), 
                             list(set(stmanage.get_receiver_address_list(mod, chain))),
                             chain=chain)
                     self.set_work_obj(obj)
@@ -131,6 +133,8 @@ class works:
                     dtype = "vfilter"
                     obj = analysis_filter.afilter(name="vfilter", ttype="violas", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
+                    obj.append_module("v2b", stmanage.get_module_address("v2b", "violas", False))
+                    obj.append_module("v2l", stmanage.get_module_address("v2l", "violas", False))
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     self.set_work_obj(obj)
@@ -153,7 +157,8 @@ class works:
                     basedata = "vfilter"
                     obj = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.set_module(stmanage.get_module_address(dtype, "violas"))
+                    obj.append_module(dtype, stmanage.get_module_address(dtype, "violas", False))
+                    obj.append_token_id(dtype, stmanage.get_token_id(dtype, "violas"))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
@@ -222,7 +227,8 @@ class works:
                     basedata = "vfilter"
                     obj = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.set_module(stmanage.get_module_address(dtype, "violas"))
+                    obj.append_module(dtype, stmanage.get_module_address(dtype, "violas", False))
+                    obj.append_token_id(dtype, stmanage.get_token_id(dtype, "violas"))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
@@ -321,7 +327,8 @@ class works:
                     basedata = "bfilter"
                     obj = analysis_proof.aproof(name="b2vproof", ttype="btc", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.set_module(stmanage.get_module_address(dtype, "btc"))
+                    obj.append_module(dtype, stmanage.get_module_address(dtype, "btc", False))
+                    #obj.append_token_id(dtype, stmanage.get_token_id(dtype, "violas"))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__btc_min_valid_version - 1)

@@ -66,9 +66,9 @@ def split_full_address(address, auth_key_prefix = None):
             new_address = address.hex()
 
         new_auth_key_prefix = None
-        if address is not None and len(new_address) == max(VIOLAS_ADDRESS_LEN):
-            new_address = address[32:]
-            new_auth_key_prefix = address[:32]
+        if new_address is not None and len(new_address) == max(VIOLAS_ADDRESS_LEN):
+            new_address = new_address[32:]
+            new_auth_key_prefix = new_address[:32]
 
         if auth_key_prefix is not None:
             if isinstance(auth_key_prefix, bytes):
@@ -76,7 +76,31 @@ def split_full_address(address, auth_key_prefix = None):
             else:
                 new_auth_key_prefix = auth_key_prefix
 
+        if new_auth_key_prefix == "00000000000000000000000000000000":
+            new_auth_key_prefix = None
+
         return (new_auth_key_prefix, new_address) 
+    except Exception as e:
+        pass
+    return None
+
+def merge_full_address(address, auth_key_prefix = None):
+    try:
+        new_address = address
+        if address is not None and isinstance(address, bytes):
+            new_address = address.hex()
+
+        new_auth_key_prefix = None
+        if auth_key_prefix is not None:
+            if isinstance(auth_key_prefix, bytes):
+                new_auth_key_prefix = auth_key_prefix.hex()
+            else:
+                new_auth_key_prefix = auth_key_prefix
+            new_address = f"f{new_auth_key_prefix}{address}"
+        if new_address is not None and len(new_address) < max(VIOLAS_ADDRESS_LEN):
+            new_address = f"{00000000000000000000000000000000}{new_address}"
+
+        return new_address 
     except Exception as e:
         pass
     return None

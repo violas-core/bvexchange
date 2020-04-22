@@ -14,15 +14,15 @@ v2b_maxtimes = 99
 #btc connect 
 btc_conn = {'rpcuser':'btc', 
         'rpcpassword':'btc', 
-        'rpcip':'127.0.0.1', 
+        'rpcip':'192.168.31.37', 
         'rpcport':18332}
 
 #violas node list, to connect one
 violas_nodes=[
-        {'name':'84', 'host':'52.27.228.84', "port":40001, 'faucet':'mint_test.key'},
-        #{'name':'84', 'host':'52.27.228.84', "port":40001},
+        #{'name':'84', 'host':'52.27.228.84', "port":40001, 'faucet':'mint_test.key'},
+        {'name':'84', 'host':'52.27.228.84', "port":40001},
         #{'name':'242', 'host':'13.68.141.242', "port":40001,'faucet':'mint_test.key'},
-        #{'name':'50', 'host':'47.52.195.50', "port":40001}, 
+        {'name':'50', 'host':'47.52.195.50', "port":40001}, 
         #{'name':'235', 'host':'18.220.66.235', "port":40001, 'faucet':'mint_test.key'},
         #{'host':'125.39.5.57', 'port':40001, 'faucet':'mint_tianjin.key', 'name':'tianjin'},
         #{'host':'192.168.31.18', 'port':8000, 'faucet':'mint_local.key', 'name':'local'},
@@ -103,12 +103,11 @@ address_list = {
         #module address for type(violas nodes's vbtc or vlibra ...), type must be unique
         'token':[
             #vbtc owner
-            #{'address':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'type':'v2b-old', 'chain':'violas'},
-            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 0, 'type':'v2b', 'chain':'violas'},
-            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 0, 'type':'b2v', 'chain':'btc'},
+            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 7, 'type':'v2b', 'chain':'violas'},
+            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 7, 'type':'b2v', 'chain':'violas'},
             #vlibra owner
-            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 1, 'type':'v2l', 'chain':'violas'},
-            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 1, 'type':'l2v', 'chain':'violas'},
+            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 8, 'type':'v2l', 'chain':'violas'},
+            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 8, 'type':'l2v', 'chain':'violas'},
             ],
         #combine coins to 
         'combine':[

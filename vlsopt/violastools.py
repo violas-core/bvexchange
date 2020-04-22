@@ -27,6 +27,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
 from vrequest.request_client import requestclient
+from analysis.analysis_filter import afilter
 
 #module name
 name="violastools"
@@ -113,8 +114,15 @@ def show_token_list(module):
     assert ret.state == error.SUCCEED, "get tokens failed."
     json_print(ret.datas)
 
-def show_tokens_info(address, module):
-    logger.debug(f"start show_tokens_info({address}, {module})")
+def show_tokens_info(module):
+    logger.debug(f"start show_tokens_info({module})")
+    client = get_violasclient()
+    ret = client.get_tokens_info(module)
+    assert ret.state == error.SUCCEED, "get tokens info failed."
+    json_print(ret.datas)
+
+def show_token_list(address, module):
+    logger.debug(f"start show_token_list({address}, {module})")
     client = get_violasclient()
     ret = client.get_tokens(address, module)
     assert ret.state == error.SUCCEED, "get tokens failed."
@@ -230,12 +238,13 @@ def get_transactions(start_version, limit = 1, fetch_event = True):
     print(f"count: {len(ret.datas)}")
 
     for data in ret.datas:
-        info = data.to_json()
+        info = afilter.get_tran_data(data)
         
-        events = data.get_events()
-        if events is not None and len(events) > 0:
-            info["event0"] = str(events[0])
-        info["data"] = data.get_data()
+#        events = data.get_events()
+#        if events is not None and len(events) > 0:
+#            info["events"] = str(events[0])
+#        info["data"] = data.get_data()
+#        info["token_id"] = data.get_token_id()
         json_print(info)
 
 def get_address_version(address):
@@ -362,9 +371,10 @@ def init_args(pargs):
     pargs.append("get_token_name", "show token name.", True, ["address", "token_id"])
     pargs.append("get_token_id", "show token id.", True, ["address", "token_name"])
     pargs.append("get_token_num", "get token num.", True, ["address"])
-    pargs.append("show_tokens_info", "show tokens info.", True, ["address", "module"])
+    pargs.append("show_token_list", "show tokens info.", True, ["address", "module"])
     pargs.append("show_token_list", "show token list.", True, ["module"])
     pargs.append("get_account_prefix", "get account prefix.", True, ["address"])
+    pargs.append("show_tokens_info", "show tokens info.", True, ["module"])
 
 
 def run(argc, argv):
@@ -515,10 +525,10 @@ def run(argc, argv):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
             get_token_id(arg_list[0], arg_list[1])
-        elif pargs.is_matched(opt, ["show_tokens_info"]):
+        elif pargs.is_matched(opt, ["show_token_list"]):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
-            show_tokens_info(arg_list[0], arg_list[1])
+            show_token_list(arg_list[0], arg_list[1])
         elif pargs.is_matched(opt, ["show_token_list"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
@@ -531,6 +541,10 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             get_account_prefix(arg_list[0])
+        elif pargs.is_matched(opt, ["show_tokens_info"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            show_tokens_info(arg_list[0])
     logger.debug("end manage.main")
 
 if __name__ == "__main__":
