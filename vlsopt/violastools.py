@@ -239,12 +239,6 @@ def get_transactions(start_version, limit = 1, fetch_event = True):
 
     for data in ret.datas:
         info = afilter.get_tran_data(data)
-        
-#        events = data.get_events()
-#        if events is not None and len(events) > 0:
-#            info["events"] = str(events[0])
-#        info["data"] = data.get_data()
-#        info["token_id"] = data.get_token_id()
         json_print(info)
 
 def get_address_version(address):

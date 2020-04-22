@@ -325,8 +325,8 @@ class exv2b(baseobject):
                                 {fmtamount: .8f} version={version} module={module} tran_id={tran_id}") 
     
                         #check version, get transaction list is ordered ?
-                        if version > latest_version:
-                            self._logger.warning(f"transaction's version must be Less than or equal to latest_version.")
+                        if latest_version >= 0 and version > latest_version:
+                            self._logger.warning(f"transaction's version({version}) must be Less than or equal to latest_version({latest_version}).")
                             continue
     
                         if self.token_id != token_id:
@@ -440,7 +440,7 @@ class exv2b(baseobject):
                         ret = self._v2b.has_v2binfo(tran_id)
                         assert ret.state == error.SUCCEED, "has_v2binfo(vaddress={}, sequence={}) failed.".format(vaddress, sequence)
                         if ret.datas == True:
-                            self._logger.warning("found transaction(tran_id = {tran_id})) in db. ignore it and process next.".format(vaddress, sequence))
+                            self._logger.warning(f"found transaction(tran_id = {tran_id})) in db. ignore it and process next.")
                             continue
     
                         #get btc sender from btc senders

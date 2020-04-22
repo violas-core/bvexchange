@@ -59,16 +59,21 @@ class filelock:
 def json_print(data):
     print(json.dumps(data, sort_keys=True, indent=4))
 
+def get_address_from_full_address(address):
+    _, addr = split_full_address(address)
+    return addr
+
 def split_full_address(address, auth_key_prefix = None):
     try:
-        new_address = address
         if address is not None and isinstance(address, bytes):
-            new_address = address.hex()
+            address = address.hex()
 
+        new_address = address
         new_auth_key_prefix = None
-        if new_address is not None and len(new_address) == max(VIOLAS_ADDRESS_LEN):
-            new_address = new_address[32:]
-            new_auth_key_prefix = new_address[:32]
+
+        if address is not None and len(address) == max(VIOLAS_ADDRESS_LEN):
+            new_address = address[32:]
+            new_auth_key_prefix = address[:32]
 
         if auth_key_prefix is not None:
             if isinstance(auth_key_prefix, bytes):
@@ -86,21 +91,10 @@ def split_full_address(address, auth_key_prefix = None):
 
 def merge_full_address(address, auth_key_prefix = None):
     try:
-        new_address = address
-        if address is not None and isinstance(address, bytes):
-            new_address = address.hex()
-
-        new_auth_key_prefix = None
-        if auth_key_prefix is not None:
-            if isinstance(auth_key_prefix, bytes):
-                new_auth_key_prefix = auth_key_prefix.hex()
-            else:
-                new_auth_key_prefix = auth_key_prefix
-            new_address = f"f{new_auth_key_prefix}{address}"
-        if new_address is not None and len(new_address) < max(VIOLAS_ADDRESS_LEN):
-            new_address = f"{00000000000000000000000000000000}{new_address}"
-
-        return new_address 
+        prefix, addr = split_full_address(address, auth_key_prefix)
+        if prefix is None:
+            prefix = "00000000000000000000000000000000"
+        return prefix + addr 
     except Exception as e:
         pass
     return None

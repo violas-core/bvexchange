@@ -252,7 +252,7 @@ class abase(baseobject):
             tran_id                 = data_dict.get("tran_id", None)
             datas["tran_id"]        = tran_id
             datas["sequence"]       = transaction.get("sequence_number")
-            datas["module"]         =  transaction.get("module_address", False)
+            datas["module"]         = transaction.get("module_address")
 
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:

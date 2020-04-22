@@ -3,7 +3,8 @@ import setting
 import comm.values
 from comm import result
 from comm.result import parse_except
- 
+from comm.functions import get_address_from_full_address 
+
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 def check_setting():
@@ -26,7 +27,7 @@ def __get_address_list(atype, mtype, chain = None, full = True):
             else:
                 min_len = min(VIOLAS_ADDRESS_LEN)
                 assert min_len > 0 , "address min(VIOLAS_ADDRESS_LEN) is invalid."
-                return [addr[:min_len] for addr in addresses]
+                return [get_address_from_full_address(addr) for addr in addresses]
     except Exception as e:
         parse_except(e)
     return None
@@ -41,14 +42,14 @@ def __get_tokenid_list(atype, mtype, chain = None):
 
 def get_receiver_address_list(mtype, chain = None, full = True):
     try:
-        return __get_address_list("receiver", mtype, chain)
+        return __get_address_list("receiver", mtype, chain, full)
     except Exception as e:
         parse_except(e)
     return None
 
 def get_sender_address_list(mtype, chain = None, full = True):
     try:
-        return __get_address_list("sender", mtype, chain)
+        return __get_address_list("sender", mtype, chain, full)
     except Exception as e:
         parse_except(e)
     return None
@@ -56,7 +57,7 @@ def get_sender_address_list(mtype, chain = None, full = True):
 
 def get_module_address(mtype, chain = None, full = True):
     try:
-        ms = __get_address_list("module", mtype, chain)
+        ms = __get_address_list("module", mtype, chain, full)
         if ms is None or len(ms) == 0:
             return None
         assert len(ms) == 1, f"coin type({mtype}) chain({chain}) found multi module found, check it"
@@ -67,7 +68,7 @@ def get_module_address(mtype, chain = None, full = True):
 
 def get_token_address(mtype, chain = None, full = True):
     try:
-        ms = __get_address_list("token", mtype, chain)
+        ms = __get_address_list("token", mtype, chain, full)
         if ms is None or len(ms) == 0:
             return None
         assert len(ms) == 1, f"token type({mtype}) chain({chain}) found multi coins found, check it"
@@ -78,7 +79,7 @@ def get_token_address(mtype, chain = None, full = True):
 
 def get_combine_address(mtype = "b2v", chain = "btc", full = True):
     try:
-        ms = __get_address_list("combine", mtype, chain)
+        ms = __get_address_list("combine", mtype, chain, full)
         if ms is None or len(ms) == 0:
             return none
         assert len(ms) == 1, f"({mtype}) chain({chain}) found multi combin address , check it"

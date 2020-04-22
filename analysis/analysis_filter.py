@@ -52,6 +52,11 @@ class afilter(abase):
         if events is not None and len(events) > 0:
             event = events[0]
             tran_data["events"] = [json.loads(str(event))]
+        if tran_data["data"] is not None:
+            try:
+                tran_data["data"] = bytes.fromhex(tran_data["data"]).decode()
+            except Exception as e:
+                parse_except(e)
         return tran_data
 
     def is_target_tran(self, tran_data):
@@ -101,10 +106,10 @@ class afilter(abase):
                     return ret
 
                 tran_data = self.get_tran_data(data)   
-
                 if self.is_target_tran(tran_data) == False:
                     continue
 
+                self._logger.debug(f"version: {version}: {tran_data['data']}")
                 #save to redis db
                 ret = self._dbclient.set(version, json.dumps(tran_data))
                 if ret.state != error.SUCCEED:

@@ -211,7 +211,7 @@ class aproof(abase):
                 new_version = version
                 tran_data = json.loads(ret.datas)
                 if self.proofstate_name_to_value(tran_data.get("state")) == self.proofstate.START and \
-                        self.is_valid_moudle(tran_data.get("module")) and \
+                        self.is_valid_module(tran_data.get("module")) and \
                         self.is_valid_token_id(tran_data.get("token_id")):
                     break
 

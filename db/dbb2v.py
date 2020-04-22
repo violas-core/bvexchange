@@ -47,9 +47,9 @@ class dbb2v(baseobject):
         START       = 0 #start exchange 
         SUCCEED     = 1 #exchange succeed, but btc blockchain not changed state
         FAILED      = 2 #exchange failed
-        SUCCEED_BTC = 3 #exchange succeed, btc blockchain changed state
+        SUCCEED_BTC = 3 #exchange succeed, btc blockchain changed state transacton is succeed
         FAILED_BTC  = 4 #btc failed
-        COMPELETE   = 128 #exchange succeed and btc blockchain changed state
+        COMPELETE   = 128 #exchange succeed and state -> end in btc blockchain
     
     #exc_traceback_objle : b2vinfo
     class b2vinfo(__base):
