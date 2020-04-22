@@ -77,14 +77,13 @@ class requestbase(dbvproof):
                 if proofstate is not None and tran_info.get("state") != proofstate.name.lower():
                     continue
 
-
                 if receiver is not None and tran_info.get("receiver") != receiver:
                     continue
 
                 if module is not None and tran_info.get("module") != module:
                     continue
 
-                if token_id >= 0 and tran_info.get("token_id") != module:
+                if token_id >= 0 and tran_info.get("token_id") != token_id:
                     continue
 
                 #data is valid, return it

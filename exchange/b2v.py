@@ -82,21 +82,38 @@ class exb2v(baseobject):
             self.append_waning(key)
         return count < self.__show_warning_count
 
-    def __merge_proof_to_rpcparams(self, rpcparams, dbinfos):
+    def __merge_proof_to_rpcparams_for_resend(self, rpcparams, dbinfos):
         try:
             self._logger.debug("start __merge_proof_to_rpcparams")
             for info in dbinfos:
                 #append key for excluded, must be dict {"address":"xxx" , "sequence":"xxx"} ,match btc rpc excluded params format
+                value = {"address":"%s"%(info.vaddress), "sequence":info.sequence, "bamount": info.bamount, \
+                        "sequence":info.sequence, "height":info.height, "receiver":info.toaddress, "module":info.vtoken, "fromaddress":info.fromaddress}
                 if info.toaddress in rpcparams.keys():
-                    rpcparams[info.toaddress].append({"address":"%s"%(info.vaddress), "sequence":info.sequence})
+                    rpcparams[info.toaddress].append(value)
                 else:
-                    rpcparams[info.toaddress] = [{"address":"%s"%(info.vaddress), "sequence":info.sequence}]
+                    rpcparams[info.toaddress] = [value]
     
             return result(error.SUCCEED, "", rpcparams)
         except Exception as e:
             ret = parse_except(e)
         return ret
     
+    def __merge_proof_to_rpcparams(self, rpcparams, dbinfos):
+        try:
+            self._logger.debug("start __merge_proof_to_rpcparams")
+            for info in dbinfos:
+                #append key for excluded, must be dict {"address":"xxx" , "sequence":"xxx"} ,match btc rpc excluded params format
+                value = {"address":"%s"%(info.vaddress), "sequence":info.sequence}
+                if info.toaddress in rpcparams.keys():
+                    rpcparams[info.toaddress].append(value)
+                else:
+                    rpcparams[info.toaddress] = [value]
+    
+            return result(error.SUCCEED, "", rpcparams)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
     def __get_excluded(self, b2v):
         try:
             rpcparams = {}
@@ -200,6 +217,30 @@ class exb2v(baseobject):
             ret = parse_except(e)
         return ret
     
+    def __get_resend_btc(self, b2v):
+        try:
+            rpcparams = {}
+            scddatas = b2v.query_b2vinfo_is_succeed()
+            if(scddatas.state != error.SUCCEED):
+                return scddatas
+    
+            ret = self.__merge_proof_to_rpcparams_for_resend(rpcparams, scddatas.datas)
+            if(ret.state != error.SUCCEED):
+                return ret
+
+            bflddatas = b2v.query_b2vinfo_is_btcfailed()
+            if(bflddatas.state != error.SUCCEED):
+                return bflddatas
+
+            ret = self.__merge_proof_to_rpcparams_for_resend(rpcparams, bflddatas.datas)
+            if(ret.state != error.SUCCEED):
+                return ret
+
+            ret = result(error.SUCCEED, "", rpcparams)
+        except exception as e:
+            ret = parse_except(e)
+        return ret
+
     def __rechange_btcstate_to_end_from_btcfailed(self, bclient, b2v, combineaddress, module_address, receivers):
         try:
             self._logger.debug(f"start __rechange_btcstate_to_end_from_btcfailed(combineaddress={combineaddress}, module_address={module_address}, receivers={receivers})")
@@ -207,37 +248,44 @@ class exb2v(baseobject):
             if(bflddatas.state != error.SUCCEED):
                 return bflddatas
     
-            for data in bflddatas.datas:
-                receiver = data.toaddress
-                if module_address != data.vtoken:
-                    self._logger.warning(f"db's vtoken({data.vtoken}) not match module_address({module_address}), ignore it, next")
-                    continue
-    
+            ret = self.__get_resend_btc(b2v)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            datas = ret.datas
+            for receiver, value in datas.items():
                 if receiver not in receivers:
-                    self._logger.warning(f"db's fromaddress({data.fromaddress}) not match btc_recivers({receivers}), ignore it, next")
+                    self._logger.warning(f"db's {receiver} not match btc_recivers({receivers}), ignore it, next")
                     continue
+
+                for data in value: 
+                    _, module = split_full_address(data["module"])
+                    if module_address != module:
+                        self._logger.warning(f"db's vtoken({module}) not match module_address({module_address}), ignore it, next")
+                        continue
     
-                vaddress = data.vaddress
-                bamount = data.bamount  
-                sequence = data.sequence
-                height = data.height
+                    vaddress = data["address"]
+                    bamount = data["bamount"]
+                    sequence = data["sequence"]
+                    height = data["height"]
     
-                #recheck b2v state in blockchain, may be performed manually
-                ret = bclient.isexproofcomplete(vaddress, sequence)
-                if(ret.state == error.SUCCEED and ret.datas["result"] == "true"):
-                    ret = b2v.update_b2vinfo_to_complete_commit(vaddress, sequence)
-                    continue
+                    #recheck b2v state in blockchain, may be performed manually
+                    ret = bclient.isexproofcomplete(vaddress, sequence)
+                    if(ret.state == error.SUCCEED and ret.datas["result"] == "true"):
+                        ret = b2v.update_b2vinfo_to_complete_commit(vaddress, sequence)
+                        self._logger.info(f"{vaddress}:{sequence} is complete. update db and next ...")
+                        continue
     
-                #The receiver of the start state can change the state to end
-                full_addr = merge_full_address(vaddress)
-                ret = bclient.sendexproofend(receiver, combineaddress, full_addr, sequence, float(bamount)/COINS, height)
-                if ret.state != error.SUCCEED:
-                    ret = b2v.update_b2vinfo_to_btcfailed_commit(vaddress, sequence)
-                    assert (ret.state == error.SUCCEED), "db error"
-                else:
-                    ret = b2v.update_b2vinfo_to_btcsucceed_commit(vaddress, sequence, ret.datas)
-                    assert (ret.state == error.SUCCEED), "db error"
-            ret = result(error.SUCCEED)
+                    #The receiver of the start state can change the state to end
+                    full_addr = merge_full_address(vaddress)
+                    ret = bclient.sendexproofend(receiver, combineaddress, full_addr, sequence, float(bamount)/COINS, height)
+                    if ret.state != error.SUCCEED:
+                        ret = b2v.update_b2vinfo_to_btcfailed_commit(vaddress, sequence)
+                        assert (ret.state == error.SUCCEED), "db error"
+                    else:
+                        ret = b2v.update_b2vinfo_to_btcsucceed_commit(vaddress, sequence, ret.datas)
+                        assert (ret.state == error.SUCCEED), "db error"
+            ret     = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
         return ret
