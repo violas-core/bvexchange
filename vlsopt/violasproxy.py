@@ -34,10 +34,13 @@ from violas.client import Client
 name="violasproxy"
 
 class walletproxy(Wallet):
-    def __init__(self):
-        pass
+
+    @classmethod
+    def load(self, filename):
+        return self.recover(filename)
 
     
+
 
 class clientproxy(Client):
     def __init__(self):
@@ -48,7 +51,8 @@ class clientproxy(Client):
         return self.new(host = host, port = port, faucet_file = faucet_file, timeout=timeout, debug = debug)
 
 def main():
-    client = clientproxy.connect(host="52.27.228.84", port=40001)
-    json_print(client.get_latest_version())
+    #client = clientproxy.connect(host="52.27.228.84", port=40001)
+    #json_print(client.get_latest_version())
+    wallet = walletproxy.load("vwallet")
 if __name__ == "__main__":
     main()
