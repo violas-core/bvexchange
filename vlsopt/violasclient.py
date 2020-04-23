@@ -30,16 +30,6 @@ import redis
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
-if version.cmp(1, 1, 1) >= 0:
-    sys.path.append("../libviolas")
-    sys.path.append("{}/libviolas".format(os.getcwd()))
-    #from violas.client import Client
-    from violas.wallet import Wallet
-elif version.cmp(1, 1, 0) <= 0:
-    sys.path.append("../liblibra")
-    sys.path.append("{}/liblibra".format(os.getcwd()))
-    from violas.wallet import Wallet
-
 #module name
 name="vclient"
 
@@ -63,9 +53,9 @@ class violaswallet(baseobject):
             self.__wallet_name = wallet_name
 
             if chain in ("violas"):
-                from violasproxy import walletproxy
+                from vlsopt.violasproxy import walletproxy
             elif chain in ("libra"):
-                from libraproxy import walletproxy
+                from vlsopt.libraproxy import walletproxy
             else:
                 raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas wallet")
 
@@ -169,9 +159,9 @@ class violasclient(baseobject):
                 return result(error.ARG_INVALID, repr(nodes), "")
             
             if chain in ("violas"):
-                from violasproxy import clientproxy
+                from vlsopt.violasproxy import clientproxy
             elif chain in ("libra"):
-                from libraproxy import clientproxy
+                from vlsopt.libraproxy import clientproxy
             else:
                 raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas node")
 
