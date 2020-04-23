@@ -12,10 +12,7 @@ db_echo=False
 v2b_maxtimes = 99
 
 #btc connect 
-btc_conn = {'rpcuser':'btc', 
-        'rpcpassword':'btc', 
-        'rpcip':'192.168.31.37', 
-        'rpcport':18332}
+btc_conn = {'rpcuser':'btc', 'rpcpassword':'btc', 'rpcip':'192.168.31.37', 'rpcport':18332}
 
 #violas node list, to connect one
 violas_nodes=[
@@ -30,7 +27,8 @@ violas_nodes=[
 
 #libra node list, to connect one
 libra_nodes=[
-         {'host':'ac.testnet.libra.org', 'port':8000,  'name':'libra'},
+         #{'host':'ac.testnet.libra.org', port: 8000, 'name':'libra'},
+         {'host':'http://client.testnet.libra.org', 'name':'libra'},
         ]
 
 #vioals server list. violas provides query of historical transactions. to connect one 
@@ -88,26 +86,26 @@ address_list = {
         #module address for type(violas nodes's vbtc or vlibra ...), type must be unique
         'module':[
             #vbtc module
-            #{'address':'af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb', 'type':'v2b-old', 'chain':'violas'},
-            {'address':'2812c7a9a87665422c06735ac2fc2ecbc301cf6c3a21c1f6af1425bab660f3c9', 'type':'v2b', 'chain':'violas'},
-            {'address':'2812c7a9a87665422c06735ac2fc2ecbc301cf6c3a21c1f6af1425bab660f3c9', 'type':'b2v', 'chain':'btc'},
+            #{'address':'00000000000000000000000000000000e1be1ab8360a35a0259f1c93e3eac736', 'type':'v2b-old', 'chain':'violas'},
+            {'address':'00000000000000000000000000000000e1be1ab8360a35a0259f1c93e3eac736', 'type':'v2b', 'chain':'violas'},
+            {'address':'00000000000000000000000000000000e1be1ab8360a35a0259f1c93e3eac736', 'type':'b2v', 'chain':'btc'},
             #vbtc module
-            {'address':'2812c7a9a87665422c06735ac2fc2ecbc301cf6c3a21c1f6af1425bab660f3c9', 'type':'b2v', 'chain':'violas'},
+            {'address':'00000000000000000000000000000000e1be1ab8360a35a0259f1c93e3eac736', 'type':'b2v', 'chain':'violas'},
             #vlibra module
-            {'address':'2812c7a9a87665422c06735ac2fc2ecbc301cf6c3a21c1f6af1425bab660f3c9', 'type':'v2l', 'chain':'violas'},
+            {'address':'00000000000000000000000000000000e1be1ab8360a35a0259f1c93e3eac736', 'type':'v2l', 'chain':'violas'},
             {'address':'0000000000000000000000000000000000000000000000000000000000000000', 'type':'v2l', 'chain':'libra'},
             #vlibra module
             {'address':'0000000000000000000000000000000000000000000000000000000000000000', 'type':'l2v', 'chain':'libra'},
-            {'address':'2812c7a9a87665422c06735ac2fc2ecbc301cf6c3a21c1f6af1425bab660f3c9', 'type':'l2v', 'chain':'violas'},
+            {'address':'00000000000000000000000000000000e1be1ab8360a35a0259f1c93e3eac736', 'type':'l2v', 'chain':'violas'},
             ],
         #module address for type(violas nodes's vbtc or vlibra ...), type must be unique
         'token':[
             #vbtc owner
-            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 7, 'type':'v2b', 'chain':'violas'},
-            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 7, 'type':'b2v', 'chain':'violas'},
+            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 2, 'type':'v2b', 'chain':'violas'},
+            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 2, 'type':'b2v', 'chain':'violas'},
             #vlibra owner
-            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 8, 'type':'v2l', 'chain':'violas'},
-            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 8, 'type':'l2v', 'chain':'violas'},
+            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 3, 'type':'v2l', 'chain':'violas'},
+            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 3, 'type':'l2v', 'chain':'violas'},
             ],
         #combine coins to 
         'combine':[

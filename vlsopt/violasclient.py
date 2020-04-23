@@ -63,19 +63,14 @@ class violaswallet(baseobject):
             self.__wallet_name = wallet_name
 
             if chain in ("violas"):
-                sys.path.append("../libviolas")
-                sys.path.append("{}/libviolas".format(os.getcwd()))
-                from violas.wallet import Wallet
+                from violasproxy import walletproxy
             elif chain in ("libra"):
-                sys.path.append("../libra-client")
-                sys.path.append("../libra-client/libra_client")
-                sys.path.append("{}/libra-client/libra_client".format(os.getcwd()))
-                from violas.wallet import Wallet
+                from libraproxy import walletproxy
             else:
                 raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas wallet")
 
             if os.path.isfile(self.__wallet_name):
-                self.__wallet = Wallet.recover(self.__wallet_name)
+                self.__wallet = walletproxy.recover(self.__wallet_name)
                 ret = result(error.SUCCEED, "", "")
             else:
                 ret = result(error.SUCCEED, "not found wallet file", "")
@@ -174,13 +169,9 @@ class violasclient(baseobject):
                 return result(error.ARG_INVALID, repr(nodes), "")
             
             if chain in ("violas"):
-                sys.path.append("../libviolas")
-                sys.path.append("{}/libviolas".format(os.getcwd()))
-                from violas.client import Client
+                from violasproxy import clientproxy
             elif chain in ("libra"):
-                sys.path.append("../liblibra")
-                sys.path.append("{}/liblibra".format(os.getcwd()))
-                from violas.client import Client
+                from libraproxy import clientproxy
             else:
                 raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas node")
 
@@ -190,11 +181,11 @@ class violasclient(baseobject):
                         return result(error.FAILED, f"connect {chain} work stop")
 
                     self._logger.debug("try connect node({}) : host = {} port = {} validator={} faucet ={}".format( \
-                            node.get("name", ""), node.get("host", "127.0.0.1"), node.get("port", 4001), node.get("validator", None), node.get("faucet", None)))
-                    client = Client.new(host=node.get("host", "127.0.0.1"), \
-                            port=node.get("port", 4001), \
-                            faucet_file = node.get("faucet", None), \
-                            timeout = node.get("timeout", 30), \
+                            node.get("name", ""), node.get("host"), node.get("port"), node.get("validator"), node.get("faucet")))
+                    client = clientproxy.connect(host=node.get("host"), \
+                            port=node.get("port"), \
+                            faucet_file = node.get("faucet"), \
+                            timeout = node.get("timeout"), \
                             debug = node.get("debug", False))
                     client.get_latest_version()
                     self._logger.debug(f"connect {chain} node succeed.") 

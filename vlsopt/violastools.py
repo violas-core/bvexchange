@@ -121,8 +121,8 @@ def show_tokens_info(module):
     assert ret.state == error.SUCCEED, "get tokens info failed."
     json_print(ret.datas)
 
-def show_token_list(address, module):
-    logger.debug(f"start show_token_list({address}, {module})")
+def show_address_tokens(address, module):
+    logger.debug(f"start show_address_tokens({address}, {module})")
     client = get_violasclient()
     ret = client.get_tokens(address, module)
     assert ret.state == error.SUCCEED, "get tokens failed."
@@ -365,7 +365,7 @@ def init_args(pargs):
     pargs.append("get_token_name", "show token name.", True, ["address", "token_id"])
     pargs.append("get_token_id", "show token id.", True, ["address", "token_name"])
     pargs.append("get_token_num", "get token num.", True, ["address"])
-    pargs.append("show_token_list", "show tokens info.", True, ["address", "module"])
+    pargs.append("show_address_tokens", "show tokens info.", True, ["address", "module"])
     pargs.append("show_token_list", "show token list.", True, ["module"])
     pargs.append("get_account_prefix", "get account prefix.", True, ["address"])
     pargs.append("show_tokens_info", "show tokens info.", True, ["module"])
@@ -519,10 +519,10 @@ def run(argc, argv):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
             get_token_id(arg_list[0], arg_list[1])
-        elif pargs.is_matched(opt, ["show_token_list"]):
+        elif pargs.is_matched(opt, ["show_address_tokens"]):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
-            show_token_list(arg_list[0], arg_list[1])
+            show_address_tokens(arg_list[0], arg_list[1])
         elif pargs.is_matched(opt, ["show_token_list"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
