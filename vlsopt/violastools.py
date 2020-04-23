@@ -6,7 +6,6 @@ import os
 sys.path.append(os.getcwd())
 sys.path.append("..")
 print(sys.path)
-sys.path.append("../libviolas")
 
 import log
 import log.logger
@@ -273,8 +272,9 @@ def show_accounts():
     wallet = get_violaswallet()
     i = 0
     account_count = wallet.get_account_count()
+    print(f"account count: {account_count}")
     while True and i < account_count:
-        ret = wallet.get_account(i)
+        ret = wallet.get_account(int(i))
         if ret.state != error.SUCCEED:
            break 
         account = ret.datas

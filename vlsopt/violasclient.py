@@ -60,11 +60,11 @@ class violaswallet(baseobject):
                 raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas wallet")
 
             if os.path.isfile(self.__wallet_name):
-                self.__wallet = walletproxy.recover(self.__wallet_name)
+                self.__wallet = walletproxy.load(self.__wallet_name)
                 ret = result(error.SUCCEED, "", "")
             else:
                 ret = result(error.SUCCEED, "not found wallet file", "")
-                self.__wallet = Wallet.new()
+                self.__wallet = walletproxy.new()
                 self._logger.warning("new wallet created")
 
         except Exception as e:
@@ -97,9 +97,7 @@ class violaswallet(baseobject):
     def get_account(self, addressorid):
         try:
             address = addressorid
-            if isinstance(addressorid, int):
-                address = str(addressorid)
-            elif isinstance(addressorid, str) and len(addressorid) >= min(VIOLAS_ADDRESS_LEN):
+            if isinstance(addressorid, str) and len(addressorid) >= min(VIOLAS_ADDRESS_LEN):
                 auth, addr = self.split_full_address(addressorid).datas
                 address = addr
                 print(f"auth_key_prefix: {auth} ,address: {addr}")

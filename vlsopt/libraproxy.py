@@ -38,8 +38,6 @@ class walletproxy(Wallet):
         pass
 
 class clientproxy(Client):
-    def __init__(self):
-        pass
 
     @classmethod
     def connect(self, host, port = None, faucet_file = None, timeout =30, debug = False):
