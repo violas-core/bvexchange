@@ -46,7 +46,7 @@ class works:
     __record_db = "record"
 
     __libra_min_valid_version   = 11459060
-    __violas_min_valid_version  = 4134347
+    __violas_min_valid_version  = 5255472
     __btc_min_valid_version     = 0
     def __init__(self):
         logger.debug("works __init__")
@@ -279,10 +279,12 @@ class works:
                             stmanage.get_violas_nodes(), 
                             stmanage.get_libra_nodes(),
                             stmanage.get_db(mod), 
-                            stmanage.get_module_address(mod, "violas"), 
-                            stmanage.get_module_address(mod, "libra"), 
-                            list(set(stmanage.get_receiver_address_list(mod, "violas"))),
-                            list(set(stmanage.get_sender_address_list(mod, "libra"))),
+                            stmanage.get_module_address(mod, "violas", False), 
+                            stmanage.get_token_id(mod, "violas"),
+                            None,
+                            None,
+                            list(set(stmanage.get_receiver_address_list(mod, "violas", False))),
+                            list(set(stmanage.get_sender_address_list(mod, "libra", False))),
                             "violas",
                             "libra")
                     self.set_work_obj(obj)

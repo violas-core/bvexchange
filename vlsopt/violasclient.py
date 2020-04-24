@@ -417,7 +417,7 @@ class violasclient(baseobject):
         try:
             self._logger.info(f"start send_violas_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, token_id = {token_id}, module_address={module_address}, data={data}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
 
-            if (len(to_address) not in VIOLAS_ADDRESS_LEN) or (amount < 1) or (len(module_address) not in VIOLAS_ADDRESS_LEN):
+            if (len(to_address) not in VIOLAS_ADDRESS_LEN) or (amount < 1) or ((module_address is not None) and (len(module_address) not in VIOLAS_ADDRESS_LEN)):
                 return result(error.ARG_INVALID)
 
             (_, mod) = self.split_full_address(module_address).datas
