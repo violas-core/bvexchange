@@ -37,6 +37,10 @@ class btcclient(baseobject):
             return self.__datas.get("version")
         def to_json(self):
             return self.__datas
+        def get_events(self):
+            return None
+        def get_data(self):
+            return ""
 
     class proofstate(Enum):
         START   = "start"
