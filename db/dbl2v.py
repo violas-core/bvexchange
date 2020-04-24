@@ -74,12 +74,14 @@ class dbl2v(baseobject):
         created     = Column(DateTime, default=datetime.datetime.now)
         times       = Column(Integer, nullable=False, default=1)
         tranid      = Column(String(64), nullable=False, primary_key=True)
+        fromtokenid = Column(Integer)
+        maptokenid  = Column(Integer)
     
         def __repr__(self):
             return f"<info(sender={self.sender}, receiver={self.receiver}, sequence={self.sequence}, \
                     version={self.version}, amount={self.amount}, fromaddress={self.fromaddress}, \
                     toaddress={self.toaddress}, frommodule={self.frommodule}, mapmodule={self.mapmodule}, state={self.state}, \
-                    created={self.created}, times={self.times}, tranid={self.tranid})>"
+                    created={self.created}, times={self.times}, tranid={self.tranid}, fromtokenid={self.fromtokenid}, maptokenid={self.maptokenid})>"
 
     def __init_db(self, dbfile):
         self._logger.debug("start __init_db(dbfile={})".format(dbfile))
@@ -97,14 +99,14 @@ class dbl2v(baseobject):
     def __uninit_db(self):
         pass
         
-    def insert(self, sender, receiver, sequence, version, amount, fromaddress, toaddress, frommodule, mapmodule, state, tranid):
+    def insert(self, sender, receiver, sequence, version, amount, fromaddress, toaddress, frommodule, mapmodule, state, tranid, fromtokenid, maptokenid):
         try:
             self._logger.info(f"start insert(sender={sender}, receiver={receiver}, \
                     sequence={sequence}, version={version}, amount={amount}, fromaddress={fromaddress},\
-                    toaddress={toaddress}, frommodule={frommodule}, mapmodule={mapmodule}, state={state.name}, tranid={tranid})") 
+                    toaddress={toaddress}, frommodule={frommodule}, mapmodule={mapmodule}, state={state.name}, tranid={tranid}, fromtokenid={fromtokenid}, maptokenid={maptokenid})") 
 
             data = self.info(sender=sender, receiver=receiver, sequence=sequence, version=version, \
-                amount=amount, fromaddress=fromaddress, toaddress=toaddress, frommodule=frommodule, mapmodule=mapmodule, state=state.value, tranid=tranid)
+                amount=amount, fromaddress=fromaddress, toaddress=toaddress, frommodule=frommodule, mapmodule=mapmodule, state=state.value, tranid=tranid, fromtokenid=fromtokenid, maptokenid=maptokenid)
             self.__session.add(data)
 
             ret = result(error.SUCCEED, "", "")
@@ -112,9 +114,9 @@ class dbl2v(baseobject):
             ret = parse_except(e)
         return ret
 
-    def insert_commit(self, sender, receiver, sequence, version, amount, fromaddress, toaddress, frommodule, mapmodule, state, tranid):
+    def insert_commit(self, sender, receiver, sequence, version, amount, fromaddress, toaddress, frommodule, mapmodule, state, tranid, fromtokenid, maptokenid):
         try:
-            ret = self.insert(sender, receiver, sequence, version, amount, fromaddress, toaddress, frommodule, mapmodule, state, tranid)
+            ret = self.insert(sender, receiver, sequence, version, amount, fromaddress, toaddress, frommodule, mapmodule, state, tranid, fromtokenid, maptokenid)
             if ret.state != error.SUCCEED:
                 return ret 
             ret = self.commit()
@@ -283,7 +285,8 @@ def test_dbl2v():
             "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             dbl2v.state.START, \
-            tran_id            
+            tran_id,            
+            0
             )
     assert ret.state == error.SUCCEED, "insert_commit failed."
 
@@ -297,7 +300,8 @@ def test_dbl2v():
             "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             dbl2v.state.START, \
-            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
+            0
             )
     assert ret.state == error.SUCCEED, "insert_commit failed."
 

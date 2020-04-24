@@ -92,7 +92,7 @@ class violaswallet(baseobject):
         return ret
 
     def get_account_count(self):
-        return self.__wallet.child_count
+        return len(self.__wallet.accounts)
 
     def get_account(self, addressorid):
         try:
@@ -407,7 +407,7 @@ class violasclient(baseobject):
 
             (auth, addr) = self.split_full_address(to_address, auth_key_prefix).datas
 
-            self.__client.transfer_coin(from_account, addr, amount, data=data, auth_key_prefix=auth, is_blocking=is_blocking, max_gas_amount = max_gas_amount)
+            self.__client.send_coin(from_account, addr, amount, data=data, auth_key_prefix=auth, is_blocking=is_blocking, max_gas_amount = max_gas_amount)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
@@ -427,7 +427,7 @@ class violasclient(baseobject):
             (auth, addr) = self.split_full_address(to_address, auth_key_prefix).datas
             (_, module_addr) = self.split_full_address(module_address).datas
 
-            self.__client.transfer_coin(sender_account=from_account, receiver_address=addr, \
+            self.__client.send_coin(sender_account=from_account, receiver_address=addr, \
                     micro_coins=amount, token_id = token_id, module_address=module_addr, data=data, auth_key_prefix = auth_key_prefix, is_blocking=is_blocking, max_gas_amount = max_gas_amount)
             ret = result(error.SUCCEED) 
         except Exception as e:

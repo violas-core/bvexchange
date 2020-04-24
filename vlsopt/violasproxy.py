@@ -39,9 +39,6 @@ class walletproxy(Wallet):
     def load(self, filename):
         return self.recover(filename)
 
-    
-
-
 class clientproxy(Client):
     def __init__(self):
         pass
@@ -49,6 +46,12 @@ class clientproxy(Client):
     @classmethod
     def connect(self, host, port = None, faucet_file = None, timeout =30, debug = False):
         return self.new(host = host, port = port, faucet_file = faucet_file, timeout=timeout, debug = debug)
+
+    def send_coin(self, sender_account, receiver_address, micro_coins, token_id=None, module_address=None, data=None, \
+            auth_key_prefix=None, is_blocking=False, max_gas_amount=400_000, unit_price=0, txn_expiration=13):
+        return self.transfer_coin(sender_account = sender_account, receiver_address = receiver_address, micro_coins = micro_coins, \
+                token_id = token_id, module_address = module_address, data = data, auth_key_prefix = auth_key_prefix, is_blocking = is_blocking, \
+                max_gas_amount = max_gas_amount, unit_price = unit_price, txn_expiration = txn_expiration)
 
 def main():
     #client = clientproxy.connect(host="52.27.228.84", port=40001)

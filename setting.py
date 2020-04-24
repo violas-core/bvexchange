@@ -65,7 +65,8 @@ address_list = {
             ##vlibra -> libra
             {'address':'5f4d3d86949fafc804d6c457d9a92bf9ee1e24e8fc664894709c947b74823b2f', 'type':'v2l', 'chain':'violas'},
             ##libra -> vlibra
-            {'address':'b54f0e785cacde38606c4908023dd5ac8026501c2116696989ef8555bc445ffb', 'type':'l2v', 'chain':'libra'},
+            #{'address':'b54f0e785cacde38606c4908023dd5ac8026501c2116696989ef8555bc445ffb', 'type':'l2v', 'chain':'libra'},
+            {'address':'4a73cfd0365c641341a7a3bc376423480a82179351b8ecb6c5e68ab7b08622de', 'type':'l2v', 'chain':'libra'},
             ##btc -> vbtc
             {'address':'2MxBZG7295wfsXaUj69quf8vucFzwG35UWh', 'type':'b2v', 'chain':'btc'},
             {'address':'2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB', 'type':'b2v', 'chain':'btc'},
@@ -79,7 +80,8 @@ address_list = {
             {'address':'2N9gZbqRiLKAhYCBFu3PquZwmqCBEwu1ien', 'type':'v2b', 'chain':'btc'},
             {'address':'2MxBZG7295wfsXaUj69quf8vucFzwG35UWh', 'type':'v2b', 'chain':'btc'},
             ##libra coin
-            {'address':'177a4a1d720d613c2dd8eff978667c333883e60fa0ce5051e617e502c0d80200', 'type':'v2l', 'chain':'libra'},
+            #{'address':'177a4a1d720d613c2dd8eff978667c333883e60fa0ce5051e617e502c0d80200', 'type':'v2l', 'chain':'libra'},
+            {'address':'c62da985e679fa642f51f84f694be65a8d3b6ca4b293491b63adf1dfc9754a33', 'type':'v2l', 'chain':'libra'},
             ##vlibra coin
             {'address':'7b102beb21460be85948a41bd2080265149bf4deff39f896c836a2760f6806b9', 'type':'l2v', 'chain':'violas'},
             ],
@@ -101,11 +103,11 @@ address_list = {
         #module address for type(violas nodes's vbtc or vlibra ...), type must be unique
         'token':[
             #vbtc owner
-            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 2, 'type':'v2b', 'chain':'violas'},
-            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 2, 'type':'b2v', 'chain':'violas'},
+            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 2, "tokenname":"vbtc",'type':'v2b', 'chain':'violas'},
+            {'address':'03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190', 'tokenid': 2, "tokenname":"vbtc", 'type':'b2v', 'chain':'violas'},
             #vlibra owner
-            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 3, 'type':'v2l', 'chain':'violas'},
-            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 3, 'type':'l2v', 'chain':'violas'},
+            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 3, "tokenname":"vlibra", 'type':'v2l', 'chain':'violas'},
+            {'address':'1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb', 'tokenid': 3, "tokenname":"vlibra", 'type':'l2v', 'chain':'violas'},
             ],
         #combine coins to 
         'combine':[
@@ -113,7 +115,8 @@ address_list = {
             {'address':'b93bb580bfba22c6d06ba5baac329b0c23e5d616f55614100b83ddece7a4c005', 'type':'v2b', 'chain':'violas'},
             {'address':'4a5a4d3fa63633fbecfd50a17b4b5a38dfbac8a5a08be9e4b958b4aeb9e8f0ea', 'type':'v2l', 'chain':'violas'},
             #vlibra
-            {'address':'6fe5f57963b65048deb614d17946c8b8b45bbe48c5354cf75c6e8b18a01afb96', 'type':'l2v', 'chain':'libra'},
+            #{'address':'6fe5f57963b65048deb614d17946c8b8b45bbe48c5354cf75c6e8b18a01afb96', 'type':'l2v', 'chain':'libra'},
+            {'address':'47535b0273d05a3689680409b18c76db4a5d8ad92880cf11fcbed74310b67bfc', 'type':'l2v', 'chain':'libra'},
             {'address':'2N9gZbqRiLKAhYCBFu3PquZwmqCBEwu1ien', 'type':'b2v', 'chain':'btc'},
             ],
         }

@@ -42,7 +42,7 @@ def reg_run():
     vbtc_token_address = None
     vlibra_token_address = None
     logger.debug("***************************************create vbtc*****************************")
-    vbtc_name = "vbtci001"
+    vbtc_name = "vbtc"
     vbtc_module = stmanage.get_module_address("v2b", "violas")
     vbtc_token_address = stmanage.get_token_address("v2b", "violas")
     assert vbtc_module is not None and len(vbtc_module) in VIOLAS_ADDRESS_LEN, f"vbtc address[{vbtc_module}] is not found"
@@ -65,7 +65,7 @@ def reg_run():
         vbtc_token_id = ret.datas
 
     logger.debug("***************************************create vlibra***************************") 
-    vlibra_name = "vlibrai001"
+    vlibra_name = "vlibra"
     vlibra_module = stmanage.get_module_address("v2l", "violas")
     vlibra_token_address = stmanage.get_token_address("v2l", "violas")
 

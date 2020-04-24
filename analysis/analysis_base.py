@@ -52,12 +52,13 @@ class abase(baseobject):
         self._dbclient = None
         self._rdbclient = None
         self._connect_db(name, dbconf)
-        self._modules = {}
-        self._token_id = {}
+        self._modules = None
+        self._token_id = None
         if chain == "btc":
             self._connect_btc(name, vnodes, chain)
         else:
             self._connect_violas(name, vnodes, chain)
+        self.set_from_chain(chain)
 
         self.append_data_type(dtype)
         self.append_tran_type(ttype)
@@ -142,19 +143,23 @@ class abase(baseobject):
     def append_module(self, name, address):
         if self._modules is None:
             self._modules = {name:address}
-        self._modules.update({name:address})
+        else:
+            self._modules.update({name:address})
 
     def is_valid_module(self, module):
         return self._modules is None or module in self._modules.values()
 
     def append_token_id(self, name, token_id):
-        self._token_id.update({name:token_id}) 
+        if self._token_id is None:
+            self._token_id = {name:token_id}
+        else:
+            self._token_id.update({name:token_id}) 
 
     def get_token_id(self, name):
         return self.get(name, -1)
 
     def is_valid_token_id(self, token_id):
-        return token_id in self._token_id.values()
+        return self._token_id is None or token_id in self._token_id.values()
 
     def get_step(self):
         return self._step

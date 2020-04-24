@@ -42,12 +42,14 @@ class afilter(abase):
         self.work_stop()
 
     @classmethod
-    def get_tran_data(self, data):
+    def get_tran_data(self, data, isviolas = True):
         tran_data = data.to_json()
-        if "token_id" not in tran_data:
+        if isinstance(tran_data, str):
+            tran_data = json.loads(tran_data)
+        if isviolas and "token_id" not in tran_data:
             tran_data["token_id"] = data.get_token_id()
         if "data" not in tran_data:
-            tran_data["data"] = data.get_data()
+                tran_data["data"] = data.get_data()
         events = data.get_events()
         if events is not None and len(events) > 0:
             event = events[0]
@@ -61,12 +63,14 @@ class afilter(abase):
 
     def is_target_tran(self, tran_data):
         ret = self.parse_tran(tran_data)
+
         if ret.state != error.SUCCEED or \
                 ret.datas.get("flag", None) not in self.get_tran_types() or \
                 ret.datas.get("type") == self.datatype.UNKOWN or \
                 not ret.datas.get("tran_state", False) or \
                 not self.is_valid_module(ret.datas.get("module")):
                 return False
+        self._logger.debug(ret.datas)
         return True
 
     def start(self):
@@ -105,7 +109,7 @@ class afilter(abase):
                 if ret.state != error.SUCCEED:
                     return ret
 
-                tran_data = self.get_tran_data(data)   
+                tran_data = self.get_tran_data(data, self.from_chain() == "violas")   
                 if self.is_target_tran(tran_data) == False:
                     continue
 

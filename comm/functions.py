@@ -57,7 +57,7 @@ class filelock:
             pass
 
 def json_print(data):
-    print(json.dumps(data, sort_keys=True, indent=4))
+    print(json.dumps(data, sort_keys=True, indent=8))
 
 def get_address_from_full_address(address):
     _, addr = split_full_address(address)
