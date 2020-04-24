@@ -83,7 +83,7 @@ class requestbase(dbvproof):
                 if module is not None and tran_info.get("module") != module:
                     continue
 
-                if token_id >= 0 and tran_info.get("token_id") != token_id:
+                if token_id is not None and token_id >= 0 and tran_info.get("token_id") != token_id:
                     continue
 
                 #data is valid, return it

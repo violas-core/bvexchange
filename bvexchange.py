@@ -7,8 +7,6 @@ btc and vbtc exchange main
 import operator
 import signal
 import sys, os
-#if len(sys.argv) > 1:
-#    os.chdir(os.path.dirname(sys.argv[0]))
 import traceback
 import log
 import log.logger
@@ -47,7 +45,7 @@ class works:
     __work_obj = {}
     __record_db = "record"
 
-    __libra_min_valid_version   = 0
+    __libra_min_valid_version   = 11459060
     __violas_min_valid_version  = 4134347
     __btc_min_valid_version     = 0
     def __init__(self):
@@ -203,7 +201,6 @@ class works:
                     basedata = "lfilter"
                     obj = analysis_proof.aproof(name="l2vproof", ttype="libra", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.set_module(stmanage.get_module_address(dtype, "libra"))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
@@ -253,10 +250,12 @@ class works:
                             stmanage.get_libra_nodes(),
                             stmanage.get_violas_nodes(), 
                             stmanage.get_db(mod), 
-                            stmanage.get_module_address(mod, "libra"), 
-                            stmanage.get_module_address(mod, "violas"), 
-                            list(set(stmanage.get_receiver_address_list(mod, "libra"))),
-                            list(set(stmanage.get_sender_address_list(mod, "violas"))),
+                            None, #from libra module is fixed
+                            None, #libra no token_id
+                            stmanage.get_module_address(mod, "violas", False), 
+                            stmanage.get_token_id(mod, "violas"),
+                            list(set(stmanage.get_receiver_address_list(mod, "libra", False))),
+                            list(set(stmanage.get_sender_address_list(mod, "violas", False))),
                             "libra",
                             "violas")
                     self.set_work_obj(obj)

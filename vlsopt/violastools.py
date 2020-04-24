@@ -158,7 +158,7 @@ def mint_violas_coin(address, amount, owner, token_id, module):
     ret = client.mint_violas_coin(address, amount, account, token_id, module)
     assert ret.state == error.SUCCEED, "mint_violas_coin failed."
 
-    #print(client.get_violas_balance(address, module, token_id).datas)
+    print(client.get_violas_balance(address, module, token_id).datas)
 
 def bind_module(address, module):
     logger.debug(f"start bind_module address= {address} module = {module}")
@@ -237,7 +237,7 @@ def get_transactions(start_version, limit = 1, fetch_event = True):
     print(f"count: {len(ret.datas)}")
 
     for data in ret.datas:
-        info = afilter.get_tran_data(data)
+        info = afilter.get_tran_data(data, chain=="violas")
         json_print(info)
 
 def get_address_version(address):

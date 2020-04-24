@@ -6,7 +6,6 @@ import os
 sys.path.append("..")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client"))
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client/libra_client"))
-print(sys.path)
 import log
 import log.logger
 import traceback
@@ -34,11 +33,24 @@ from libra_client import Client
 name="libraproxy"
 
 class walletproxy(Wallet):
-    def __init__(self):
-        pass
+    @classmethod
+    def load(self, filename):
+        ret = self.recover(filename)
+        return ret
+
+    @property
+    def child_count(self):
+        return len(self.accounts)
+
+    def find_account_by_address_hex(self, address):
+        for i in range(self.child_count):
+            if self.accounts[i].address.hex == address:
+                return (i, self.accounts[i])
+
+        return (-1, None)
+
 
 class clientproxy(Client):
-
     @classmethod
     def connect(self, host, port = None, faucet_file = None, timeout =30, debug = False):
         url = host
@@ -49,9 +61,16 @@ class clientproxy(Client):
 
         return self.new(url)
 
+    def send_coin(self, sender_account, receiver_address, micro_coins, token_id=None, module_address=None, \
+            data=None, auth_key_prefix=None, is_blocking=False, max_gas_amount=400_000, unit_price=0, txn_expiration=13):
+        if data is not None:
+            data = data.encode("utf-8")
+        return self.transfer_coin(sender_account = sender_account, micro_coins = micro_coins, receiver_address=receiver_address, \
+                is_blocking = is_blocking, data = data, receiver_auth_key_prefix_opt = auth_key_prefix, \
+                max_gas_amount=max_gas_amount, gas_unit_price=unit_price)
 
-
-    
+    def get_account_sequence_number(self, address):
+        return self.get_sequence_number(address)
 
 def main():
     client = clientproxy.connect("https://client.testnet.libra.org")
