@@ -275,7 +275,7 @@ class dbvbase(baseobject):
     def get_latest_filter_ver(self):
         try:
             datas = self._client.get(self.__key_latest_filter_ver)
-            if datas is None:
+            if datas is None or len(datas) == 0:
                 datas = '-1'
             ret = result(error.SUCCEED, "", int(datas))
         except Exception as e:

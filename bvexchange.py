@@ -329,7 +329,6 @@ class works:
                     obj = analysis_proof.aproof(name="b2vproof", ttype="btc", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     obj.append_module(dtype, stmanage.get_module_address(dtype, "btc", False))
-                    #obj.append_token_id(dtype, stmanage.get_token_id(dtype, "violas"))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__btc_min_valid_version - 1)
