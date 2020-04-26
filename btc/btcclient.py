@@ -41,6 +41,8 @@ class btcclient(baseobject):
             return None
         def get_data(self):
             return ""
+        def get_token_id(self):
+            return "3"
 
     class proofstate(Enum):
         START   = "start"
