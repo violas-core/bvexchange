@@ -256,7 +256,7 @@ class aproof(abase):
                     if count >= self.get_step() and self.work() == False:
                         break
                     #record last version(parse), maybe version is not exists
-                    #self._logger.debug(f"parse transaction:{version}")
+                    self._logger.debug(f"parse transaction:{version}")
 
                     latest_filter_ver = version
 

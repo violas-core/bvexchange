@@ -16,6 +16,7 @@ import comm.result
 import comm.values
 from comm.result import result, parse_except
 from comm.error import error
+from comm.functions import split_full_address
 from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 #from .models import BtcRpc
@@ -137,11 +138,12 @@ class btcclient(baseobject):
 
     def __map_tran(self, data):
         tran_data = json.dumps({"flag":"btc", "type":"b2v", "state":data.get("state"), "to_address":data.get("address"), "to_module":data.get("vtoken"), "tran_id":data.get("txid"), "sequence":data.get("sequence")})
+        _, module = split_full_address(data.get("vtoken"))
         return {
                 "version": data.get("index"),\
                 "success":True,\
                 "events":[{"event":tran_data}],\
-                "data":tran_data,\
+                "data":tran_data.encode("utf-8").hex(),\
                 "amount":int(data.get("amount") * COINS),\
                 "sequence_number":data.get("height"),\
                 "txid":data.get("txid"),\
@@ -150,7 +152,7 @@ class btcclient(baseobject):
                 "update_block":data.get("update_block"),\
                 "sender":data.get("issuer"), \
                 "receiver":data.get("receiver"),\
-                "module_address":data.get("vtoken")
+                "module_address":module \
                 }
 
     def get_transactions(self, cursor, limit = 1, nouse=True):
