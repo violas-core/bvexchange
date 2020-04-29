@@ -102,6 +102,24 @@ def show_address():
     assert combin is not None and len(combin) in VIOLAS_ADDRESS_LEN, f"v2l combin not found or is invalid."
     comm_funs.list_address_info(vclient, wclient, [combin], vlibra_module, ret = infos)
 
+    #start get libra address info
+    '''
+    logger.debug("********start get libra chain address info********")
+    linfos = {}
+    lclient = comm_funs.violasreg(name, stmanage.get_libra_nodes(), chain = "libra")
+    lwclient = comm_funs.walletreg(name, wallet_name, chain = "libra")
+    #vbtc sender bind  module
+    senders = stmanage.get_sender_address_list("v2l", "libra")
+    assert senders is not None and len(senders) > 0, f"v2l senders[{senders}] not found."
+
+    comm_funs.list_address_info(lclient, lwclient, senders, None, ret = linfos)
+
+    logger.debug("********libra chain address info********")
+    json_print(linfos)
+
+    '''
+
+    logger.debug("********violas chain address info********")
     json_print(infos)
 
 def show_config():

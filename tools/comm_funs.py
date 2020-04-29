@@ -53,13 +53,14 @@ def get_address_info(vclient, wclient, address, module=None):
     infos["plat balance"] = plat_balance.datas
     infos["is module"] = is_module_address(vclient, address)
     infos["module"] = module
-    tokens = vclient.get_tokens(address, module).datas
-    if tokens is not None:
-        balances = {}
-        for token_id in tokens:
-            token_name = vclient.get_token_name(module, token_id).datas
-            balances[f"{token_name}({token_id})"] = f"{vclient.get_violas_balance(address, module, token_id).datas}"
-        infos["balances"] = balances
+    tokens = vclient.get_token_list(module).datas
+    if module is not None:
+        if tokens is not None:
+            balances = {}
+            for token_id in tokens:
+                token_name = vclient.get_token_name(module, token_id).datas
+                balances[f"{token_name}({token_id})"] = f"{vclient.get_violas_balance(address, module, token_id).datas}"
+            infos["balances"] = balances
     return infos
     
 def list_address_info(vclient, wclient, addresses, module, ret):
@@ -149,7 +150,7 @@ def bind_module(vclient, wclient, address, module):
        return
 
     ret = wclient.get_account(address)
-    assert ret.state == error.SUCCEED, f"get account:{address} failed"
+    assert ret.state == error.SUCCEED and ret.datas is not None, f"get account:{address} failed"
     account = ret.datas
 
     #must have some platform coin 
