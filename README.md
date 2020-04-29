@@ -19,7 +19,7 @@ cd bvexchnge
 ##Build requirements
 sudo apt install python3.6 sqlite3 redis-server python3
 python3 install python3.6-dev
-pip3 install python-bitcoinrpc sqlalchemy redis
+pip3 install python-bitcoinrpc sqlalchemy redis5.0.7
 
 cd violas-client/
 pip3 install -r requirements.txt
