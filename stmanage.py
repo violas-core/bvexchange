@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import setting
+import dsetting as setting
 import comm.values
 from comm import result
 from comm.result import parse_except
