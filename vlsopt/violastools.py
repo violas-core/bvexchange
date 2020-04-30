@@ -239,6 +239,9 @@ def get_transactions(start_version, limit = 1, fetch_event = True):
     for data in ret.datas:
         info = afilter.get_tran_data(data, chain=="violas")
         json_print(info)
+        print("********************formt transaction****************************")
+        #finfo = afilter.parse_tran(info).datas
+        #json_print(finfo)
 
 def get_address_version(address):
     logger.debug(f"start get_address_version({address})")
