@@ -16,12 +16,12 @@ btc_conn = {'rpcuser':'btc', 'rpcpassword':'btc', 'rpcip':'192.168.31.37', 'rpcp
 
 #violas node list, to connect one
 violas_nodes=[
-        {'host':'52.151.2.66',     'port':40001, 'name':'violas 1', 'faucet':'mint_test.key'},
-        {'host':'52.151.9.191',    'port':40001, 'name':'violas 2', 'faucet':'mint_test.key'},
-        {'host':'52.229.12.97',    'port':40001, 'name':'violas 3', 'faucet':'mint_test.key'}, 
-        {'host':'52.183.33.162',   'port':40001, 'name':'violas 4', 'faucet':'mint_test.key'},
-        {'host':'13.77.137.84',    'port':40001, 'name':'violas 5', 'faucet':'mint_test.key'},
-        {'host':'http://ac.testnet.violas.io',   'port':40001, 'name':'violas 0', 'faucet':'mint_test.key'},
+        {'host':'52.151.2.66',     'port':40001, 'name':'violas 1', 'faucet':'mint_external.key'},
+        {'host':'52.151.9.191',    'port':40001, 'name':'violas 2', 'faucet':'mint_external.key'},
+        {'host':'52.229.12.97',    'port':40001, 'name':'violas 3', 'faucet':'mint_external.key'}, 
+        {'host':'52.183.33.162',   'port':40001, 'name':'violas 4', 'faucet':'mint_external.key'},
+        {'host':'13.77.137.84',    'port':40001, 'name':'violas 5', 'faucet':'mint_external.key'},
+        {'host':'http://ac.testnet.violas.io',   'port':40001, 'name':'violas 0', 'faucet':'mint_external.key'},
         ]
 
 #libra node list, to connect one
