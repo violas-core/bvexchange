@@ -12,7 +12,7 @@ db_echo=False
 v2b_maxtimes = 99
 
 #btc connect 
-btc_conn = {'rpcuser':'btc', 'rpcpassword':'btc', 'rpcip':'127.0.0.1', 'rpcport':18332}
+btc_conn = {'rpcuser':'btc', 'rpcpassword':'btc', 'rpcip':'192.168.31.37', 'rpcport':18332}
 
 #violas node list, to connect one
 violas_nodes=[
