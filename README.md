@@ -79,3 +79,22 @@ cd bvexchange
 
 ### webserver
     transaction record webserver(flask)
+    
+####frame: nginx + gunicorn + flask
+##### install
+    install gunicorn: apt install gunicorn
+    install flask: apt install python3-flask
+    install nginx: apt install nginx
+##### config
+###### nginx: 
+    cp  violas_tranrecord  /etc/nginx/sites-available
+    cd  /etc/nginx/sites-enabled
+    ln -s /etc/nginx/sites-available/violas_tranrecord violas_tranrecord
+##### start
+###### gunicorn
+    cd webserver
+    ./start_gunicorn.sh
+
+##### nginx
+    sudo systemctl start nginx
+
