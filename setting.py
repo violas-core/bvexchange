@@ -12,7 +12,7 @@ db_echo=False
 v2b_maxtimes = 99
 
 #btc connect 
-btc_conn = {'rpcuser':'btc', 'rpcpassword':'btc', 'rpcip':'192.168.31.37', 'rpcport':18332}
+btc_conn = {'rpcuser':'btc', 'rpcpassword':'btc', 'rpcip':'127.0.0.1', 'rpcport':18332}
 
 #violas node list, to connect one
 violas_nodes=[
@@ -58,7 +58,6 @@ address_list = {
             #{'address':'4a73cfd0365c641341a7a3bc376423480a82179351b8ecb6c5e68ab7b08622de', 'type':'l2v', 'chain':'libra'},
             {'address':'c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139', 'type':'l2v', 'chain':'libra', 'network':"ex"},
             ##btc -> vbtc
-            #{'address':'2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB', 'type':'b2v', 'chain':'btc'},
             {'address':'2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY', 'type':'b2v', 'chain':'btc'},
             ],
         #send coin from this address
