@@ -198,7 +198,6 @@ class abase(baseobject):
             ret = result(error.FAILED, "data is not json format.")
         return ret
 
-    @classmethod
     def parse_tran(self, transaction):
         try:
             datas = {"flag"         : self.trantype.UNKOWN, 
@@ -216,7 +215,8 @@ class abase(baseobject):
                     "token"         : None,
                     "version"       : 0,
                     "tran_id"       : None,
-                    "tran_state"    : False
+                    "tran_state"    : False,
+                    "expiration_time": 0
                     }
 
             tran = result(error.SUCCEED, datas = datas)
