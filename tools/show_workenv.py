@@ -54,6 +54,7 @@ def show_db():
                 }
         infos[idx.name.lower()] = info
     json_print(infos)
+    return infos
 
 def show_address():
     vclient = comm_funs.violasreg(name, stmanage.get_violas_nodes())
@@ -122,9 +123,12 @@ def show_address():
     logger.debug("********violas chain address info********")
     json_print(infos)
 
+    return infos
+
 def show_config():
     infos = stmanage.get_conf()
     json_print(infos)
+    return infos
 
 def __create_local_db_name(name, from_chain):
     return f"{from_chain}_{name}.db"
@@ -161,6 +165,7 @@ def show_local_db():
         elif conf[1] == "b2v":
             infos[conf[1]] = get_local_b2v_info(conf[1], conf[0])
     json_print(infos)
+    return infos
 
 class work_mod(Enum):
     CONF      = 0
@@ -186,6 +191,14 @@ def start(work_mods):
 
     if work_mods.get(work_mod.ADDR.name, False):
         show_address()
+
+def show_all():
+    infos = {}
+    infos["local db"] = show_local_db()
+    infos["exchange db"] = show_db()
+    #infos.append(show_config())
+    #infos.append(show_address())
+    return infos
 
 
 def run(mods):
