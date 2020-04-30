@@ -83,7 +83,7 @@ cd bvexchange
 ####frame: nginx + gunicorn + flask
 ##### install
     install gunicorn: apt install gunicorn
-    install flask: apt install python3-flask
+    install flask: apt install flask==1.1.1
     install nginx: apt install nginx
 ##### config
 ###### nginx: 
