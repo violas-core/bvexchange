@@ -30,6 +30,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
+import tools.show_workenv
 
 #module self.name
 mod_name="webserver"
@@ -54,6 +55,8 @@ def main():
         return tranrecord(chain, sender, cursor, limit)
     elif opt == "detail":
         return trandetail(dtype, version)
+    elif opt == "workstate":
+        return workstate()
     else:
         raise Exception("opt not found.")
 
@@ -131,6 +134,11 @@ def get_chain_record(flag, sender, cursor, limit):
     return ret
 def get_proofdb(dtype):
     return stmanage.get_db(dtype)
+
+@app.route('/workstate/', methods=['GET'])
+def workstate():
+    return tools.show_workenv.show_all()
+
 '''
 with app.test_request_context():
     logger.debug(url_for('tranaddress', chain = "violas", cursor = 0, limit = 10))
