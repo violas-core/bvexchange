@@ -215,7 +215,8 @@ class abase(baseobject):
                     "token"         : None,
                     "version"       : 0,
                     "tran_id"       : None,
-                    "tran_state"    : False
+                    "tran_state"    : False,
+                    "expiration_time": 0
                     }
 
             tran = result(error.SUCCEED, datas = datas)
@@ -254,6 +255,7 @@ class abase(baseobject):
             datas["receiver"]       = transaction.get("receiver", None)
             datas["token"]          = transaction.get("token_owner", None)
             datas["token_id"]       = transaction.get("token_id", None)
+            datas["expiration_time"]= transaction.get("expiration_time", 0)
             tran_id                 = data_dict.get("tran_id", None)
             datas["tran_id"]        = tran_id
             datas["sequence"]       = transaction.get("sequence_number")

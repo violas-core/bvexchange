@@ -103,7 +103,10 @@ class violaswallet(baseobject):
                 print(f"auth_key_prefix: {auth} ,address: {addr}")
 
             account = self.__wallet.get_account_by_address_or_refid(address)
-            ret = result(error.SUCCEED, "", account)
+            if account is None:
+                ret = result(error.ARG_INVALID)
+            else:
+                ret = result(error.SUCCEED, "", account)
         except Exception as e:
             ret = parse_except(e)
         return ret
