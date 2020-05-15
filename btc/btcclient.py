@@ -52,25 +52,21 @@ class btcclient(baseobject):
         MARK    = "mark"
 
     def __init__(self, name, btc_conn):
-        self.__btc_url               = "http://%s:%s@%s:%i"
-        self.__rpcuser               = "btc"
-        self.__rpcpassword           = "btc"
-        self.__rpcip                 = "127.0.0.1"
-        self.__rpcport               = 9409
+        self.__btc_url            = "http://%s:%s@%s:%i"
+        self.__user               = "btc"
+        self.__password           = "btc"
+        self.__host               = "127.0.0.1"
+        self.__port               = 9409
         self.__rpc_connection        = ""
         baseobject.__init__(self, name)
 
         if btc_conn :
-            if btc_conn["rpcuser"]:
-                self.__rpcuser = btc_conn["rpcuser"]
-            if btc_conn["rpcpassword"]:
-                self.__rpcpassword = btc_conn["rpcpassword"]
-            if btc_conn["rpcip"]:
-                self.__rpcip = btc_conn["rpcip"]
-            if btc_conn["rpcport"]:
-                self.__rpcport = btc_conn["rpcport"]
-        self._logger.debug("connect btc server(rpcuser={}, rpcpassword={}, rpcip={}, rpcport={})".format(btc_conn["rpcuser"], btc_conn["rpcpassword"], btc_conn["rpcip"], btc_conn["rpcport"]))
-        self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__rpcuser, self.__rpcpassword, self.__rpcip, self.__rpcport))
+            self.__user = btc_conn.get("user")
+            self.__password = btc_conn.get("password")
+            self.__host = btc_conn.get("host")
+            self.__port = btc_conn.get("port")
+        self._logger.debug("connect btc server(user={}, password={}, host={}, port={})".format(self.__user, self.__password, self.__host, self.__port))
+        self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__user, self.__password, self.__host, self.__port))
         self._logger.debug(f"connection succeed.")
 
     def disconn_node(self):
