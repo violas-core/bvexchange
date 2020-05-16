@@ -77,59 +77,6 @@ class violasproxy(baseobject):
         print(f"url:{url}")
         return url
 
-
-        '''
-        if opt == self.opt.GET:
-            cursor = kvargs.get("cursor", 0)
-            limit = kvargs.get("limit", 10)
-            address = kvargs.get("address")
-            url += f"&address={address}&cursor={cursor}&limit={limit}"
-            if opttype == self.opttype.B2V:
-                state = kvargs.get("state")
-                url += f"&state={state}"
-                pass
-            elif opttype == self.opttype.FILTER:
-                pass
-            elif opttype == self.opttype.MARK:
-                pass
-            elif opttype == self.opttype.BTCMARK:
-                pass
-            elif opttype == self.opttype.BALANCE:
-                url += f"minconf={kvargs.get('minconf', 1)}&maxconf={kvargs.get('maxconf')}"
-            else:
-                raise Exception(f"opttype:{opttype.name} is invalid.")
-
-        elif opt == self.opt.SET:
-            fromaddress     = kargs.get("fromaddress")
-            toaddress       = kargs.get("toaddress")
-            toamount        = kargs.get("toamount")
-            fromprivkeys    = kargs.get("fromprivkeys")
-            combine         = kargs.get("combine")
-
-            #payload 
-            vreceiver       = kargs.get("vreceiver")
-            sequence        = kargs.get("sequence")
-            module          = kargs.get("module")
-            version         = kargs.get("version")
-            url += f""
-            if opttype == self.opttype.START:
-                pass
-            elif opttype == self.opttype.END:
-                pass
-            elif opttype == self.opttype.MARK:
-                pass
-            elif opttype == self.opttype.BTCMARK:
-                pass
-            else:
-                raise Exception(f"opttype:{opttype.name} is invalid.")
-        else:
-            raise Exception(f"opt:{opt.name} is invalid.")
-
-        return url
-        '''
-
-
-
     @property
     def domain(self):
         return self.__domain
@@ -179,7 +126,6 @@ class violasproxy(baseobject):
             if len(receiver) == 0:
                 return result(error.ARG_INVALID, error.argument_invalid, "")
 
-            print(self.opttype.START.value)
             if extype == comm.values.EX_TYPE_B2V and state in (self.opttype.START.value, self.opttype.END.value, self.opttype.CANCEL.value):
                 url = self.create_opt_url(self.opt.GET, self.opttype.B2V, address=receiver, state=state, cursor = 0, limit=10)
             elif extype == comm.values.EX_TYPE_V2B and state == self.opttype.MARK:
@@ -187,8 +133,10 @@ class violasproxy(baseobject):
             else:
                 return result(error.ARG_INVALID, f"(state={state}, extype={extype}, receiver={receiver})")
 
-            datas = requests.get(url)
-            ret = result(error.SUCCEED, "", datas=datas.json())
+            datas = requests.get(url).json()
+            ret = result()
+            ret.load_json(datas)
+            
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -198,20 +146,15 @@ class violasproxy(baseobject):
         self.work_stop()
 
     def violas_listexproof(self, extype, cursor = 0, limit = 10):
-        try:
-            self._logger.debug(f"start __listexproof(type={extype} cursor={cursor} limit={limit})")
-            
-            datas = self.__rpc_connection.violas_listexproof(extype, cursor, limit)
-            url = self.create_opt_url(self.opt.GET, self.opttype.B2V)
-            ret = requests.get(url)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        raise Exception("not support")
 
     def violas_isexproofcomplete(self, address, sequence):
         try:
-            datas = ""
-            ret = result(error.SUCCEED, "", datas)
+            url = self.create_opt_url(self.opt.check, self.opttype.B2V, address=address, sequence=sequence)
+            ret = requests.get(url).json()
+            datas = requests.get(url).json()
+            ret = result()
+            ret.load_json(datas)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
@@ -229,8 +172,11 @@ class violasproxy(baseobject):
 
     def violas_getexprooflatestindex(self, extype = comm.values.EX_TYPE_B2V):
         try:
-            latest_index = 0
-            ret = result(error.SUCCEED, "", latest_index.get("index", -1))
+            url = self.create_opt_url(self.opt.GET, self.opttype.B2V, datatype="version")
+            ret = requests.get(url).json()
+            datas = requests.get(url).json()
+            ret = result()
+            ret.load_json(datas)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
@@ -330,6 +276,15 @@ def main():
        print(conf)
        client = violasproxy(name, conf.get("host"), conf.get("port"), conf.get("user"), conf.get("password"), conf.get("domain", "violaslayer"))
        ret = client.violas_listexproofforstate("end", comm.values.EX_TYPE_B2V, receiver=receiver, excluded = None)
+       json_print(ret.to_json())
+
+       print("*"*30 + "get start ")
+       client = violasproxy(name, conf.get("host"), conf.get("port"), conf.get("user"), conf.get("password"), conf.get("domain", "violaslayer"))
+       ret = client.violas_listexproofforstate("start", comm.values.EX_TYPE_B2V, receiver=receiver, excluded = None)
+       json_print(ret.to_json())
+
+
+       ret = client.violas_getexprooflatestindex()
        json_print(ret.to_json())
 
 
