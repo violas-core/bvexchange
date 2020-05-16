@@ -38,6 +38,7 @@ class violasproxy(baseobject):
         START   = 'start'
         END     = 'end'
         CANCEL  = 'cancel'
+        LISTUNSPENT = "listunspent"
 
     def __init__(self, name, host, port = None, user = None, password = None, domain="violaslayer"):
         baseobject.__init__(self, name)
@@ -120,153 +121,86 @@ class violasproxy(baseobject):
     def disconn_node(self):
         pass
 
+    def run_request(self, url):
+        datas = requests.get(url).json()
+        return datas.get("datas")
+
     def violas_listexproofforstate(self, state, extype, receiver, excluded = None):
-        try:
-            url = None
-            if len(receiver) == 0:
-                return result(error.ARG_INVALID, error.argument_invalid, "")
+        url = None
+        if len(receiver) == 0:
+            raise Exception(f"receiver is empty")
 
-            if extype == comm.values.EX_TYPE_B2V and state in (self.opttype.START.value, self.opttype.END.value, self.opttype.CANCEL.value):
-                url = self.create_opt_url(self.opt.GET, self.opttype.B2V, address=receiver, state=state, cursor = 0, limit=10)
-            elif extype == comm.values.EX_TYPE_V2B and state == self.opttype.MARK:
-                url = self.create_opt_url(self.opt.GET, self.opttype.MARK, address=receiver)
-            else:
-                return result(error.ARG_INVALID, f"(state={state}, extype={extype}, receiver={receiver})")
+        if extype == comm.values.EX_TYPE_B2V and state in (self.opttype.START.value, self.opttype.END.value, self.opttype.CANCEL.value):
+            url = self.create_opt_url(self.opt.GET, self.opttype.B2V, address=receiver, state=state, cursor = 0, limit=10)
+        elif extype == comm.values.EX_TYPE_V2B and state == self.opttype.MARK:
+            url = self.create_opt_url(self.opt.GET, self.opttype.MARK, address=receiver)
+        else:
+            raise Exception(f"(state={state}, extype={extype}, receiver={receiver})")
 
-            datas = requests.get(url).json()
-            ret = result()
-            ret.load_json(datas)
-            
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self.run_request(url)
 
 
     def stop(self):
         self.work_stop()
 
     def violas_listexproof(self, extype, cursor = 0, limit = 10):
-        raise Exception("not support")
+        url = None
+        if extype == comm.values.EX_TYPE_B2V:
+            url = self.create_opt_url(self.opt.GET, self.opttype.B2V, cursor, limit)
+        elif extype == comm.values.EX_TYPE_V2B:
+            url = self.create_opt_url(self.opt.GET, self.opttype.MARK, cursor, limit)
+        else:
+            raise Exception(f"extype is not found.(extype={extype})")
+
+        return self.run_request(url)
 
     def violas_isexproofcomplete(self, address, sequence):
-        try:
-            url = self.create_opt_url(self.opt.check, self.opttype.B2V, address=address, sequence=sequence)
-            ret = requests.get(url).json()
-            datas = requests.get(url).json()
-            ret = result()
-            ret.load_json(datas)
-            self._logger.debug(f"result: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-
-    def listexproofforb2v(self, cursor, limit = 1):
-        try:
-            datas = ""
-            ret = result(error.SUCCEED, "", datas)
-            self._logger.debug(f"result: {len(ret.datas)}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        url = self.create_opt_url(self.opt.check, self.opttype.B2V, address=address, sequence=sequence)
+        ret = requests.get(url).json()
+        return self.run_request(url)
 
     def violas_getexprooflatestindex(self, extype = comm.values.EX_TYPE_B2V):
-        try:
-            url = self.create_opt_url(self.opt.GET, self.opttype.B2V, datatype="version")
-            ret = requests.get(url).json()
-            datas = requests.get(url).json()
-            ret = result()
-            ret.load_json(datas)
-            self._logger.debug(f"result: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        url = self.create_opt_url(self.opt.GET, self.opttype.B2V, datatype="version")
+        ret = requests.get(url).json()
+        return self.run_request(url)
 
-    def violas_sendexproofstart(self, fromaddress, toaddress, amount, vaddress, sequence, vtoken):#BTC
-        try:
-            datas = ""
-            ret = result(error.SUCCEED, "", datas)
-            self._logger.info(f"result: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+    def violas_sendexproofstart(self, fromaddress, toaddress, amount, vaddress, sequence, vtoken, fromprivkeys):#BTC
+        url = self.create_opt_url(self.opt.SET, self.opttype.START, \
+                fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
+                vreceiver=vaddress, sequence=sequence, module=vtoken, fromprivkeys=json.dumps(fromprivkeys))
+        return self.run_request(url)
 
-    def violas_sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, version):#BTC
-        try:
-            datas = ""
-            ret = result(error.SUCCEED, "", datas)
-            self._logger.info(f"result: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+    def violas_sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, version, fromprivkeys):#BTC
+        url = self.create_opt_url(self.opt.SET, self.opttype.END, \
+                fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
+                vreceiver=vaddress, sequence=sequence, module=vtoken, version=version, fromprivkeys=json.dumps(fromprivkeys))
+        return self.run_request(url)
 
     def sendtoaddress(self, address, amount):#BTC
-        try:
-            datas = ""
-            ret = result(error.SUCCEED, "", datas)
-            self._logger.info(f"result: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        raise Exception("not support")
    
     def violas_sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, version):
-        try:
-            datas = ""
-            ret = result(error.SUCCEED, "", datas)
-            self._logger.info(f"result: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        url = self.create_opt_url(self.opt.SET, self.opttype.MARK, \
+                fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
+                vreceiver=vaddress, sequence=sequence, version=version, fromprivkeys=json.dumps(fromprivkeys))
+        return self.run_request(url)
 
     def generatetoaddress(self, count, address):
         raise Exception("not support")
 
     def listunspent(self, minconf = 1, maxconf = 9999999, addresses = None, include_unsafe = True, query_options = None):
-        try:
-            datas = ""
-            ret = result(error.SUCCEED, "", datas)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        url = self.create_opt_url(self.opt.GET, self.opttype.LISTUNSPENT, address=json.dumps(addresses), minconf = minconf, maxconf=maxconf)
+        return self.run_request(url)
 
     def help(self):
         raise Exception("not support")
 
     def getwalletbalance(self):
-        try:
-            balance = -1
-            ret = result(error.SUCCEED, "", balance)
-            self._logger.debug(f"result: {ret.datas:.8f}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        raise Exception("not support")
 
-    def getwalletaddressbalance(self, address):
-        try:
-            ret = result(error.SUCCEED, "", -1)
-            self._logger.debug(f"result: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def violas_getexproofforaddress(self, address, version, extype = comm.values.EX_TYPE_V2B):
-        try:
-            datas = ""
-            ret = result(error.SUCCEED, "", datas)
-            self._logger.info(f"result: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def violas_getexproofforaddress(self, address, version, extype = comm.values.EX_TYPE_B2V):
-        try:
-            datas = ""
-            ret = result(error.SUCCEED, "", datas)
-            self._logger.info(f"result: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
+    def getwalletaddressbalance(self, address, minconf=1, maxconf=99999999):
+        url = self.create_opt_url(self.opt.GET, self.opttype.BALANCE, address=address, minconf = minconf, maxconf=maxconf)
+        return self.run_request(url)
 
 def main():
     try:
@@ -276,18 +210,22 @@ def main():
        print(conf)
        client = violasproxy(name, conf.get("host"), conf.get("port"), conf.get("user"), conf.get("password"), conf.get("domain", "violaslayer"))
        ret = client.violas_listexproofforstate("end", comm.values.EX_TYPE_B2V, receiver=receiver, excluded = None)
-       json_print(ret.to_json())
+       json_print(ret)
 
        print("*"*30 + "get start ")
        client = violasproxy(name, conf.get("host"), conf.get("port"), conf.get("user"), conf.get("password"), conf.get("domain", "violaslayer"))
        ret = client.violas_listexproofforstate("start", comm.values.EX_TYPE_B2V, receiver=receiver, excluded = None)
-       json_print(ret.to_json())
+       json_print(ret)
 
 
+       print("*"*30 + "get proof latest index")
        ret = client.violas_getexprooflatestindex()
-       json_print(ret.to_json())
+       json_print(ret)
 
 
+       print("*"*30 + "get proof latest index")
+       ret = client.listunspent(addresses = ["2MxBZG7295wfsXaUj69quf8vucFzwG35UWh"])
+       json_print(ret)
 
     except Exception as e:
         parse_except(e)
