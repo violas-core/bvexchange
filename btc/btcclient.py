@@ -294,26 +294,6 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def has_v2b_mark(self, address, version):
-        try:
-            self._logger.debug(f"start has_v2b_mark(address = {address}, version={version})")
-            datas = self.__rpc_connection.violas_getexproofforaddress(address, version, comm.values.EX_TYPE_V2B)
-            ret = result(error.SUCCEED, "", datas)
-            self._logger.info(f"result: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def has_b2v_mark(self, address, version):
-        try:
-            self._logger.debug(f"start has_b2v_mark(address = {address}, version={version})")
-            datas = self.__rpc_connection.violas_getexproofforaddress(address, version, comm.values.EX_TYPE_B2V)
-            ret = result(error.SUCCEED, "", datas)
-            self._logger.info(f"result: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
 
 def main():
     try:
