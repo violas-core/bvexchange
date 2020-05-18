@@ -22,7 +22,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 #from .models import BtcRpc
 from baseobject import baseobject
 from enum import Enum
-from violasproxy import violasproxy
+from btc.violasproxy import violasproxy
 
 #module name
 name="bclient"
@@ -176,7 +176,7 @@ class btcclient(baseobject):
     def get_latest_transaction_version(self):
         try:
             latest_index = self.__rpc_connection.violas_getexprooflatestindex(comm.values.EX_TYPE_B2V)
-            ret = result(error.SUCCEED, "", latest_index.get("index", -1))
+            ret = result(error.SUCCEED, "", int(latest_index))
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)

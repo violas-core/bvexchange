@@ -19,6 +19,7 @@ from comm.error import error
 from comm.functions import split_full_address, json_print
 from baseobject import baseobject
 from enum import Enum
+from btc.btcwallet import btcwallet
 
 #module name
 name="violasproxy"
@@ -28,6 +29,7 @@ class violasproxy(baseobject):
     class opt(Enum):
         GET = 'get'
         SET = 'set'
+        CHECK = "check"
 
     class opttype(Enum):
         B2V     = 'b2v'
@@ -40,7 +42,7 @@ class violasproxy(baseobject):
         CANCEL  = 'cancel'
         LISTUNSPENT = "listunspent"
 
-    def __init__(self, name, host, port = None, user = None, password = None, domain="violaslayer"):
+    def __init__(self, name, host, port = None, user = None, password = None, domain="violaslayer", walletname="bwallet"):
         baseobject.__init__(self, name)
 
         self.user = str(user)
@@ -48,6 +50,7 @@ class violasproxy(baseobject):
         self.host = str(host)
         self.port = port
         self.domain = str(domain)
+        self.wallet = btcwallet(walletname)
         self._logger.debug(f"connect violas server(host={host}  port={port} domain={domain}")
 
     def convert_arg_to_url(self, args):
@@ -77,6 +80,14 @@ class violasproxy(baseobject):
 
         print(f"url:{url}")
         return url
+
+    @property
+    def wallet(self):
+        return self.__wallet
+
+    @wallet.setter
+    def wallet(self, value):
+        self.__wallet = value
 
     @property
     def domain(self):
@@ -125,6 +136,16 @@ class violasproxy(baseobject):
         datas = requests.get(url).json()
         return datas.get("datas")
 
+    def is_excluded(self, proof, excludeds):
+        if excludeds is None:
+            return False
+
+        for excluded in excludeds:
+            if proof.get("address") == excluded.get("address", "") and \
+                    int(proof.get("sequence")) == int(excluded.get("sequence")):
+                return True
+        return False
+
     def violas_listexproofforstate(self, state, extype, receiver, excluded = None):
         url = None
         if len(receiver) == 0:
@@ -137,7 +158,9 @@ class violasproxy(baseobject):
         else:
             raise Exception(f"(state={state}, extype={extype}, receiver={receiver})")
 
-        return self.run_request(url)
+        datas = requests.get(url).json().get("datas")
+
+        return [data for data in datas if not self.is_excluded(data, excluded)]
 
 
     def stop(self):
@@ -146,16 +169,16 @@ class violasproxy(baseobject):
     def violas_listexproof(self, extype, cursor = 0, limit = 10):
         url = None
         if extype == comm.values.EX_TYPE_B2V:
-            url = self.create_opt_url(self.opt.GET, self.opttype.B2V, cursor, limit)
+            url = self.create_opt_url(self.opt.GET, self.opttype.B2V, cursor=cursor, limit=limit)
         elif extype == comm.values.EX_TYPE_V2B:
-            url = self.create_opt_url(self.opt.GET, self.opttype.MARK, cursor, limit)
+            url = self.create_opt_url(self.opt.GET, self.opttype.MARK, cursor=cursor, limit=limit)
         else:
             raise Exception(f"extype is not found.(extype={extype})")
 
         return self.run_request(url)
 
     def violas_isexproofcomplete(self, address, sequence):
-        url = self.create_opt_url(self.opt.check, self.opttype.B2V, address=address, sequence=sequence)
+        url = self.create_opt_url(self.opt.CHECK, self.opttype.B2V, address=address, sequence=sequence)
         ret = requests.get(url).json()
         return self.run_request(url)
 
@@ -164,22 +187,37 @@ class violasproxy(baseobject):
         ret = requests.get(url).json()
         return self.run_request(url)
 
-    def violas_sendexproofstart(self, fromaddress, toaddress, amount, vaddress, sequence, vtoken, fromprivkeys):#BTC
+    def get_privkeys(self, address, privkeys = None):
+        if privkeys is None:
+            privkey = self.wallet.get_privkey(address)
+            if privkey is None or len(privkey) == 0:
+                raise Exception(f"{address}'s privkey is not found. address:{address}")
+            privkeys = [privkey]
+        if privkeys is None or len(privkeys) == 0:
+            raise Exception(f"{address}'s privkey is not found. address:{address}")
+
+        return privkeys
+
+    def violas_sendexproofstart(self, fromaddress, toaddress, amount, vaddress, sequence, vtoken, fromprivkeys = None):#BTC
+
+        fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
         url = self.create_opt_url(self.opt.SET, self.opttype.START, \
                 fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
                 vreceiver=vaddress, sequence=sequence, module=vtoken, fromprivkeys=json.dumps(fromprivkeys))
         return self.run_request(url)
 
-    def violas_sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, version, fromprivkeys):#BTC
+    def violas_sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, version, fromprivkeys = None):#BTC
+        fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
         url = self.create_opt_url(self.opt.SET, self.opttype.END, \
-                fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
-                vreceiver=vaddress, sequence=sequence, module=vtoken, version=version, fromprivkeys=json.dumps(fromprivkeys))
+                fromaddress=fromaddress, toaddress=toaddress, toamount=0, \
+                vreceiver=vaddress, sequence=sequence, amount = amount, version=version, fromprivkeys=json.dumps(fromprivkeys))
         return self.run_request(url)
 
     def sendtoaddress(self, address, amount):#BTC
         raise Exception("not support")
    
-    def violas_sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, version):
+    def violas_sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, version, fromprivkeys = None):
+        fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
         url = self.create_opt_url(self.opt.SET, self.opttype.MARK, \
                 fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
                 vreceiver=vaddress, sequence=sequence, version=version, fromprivkeys=json.dumps(fromprivkeys))
