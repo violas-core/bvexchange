@@ -43,11 +43,11 @@ class violasproxy(baseobject):
     def __init__(self, name, host, port = None, user = None, password = None, domain="violaslayer"):
         baseobject.__init__(self, name)
 
-        self.user = user
-        self.password = password
-        self.host = host
+        self.user = str(user)
+        self.password = str(password)
+        self.host = str(host)
         self.port = port
-        self.domain = domain
+        self.domain = str(domain)
         self._logger.debug(f"connect violas server(host={host}  port={port} domain={domain}")
 
     def convert_arg_to_url(self, args):
@@ -196,6 +196,9 @@ class violasproxy(baseobject):
         raise Exception("not support")
 
     def getwalletbalance(self):
+        raise Exception("not support")
+
+    def getwalletinfo(self):
         raise Exception("not support")
 
     def getwalletaddressbalance(self, address, minconf=1, maxconf=99999999):

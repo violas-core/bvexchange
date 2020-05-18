@@ -22,6 +22,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 #from .models import BtcRpc
 from baseobject import baseobject
 from enum import Enum
+from violasproxy import violasproxy
 
 #module name
 name="bclient"
@@ -65,8 +66,14 @@ class btcclient(baseobject):
             self.__password = btc_conn.get("password")
             self.__host = btc_conn.get("host")
             self.__port = btc_conn.get("port")
+            self.__domain = btc_conn.get("domain")
+            server = btc_conn.get("server", "btc")
+
         self._logger.debug("connect btc server(user={}, password={}, host={}, port={})".format(self.__user, self.__password, self.__host, self.__port))
-        self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__user, self.__password, self.__host, self.__port))
+        if server == "btc":
+            self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__user, self.__password, self.__host, self.__port))
+        else:
+            self.__rpc_connection = violasproxy(name, self.__host, self.__port, self.__user, self.__password, self.__domain)
         self._logger.debug(f"connection succeed.")
 
     def disconn_node(self):
