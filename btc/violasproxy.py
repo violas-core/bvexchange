@@ -219,7 +219,7 @@ class violasproxy(baseobject):
     def violas_sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, version, fromprivkeys = None):
         fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
         url = self.create_opt_url(self.opt.SET, self.opttype.MARK, \
-                fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
+                fromaddress=fromaddress, toaddress=toaddress, toamount=toamount, \
                 vreceiver=vaddress, sequence=sequence, version=version, fromprivkeys=json.dumps(fromprivkeys))
         return self.run_request(url)
 
