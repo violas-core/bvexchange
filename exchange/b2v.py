@@ -405,7 +405,6 @@ class exb2v(baseobject):
                         if not self.work():
                             break
 
-
                         #grant vbtc 
                         ##check 
                         to_address = data["address"]
