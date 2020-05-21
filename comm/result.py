@@ -14,10 +14,11 @@ class result:
         message = ""
         datas = ""
         
-        def __init__(self, state, message = None, datas = None):
+        def __init__(self, state = None, message = None, datas = None):
             self.state = state 
             self.message = message
             self.datas = datas
+
         def to_map(self):
             return {"state": "self.state.name", "message":self.message, "datas":self.datas}
         
@@ -27,6 +28,10 @@ class result:
         def to_json(self):
             return {"state":self.state.name, "message":self.message, "datas":self.datas}
 
+        def load_json(self, data):
+            self.state = error(data.get("state").lower())
+            self.message = data.get("message")
+            self.datas = data.get("datas")
 
 def parse_except(e, msg = None, datas = None):
     try:

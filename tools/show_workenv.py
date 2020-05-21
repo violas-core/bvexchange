@@ -50,7 +50,7 @@ def show_db():
                 "latest_saved_ver": db.get_latest_saved_ver().datas, \
                 "min_valid_ver": db.get_min_valid_ver().datas, \
                 "index": idx.value, \
-               # "db":dbconf, \
+                #"db":dbconf, \
                 }
         infos[idx.name.lower()] = info
     json_print(infos)

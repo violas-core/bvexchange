@@ -15,6 +15,7 @@ libra-client
 *.address
 vwallet_std
 vwallet
+bwallet
 *.rotate
 *consensus_peers.config.toml
 temp_faucet_keys
