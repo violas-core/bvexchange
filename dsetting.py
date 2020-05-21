@@ -12,7 +12,12 @@ db_echo=False
 v2b_maxtimes = 99
 
 #btc connect 
-btc_conn = {'rpcuser':'btc', 'rpcpassword':'btc', 'rpcip':'127.0.0.1', 'rpcport':18332}
+btc_conn = {'user':'btc', 
+        'password':'btc', 
+        'host':'127.0.0.1', 
+        'port':8066, 
+        'domain':'violaslayer', 
+        "server":"violaslayer"} #server(btc  violaslayer) default :btc 
 
 #violas node list, to connect one
 violas_nodes=[

@@ -151,7 +151,7 @@ class exb2v(baseobject):
         return ret
     
     def __checks(self):
-        assert (len(stmanage.get_btc_conn()) == 4), "btc_conn is invalid."
+        assert (len(stmanage.get_btc_conn()) >= 4), "btc_conn is invalid."
         assert (len(stmanage.get_sender_address_list(self.name(), self.map_chain())) > 0 ), "violas sender not found."
         for addr in stmanage.get_sender_address_list(self.name(), self.map_chain()):
             assert len(addr) in VIOLAS_ADDRESS_LEN, f"violas address({addr}) is invalid."
@@ -334,6 +334,15 @@ class exb2v(baseobject):
         self.work_stop()
         
 
+    def is_excluded(self, address, sequence, excludeds):
+        if excludeds is None:
+            return False
+
+        for excluded in excludeds:
+            if address == excluded.get("address", "") and sequence == excluded.get("sequence"):
+                return True
+        return False
+
     def start(self):
         try:
             self._logger.debug("start b2v work")
@@ -396,6 +405,7 @@ class exb2v(baseobject):
                         if not self.work():
                             break
 
+
                         #grant vbtc 
                         ##check 
                         to_address = data["address"]
@@ -403,6 +413,10 @@ class exb2v(baseobject):
                         _, to_module_address = split_full_address(data["vtoken"])
                         vamount = int(float(data["amount"]) * COINS)
                         
+                        if self.is_excluded(to_address, sequence, excluded):
+                            self._logger.warning(f"{address} {sequence} in db. ignore it, next...")
+                            continue
+
                         if (len(module_address) not in VIOLAS_ADDRESS_LEN or module_address != to_module_address):
                             if self.can_show_waning(f"vtoken is invalid{to_address}.{sequence}"):
                                self._logger.warning(f"vtoken({to_module_address}) is invalid.(to_address:{to_address} sequence:{sequence}")
