@@ -47,6 +47,7 @@ class exv2b(baseobject):
         self._v2b = dbv2b(name, f"{self.from_chain()}_{self.name()}.db")
         self._wallet = violaswallet(name, wallet_name)
         self.token_id = token_id
+        self.step = 10
     
         #violas init
         self._vserver = requestclient(name, proofdb)
@@ -71,6 +72,14 @@ class exv2b(baseobject):
         del self._receivers
 
     @property
+    def step(self):
+        return self.__step
+
+    @step.setter
+    def step(self, value):
+        self.__step = value
+
+    @property
     def token_id(self):
         return self._token_id
 
@@ -84,7 +93,7 @@ class exv2b(baseobject):
             for info in dbinfos:
                 new_data = {"vaddress":info.vaddress, "sequence":info.sequence, "vtoken":info.vtoken,\
                         "version":info.version, "to_address":info.toaddress, "vreceiver":info.vreceiver, \
-                        "vamount":info.vamount, "times":info.times, "tran_id":info.tranid, "token_id":info.tokenid}
+                        "vamount":info.vamount, "times":info.times, "tran_id":info.tranid, "token_id":info.tokenid, "txid":info.txid}
                 if info.vreceiver in rpcparams.keys():
                     rpcparams[info.vreceiver].append(new_data)
                 else:
@@ -153,11 +162,12 @@ class exv2b(baseobject):
                 datas = ret.datas.get(key)
                 for data in datas:
                     tran_id = data.get("tran_id")
+                    txid = data.get("txid")
                     if tran_id is None:
                         continue
                     ret = self._vserver.is_end(tran_id)
                     if ret.state == error.SUCCEED and ret.datas == True:
-                       ret = self._v2b.update_v2binfo_to_complete_commit(tran_id)
+                       ret = self._v2b.update_v2binfo_to_complete_commit(tran_id, txid=txid)
                        assert (ret.state == error.SUCCEED), "db error"
 
         except Exception as e:
@@ -216,25 +226,26 @@ class exv2b(baseobject):
                     tran_id = data.get("tran_id")
                     module = data.get("vtoken")
                     token_id = data.get("token_id")
+                    txid = data.get("txid")
                     if tran_id is None:
                         continue
                     #state is end? maybe changing state rasise except, but transaction is SUCCEED
                     ret = self._vserver.is_end(tran_id)
                     if ret.state == error.SUCCEED and ret.datas == True:
-                       ret = self._v2b.update_v2binfo_to_complete_commit(tran_id)
+                       ret = self._v2b.update_v2binfo_to_complete_commit(tran_id, txid=txid)
                        assert (ret.state == error.SUCCEED), "db error"
                        continue
 
                     if module != self._module_address:
                         continue
                     #sendexproofmark succeed , change violas state
-                    self._send_violas_coin_and_update_state_to_end(vsender, receiver, module, tran_id, token_id)
+                    self._send_violas_coin_and_update_state_to_end(vsender, receiver, module, tran_id, token_id, txid)
 
-    def _send_violas_coin_and_update_state_to_end(self, vsender, receiver, module,  tran_id, token_id, amount = 1):
+    def _send_violas_coin_and_update_state_to_end(self, vsender, receiver, module,  tran_id, token_id, txid, amount = 1):
             tran_data = self._vclient.create_data_for_end(self.from_chain(), self.name(), tran_id)
             ret = self._vclient.send_violas_coin(vsender, receiver, amount, token_id, module, tran_data)
             if ret.state == error.SUCCEED:
-                ret = self._v2b.update_v2binfo_to_vsucceed_commit(tran_id)
+                ret = self._v2b.update_v2binfo_to_vsucceed_commit(tran_id, txid = txid)
                 assert (ret.state == error.SUCCEED), "db error"
             return ret
         
@@ -365,7 +376,7 @@ class exv2b(baseobject):
                             continue
 
                         #sendexproofmark succeed , change violas state
-                        self._send_violas_coin_and_update_state_to_end(vsender, receiver, module, tran_id, token_id)
+                        self._send_violas_coin_and_update_state_to_end(vsender, receiver, module, tran_id, token_id, txid)
 
             ret = result(error.SUCCEED)
         except Exception as e:
@@ -408,7 +419,7 @@ class exv2b(baseobject):
                 latest_version = self._latest_version.get(receiver, 0) + 1
 
                 #get new transaction from violas server
-                ret = self._vserver.get_transactions_for_start(receiver, self._module_address, self.token_id, latest_version)
+                ret = self._vserver.get_transactions_for_start(receiver, self._module_address, self.token_id, latest_version, limit = self.step)
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     self._logger.debug("start exchange datas from violas server. receiver={}".format(receiver))
                     for data in ret.datas:
@@ -470,7 +481,7 @@ class exv2b(baseobject):
                             assert (ret.state == error.SUCCEED), "db error"
            
                         #sendexproofmark succeed , change violas state
-                        self._send_violas_coin_and_update_state_to_end(vsender, receiver, self._module_address, token_id, tran_id)
+                        self._send_violas_coin_and_update_state_to_end(vsender, receiver, self._module_address, tran_id, token_id, txid)
     
             ret = result(error.SUCCEED) 
     
@@ -483,11 +494,22 @@ class exv2b(baseobject):
     
 def main():
        print("start main")
-       v2b = exv2b()
+       mod = "v2b"
+       chain = "violas"
+       try:
+           obj = exv2b(mod, 
+                   stmanage.get_violas_nodes(), 
+                   stmanage.get_btc_conn(), 
+                   stmanage.get_db(mod), 
+                   stmanage.get_module_address(mod, chain), 
+                   stmanage.get_token_id(mod, chain), 
+                   list(set(stmanage.get_receiver_address_list(mod, chain))),
+                   chain=chain)
+           obj.step = 1
+           obj.start()
+       except Exception as e:
+           parse_except(e)
        
-       ret = v2b.start()
-       if ret.state != error.SUCCEED:
-           print(ret.message)
 
 if __name__ == "__main__":
     main()
