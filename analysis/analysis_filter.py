@@ -37,10 +37,6 @@ class afilter(abase):
     def __del__(self):
         abase.__del__(self)
 
-    def stop(self):
-        abase.stop(self)
-        self.work_stop()
-
     @classmethod
     def get_tran_data(self, data, isviolas = True):
         tran_data = data.to_json()
@@ -113,6 +109,7 @@ class afilter(abase):
                 if self.is_target_tran(tran_data) == False:
                     continue
 
+                print(tran_data["data"])
                 self._logger.debug(f"version: {version}: {tran_data['data']}")
                 #save to redis db
                 ret = self._dbclient.set(version, json.dumps(tran_data))
