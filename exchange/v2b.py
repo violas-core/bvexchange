@@ -242,7 +242,7 @@ class exv2b(baseobject):
                     self._send_violas_coin_and_update_state_to_end(vsender, receiver, module, tran_id, token_id, txid)
 
     def _send_violas_coin_and_update_state_to_end(self, vsender, receiver, module,  tran_id, token_id, txid, amount = 1):
-            tran_data = self._vclient.create_data_for_end(self.from_chain(), self.name(), tran_id)
+            tran_data = self._vclient.create_data_for_end(self.from_chain(), self.name(), tran_id, txid)
             ret = self._vclient.send_violas_coin(vsender, receiver, amount, token_id, module, tran_data)
             if ret.state == error.SUCCEED:
                 ret = self._v2b.update_v2binfo_to_vsucceed_commit(tran_id, txid = txid)

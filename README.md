@@ -2,12 +2,17 @@
 btc violas token exchange
 
 ## depends
+####use bvlscore[discard] or violaslayer
+##### btc opt
 bvlscore: [https://github.com/palliums-developers/bvlscore.git]
 violas nodes:[]
 version:v0.5.0
 
+violaslayer:[https://github.com/palliums-developers/violaslayer]
+
+##### violas or libra opt
 violas-client: [https://github.com/palliums-developers/violas-client.git]
-version:v4.0
+version:v0.9.x
 
 ## To run
 git clone https://github.com/palliums-developers/bvexchange
