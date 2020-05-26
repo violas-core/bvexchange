@@ -251,7 +251,7 @@ class exlv(baseobject):
     def _send_coin_for_update_state_to_end(self, sender, receiver, module, tran_id, token_id, amount = 1):
             self._logger.debug(f"start _send_coin_for_update_state_to_end(sender={sender.address.hex()},"\
                     f"recever={receiver}, module={module}, tran_id={tran_id}, amount={amount})")
-            tran_data = self._fromclient.create_data_for_end(self.from_chain(), self.name(), tran_id)
+            tran_data = self._fromclient.create_data_for_end(self.from_chain(), self.name(), tran_id, "")
             if module is None or module == "0000000000000000000000000000000000000000000000000000000000000000":
                 ret = self._fromclient.send_platform_coin(sender, receiver, amount, tran_data)
             else: 
