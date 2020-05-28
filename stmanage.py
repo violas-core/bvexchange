@@ -1,13 +1,14 @@
 #!/usr/bin/python3
-import dsetting as setting
-#import setting
+#import dsetting as setting
+from setting import setting
 import comm.values
 from comm import result
 from comm.result import parse_except
 from comm.functions import get_address_from_full_address 
-
+from comm.functions import json_print
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
+
 def check_setting():
     pass
 
@@ -82,7 +83,7 @@ def get_combine_address(mtype = "b2v", chain = "btc", full = True):
     try:
         ms = __get_address_list("combine", mtype, chain, full)
         if ms is None or len(ms) == 0:
-            return none
+            return None
         assert len(ms) == 1, f"({mtype}) chain({chain}) found multi combin address , check it"
         return ms[0]
     except Exception as e:
@@ -169,6 +170,8 @@ def get_conf():
         info["sender"] = get_sender_address_list(mtype)
         info["module"] = get_module_address(mtype, 'violas')
         info["db"] = get_db(mtype)
+        if info["db"] is not None:
+            info["db"]["password"] = "password is keep secret"
         info["loop sleep"] = get_looping_sleep(mtype)
         info["max times"] = get_max_times(mtype)
         info["combine"] = get_combine_address(mtype)
@@ -200,6 +203,7 @@ def main():
     print(f"get libra nodes: {get_libra_nodes()}")
     print(f"get db echo :{get_db_echo()}")
 
+    json_print(get_conf())
 
 if __name__ == "__main__":
     main()
