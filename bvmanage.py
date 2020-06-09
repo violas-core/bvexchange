@@ -1,21 +1,21 @@
 #!/usr/bin/python3
 import sys, getopt, os
-#os.chdir(os.path.dirname(sys.argv[0]))
 import log 
 import json
 import log.logger
+import bvexchange
 from comm.parseargs import parseargs
 from tools import show_workenv
-import bvexchange
 
 name = "bvexchange"
 logger = log.logger.getLogger(name)
 
-
 def init_args(pargs):
+    print("xxx")
     pargs.append("help", "show args info")
     pargs.append("mod", "run mod", True, bvexchange.list_valid_mods())
     pargs.append("info", "show info", True, show_workenv.list_valid_mods())
+    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file")
 
 def main(argc, argv):
     pargs = parseargs()
@@ -36,6 +36,15 @@ def main(argc, argv):
 
     names = [opt for opt, arg in opts]
     pargs.check_unique(names)
+
+    #--conf must be first
+    for opt, arg in opts:
+        if pargs.is_matched(opt, ["conf"]):
+            os.environ.setdefault("BVEXCHANGE_CONFIG", arg) 
+            break
+    if os.environ.get("BVEXCHANGE_CONFIG", None) is None:
+        os.environ.setdefault("BVEXCHANGE_CONFIG", os.path.join(os.path.dirname(os.path.abspath(__file__)), "bvexchange.toml")) 
+
     for opt, arg in opts:
         count, arg_list = pargs.split_arg(arg)
         if pargs.is_matched(opt, ["mod"]) :
@@ -44,11 +53,12 @@ def main(argc, argv):
             logger.debug(f"arg_list:{arg_list}")
             bvexchange.run(arg_list)
 
-        if pargs.is_matched(opt, ["info"]) :
+        elif pargs.is_matched(opt, ["info"]) :
             if count < 1:
                 pargs.exit_error_opt(opt)
             logger.debug(f"arg_list:{arg_list}")
             show_workenv.run(arg_list)
+
     logger.debug("end manage.main")
 
 if __name__ == '__main__':
