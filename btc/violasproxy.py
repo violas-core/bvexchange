@@ -247,6 +247,7 @@ def main():
     try:
        receiver = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB" #"2MxBZG7295wfsXaUj69quf8vucFzwG35UWh"
        #load logging
+       stmanage.set_conf_env_default()
        conf = stmanage.get_btc_conn()
        print(conf)
        client = violasproxy(name, conf.get("host"), conf.get("port"), conf.get("user"), conf.get("password"), conf.get("domain", "violaslayer"))

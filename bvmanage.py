@@ -4,6 +4,7 @@ import log
 import json
 import log.logger
 import bvexchange
+import stmanage
 from comm.parseargs import parseargs
 from tools import show_workenv
 
@@ -11,7 +12,6 @@ name = "bvexchange"
 logger = log.logger.getLogger(name)
 
 def init_args(pargs):
-    print("xxx")
     pargs.append("help", "show args info")
     pargs.append("mod", "run mod", True, bvexchange.list_valid_mods())
     pargs.append("info", "show info", True, show_workenv.list_valid_mods())
@@ -40,10 +40,10 @@ def main(argc, argv):
     #--conf must be first
     for opt, arg in opts:
         if pargs.is_matched(opt, ["conf"]):
-            os.environ.setdefault("BVEXCHANGE_CONFIG", arg) 
+            stmanage.set_conf_env(arg)
             break
-    if os.environ.get("BVEXCHANGE_CONFIG", None) is None:
-        os.environ.setdefault("BVEXCHANGE_CONFIG", os.path.join(os.path.dirname(os.path.abspath(__file__)), "bvexchange.toml")) 
+    if stmanage.get_conf_env() is None:
+        stmanage.set_conf_env_default() 
 
     for opt, arg in opts:
         count, arg_list = pargs.split_arg(arg)
