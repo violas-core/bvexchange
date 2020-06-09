@@ -130,9 +130,6 @@ class tomlopt(tomlbase):
     def __init__(self, tomlfile):
         super().__init__(tomlfile)
 
-    def get(self, key):
-        return self.content[key]
-
     @property
     def looping_sleep(self):
         return self.get("looping_sleep")

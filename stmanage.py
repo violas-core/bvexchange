@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-#import dsetting as setting
 from setting import setting
 import comm.values
 from comm import result
