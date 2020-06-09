@@ -496,6 +496,7 @@ def main():
        print("start main")
        mod = "v2b"
        chain = "violas"
+       stmanage.set_conf_env_default()
        try:
            obj = exv2b(mod, 
                    stmanage.get_violas_nodes(), 

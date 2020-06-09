@@ -123,6 +123,7 @@ def getwalletaddressbalance(address):
 
 def init_args(pargs):
     pargs.append("help", "show arg list")
+    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file")
     pargs.append("sendtoaddress", "send to address.format.", True, ["address", "count"])
     pargs.append("sendexproofstart", "create new exchange start proof.", True, ["fromaddress", "toaddress", "amount", "vaddress", "sequence", "vtoken"])
     pargs.append("sendexproofend", "create new exchange end proof.", True, ["fromaddress", "toaddress", "vaddress", "sequence", "vamount", "version"])
@@ -158,6 +159,15 @@ def run(argc, argv):
 
     names = [opt for opt, arg in opts]
     pargs.check_unique(names)
+
+    #--conf must be first
+    for opt, arg in opts:
+        if pargs.is_matched(opt, ["conf"]):
+            stmanage.set_conf_env(arg)
+            break
+    if stmanage.get_conf_env() is None:
+        stmanage.set_conf_env_default() 
+
 
     for opt, arg in opts:
         if len(arg) > 0:

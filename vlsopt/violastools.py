@@ -372,6 +372,7 @@ def init_args(pargs):
     pargs.append("show_token_list", "show token list.", True, ["module"])
     pargs.append("get_account_prefix", "get account prefix.", True, ["address"])
     pargs.append("show_tokens_info", "show tokens info.", True, ["module"])
+    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file")
 
 
 def run(argc, argv):
@@ -395,6 +396,14 @@ def run(argc, argv):
 
     names = [opt for opt, arg in opts]
     pargs.check_unique(names)
+
+    #--conf must be first
+    for opt, arg in opts:
+        if pargs.is_matched(opt, ["conf"]):
+            stmanage.set_conf_env(arg)
+            break
+    if stmanage.get_conf_env() is None:
+        stmanage.set_conf_env_default() 
 
     global chain
     for opt, arg in opts:

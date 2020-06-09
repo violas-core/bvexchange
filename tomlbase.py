@@ -36,7 +36,7 @@ class tomlbase():
 
     def __get_conf_file(self):
         release_path = ""
-        conffile = os.getenv("BVEXCHANGE_CONFIG", None)
+        conffile = self.get_conf_env()
         #default toml. local or /etc/bvexchange
         if conffile is None:
             return None
@@ -80,7 +80,24 @@ class tomlbase():
             sys.exit(-1)
         return self.content[key]
 
+    @classmethod
+    def set_conf_env(self, conffile):
+        os.environ.setdefault("BVEXCHANGE_CONFIG", conffile)
+
+    @classmethod
+    def get_conf_env(self):
+        return os.environ.get("BVEXCHANGE_CONFIG", None)
+
+    @classmethod
+    def set_conf_env_default(self):
+
+        splits = os.path.dirname(os.path.abspath(__file__)).split("/")
+        basename = splits[-1]
+        os.environ.setdefault("BVEXCHANGE_CONFIG", os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{basename}.toml"))
+
 def main():
+    tomlbase.set_conf_env_default()
+    print(tomlbase.get_conf_env())
     pass
 
 

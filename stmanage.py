@@ -11,6 +11,15 @@ VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 def check_setting():
     pass
 
+def set_conf_env_default():
+    setting.set_conf_env_default()
+
+def set_conf_env(conffile):
+    setting.set_conf_env(conffile)
+
+def get_conf_env():
+    return setting.get_conf_env()
+
 def get_looping_sleep(mtype):
     try:
         sleep = setting.looping_sleep.get(mtype, 1)
