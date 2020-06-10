@@ -117,6 +117,8 @@ The type of transaction mapping, l2vxxx is to map stablecoins from violas chain 
 Transaction request type
 
 ### Attributes
+
+
 <table>
  <tr>
   <td><strong>Name</strong></td>
@@ -143,6 +145,8 @@ Transaction request type
 Keys in JSON string
 
 ### Attributes
+
+
 <table>
  <tr>
   <td><strong>Name</strong></td>
@@ -170,3 +174,53 @@ Keys in JSON string
   <td>Transaction request type</td>
  </tr>
 </table>
+
+## payload
+
+**Description**
+
+
+### l2vusd - start
+
+**Description**
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>libra</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>l2vusd</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>to_address</strong></td>
+  <td>string</td>
+  <td>violas address:00000000000000000000000000000000 + address for hex-str(len = 32)</td>
+  <td>Payee Address</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>start</td>
+  <td>Transaction request type</td>
+ </tr>
+</table>
+
+```
+    '{"flag":"libra", "type":"l2vusd", "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129"}'
+```
