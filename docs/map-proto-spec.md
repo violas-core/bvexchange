@@ -11,7 +11,7 @@ Mapping Protocol is based on the [JSON](https://www.json.org/json-en.html) forma
 v2.0.0
 
 ## JSON 
-JSON (JavaScript Object Notation) is a lightweight data-interchange format, It is easy for humans to read and write. It is easy for machines to parse and generate. Refer to the[JSON](https://www.json.org/json-en.html)
+JSON (JavaScript Object Notation) is a lightweight data-interchange format, It is easy for humans to read and write. It is easy for machines to parse and generate. Refer to the [JSON](https://www.json.org/json-en.html)
 
 
 
