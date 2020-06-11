@@ -26,6 +26,7 @@ JSON (JavaScript Object Notation) is a lightweight data-interchange format, It i
 Describe the chain type to which the transaction belongs
 
 ### Attributes
+
 <table>
  <tr>
   <td><strong>Name</strong></td>
@@ -110,6 +111,11 @@ The type of transaction mapping, l2vxxx is to map stablecoins from violas chain 
    <td><strong>v2lsgd</strong></td>
    <td>string</td>
    <td>liolas's stable coin LBRSGD mapping to libra‘s stable coin ≋SGD.</td>
+  </tr>
+  <tr>
+   <td><strong>v2b</strong></td>
+   <td>string</td>
+   <td>btc mapping to libra‘s stable coin ≋SGD.</td>
   </tr>
 </table>
 
@@ -1155,4 +1161,99 @@ LBRSGD Mapping ≋SGD completed
 
 ```
 '{"flag":"violas", "type":"v2lsgd", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+```
+
+### b2v - start
+
+**Description**
+
+BTC Mapping ≋SGD 
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>violas</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>v2lsgd</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>to_address</strong></td>
+  <td>string</td>
+  <td>hex-str(btc address)</td>
+  <td>The tran_id corresponding to the transaction to be modified</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>start</td>
+  <td>Mapping</td>
+ </tr>
+</table>
+
+```
+'{"flag":"violas", "type":"v2b", "to_address":"2MxBZG7295wfsXaUj69quf8vucFzwG35UWh", "state":"start"}'
+```
+
+
+### b2v - end
+
+**Description**
+
+BTC Mapping ≋SGD completed
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>violas</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>v2lsgd</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>tran_id</strong></td>
+  <td>string</td>
+  <td>hex-str(btc address)</td>
+  <td>The tran_id corresponding to the transaction to be modified</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>end</td>
+  <td>Mapping completed</td>
+ </tr>
+</table>
+
+```
+'{"flag":"violas", "type":"v2b", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
 ```
