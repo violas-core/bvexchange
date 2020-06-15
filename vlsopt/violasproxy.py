@@ -5,8 +5,9 @@ import json
 import os
 sys.path.append(os.getcwd())
 sys.path.append("..")
-sys.path.append("../libviolas")
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libviolas"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client/violas_client"))
+
 import log
 import log.logger
 import traceback
@@ -27,8 +28,10 @@ from comm.functions import json_print
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
 #from violas.client import Client
-from violas.wallet import Wallet
-from violas.client import Client
+#from violas.wallet import Wallet
+#from violas.client import Client
+from wallet_library import Wallet
+from client import Client
 
 #module name
 name="violasproxy"
@@ -44,8 +47,14 @@ class clientproxy(Client):
         pass
 
     @classmethod
-    def connect(self, host, port = None, faucet_file = None, timeout =30, debug = False):
-        return self.new(host = host, port = port, faucet_file = faucet_file, timeout=timeout, debug = debug)
+    def connect(self, host, port = None, faucet_file = None, 
+            timeout =30, debug = False, faucet_server = None, waypoint = None):
+        url = host
+        if "://" not in host:
+            url = f"http://{host}"
+        if port is not None:
+            url += f":{port}"
+        return self.new(url = url, faucet_file = faucet_file, faucet_server = faucet_server, waypoint = waypoint)
 
     def send_coin(self, sender_account, receiver_address, micro_coins, token_id=None, module_address=None, data=None, \
             auth_key_prefix=None, is_blocking=False, max_gas_amount=400_000, unit_price=0, txn_expiration=13):

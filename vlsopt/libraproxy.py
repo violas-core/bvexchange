@@ -4,7 +4,7 @@ import sys
 import json
 import os
 sys.path.append("..")
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client"))
+#sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client"))
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client/libra_client"))
 import log
 import log.logger
@@ -55,7 +55,7 @@ class clientproxy(Client):
     def connect(self, host, port = None, faucet_file = None, timeout =30, debug = False):
         url = host
         if "://" not in host:
-            url = f"https://{host}"
+            url = f"http://{host}"
         if port is not None:
             url += f":{port}"
 

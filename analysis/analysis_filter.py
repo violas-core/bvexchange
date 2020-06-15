@@ -43,7 +43,7 @@ class afilter(abase):
         if isinstance(tran_data, str):
             tran_data = json.loads(tran_data)
         if isviolas and "token_id" not in tran_data:
-            tran_data["token_id"] = data.get_token_id()
+            tran_data["token_id"] = data.get_currency_code()
         if "data" not in tran_data:
                 tran_data["data"] = data.get_data()
         events = data.get_events()

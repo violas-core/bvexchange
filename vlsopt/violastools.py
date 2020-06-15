@@ -5,8 +5,6 @@ import json
 import os
 sys.path.append(os.getcwd())
 sys.path.append("..")
-print(sys.path)
-
 import log
 import log.logger
 import traceback
