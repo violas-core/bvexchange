@@ -141,41 +141,35 @@ def mint_platform_coin(address, amount):
 
     print(client.get_platform_balance(address).datas)
 
-def mint_violas_coin(address, amount, owner, token_id, module):
-    logger.debug("start min_violas_coin({address}, {amount}, {owner}, {token_id}, {module})")
+def mint_violas_coin(address, amount, token_id, module):
+    logger.debug("start min_violas_coin({address}, {amount}, {token_id}, {module})")
     global wallet_name
     client = get_violasclient()
     wallet = get_violaswallet()
-    ret = wallet.get_account(owner)
-    if ret.state != error.SUCCEED:
-        logger.error(ret.datas)
-        return
 
-    account = ret.datas
-
-    ret = client.mint_violas_coin(address, amount, account, token_id, module)
+    ret = client.mint_violas_coin(address, amount, token_id, module)
     assert ret.state == error.SUCCEED, "mint_violas_coin failed."
 
     print(client.get_violas_balance(address, module, token_id).datas)
 
-def bind_module(address, module):
-    logger.debug(f"start bind_module address= {address} module = {module}")
+def bind_module(address, currency_code):
+    logger.debug(f"start bind_module address= {address} currency_code = {currency_code}")
     global wallet_name
     wallet = get_violaswallet()
     client = get_violasclient()
 
-    ret = client.has_module(address, module)
-    assert ret.state == error.SUCCEED, f"check ({module}) failed."
-    if ret.datas:
-        logger.debug(f"module({module} had published.)")
-        return 
+    #ret = client.has_module(address, currency)
+    #assert ret.state == error.SUCCEED, f"check ({module}) failed."
+    #if ret.datas:
+    #    logger.debug(f"module({module} had published.)")
+    #    return 
 
     ret = wallet.get_account(address)
     if ret.state != error.SUCCEED:
         logger.debug("get account failed")
     account = ret.datas
 
-    ret = client.bind_module(account, module)
+    ret = client.bind_module(account, currency_code)
     assert ret.state == error.SUCCEED
     print(client.get_account_state(account.address).datas)
 
@@ -350,7 +344,7 @@ def init_args(pargs):
     pargs.append("mint_platform_coin", "mint vtoken(amount) to target address.", True, ["address", "amount"])
     pargs.append("create_violas_coin", "create new token(module, address) in violas blockchain", True, ["module", "address", "name"])
     pargs.append("bind_module", "bind address to module.", True, ["address", "module"])
-    pargs.append("mint_violas_coin", "mint some(amount) token(module) to target address.", True, ["address", "amount", "owner", "token_id", "module"])
+    pargs.append("mint_violas_coin", "mint some(amount) token(module) to target address.", True, ["address", "amount", "token_id", "module"])
     pargs.append("send_violas_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "token_id", "module", "data[default = None  ex: "])
     pargs.append("send_platform_coin", "send platform coin to target address", True, ["form_address", "to_address", "amount", "data[default = None  ex: "])
     pargs.append("get_violas_balance", "get address's token(module) amount.", True, ["address", "module", "token_id"])
@@ -422,9 +416,12 @@ def run(argc, argv):
                 pargs.exit_error_opt(opt)
             ret = mint_platform_coin(arg_list[0], int(arg_list[1]))
         elif pargs.is_matched(opt, ["mint_violas_coin"]):
-            if len(arg_list) != 5:
+            if len(arg_list) != 4 and len(arg_list) != 3:
                 pargs.exit_error_opt(opt)
-            ret = mint_violas_coin(arg_list[0], int(arg_list[1]), arg_list[2], int(arg_list[3]), arg_list[4])
+            module = None
+            if len(arg_list) == 4:
+                module = arg_list[3]
+            ret = mint_violas_coin(arg_list[0], int(arg_list[1]), arg_list[2], module)
         elif pargs.is_matched(opt, ["send_violas_coin"]):
             if len(arg_list) not in (5,6):
                 pargs.exit_error_opt(opt)
@@ -462,7 +459,7 @@ def run(argc, argv):
         elif pargs.is_matched(opt, ["get_violas_balance"]):
             if len(arg_list) != 3:
                 pargs.exit_error_opt(opt)
-            get_violas_balance(arg_list[0], arg_list[1], int(arg_list[2]))
+            get_violas_balance(arg_list[0], arg_list[1], arg_list[2])
         elif pargs.is_matched(opt, ["get_platform_balance"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)

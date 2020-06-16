@@ -160,7 +160,7 @@ class tomlopt(tomlbase):
 
     @property
     def libra_nodes(self):
-        return self.get("violas_nodes")
+        return self.get("libra_nodes")
 
     @property
     def violas_servers(self):
