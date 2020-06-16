@@ -20,21 +20,25 @@ v2b_maxtimes = 99
     host = "52.27.228.84"
     port = 50001
     name = "violas 1"
+    faucet = "mint_test.key"
 
 [[violas_nodes]]
     host = "13.68.141.242"
     port = 50001
     name = "violas 2"
+    faucet = "mint_test.key"
 
 [[violas_nodes]]
     host = "47.52.195.50"
     port = 50001
     name = "violas 3"
+    faucet = "mint_test.key"
 
 [[violas_nodes]]
     host = "18.220.66.235"
     port = 50001
     name = "violas 4"
+    faucet = "mint_test.key"
 
 [[libra_nodes]]
     host = "http://client.testnet.libra.org"

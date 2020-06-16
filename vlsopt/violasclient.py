@@ -370,51 +370,33 @@ class violasclient(baseobject):
         return ret
 
     def mint_platform_coin(self, address, amount, auth_key_prefix=None, is_blocking = True):
-        try:
-            self._logger.info("start mint_platform_coin(address={}, amount={}, auth_key_prefix={} is_blocking={})".format(address, amount, auth_key_prefix, is_blocking))
-            (auth, addr) = self.split_full_address(address, auth_key_prefix).datas
+        self._logger.info("start mint_platform_coin(address={}, amount={}, auth_key_prefix={} is_blocking={})".format(address, amount, auth_key_prefix, is_blocking))
+        raise Exception("no support get_platform_balance")
 
-            self.__client.mint_coin(addr, amount, auth_key_prefix = auth, is_blocking = is_blocking)
+    def bind_module(self, account, currency_code, is_blocking=True):
+        try:
+            self._logger.info(f"start bind_module(account={account.address.hex()}, currency_code={currency_code}, is_blocking={is_blocking}")
+            self.__client.publish_resource(account, currency, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def bind_module(self, account, module_address, is_blocking=True):
+    def mint_violas_coin(self, address, amount, token_id, module = None, auth_key_prefix = None, is_blocking=True):
         try:
-            self._logger.info(f"start bind_module(account={account.address.hex()}, module_address={module_address}, is_blocking={is_blocking}")
-            (auth, addr) = self.split_full_address(module_address).datas
-            self.__client.publish_resource(account, addr, is_blocking=is_blocking)
-            ret = result(error.SUCCEED) 
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def mint_violas_coin(self, address, amount, owner_account, token_id, module, auth_key_prefix = None, is_blocking=True):
-        try:
-            self._logger.info(f"start mint_violas_coin(address={address}, amount={amount}, owner_account={owner_account.address.hex()}, token_id={token_id}, module={module}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
+            self._logger.info(f"start mint_violas_coin(address={address}, amount={amount}, token_id={token_id}, module={module}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
             (auth, addr) = self.split_full_address(address, auth_key_prefix).datas
             (_, mod) = self.split_full_address(module).datas
 
-            self.__client.mint_coin(addr, amount, owner_account, token_id, mod, auth_key_prefix = auth, is_blocking=is_blocking)
+            self.__client.mint_coin(receiver_address = addr, micro_coins = amount, currency_code = token_id, currency_module_address = mod, auth_key_prefix = auth, is_blocking=is_blocking)
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def send_platform_coin(self, from_account, to_address, amount, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000):
-        try:
-            self._logger.info(f"start send_platform_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, data={data}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
-            if len(to_address) not in VIOLAS_ADDRESS_LEN or amount < 1:
-                return result(error.ARG_INVALID)
-
-            (auth, addr) = self.split_full_address(to_address, auth_key_prefix).datas
-
-            self.__client.send_coin(from_account, addr, amount, data=data, auth_key_prefix=auth, is_blocking=is_blocking, max_gas_amount = max_gas_amount)
-            ret = result(error.SUCCEED) 
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        self._logger.info(f"start send_platform_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, data={data}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
+        raise Exception("no support send_platform_coin")
 
     def send_violas_coin(self, from_account, to_address, amount, token_id, module_address, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000):
         try:
@@ -438,16 +420,11 @@ class violasclient(baseobject):
         return ret
 
     def get_platform_balance(self, account_address):
-        try:
-            self._logger.debug("get_platform_balance(address={})".format(account_address))
-            (_, addr) = self.split_full_address(account_address).datas
+        self._logger.debug("get_platform_balance(address={})".format(account_address))
+        raise Exception("no support get_platform_balance")
 
-            balance = self.__client.get_balance(addr)
-            ret = result(error.SUCCEED, "", balance)
-            self._logger.debug(f"resulst: {ret.datas}")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+    def get_balance(self, account_address, module_address, token_id):
+        return self.get_violas_balance(account_address, module_address, token_id)
 
     def get_violas_balance(self, account_address, module_address, token_id):
         try:
@@ -455,7 +432,19 @@ class violasclient(baseobject):
             (_, addr) = self.split_full_address(account_address).datas
             (_, module_addr) = self.split_full_address(module_address).datas
 
-            balance = self.__client.get_balance(address = addr, token_id = token_id, module_address = module_addr)
+            balance = self.__client.get_balance(account_address = addr, currency_code = token_id, currency_module_address = module_addr)
+            ret = result(error.SUCCEED, "", balance)
+            self._logger.debug(f"result: {ret.datas}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_violas_balances(self, account_address):
+        try:
+            self._logger.debug(f"get_balance(address={account_address}")
+            (_, addr) = self.split_full_address(account_address).datas
+
+            balance = self.__client.get_balances(account_address = addr)
             ret = result(error.SUCCEED, "", balance)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:

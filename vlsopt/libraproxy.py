@@ -4,7 +4,7 @@ import sys
 import json
 import os
 sys.path.append("..")
-#sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client"))
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client/libra_client"))
 import log
 import log.logger
@@ -26,7 +26,6 @@ from comm.functions import json_print
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
 #from violas.client import Client
-import libra_client
 from libra_client import Wallet
 from libra_client import Client
 #module name

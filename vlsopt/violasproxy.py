@@ -59,8 +59,7 @@ class clientproxy(Client):
     def send_coin(self, sender_account, receiver_address, micro_coins, token_id=None, module_address=None, data=None, \
             auth_key_prefix=None, is_blocking=False, max_gas_amount=400_000, unit_price=0, txn_expiration=13):
         return self.transfer_coin(sender_account = sender_account, receiver_address = receiver_address, micro_coins = micro_coins, \
-                token_id = token_id, module_address = module_address, data = data, auth_key_prefix = auth_key_prefix, is_blocking = is_blocking, \
-                max_gas_amount = max_gas_amount, unit_price = unit_price, txn_expiration = txn_expiration)
+                currency_code = token_id, currency_module_address = module_address, data = data, is_blocking = is_blocking)
 
 def main():
     #client = clientproxy.connect(host="52.27.228.84", port=40001)
