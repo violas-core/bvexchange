@@ -89,28 +89,28 @@ v2b_maxtimes = 99
     host = "127.0.0.1"
     port = 6378
     db = "v2l"
-    password = "1"
+    password = "violas"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "b2v"
-    password = "1"
+    password = "violas"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "b2v"
-    password = "1"
+    password = "violas"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "record"
-    password = "1"
+    password = "violas"
     step = 500
 
 [address_list]

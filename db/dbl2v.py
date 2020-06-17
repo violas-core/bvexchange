@@ -75,7 +75,7 @@ class dbl2v(baseobject):
         times       = Column(Integer, nullable=False, default=1)
         tranid      = Column(String(64), nullable=False, primary_key=True)
         fromtokenid = Column(Integer)
-        maptokenid  = Column(Integer)
+        maptokenid  = Column(String(64))
     
         def __repr__(self):
             return f"<info(sender={self.sender}, receiver={self.receiver}, sequence={self.sequence}, \
@@ -103,7 +103,8 @@ class dbl2v(baseobject):
         try:
             self._logger.info(f"start insert(sender={sender}, receiver={receiver}, \
                     sequence={sequence}, version={version}, amount={amount}, fromaddress={fromaddress},\
-                    toaddress={toaddress}, frommodule={frommodule}, mapmodule={mapmodule}, state={state.name}, tranid={tranid}, fromtokenid={fromtokenid}, maptokenid={maptokenid})") 
+                    toaddress={toaddress}, frommodule={frommodule}, mapmodule={mapmodule}, state={state.name}, \
+                    tranid={tranid}, fromtokenid={fromtokenid}, maptokenid={maptokenid})") 
 
             data = self.info(sender=sender, receiver=receiver, sequence=sequence, version=version, \
                 amount=amount, fromaddress=fromaddress, toaddress=toaddress, frommodule=frommodule, mapmodule=mapmodule, state=state.value, tranid=tranid, fromtokenid=fromtokenid, maptokenid=maptokenid)
@@ -286,7 +287,8 @@ def test_dbl2v():
             "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             dbl2v.state.START, \
             tran_id,            
-            0
+            "0",
+            "1"
             )
     assert ret.state == error.SUCCEED, "insert_commit failed."
 
@@ -301,7 +303,8 @@ def test_dbl2v():
             "61b578c0ebaad3852ea5e023fb0f59af61de1a5faf02b1211af0424ee5bbc410", \
             dbl2v.state.START, \
             "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
-            0
+            "0",
+            "1"
             )
     assert ret.state == error.SUCCEED, "insert_commit failed."
 
@@ -333,4 +336,5 @@ def test_dbl2v():
     show_state_count(db, logger)
 
 if __name__ == "__main__":
+    stmanage.set_conf_env("../bvexchange_internal.toml")
     test_dbl2v()
