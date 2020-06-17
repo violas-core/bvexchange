@@ -69,14 +69,14 @@ class dbb2v(baseobject):
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
         detail      = Column(String(256))
-        tokenid     = Column(Integer)
+        tokenid     = Column(String(64))
 
     
         def __repr__(self):
-            return "<b2vinfo(txid=%s,fromaddress = %s, toaddress = %s, bamount = %i, vaddress = %s, sequence=%i, \
-                    vamount = %i, vtoken = %s, createblock = %s, updateblock = %s, state = %i, tokenid = %i)>" % (
-                    self.txid, self.fromaddress, self.toaddress, self.bamount, self.vaddres, self.sequence, \
-                    self.vamount, self.vbt, self.createblock, self.updateblock, self.state, tokenid)
+            return f"<b2vinfo(txid={self.txid},fromaddress = {self.fromaddress}, toaddress = {self.toaddress}, \
+                    bamount = {self.bamount}, vaddress = {self.vaddres}, sequence={self.sequence}, \
+                    vamount = {self.vamount}, vtoken = {self.vtoken}, createblock = {self.createblock}, \
+                    updateblock = {self.updateblock}, state = {self.state}, tokenid = {self.tokenid})>"
     
     def __init_db(self, dbfile):
         self._logger.debug("start __init_db")

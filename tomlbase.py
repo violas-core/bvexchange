@@ -90,7 +90,6 @@ class tomlbase():
 
     @classmethod
     def set_conf_env_default(self):
-
         splits = os.path.split(os.path.dirname(os.path.abspath(__file__)))
         basename = splits[-1]
         os.environ.setdefault("BVEXCHANGE_CONFIG", os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{basename}.toml"))

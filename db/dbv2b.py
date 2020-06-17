@@ -72,12 +72,13 @@ class dbv2b(baseobject):
         created     = Column(DateTime, default=datetime.datetime.now)
         times       = Column(Integer, nullable=False, default=1)
         tranid      = Column(String(64), nullable=False, primary_key=True)
-        tokenid     = Column(Integer)
+        tokenid     = Column(String(64))
     
         def __repr__(self):
-            return "<v2binfo(txid=%s,fromaddress={}, toaddress={}, bamount={}, vaddress={}, sequence={}, \
-                    vamount={}, vtoken={}, state={}, version={}, vreceiver={}, tokenid)>".format(self.txid, self.fromaddress, self.toaddress, \
-                    self.bamount, self.vaddres, self.sequence, self.vamount, self.vtoken, self.state, self.version, self.vreceiver, self.tokenid)
+            return f"<v2binfo(txid={self.txid},fromaddress={self.fromaddress}, toaddress={self.toaddress}, \
+                    bamount={self.bamount}, vaddress={self.vaddress}, sequence={self.sequence}, \
+                    vamount={self.vamount}, vtoken={self.vtoken}, state={self.state}, version={self.version}, \
+                    vreceiver={self.vreceiver}, tokenid={self.tokenid})>"
     
     class versions(__base):
         __tablename__='versions'
