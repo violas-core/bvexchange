@@ -1,7 +1,3 @@
-[submodule "libviolas"]
-	path = libviolas
-	url = https://github.com/palliums-developers/violas-client
-    branch = v0.2
 [submodule "libra-client"]
 	path = libra-client
 	url = https://github.com/palliums-developers/libra-client
