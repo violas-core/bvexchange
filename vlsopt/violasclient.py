@@ -218,15 +218,18 @@ class violasclient(baseobject):
                 ret = self.get_account_state(address)
                 if ret.state != error.SUCCEED:
                     return ret
-                token_list = [token_id for token_id in token_list if ret.datas.is_published(token_id)]
+                if ret.datas is not None:
+                    token_list = [token_id for token_id in token_list if ret.datas.is_published(token_id)]
+                else:
+                    token_list = []
             ret = result(error.SUCCEED, datas = token_list)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def bind_token_id(self, account, token_id):
+    def bind_token_id(self, account, token_id, gas_token_id):
         try:
-            datas = self.__client.add_currency_to_account(account, token_id)
+            datas = self.__client.add_currency_to_account(account, token_id, gas_currency_code = gas_token_id)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
@@ -288,12 +291,12 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def get_balance(self, account_address, module_address = None, token_id = None):
-        return self.get_violas_balance(account_address, module_address, token_id)
+    def get_balance(self, account_address, token_id = None, module_address = None):
+        return self.get_violas_balance(account_address, token_id, module_address)
 
-    def get_violas_balance(self, account_address, module_address = None, token_id = None):
+    def get_violas_balance(self, account_address, token_id = None, module_address = None):
         try:
-            self._logger.debug(f"get_balance(address={account_address}, module={module_address}, token_id={token_id})")
+            self._logger.debug(f"get_balance(address={account_address}, token_id={token_id}), module={module_address}")
             (_, addr) = self.split_full_address(account_address).datas
             (_, module_addr) = self.split_full_address(module_address).datas
 

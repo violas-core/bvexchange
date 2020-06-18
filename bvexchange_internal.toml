@@ -115,17 +115,17 @@ v2b_maxtimes = 99
 
 [address_list]
     [[address_list.receiver]]
-        address = "dcfa787ecb304c20ff24ed6b5519c2e5cae5f8464c564aabb684ecbcc19153e9"
+        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
         type = "v2b"
         chain = "violas"
 
     [[address_list.receiver]]
-        address = "5f4d3d86949fafc804d6c457d9a92bf9ee1e24e8fc664894709c947b74823b2f"
+        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
         type = "v2l"
         chain = "violas"
     
     [[address_list.receiver]]
-        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
+        address = "270be97cae6bf9ecca084dfa6c7117badabe5de7fa81c906a5a23d5267138aa9"
         type = "l2v"
         chain = "libra"
         network = "ex"
