@@ -169,6 +169,29 @@ def get_max_times(mtype):
         parse_except(e)
     return 0
 
+def get_token_map(mtype = None, token = None):
+    try:
+        if mtype is None:
+            return setting.token_map
+        
+        if token is None:
+            return setting.token_map.get(mtype)
+
+        return setting.token_map.get(mtype).get(token)
+    except Exception as e:
+        parse_except(e)
+    return None
+
+def get_type_token_map(mtype = None):
+    try:
+        if mtype:
+            return setting.type_token_map.get(mtype)
+        else:
+            return setting.type_token_map
+    except Exception as e:
+        parse_except(e)
+    return None
+
 def get_conf():
     infos = {}
     mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
@@ -193,6 +216,7 @@ def get_conf():
 
 
 def main():
+    set_conf_env("bvexchange_internal.toml")
     mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
 
     for mtype in mtypes:
@@ -210,8 +234,15 @@ def main():
     print(f"get violas_servers: {get_violas_servers()}")
     print(f"get libra nodes: {get_libra_nodes()}")
     print(f"get db echo :{get_db_echo()}")
+    print(f"get token_map: ")
+    json_print(get_token_map())
+    print(f"get token_map(l2v, USD): {get_token_map('l2v', 'USD')}")
+    print(f"get token_map(l2v, USD): {get_token_map('v2l', 'LBRUSD')}")
+    print(f"get type_token_map: ")
+    json_print(get_type_token_map())
+    print(f"get type_token_map(l2vusd): {get_type_token_map('l2vusd')}")
 
-    json_print(get_conf())
+    #json_print(get_conf())
 
 if __name__ == "__main__":
     main()
