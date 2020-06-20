@@ -113,30 +113,98 @@ v2b_maxtimes = 99
     password = "violas"
     step = 500
 
+#violas <-> libra token map
+[token_map]
+    [token_map.v2l]
+        LBRUSD = "USD"
+        LBREUR = "EUR"
+        LBRSGD = "SGD"
+        LBRGBT = "GBT"
+        VLSUSD = "LBRUSD"
+        VLSEUR = "LBREUR"
+        VLSSGD = "LBRSGD"
+        VLSGBT = "LBRGBT"
+    [token_map.l2v]
+        USD = "LBRUSD"
+        EUR = "LBREUR"
+        SGD = "LBRSGD"
+        GBT = "LBRGBT"
+    [token_map.v2b]
+        BTCBTC = "BTC"
+    [token_map.b2v]
+        BTC = "BTCBTC"
+
+#opt type map target token
+[type_token_map]
+    v2b = "BTC"
+    b2v = "BTCBTC"
+    v2lusd = "Usd"
+    v2leur = "Eur"
+    v2lsgd = "Sgd"
+    v2lgbt = "gbt"
+    l2vusd = "VLSUSD"
+    l2veur = "VLSEUR"
+    l2vSGD = "VLSSGD"
+    l2vgbt = "VLSGBT"
+
 [address_list]
+    #receiver addresses
+    ##violas chain receiver address
     [[address_list.receiver]]
-        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        address = "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
         type = "v2b"
         chain = "violas"
 
     [[address_list.receiver]]
         address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
-        type = "v2l"
+        type = "v2lusd"
         chain = "violas"
     
     [[address_list.receiver]]
-        address = "270be97cae6bf9ecca084dfa6c7117badabe5de7fa81c906a5a23d5267138aa9"
-        type = "l2v"
-        chain = "libra"
-        network = "ex"
+        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        type = "v2leur"
+        chain = "violas"
 
+    [[address_list.receiver]]
+        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        type = "v2lgbt"
+        chain = "violas"
+
+    [[address_list.receiver]]
+        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        type = "v2lsgd"
+        chain = "violas"
+
+    ##btc chain receiver address
     [[address_list.receiver]]
         address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
         type = "b2v"
         chain = "btc"
     
+    ##libra chain receiver address
+    [[address_list.receiver]]
+        address = "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
+        type = "l2vusd"
+        chain = "libra"
+
+    [[address_list.receiver]]
+        address = ""
+        type = "l2veur"
+        chain = "libra"
+
+    [[address_list.receiver]]
+        address = "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
+        type = "l2vgbt"
+        chain = "libra"
+
+    [[address_list.receiver]]
+        address = "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
+        type = "l2vsgd"
+        chain = "libra"
+
+    #sender address
     [[address_list.sender]]
-        address = "270be97cae6bf9ecca084dfa6c7117badabe5de7fa81c906a5a23d5267138aa9"
+        address = "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
         type = "b2v"
         chain = "violas"
 
@@ -156,92 +224,96 @@ v2b_maxtimes = 99
         chain = "btc"
 
     [[address_list.sender]]
-        address = "7d572ec38dd124ad4faec3fc077217efab88cc9dd86f72d8816b3cabf155eb86"
-        type = "v2l"
+        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        type = "v2lusd"
         chain = "libra"
 
     [[address_list.sender]]
-        address = "7b102beb21460be85948a41bd2080265149bf4deff39f896c836a2760f6806b9"
-        type = "l2v"
-        chain = "violas"
+        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        type = "v2leur"
+        chain = "libra"
 
+    [[address_list.sender]]
+        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        type = "v2lgbt"
+        chain = "libra"
+
+    [[address_list.sender]]
+        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        type = "v2lsgd"
+        chain = "libra"
+
+    #currency code
     [[address_list.module]]
-        address = "00000000000000000000000000000000e1be1ab8360a35a0259f1c93e3eac736"
+        address = "0000000000000000000000000000000000000000000000000000000000000000"
         type = "v2b"
         chain = "violas"
 
     [[address_list.module]]
-        address = "00000000000000000000000000000000e1be1ab8360a35a0259f1c93e3eac736"
+        address = "0000000000000000000000000000000000000000000000000000000000000000"
         type = "b2v"
         chain = "btc"
 
     [[address_list.module]]
-        address = "00000000000000000000000000000000e1be1ab8360a35a0259f1c93e3eac736"
+        address = "0000000000000000000000000000000000000000000000000000000000000000"
         type = "b2v"
         chain = "violas"
 
     [[address_list.module]]
-        address = "00000000000000000000000000000000e1be1ab8360a35a0259f1c93e3eac736"
-        type = "v2l"
+        address = "0000000000000000000000000000000000000000000000000000000000000000"
+        type = "v2lusd"
         chain = "violas"
 
     [[address_list.module]]
         address = "0000000000000000000000000000000000000000000000000000000000000000"
-        type = "v2l"
+        type = "v2leur"
         chain = "libra"
 
     [[address_list.module]]
         address = "0000000000000000000000000000000000000000000000000000000000000000"
-        type = "l2v"
+        type = "l2vsgd"
         chain = "libra"
 
     [[address_list.module]]
-        address = "00000000000000000000000000000000e1be1ab8360a35a0259f1c93e3eac736"
-        type = "l2v"
+        address = "0000000000000000000000000000000000000000000000000000000000000000"
+        type = "l2vgbt"
         chain = "violas"
 
+    #token info
     [[address_list.token]]
-        address = "03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190"
-        tokenid = 5
-        tokenname = "vbtc"
+        address = "0000000000000000000000000000000000000000000000000000000000000000"
+        tokenid = "BTCBTC"
+        tokenname = "BTCBTC"
         type = "v2b"
         chain = "violas"
 
     [[address_list.token]]
-        address = "03d3bbb134e5d31b194d910e2d94e37ca0dd2abf254d09de85d49290250a8190"
-        tokenid = 5
-        tokenname = "vbtc"
-        type = ""
+        address = "0000000000000000000000000000000000000000000000000000000000000000"
+        tokenid = "LBRUSD"
+        tokenname = "LBRUSD"
+        type = "v2lusd"
         chain = "violas"
 
     [[address_list.token]]
-        address = "1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb"
-        tokenid = 6
-        tokenname = "vlibra"
-        type = "v2l"
+        address = "0000000000000000000000000000000000000000000000000000000000000000"
+        tokenid = "LBREUR"
+        tokenname = "LBREUR"
+        type = "v2leur"
         chain = "violas"
 
     [[address_list.token]]
-        address = "1eaa12e8c4f196c24ed88ac5f472f128c7ef87304c0b9e477f17dcfd69abd0bb"
-        tokenid = 6
-        tokenname = "vlibra"
-        type = "l2v"
+        address = "0000000000000000000000000000000000000000000000000000000000000000"
+        tokenid = "LBRSGD"
+        tokenname = "LBRSGD"
+        type = "v2lSGD"
         chain = "violas"
 
-    [[address_list.combine]]
-        address = "b93bb580bfba22c6d06ba5baac329b0c23e5d616f55614100b83ddece7a4c005"
-        type = "v2b"
+    [[address_list.token]]
+        address = "0000000000000000000000000000000000000000000000000000000000000000"
+        tokenid = "LBRGBT"
+        tokenname = "LBRGBT"
+        type = "v2lgbt"
         chain = "violas"
-
-    [[address_list.combine]]
-        address = "4a5a4d3fa63633fbecfd50a17b4b5a38dfbac8a5a08be9e4b958b4aeb9e8f0ea"
-        type = "v2l"
-        chain = "violas"
-
-    [[address_list.combine]]
-        address = "ed997d48192d313deda1d0335722a9bf231bded0afc5ff71c3882b4865cc2f0b"
-        type = "l2v"
-        chain = "libra"
 
     [[address_list.combine]]
         address = "2N9fQcit5KB8vJHmBF5Z4DkUUTCgJA8GKb3"
