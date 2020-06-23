@@ -220,7 +220,7 @@ def run(mods):
 def main(argc, argv):
 
     try:
-        stmanage.set_conf_env("../bvexchange_internal.toml")
+        stmanage.set_conf_env("../bvexchange.toml")
         if argc < 1:
             raise Exception(f"argument is invalid. args:{list_valid_mods()}")
         run(argv)

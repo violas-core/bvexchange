@@ -178,5 +178,9 @@ class tomlopt(tomlbase):
     def type_token_map(self):
         return self.get("type_token_map")
 
+    @property
+    def support_token_id(self):
+        return self.get("support_token_id")
+
 setting = tomlopt("bvexchange.toml")
 

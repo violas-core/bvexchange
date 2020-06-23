@@ -5,8 +5,8 @@ import json
 import os
 sys.path.append(os.getcwd())
 sys.path.append("..")
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client"))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libra-client/violas_client"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../violas-client"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../violas-client/violas_client"))
 
 import log
 import log.logger

@@ -211,6 +211,14 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def token_id_effective(self, token_id):
+        try:
+            token_list = self.__client.get_registered_currencies()
+            ret = result(error.SUCCEED, datas = token_id in token_list)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def get_token_list(self, address = None):
         try:
             token_list = self.__client.get_registered_currencies()
@@ -241,7 +249,7 @@ class violasclient(baseobject):
             ret = self.get_account_state(address)
             if ret.state != error.SUCCEED:
                 return ret
-            ret = result(error.SUCCEED, datas = ret.datas.is_published(token_id))
+            ret = result(error.SUCCEED, datas = ret.datas is not None and ret.datas.is_published(token_id))
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -309,7 +317,7 @@ class violasclient(baseobject):
 
     def get_balances(self, account_address):
         try:
-            self._logger.debug(f"get_balances(address={account_address}")
+            self._logger.debug(f"get_balances(address={account_address})")
             (_, addr) = self.split_full_address(account_address).datas
 
             balance = self.__client.get_balances(account_address = addr)
