@@ -51,7 +51,8 @@ def get_address_info(vclient, wclient, address):
     return  vclient.get_balances(address).datas
     
 def has_tokens(vclient, wclient, address):
-    return vclient.get_balances(address).datas
+    balances = vclient.get_balances(address).datas
+    return balances is not None and len(balances) > 0
 
 def list_address_info(vclient, wclient, addresses, ret):
     for address in addresses:
@@ -70,6 +71,9 @@ def get_gas_token_id(vclient, wclient, address, token_id, min_balance = 40_0000)
 def bind_token_id(vclient, wclient, address, token_id, gas_token_id = None):
     vclient._logger.debug(f"start bind_token_id({address}, {token_id}, {gas_token_id})")
     assert address is not None and len(address) in VIOLAS_ADDRESS_LEN, f"address({address}) is invalid."
+
+    if not vclient.token_id_effective(token_id):
+        raise Exception(f"token id({token_id} is not registered.)")
 
     if has_token_id(vclient, address, token_id) == True:
        vclient._logger.debug(f"address[address] has token_id[{token_id}]")
@@ -97,6 +101,7 @@ def mint_coin(vclient, wclient, receiver, amount, token_id, auth_key_prefix = No
     assert receiver is not None and len(receiver) in VIOLAS_ADDRESS_LEN, f"receiver({receiver}) is invalid."
     assert amount > 0, f"amount({amount} must be > 0)"
     if has_tokens(vclient, wclient, receiver) and has_token_id(vclient, receiver, token_id) == False:
+        vclient._logger.debug(f"bind token id({token_id})....")
         bind_token_id(vclient, wclient, receiver, token_id, gas_token_id)
 
     ret = vclient.mint_coin(receiver, amount, token_id = token_id, auth_key_prefix = auth_key_prefix)
@@ -118,9 +123,6 @@ def init_address_list(vclient, wclient, senders, token_id, minamount= 1000000000
         assert address is not None and len(address) in VIOLAS_ADDRESS_LEN, f"address({address}) is invalid."
     assert minamount >= 0 or minamount is None, f"min amount({minamount} must be > 0)"
 
-    #must bind one or more token_id
-    #address_list_bind_token_id(vclient, wclient, senders, token_id, gas_token_id = gas_token_id)
-
     #set address min coin is amount
     min_balance = minamount
     #mimt vbtc coin
@@ -129,7 +131,7 @@ def init_address_list(vclient, wclient, senders, token_id, minamount= 1000000000
         assert ret.state == error.SUCCEED, f"get_balance({sender}, {token_id}) failed."
         if minamount is not None and ret.datas < min_balance:
             mint_coin(vclient, wclient, sender, min_balance - ret.datas, token_id, auth_key_prefix = None, gas_token_id = gas_token_id)
-            vclient._logger.debug(f"mint coin {min_balance - ret.datas}")
+            vclient._logger.debug(f"mint coin({token_id}) {min_balance - ret.datas}")
 
         ret = vclient.get_balance(sender, token_id = token_id)
         assert ret.state == error.SUCCEED, f"get_violas_balance({sender}, {token_id}) failed."

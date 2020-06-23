@@ -129,11 +129,11 @@ v2b_maxtimes = 99
     l2vusd = "VLSUSD"
     l2veur = "VLSEUR"
     l2vsgd = "VLSSGD"
-    l2vgbt = "VLSGBT"
+    l2vgbp = "VLSGBP"
 
 [support_token_id]
     libra=["Coin1", "Coin2"]
-    violas = ["VLSUSD", "VLSEUR", "VLSSGD", "VLSGBT", "LBRUSD", "LBREUR", "LBRGBT", "LBRSGD"]
+    violas = ["VLSUSD", "VLSEUR", "VLSSGD", "VLSGBP", "LBRUSD", "LBREUR", "LBRGBP", "LBRSGD"]
 
 [address_list]
     #receiver addresses
@@ -155,7 +155,7 @@ v2b_maxtimes = 99
 
     [[address_list.receiver]]
         address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
-        type = "v2lgbt"
+        type = "v2lgbp"
         chain = "violas"
 
     [[address_list.receiver]]
@@ -182,7 +182,7 @@ v2b_maxtimes = 99
 
     [[address_list.receiver]]
         address = "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
-        type = "l2vgbt"
+        type = "l2vgbp"
         chain = "libra"
 
     [[address_list.receiver]]
@@ -226,7 +226,7 @@ v2b_maxtimes = 99
 
     [[address_list.sender]]
         address = "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
-        type = "l2vgbt"
+        type = "l2vgbp"
         chain = "violas"
 
     [[address_list.sender]]
@@ -246,7 +246,7 @@ v2b_maxtimes = 99
 
     [[address_list.sender]]
         address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
-        type = "v2lgbt"
+        type = "v2lgbp"
         chain = "libra"
 
     [[address_list.sender]]
@@ -285,9 +285,9 @@ v2b_maxtimes = 99
 
     [[address_list.token]]
         address = "0000000000000000000000000000000000000000000000000000000000000000"
-        tokenid = "LBRGBT"
-        tokenname = "LBRGBT"
-        type = "v2lgbt"
+        tokenid = "LBRGBP"
+        tokenname = "LBRGBP"
+        type = "v2lgbp"
         chain = "violas"
 
     [[address_list.combine]]

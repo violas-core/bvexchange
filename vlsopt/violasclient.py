@@ -299,10 +299,10 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def get_balance(self, account_address, token_id = None, module_address = None):
-        return self.get_violas_balance(account_address, token_id, module_address)
-
     def get_violas_balance(self, account_address, token_id = None, module_address = None):
+        return self.get_balance(account_address, token_id, module_address)
+
+    def get_balance(self, account_address, token_id = None, module_address = None):
         try:
             self._logger.debug(f"get_balance(address={account_address}, token_id={token_id}), module={module_address}")
             (_, addr) = self.split_full_address(account_address).datas

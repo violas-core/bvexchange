@@ -67,7 +67,7 @@ def reg_run():
         receivers = stmanage.get_receiver_address_list(opt_type, "violas")
         assert receivers is not None and len(receivers) > 0, f"{opt_type} receiver not found."
         for token_id in violas_token_id_list:
-            comm_funs.address_list_bind_token_id(vclient, wclient, receivers, token_id)
+            comm_funs.init_address_list(vclient, wclient, receivers, token_id, minamount = 1_000000)
 
 if __name__ == "__main__":
     stmanage.set_conf_env("../bvexchange.toml")

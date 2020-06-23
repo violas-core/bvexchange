@@ -68,7 +68,7 @@ def show_all_token_list():
     json_print(ret.datas)
 
 def mint_coin(address, amount, token_id, module):
-    logger.debug("start min_violas_coin({address}, {amount}, {token_id}, {module})")
+    logger.debug("start min_coin({address}, {amount}, {token_id}, {module})")
     global wallet_name
     client = get_violasclient()
     wallet = get_violaswallet()
@@ -76,7 +76,7 @@ def mint_coin(address, amount, token_id, module):
     ret = client.mint_coin(address, amount, token_id, module)
     assert ret.state == error.SUCCEED, "mint_coin failed."
 
-    print(client.get_violas_balance(address, token_id, module).datas)
+    print(client.get_balance(address, token_id, module).datas)
 
 def bind_token_id(address, token_id, gas_token_id):
     logger.debug(f"start bind_token_id({address}, {token_id}, {gas_token_id}")
@@ -93,7 +93,7 @@ def bind_token_id(address, token_id, gas_token_id):
     assert ret.state == error.SUCCEED
     print(client.get_account_state(address).datas)
 
-def send_violas_coin(from_address, to_address, amount, token_id, module = None, data = None):
+def send_coin(from_address, to_address, amount, token_id, module = None, data = None):
     global wallet_name
     wallet = get_violaswallet()
     ret = wallet.get_account(from_address)
@@ -105,17 +105,17 @@ def send_violas_coin(from_address, to_address, amount, token_id, module = None, 
         module = None
 
     client = get_violasclient()
-    client.send_violas_coin(account, to_address, amount, token_id, module, data)
-    print(client.get_violas_balance(account.address, token_id, module).datas)
+    client.send_coin(account, to_address, amount, token_id, module, data)
+    print(client.get_balance(account.address, token_id, module).datas)
 
-def get_violas_balance(address, token_id, module):
-    logger.debug("start get_violas_balance address= {address} module = {module} token_id= {token_id}")
+def get_balance(address, token_id, module):
+    logger.debug("start get_balance address= {address} module = {module} token_id= {token_id}")
     client = get_violasclient()
-    ret = client.get_violas_balance(address, token_id, module)
+    ret = cliet.get_balance(address, token_id, module)
     logger.debug("balance: {0}".format(ret.datas))
 
 def get_balances(address):
-    logger.debug("start get_violas_balance address= {address}")
+    logger.debug("start get_balances address= {address}")
     client = get_violasclient()
     ret = client.get_balances(address)
     logger.debug("balance: {0}".format(ret.datas))
@@ -253,7 +253,7 @@ def init_args(pargs):
     #client
     pargs.append("bind_token_id", "bind address to token_id.", True, ["address", "token_id", "gas_token_id"])
     pargs.append("mint_coin", "mint some(amount) token(module) to target address.", True, ["address", "amount", "token_id", "module"])
-    pargs.append("send_violas_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "token_id", "module", "data[default = None  ex: "])
+    pargs.append("send_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "token_id", "module", "data[default = None  ex: "])
     pargs.append("get_violas_balance", "get address's token(module) amount.", True, ["address", "token_id", "module"])
     pargs.append("get_balances", "get address's tokens.", True, ["address"])
     pargs.append("get_account_transactions", "get account's transactions from violas server.", True, ["address", "module", "start", "limit", "state=(start/end)"])
@@ -323,15 +323,15 @@ def run(argc, argv):
             if len(arg_list) == 4:
                 module = arg_list[3]
             ret = mint_coin(arg_list[0], int(arg_list[1]), arg_list[2], module)
-        elif pargs.is_matched(opt, ["send_violas_coin"]):
+        elif pargs.is_matched(opt, ["send_coin"]):
             if len(arg_list) not in (4,5,6):
                 pargs.exit_error_opt(opt)
             if len(arg_list) == 6:
-                ret = send_violas_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3], arg_list[4], json.dumps(arg_list[5]))
+                ret = send_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3], arg_list[4], json.dumps(arg_list[5]))
             elif len(arg_list) == 5:
-                ret = send_violas_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3], arg_list[4])
+                ret = send_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3], arg_list[4])
             elif len(arg_list) == 4:
-                ret = send_violas_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3])
+                ret = send_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3])
         elif pargs.is_matched(opt, ["get_account"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
