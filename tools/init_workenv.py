@@ -69,6 +69,22 @@ def reg_run():
         for token_id in violas_token_id_list:
             comm_funs.init_address_list(vclient, wclient, receivers, token_id, minamount = 1_000000)
 
+#test use: init client address
+def init_address(address):
+    vclient = comm_funs.violasreg(name, stmanage.get_violas_nodes())
+    wclient = comm_funs.walletreg(name, wallet_name)
+    violas_token_id_list = stmanage.get_support_token_id("violas")
+    libra_token_id_list = stmanage.get_support_token_id("libra")
+    btc_token_id = "BTCBTC"
+
+    for token_id in violas_token_id_list:
+        comm_funs.init_address_list(vclient, wclient, [address], token_id, minamount = 100_000000)
+
 if __name__ == "__main__":
     stmanage.set_conf_env("../bvexchange.toml")
-    reg_run()
+    if len(sys.argv) == 1:
+        reg_run()
+    elif len(sys.argv) == 2:
+        init_address(sys.argv[1])
+    else:
+        raise Exception(f"argument is None or address(violas)")

@@ -235,22 +235,22 @@ v2b_maxtimes = 99
         chain = "violas"
 
     [[address_list.sender]]
-        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
         type = "v2lusd"
         chain = "libra"
 
     [[address_list.sender]]
-        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
         type = "v2leur"
         chain = "libra"
 
     [[address_list.sender]]
-        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
         type = "v2lgbp"
         chain = "libra"
 
     [[address_list.sender]]
-        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
+        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
         type = "v2lsgd"
         chain = "libra"
 
