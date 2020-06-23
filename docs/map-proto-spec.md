@@ -68,9 +68,9 @@ The type of transaction mapping, l2vxxx is to map stablecoins from violas chain 
    <td>libra's stable coin ≋USD mapping to violas‘s stable coin LBRUSD.</td>
   </tr>
   <tr>
-   <td><strong>l2vgbt</strong></td>
+   <td><strong>l2vgbp</strong></td>
    <td>string</td>
-   <td>libra's stable coin ≋GBT mapping to violas‘s stable coin LBRGBT.</td>
+   <td>libra's stable coin ≋GBP mapping to violas‘s stable coin LBRGBP.</td>
   </tr>
   <tr>
    <td><strong>l2veur</strong></td>
@@ -93,9 +93,9 @@ The type of transaction mapping, l2vxxx is to map stablecoins from violas chain 
    <td>liolas's stable coin LBRUSD mapping to libra‘s stable coin ≋USD.</td>
   </tr>
   <tr>
-   <td><strong>v2lgbt</strong></td>
+   <td><strong>v2lgbp</strong></td>
    <td>string</td>
-   <td>liolas's stable coin LBRGBT mapping to libra‘s stable coin ≋GBT.</td>
+   <td>liolas's stable coin LBRGBP mapping to libra‘s stable coin ≋GBP.</td>
   </tr>
   <tr>
    <td><strong>v2leur</strong></td>
@@ -145,6 +145,16 @@ Transaction request type
   <td>string</td>
   <td>mapping completed</td>
  </tr>
+ <tr>
+  <td><strong>cancel</strong></td>
+  <td>string</td>
+  <td>mapping cancel(user execute), repay coin to payer</td>
+ </tr>
+ <tr>
+  <td><strong>stop</strong></td>
+  <td>string</td>
+  <td>mapping stop(server execute), repay coin to payer</td>
+ </tr>
 </table>
 
 
@@ -187,6 +197,16 @@ Keys in JSON string
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
   <td>Transaction request type</td>
+ </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>exchange times, 0:always n(n>0): n times</td>
  </tr>
 </table>
 
@@ -245,14 +265,26 @@ Keys in JSON string
   <td>start</td>
   <td>Transaction request type</td>
  </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times</td>
+ </tr>
 </table>
 
 ```
-'{"flag":"libra", "type":"l2vusd", "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "state":"start"}'
+'{"flag":"libra", "type":"l2vusd", "times": 0, "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "out_amount": 1000000", state":"start"}'
 ```
 
 
-### l2vusd - end
+### l2vusd - end/cancel/stop
 
 **Description**
 
@@ -290,21 +322,21 @@ Keys in JSON string
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
-  <td>end</td>
+  <td>end/cancel/stop</td>
   <td>Mapping completed</td>
  </tr>
 </table>
 
 ```
-'{"flag":"libra", "type":"l2vusd", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+'{"flag":"libra", "type":"l2vusd", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
 
 
-### l2vgbt - start
+### l2vgbp - start
 
 **Description**
 
-≋GBT Mapping LBRGBT
+≋GBP Mapping LBRGBP
 
 
 #### Attributes
@@ -326,7 +358,7 @@ Keys in JSON string
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
   <td>string</td>
-  <td>l2vgbt</td>
+  <td>l2vgbp</td>
   <td>Distinguish between different mapping types</td>
  </tr>
  <tr>
@@ -341,18 +373,30 @@ Keys in JSON string
   <td>start</td>
   <td>Transaction request type</td>
  </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times</td>
+ </tr>
 </table>
 
 ```
-'{"flag":"libra", "type":"l2vgbt", "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "state":"start"}'
+'{"flag":"libra", "type":"l2vgbp", "times": 0, "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "out_amount": 1000000, "state":"start"}'
 ```
 
 
-### l2vgbt - end
+### l2vgbp - end/cancel/stop
 
 **Description**
 
-≋GBT Mapping LBRGBT complete
+≋GBP Mapping LBRGBP complete
 
 
 #### Attributes
@@ -374,7 +418,7 @@ Keys in JSON string
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
   <td>string</td>
-  <td>l2vgbt</td>
+  <td>l2vgbp</td>
   <td>Distinguish between different mapping types</td>
  </tr>
  <tr>
@@ -386,13 +430,13 @@ Keys in JSON string
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
-  <td>end</td>
+  <td>end/cancel/stop</td>
   <td>Mapping completed</td>
  </tr>
 </table>
 
 ```
-'{"flag":"libra", "type":"l2vgbt", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+'{"flag":"libra", "type":"l2vgbp", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state": "end/cancel/stop"}'
 ```
 
 
@@ -437,14 +481,20 @@ Keys in JSON string
   <td>start</td>
   <td>Transaction request type</td>
  </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
 </table>
 
 ```
-'{"flag":"libra", "type":"l2veur", "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "state":"start"}'
+'{"flag":"libra", "type":"l2veur", "times": 0, "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "out_amount": 1000000, "state":"start"}'
 ```
 
 
-### l2veur - end
+### l2veur - end/cancel/stop
 
 **Description**
 
@@ -482,13 +532,13 @@ Keys in JSON string
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
-  <td>end</td>
+  <td>end/cancel/stop</td>
   <td>Mapping completed</td>
  </tr>
 </table>
 
 ```
-'{"flag":"libra", "type":"l2veur", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+'{"flag":"libra", "type":"l2veur", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
 
 
@@ -533,14 +583,26 @@ Keys in JSON string
   <td>start</td>
   <td>Transaction request type</td>
  </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times</td>
+ </tr>
 </table>
 
 ```
-'{"flag":"libra", "type":"l2vjpy", "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "state":"start"}'
+'{"flag":"libra", "type":"l2vjpy", "times": 0, "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "out_amount": 1000000, "state":"start"}'
 ```
 
 
-### l2vjpy - end
+### l2vjpy - end/cancel/stop
 
 **Description**
 
@@ -578,13 +640,13 @@ Keys in JSON string
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
-  <td>end</td>
+  <td>end/cancel/stop</td>
   <td>Mapping completed</td>
  </tr>
 </table>
 
 ```
-'{"flag":"libra", "type":"l2vjpy", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+'{"flag":"libra", "type":"l2vjpy", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
 
 
@@ -629,14 +691,26 @@ Keys in JSON string
   <td>start</td>
   <td>Transaction request type</td>
  </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times</td>
+ </tr>
 </table>
 
 ```
-'{"flag":"libra", "type":"l2vsgd", "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "state":"start"}'
+'{"flag":"libra", "type":"l2vsgd", "times": 0, "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "out_amount": 1000000, "state":"start"}'
 ```
 
 
-### l2vsgd - end
+### l2vsgd - end/cancel/stop
 
 **Description**
 
@@ -674,13 +748,13 @@ Keys in JSON string
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
-  <td>end</td>
+  <td>end/cancel/stop</td>
   <td>Mapping completed</td>
  </tr>
 </table>
 
 ```
-'{"flag":"libra", "type":"l2vsgd", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+'{"flag":"libra", "type":"l2vsgd", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
 
 
@@ -725,14 +799,26 @@ LBRUSD Mapping ≋USD
   <td>start</td>
   <td>Transaction request type</td>
  </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times</td>
+ </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2lusd", "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "state":"start"}'
+'{"flag":"violas", "type":"v2lusd", "times": 0, "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "out_amount": 1000000, "state":"start"}'
 ```
 
 
-### v2lusd - end
+### v2lusd - end/cancel/stop
 
 **Description**
 
@@ -770,21 +856,21 @@ LBRUSD Mapping ≋USD completed
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
-  <td>end</td>
+  <td>end/cancel/stop</td>
   <td>Mapping completed</td>
  </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2lusd", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+'{"flag":"violas", "type":"v2lusd", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
 
 
-### v2lgbt - start
+### v2lgbp - start
 
 **Description**
 
-LBRGBT Mapping ≋GBT
+LBRGBP Mapping ≋GBP
 
 
 #### Attributes
@@ -806,7 +892,7 @@ LBRGBT Mapping ≋GBT
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
   <td>string</td>
-  <td>v2lgbt</td>
+  <td>v2lgbp</td>
   <td>Distinguish between different mapping types</td>
  </tr>
  <tr>
@@ -821,18 +907,30 @@ LBRGBT Mapping ≋GBT
   <td>start</td>
   <td>Transaction request type</td>
  </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times</td>
+ </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2lgbt", "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "state":"start"}'
+'{"flag":"violas", "type":"v2lgbp", "times": 0, "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "out_amount": 1000000, "state":"start"}'
 ```
 
 
-### v2lgbt - end
+### v2lgbp - end/cancel/stop
 
 **Description**
 
-LBRGBT Mapping ≋GBT completed
+LBRGBP Mapping ≋GBP completed
 
 
 #### Attributes
@@ -854,7 +952,7 @@ LBRGBT Mapping ≋GBT completed
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
   <td>string</td>
-  <td>v2lgbt</td>
+  <td>v2lgbp</td>
   <td>Distinguish between different mapping types</td>
  </tr>
  <tr>
@@ -866,13 +964,13 @@ LBRGBT Mapping ≋GBT completed
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
-  <td>end</td>
+  <td>end/cancel/stop</td>
   <td>Mapping completed</td>
  </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2lgbt", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+'{"flag":"violas", "type":"v2lgbp", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
 
 
@@ -917,14 +1015,26 @@ LBREUR Mapping ≋EUR
   <td>start</td>
   <td>Transaction request type</td>
  </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times</td>
+ </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2leur", "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "state":"start"}'
+'{"flag":"violas", "type":"v2leur", "times": 0, "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "out_amount": 1000000, "state":"start"}'
 ```
 
 
-### v2leur - end
+### v2leur - end/cancel/stop
 
 **Description**
 
@@ -962,13 +1072,13 @@ LBREUR Mapping ≋EUR completed
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
-  <td>end</td>
+  <td>end/cancel/stop</td>
   <td>Mapping completed</td>
  </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2leur", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+'{"flag":"violas", "type":"v2leur", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
 
 
@@ -1013,14 +1123,26 @@ LBRJPY Mapping ≋JPY
   <td>start</td>
   <td>Transaction request type</td>
  </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times</td>
+ </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2ljpy", "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "state":"start"}'
+'{"flag":"violas", "type":"v2ljpy", "times": 0, "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "out_amount": 1000000, "state":"start"}'
 ```
 
 
-### v2ljpy - end
+### v2ljpy - end/cancel/stop
 
 **Description**
 
@@ -1058,13 +1180,13 @@ LBREUR Mapping ≋EUR completed
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
-  <td>end</td>
+  <td>end/cancel/stop</td>
   <td>Mapping completed</td>
  </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2ljpy", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+'{"flag":"violas", "type":"v2ljpy", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
 
 
@@ -1109,14 +1231,26 @@ LBRSGD Mapping ≋SGD
   <td>start</td>
   <td>Transaction request type</td>
  </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times</td>
+ </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2lsgd", "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "state":"start"}'
+'{"flag":"violas", "type":"v2lsgd", "times": 0, "to_address":"0000000000000000000000000000000059352b2c39bec33a880ae1334bea8129", "out_amount": 1000000, "state":"start"}'
 ```
 
 
-### v2lsgd - end
+### v2lsgd - end/cancel/stop
 
 **Description**
 
@@ -1154,13 +1288,13 @@ LBRSGD Mapping ≋SGD completed
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
-  <td>end</td>
+  <td>end/cancel/stop</td>
   <td>Mapping completed</td>
  </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2lsgd", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+'{"flag":"violas", "type":"v2lsgd", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
 
 ### b2v - start
@@ -1204,14 +1338,26 @@ BTC Mapping ≋SGD
   <td>start</td>
   <td>Mapping</td>
  </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times</td>
+ </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2b", "to_address":"2MxBZG7295wfsXaUj69quf8vucFzwG35UWh", "state":"start"}'
+'{"flag":"violas", "type":"v2b", "times": 0, "to_address":"2MxBZG7295wfsXaUj69quf8vucFzwG35UWh", "out_amount": 1000000, "state":"start"}'
 ```
 
 
-### b2v - end
+### b2v - end/cancel/stop
 
 **Description**
 
@@ -1249,11 +1395,11 @@ BTC Mapping ≋SGD completed
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
-  <td>end</td>
+  <td>end/cancel/stop</td>
   <td>Mapping completed</td>
  </tr>
 </table>
 
 ```
-'{"flag":"violas", "type":"v2b", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+'{"flag":"violas", "type":"v2b", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
