@@ -336,5 +336,5 @@ def test_dbl2v():
     show_state_count(db, logger)
 
 if __name__ == "__main__":
-    stmanage.set_conf_env("../bvexchange_internal.toml")
+    stmanage.set_conf_env("../bvexchange.toml")
     test_dbl2v()

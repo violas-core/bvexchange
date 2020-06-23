@@ -114,38 +114,26 @@ v2b_maxtimes = 99
     step = 500
 
 #violas <-> libra token map
+#violas coin:VLSAAA map to libra coin:BBB:  VLSAAA(violas chain) -uniswap-> LBRBBB(violas chain) -map-> BBB(libra chain)
+#libra coin map:AAA to violas coin:VLSBBB:  AAA(libra chain) -map-> LBRAAA(violas chain) -uniswap-> VLSBBB(violas chain)
+#btc map violas coin: 
+#violas btcbtc coin map btc coin:
 [token_map]
-    [token_map.v2l]
-        LBRUSD = "USD"
-        LBREUR = "EUR"
-        LBRSGD = "SGD"
-        LBRGBT = "GBT"
-        VLSUSD = "LBRUSD"
-        VLSEUR = "LBREUR"
-        VLSSGD = "LBRSGD"
-        VLSGBT = "LBRGBT"
-    [token_map.l2v]
-        USD = "LBRUSD"
-        EUR = "LBREUR"
-        SGD = "LBRSGD"
-        GBT = "LBRGBT"
-    [token_map.v2b]
-        BTCBTC = "BTC"
-    [token_map.b2v]
-        BTC = "BTCBTC"
+    Coin1 = "LBRUSD"
+    Coin2 = "LBREUR"
 
-#opt type map target token
+#opt type -> target token
 [type_token_map]
-    v2b = "BTC"
-    b2v = "BTCBTC"
-    v2lusd = "Usd"
-    v2leur = "Eur"
-    v2lsgd = "Sgd"
-    v2lgbt = "gbt"
+    v2lusd = "USD"
+    v2leur = "EUR"
     l2vusd = "VLSUSD"
     l2veur = "VLSEUR"
-    l2vSGD = "VLSSGD"
+    l2vsgd = "VLSSGD"
     l2vgbt = "VLSGBT"
+
+[support_token_id]
+    libra=["Coin1", "Coin2"]
+    violas = ["VLSUSD", "VLSEUR", "VLSSGD", "VLSGBT", "LBRUSD", "LBREUR", "LBRGBT", "LBRSGD"]
 
 [address_list]
     #receiver addresses
@@ -203,16 +191,13 @@ v2b_maxtimes = 99
         chain = "libra"
 
     #sender address
+    ##send btcbtc
     [[address_list.sender]]
         address = "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
         type = "b2v"
         chain = "violas"
 
-    [[address_list.sender]]
-        address = "2MwBFJJn1f5Sg242D3wNUinKUCKS3GzCn7j"
-        type = "v2b"
-        chain = "btc"
-
+    ##send btc
     [[address_list.sender]]
         address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
         type = "v2b"
@@ -222,6 +207,32 @@ v2b_maxtimes = 99
         address = "2N9fQcit5KB8vJHmBF5Z4DkUUTCgJA8GKb3"
         type = "v2b"
         chain = "btc"
+
+    [[address_list.sender]]
+        address = "2MwBFJJn1f5Sg242D3wNUinKUCKS3GzCn7j"
+        type = "v2b"
+        chain = "btc"
+
+    ##send violas tokens
+    [[address_list.sender]]
+        address = "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
+        type = "l2vusd"
+        chain = "violas"
+
+    [[address_list.sender]]
+        address = "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
+        type = "l2veur"
+        chain = "violas"
+
+    [[address_list.sender]]
+        address = "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
+        type = "l2vgbt"
+        chain = "violas"
+
+    [[address_list.sender]]
+        address = "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
+        type = "l2vsgd"
+        chain = "violas"
 
     [[address_list.sender]]
         address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
@@ -243,43 +254,7 @@ v2b_maxtimes = 99
         type = "v2lsgd"
         chain = "libra"
 
-    #currency code
-    [[address_list.module]]
-        address = "0000000000000000000000000000000000000000000000000000000000000000"
-        type = "v2b"
-        chain = "violas"
-
-    [[address_list.module]]
-        address = "0000000000000000000000000000000000000000000000000000000000000000"
-        type = "b2v"
-        chain = "btc"
-
-    [[address_list.module]]
-        address = "0000000000000000000000000000000000000000000000000000000000000000"
-        type = "b2v"
-        chain = "violas"
-
-    [[address_list.module]]
-        address = "0000000000000000000000000000000000000000000000000000000000000000"
-        type = "v2lusd"
-        chain = "violas"
-
-    [[address_list.module]]
-        address = "0000000000000000000000000000000000000000000000000000000000000000"
-        type = "v2leur"
-        chain = "libra"
-
-    [[address_list.module]]
-        address = "0000000000000000000000000000000000000000000000000000000000000000"
-        type = "l2vsgd"
-        chain = "libra"
-
-    [[address_list.module]]
-        address = "0000000000000000000000000000000000000000000000000000000000000000"
-        type = "l2vgbt"
-        chain = "violas"
-
-    #token info
+    #token info moudule <-> token_id: check token_is is valid.
     [[address_list.token]]
         address = "0000000000000000000000000000000000000000000000000000000000000000"
         tokenid = "BTCBTC"

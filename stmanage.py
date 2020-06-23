@@ -169,15 +169,11 @@ def get_max_times(mtype):
         parse_except(e)
     return 0
 
-def get_token_map(mtype = None, token = None):
+def get_token_map(token = None):
     try:
-        if mtype is None:
-            return setting.token_map
-        
-        if token is None:
-            return setting.token_map.get(mtype)
-
-        return setting.token_map.get(mtype).get(token)
+        if token:
+            return setting.token_map.get(token)
+        return setting.token_map
     except Exception as e:
         parse_except(e)
     return None
@@ -186,8 +182,16 @@ def get_type_token_map(mtype = None):
     try:
         if mtype:
             return setting.type_token_map.get(mtype)
-        else:
-            return setting.type_token_map
+        return setting.type_token_map
+    except Exception as e:
+        parse_except(e)
+    return None
+
+def get_support_token_id(chain = None):
+    try:
+        if chain:
+            return setting.support_token_id.get(chain)
+        return setting.support_token_id
     except Exception as e:
         parse_except(e)
     return None
@@ -216,7 +220,7 @@ def get_conf():
 
 
 def main():
-    set_conf_env("bvexchange_internal.toml")
+    set_conf_env("bvexchange.toml")
     mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
 
     for mtype in mtypes:
@@ -236,11 +240,13 @@ def main():
     print(f"get db echo :{get_db_echo()}")
     print(f"get token_map: ")
     json_print(get_token_map())
-    print(f"get token_map(l2v, USD): {get_token_map('l2v', 'USD')}")
-    print(f"get token_map(l2v, USD): {get_token_map('v2l', 'LBRUSD')}")
+    print(f"get token_map(USD): {get_token_map('USD')}")
     print(f"get type_token_map: ")
     json_print(get_type_token_map())
     print(f"get type_token_map(l2vusd): {get_type_token_map('l2vusd')}")
+    json_print(get_support_token_id())
+    print(f"get support_token_id(libra): {get_support_token_id('libra')}")
+    print(f"get support_token_id(violas): {get_support_token_id('violas')}")
 
     #json_print(get_conf())
 
