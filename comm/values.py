@@ -64,7 +64,7 @@ class dbindexbase(enumbase):
     UNKOWN = 255
 
 #work mod 
-class workmod(autoname):
+class workmod(enumbase):
     COMM         = auto()   
     VFILTER      = auto()    #scan violas chain
     LFILTER      = auto()
@@ -99,3 +99,4 @@ class workmod(autoname):
 if __name__ == "__main__":
     print(dbindexbase.UNKOWN.info)
     print(workmod.COMM.info)
+    print(workmod.LFILTER.info)

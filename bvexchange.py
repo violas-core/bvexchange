@@ -19,7 +19,7 @@ from exchange import b2v, v2b, exlv
 from comm.result import parse_except
 from analysis import analysis_base, analysis_filter, analysis_proof
 from enum import Enum
-from comm.values import work_mod
+from comm.values import workmod as work_mod
 
 name="bvexchange"
 
@@ -60,16 +60,19 @@ class works:
     def work_b2v(self, **kargs):
         try:
             logger.critical("start: b2v")
-            while (self.__work_looping.get(work_mod.B2V.name, False)):
-                logger.debug("looping: b2v")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
                 try:
-                    mod = "b2v"
                     chain = "violas"
                     obj = b2v.exb2v(mod,
                             stmanage.get_violas_nodes(), 
                             stmanage.get_btc_conn(), 
-                            stmanage.get_module_address(mod, chain), 
-                            stmanage.get_token_id(mod, chain), 
+                            stmanage.get_module_address(dtype, chain), 
+                            stmanage.get_token_id(dtype, chain), 
                             stmanage.get_combine_address(), 
                             chain=chain)
                     self.set_work_obj(obj)
@@ -85,18 +88,21 @@ class works:
     def work_v2b(self, **kargs):
         try:
             logger.critical("start: v2b")
-            while (self.__work_looping.get(work_mod.V2B.name, False)):
-                logger.debug("looping: v2b")
-                mod = "v2b"
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
                 chain = "violas"
                 try:
                     obj = v2b.exv2b(mod, 
                             stmanage.get_violas_nodes(), 
                             stmanage.get_btc_conn(), 
-                            stmanage.get_db(mod), 
-                            stmanage.get_module_address(mod, chain), 
-                            stmanage.get_token_id(mod, chain), 
-                            list(set(stmanage.get_receiver_address_list(mod, chain))),
+                            stmanage.get_db(dtype), 
+                            stmanage.get_module_address(dtype, chain), 
+                            stmanage.get_token_id(dtype, chain), 
+                            list(set(stmanage.get_receiver_address_list(dtype, chain))),
                             chain=chain)
                     self.set_work_obj(obj)
                     obj.start()
@@ -111,11 +117,14 @@ class works:
     def work_vfilter(self, **kargs):
         try:
             logger.critical("start: violas filter")
-            while (self.__work_looping.get(work_mod.VFILTER.name, False)):
-                logger.debug("looping: vfilter")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
                 try:
-                    dtype = "vfilter"
-                    obj = analysis_filter.afilter(name="vfilter", ttype="violas", \
+                    obj = analysis_filter.afilter(name=mod, ttype="violas", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
@@ -132,12 +141,17 @@ class works:
     def work_v2bproof(self, **kargs):
         try:
             logger.critical("start: violas v2b proof")
-            while (self.__work_looping.get(work_mod.V2BPROOF.name, False)):
-                logger.debug("looping: v2bproof")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            #violas transaction's data types 
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
                 try:
-                    dtype = "v2b"   #violas transaction's data types 
                     basedata = "vfilter"
-                    obj = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
+                    obj = analysis_proof.aproof(name=mod, ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     obj.append_token_id(dtype, stmanage.get_token_id(dtype, "violas"))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
@@ -156,11 +170,15 @@ class works:
     def work_lfilter(self, **kargs):
         try:
             logger.critical("start: libra filter")
-            while (self.__work_looping.get(work_mod.LFILTER.name, False)):
-                logger.debug("looping: lfilter")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
                 try:
-                    dtype = "lfilter"
-                    obj = analysis_filter.afilter(name="lfilter", ttype="libra", \
+                    obj = analysis_filter.afilter(name=mod, ttype="libra", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_libra_nodes(), chain="libra")
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
@@ -177,12 +195,16 @@ class works:
     def work_l2vproof(self, **kargs):
         try:
             logger.critical("start: l2v proof")
-            while (self.__work_looping.get(work_mod.L2VPROOF.name, False)):
-                logger.debug("looping: l2vproof")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
                 try:
-                    dtype = "l2v"   #libra transaction's data types 
                     basedata = "lfilter"
-                    obj = analysis_proof.aproof(name="l2vproof", ttype="libra", dtype=dtype, \
+                    obj = analysis_proof.aproof(name=mod, ttype="libra", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
@@ -200,12 +222,16 @@ class works:
     def work_v2lproof(self, **kargs):
         try:
             logger.critical("start: violas v2l proof")
-            while (self.__work_looping.get(work_mod.V2LPROOF.name, False)):
-                logger.debug("looping: v2lproof")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
                 try:
-                    dtype = "v2l"   #libra transaction's data types 
                     basedata = "vfilter"
-                    obj = analysis_proof.aproof(name="v2lproof", ttype="violas", dtype=dtype, \
+                    obj = analysis_proof.aproof(name=mod, ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     obj.append_module(dtype, stmanage.get_module_address(dtype, "violas", False))
                     obj.append_token_id(dtype, stmanage.get_token_id(dtype, "violas"))
@@ -225,20 +251,25 @@ class works:
     def work_l2v(self, **kargs):
         try:
             logger.critical("start: l2v")
-            while (self.__work_looping.get(work_mod.L2V.name, False)):
-                logger.debug("looping: l2v")
-                mod = "l2v"
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            #libra transaction's data types 
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
                 try:
                     obj = exlv.exlv(mod, 
                             stmanage.get_libra_nodes(),
                             stmanage.get_violas_nodes(), 
-                            stmanage.get_db(mod), 
+                            stmanage.get_db(dtype), 
                             None, #from libra module is fixed
                             None, #libra no token_id
-                            stmanage.get_module_address(mod, "violas", False), 
-                            stmanage.get_token_id(mod, "violas"),
-                            list(set(stmanage.get_receiver_address_list(mod, "libra", False))),
-                            list(set(stmanage.get_sender_address_list(mod, "violas", False))),
+                            stmanage.get_module_address(dtype, "violas", False), 
+                            stmanage.get_token_id(dtype, "violas"),
+                            list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
                             "libra",
                             "violas")
                     self.set_work_obj(obj)
@@ -254,20 +285,25 @@ class works:
     def work_v2l(self, **kargs):
         try:
             logger.critical("start: v2l")
-            while (self.__work_looping.get(work_mod.V2L.name, False)):
-                logger.debug("looping: v2l")
-                mod = "v2l"
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            #libra transaction's data types 
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
                 try:
                     obj = exlv.exlv(mod, 
                             stmanage.get_violas_nodes(), 
                             stmanage.get_libra_nodes(),
-                            stmanage.get_db(mod), 
-                            stmanage.get_module_address(mod, "violas", False), 
-                            stmanage.get_token_id(mod, "violas"),
+                            stmanage.get_db(dtype), 
+                            stmanage.get_module_address(dtype, "violas", False), 
+                            stmanage.get_token_id(dtype, "violas"),
                             None,
                             None,
-                            list(set(stmanage.get_receiver_address_list(mod, "violas", False))),
-                            list(set(stmanage.get_sender_address_list(mod, "libra", False))),
+                            list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
                             "violas",
                             "libra")
                     self.set_work_obj(obj)
@@ -283,11 +319,17 @@ class works:
     def work_bfilter(self, **kargs):
         try:
             logger.critical("start: btc filter")
-            while (self.__work_looping.get(work_mod.BFILTER.name, False)):
-                logger.debug("looping: bfilter")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            #libra transaction's data types 
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
                 try:
                     dtype = "bfilter"
-                    obj = analysis_filter.afilter(name="bfilter", ttype="btc", \
+                    obj = analysis_filter.afilter(name=mod, ttype="btc", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_btc_conn(), chain="btc")
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__btc_min_valid_version - 1)
@@ -304,12 +346,17 @@ class works:
     def work_b2vproof(self, **kargs):
         try:
             logger.critical("start: btc b2v proof")
-            while (self.__work_looping.get(work_mod.B2VPROOF.name, False)):
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            #libra transaction's data types 
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
                 logger.debug("looping: b2vproof")
                 try:
-                    dtype = "b2v"   #libra transaction's data types 
                     basedata = "bfilter"
-                    obj = analysis_proof.aproof(name="b2vproof", ttype="btc", dtype=dtype, \
+                    obj = analysis_proof.aproof(name=mod, ttype="btc", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     obj.append_module(dtype, stmanage.get_module_address(dtype, "btc", False))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
@@ -328,7 +375,11 @@ class works:
     def work_comm(self, **kargs):
         try:
             logger.critical("start: comm")
-            while(self.__work_looping.get(work_mod.COMM.name, False)):
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            while(self.__work_looping.get(mod, False)):
                 logger.debug("looping: comm")
                 sleep(nsec)
         except Exception as e:
@@ -341,21 +392,32 @@ class works:
         __threadId = 0
         __nsec = 1
         __work = ""
-        def __init__(self, work, threadId, name, nsec):
-            logger.debug("work thread __init__: name = %s  nsec = %i" ,name, nsec)
+        def __init__(self, work, threadId, name, **kargs):
+            logger.debug(f"work thread __init__(work_funcs = {work.__name__} threadId = {threadId} name = {name}  kargs = {kargs})")
             threading.Thread.__init__(self)
             self.__threadId = threadId
             self.__name = name
-            self.__nsec = nsec
+            self.__kargs = kargs
             self.__work = work
 
         def run(self):
             logger.debug("work thread run")
-            self.__work(self.__nsec)
+            self.__work(**self.__kargs)
+
+    def get_dtype_from_mod(self, modname):
+        dtype = modname.lower()
+        if dtype[:3] in ["v2b", "b2v", "l2v", "v2l"]:
+            if dtype.endswith("ex"):
+                return dtype[:-2]
+            elif dtype.endswith("proof"):
+                return dtype[:-5]
+        return dtype
 
     def thread_append(self, work, mod):
         try:
-            obj = self.work_thread(work, mod.value, mod.name.lower(), stmanage.get_looping_sleep(mod.name.lower()))
+            obj = self.work_thread(work, mod.value, mod.name.lower(), \
+                    nsec = stmanage.get_looping_sleep(mod.name.lower()), \
+                    mod = mod.name.lower())
             self.__threads.append(obj)
         except Exception as e:
             parse_except(e)
@@ -363,7 +425,7 @@ class works:
             logger.debug("thread_append")
 
     def create_func_dict(self, mod, func):
-        return {mod.name : func}
+        return {mod.name.lower() : func}
 
     @property
     def funcs_map(self):
@@ -411,7 +473,7 @@ class works:
 
             for name, state in work_mods.items():
                 if state:
-                    self.thread_append(self.funcs_map[name], work_mod[name])
+                    self.thread_append(self.funcs_map[name.lower()], work_mod[name.upper()])
 
             for work in self.__threads:
                 work.start() #start work
@@ -482,10 +544,10 @@ def run(mods):
     signal.signal(signal.SIGTERM, signal_stop)
     work_mods = {}
     for mod in mods:
-        work_mods[mod.upper()] = True
+        work_mods[mod.lower()] = True
         if mod == "all":
             for wm in work_mod:
-                work_mods[wm.name.upper()] = True
+                work_mods[wm.name.lower()] = True
             break
 
     logger.critical(f"work_mods= {work_mods}")
