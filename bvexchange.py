@@ -13,43 +13,15 @@ import log.logger
 import threading
 from time import sleep, ctime
 import stmanage
-import db
-import db.dbb2v
-import db.dbv2b
+import subprocess
 import comm.functions as fn
 from exchange import b2v, v2b, exlv
 from comm.result import parse_except
 from analysis import analysis_base, analysis_filter, analysis_proof
-import subprocess
 from enum import Enum
+from comm.values import work_mod
 
 name="bvexchange"
-
-class work_mod(Enum):
-    COMM         = 1   
-    VFILTER      = 4
-    V2BPROOF     = 5
-    LFILTER      = 6
-    L2VUSDPROOF  = 7
-    L2VEURPROOF  = 8
-    L2VGBPPROOF  = 9
-    L2VSGDPROOF  = 10
-    V2LUSDPROOF  = 11
-    V2LEURPROOF  = 12
-    V2LGBPPROOF  = 13
-    V2LSGDPROOF  = 14
-    L2VUSDEX     = 20
-    L2VEUREX     = 21
-    L2VGBPEX     = 22
-    L2VSGDEX     = 23
-    V2LUSDEX     = 30
-    V2LEUREX     = 31
-    V2LGBPEX     = 32
-    V2LSGDEX     = 33
-    BFILTER      = 40
-    B2VPROOF     = 41
-    B2VEX        = 50
-    V2BEX        = 51
 
 class works:
     __threads = []
@@ -85,7 +57,7 @@ class works:
 
         self.__work_obj[obj.name()] = obj
 
-    def work_b2v(self, nsec):
+    def work_b2v(self, **kargs):
         try:
             logger.critical("start: b2v")
             while (self.__work_looping.get(work_mod.B2V.name, False)):
@@ -110,7 +82,7 @@ class works:
         finally:
             logger.critical("stop: b2v")
 
-    def work_v2b(self, nsec):
+    def work_v2b(self, **kargs):
         try:
             logger.critical("start: v2b")
             while (self.__work_looping.get(work_mod.V2B.name, False)):
@@ -136,7 +108,7 @@ class works:
         finally:
             logger.critical("stop: v2b")
 
-    def work_vfilter(self, nsec):
+    def work_vfilter(self, **kargs):
         try:
             logger.critical("start: violas filter")
             while (self.__work_looping.get(work_mod.VFILTER.name, False)):
@@ -157,7 +129,7 @@ class works:
         finally:
             logger.critical("stop: vfilter")
 
-    def work_v2bproof(self, nsec):
+    def work_v2bproof(self, **kargs):
         try:
             logger.critical("start: violas v2b proof")
             while (self.__work_looping.get(work_mod.V2BPROOF.name, False)):
@@ -181,7 +153,7 @@ class works:
         finally:
             logger.critical("stop: v2bproof")
 
-    def work_lfilter(self, nsec):
+    def work_lfilter(self, **kargs):
         try:
             logger.critical("start: libra filter")
             while (self.__work_looping.get(work_mod.LFILTER.name, False)):
@@ -202,7 +174,7 @@ class works:
         finally:
             logger.critical("stop: lfilter")
 
-    def work_l2vproof(self, nsec):
+    def work_l2vproof(self, **kargs):
         try:
             logger.critical("start: l2v proof")
             while (self.__work_looping.get(work_mod.L2VPROOF.name, False)):
@@ -225,7 +197,7 @@ class works:
         finally:
             logger.critical("stop: l2vproof")
 
-    def work_v2lproof(self, nsec):
+    def work_v2lproof(self, **kargs):
         try:
             logger.critical("start: violas v2l proof")
             while (self.__work_looping.get(work_mod.V2LPROOF.name, False)):
@@ -250,7 +222,7 @@ class works:
         finally:
             logger.critical("stop: v2lproof")
 
-    def work_l2v(self, nsec):
+    def work_l2v(self, **kargs):
         try:
             logger.critical("start: l2v")
             while (self.__work_looping.get(work_mod.L2V.name, False)):
@@ -279,7 +251,7 @@ class works:
         finally:
             logger.critical("stop: l2v")
 
-    def work_v2l(self, nsec):
+    def work_v2l(self, **kargs):
         try:
             logger.critical("start: v2l")
             while (self.__work_looping.get(work_mod.V2L.name, False)):
@@ -308,7 +280,7 @@ class works:
         finally:
             logger.critical("stop: v2l")
 
-    def work_bfilter(self, nsec):
+    def work_bfilter(self, **kargs):
         try:
             logger.critical("start: btc filter")
             while (self.__work_looping.get(work_mod.BFILTER.name, False)):
@@ -329,7 +301,7 @@ class works:
         finally:
             logger.critical("stop: bfilter")
 
-    def work_b2vproof(self, nsec):
+    def work_b2vproof(self, **kargs):
         try:
             logger.critical("start: btc b2v proof")
             while (self.__work_looping.get(work_mod.B2VPROOF.name, False)):
@@ -353,7 +325,7 @@ class works:
         finally:
             logger.critical("stop: v2lproof")
 
-    def work_comm(self, nsec):
+    def work_comm(self, **kargs):
         try:
             logger.critical("start: comm")
             while(self.__work_looping.get(work_mod.COMM.name, False)):
@@ -383,7 +355,6 @@ class works:
 
     def thread_append(self, work, mod):
         try:
-            #b2v = self.work_thread(work, threadId, name, nsec)
             obj = self.work_thread(work, mod.value, mod.name.lower(), stmanage.get_looping_sleep(mod.name.lower()))
             self.__threads.append(obj)
         except Exception as e:
@@ -392,7 +363,6 @@ class works:
             logger.debug("thread_append")
 
     def create_func_dict(self, mod, func):
-        print(f"{mod.name}: {func.__name__}")
         return {mod.name : func}
 
     @property
@@ -442,42 +412,6 @@ class works:
             for name, state in work_mods.items():
                 if state:
                     self.thread_append(self.funcs_map[name], work_mod[name])
-
-
-            #self.thread_append(self.work_comm, work_mod.COMM)
-
-            #if work_mods.get(work_mod.B2V.name, False):
-            #    self.thread_append(self.work_b2v, work_mod.B2V)
-
-            #if work_mods.get(work_mod.V2B.name, False):
-            #    self.thread_append(self.work_v2b, work_mod.V2B)
-
-            #if work_mods.get(work_mod.VFILTER.name, False):
-            #    self.thread_append(self.work_vfilter, work_mod.VFILTER)
-
-            #if work_mods.get(work_mod.V2LPROOF.name, False):
-            #    self.thread_append(self.work_v2lproof, work_mod.V2LPROOF)
-
-            #if work_mods.get(work_mod.V2BPROOF.name, False):
-            #    self.thread_append(self.work_v2bproof, work_mod.V2BPROOF)
-
-            #if work_mods.get(work_mod.LFILTER.name, False):
-            #    self.thread_append(self.work_lfilter, work_mod.LFILTER)
-
-            #if work_mods.get(work_mod.L2VPROOF.name, False):
-            #    self.thread_append(self.work_l2vproof, work_mod.L2VPROOF)
-
-            #if work_mods.get(work_mod.L2V.name, False):
-            #    self.thread_append(self.work_l2v, work_mod.L2V)
-
-            #if work_mods.get(work_mod.V2L.name, False):
-            #    self.thread_append(self.work_v2l, work_mod.V2L)
-
-            #if work_mods.get(work_mod.BFILTER.name, False):
-            #    self.thread_append(self.work_bfilter, work_mod.BFILTER)
-
-            #if work_mods.get(work_mod.B2VPROOF.name, False):
-            #    self.thread_append(self.work_b2vproof, work_mod.B2VPROOF)
 
             for work in self.__threads:
                 work.start() #start work

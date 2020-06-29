@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import sys
+from enum import Enum, auto
 
 name="values"
 
@@ -11,3 +12,90 @@ EX_TYPE_B2V = "b2v"
 EX_TYPE_V2B = "v2b"
 
 VIOLAS_ADDRESS_LEN = [32, 64]
+
+class enumbase(Enum):
+    @property
+    def info(self):
+        return f"{self.name}:{self.value}"
+
+class autoname(enumbase):
+    def _generate_next_value_(name, start, count, last_values):
+        return name.lower()
+
+#transaction type for transaction's data flag
+class trantypebase(autoname):
+    VIOLAS = auto()
+    LIBRA  = auto()
+    BTC    = auto()
+    UNKOWN = auto()
+
+#datatype for transaction's data type
+class datatypebase(autoname):
+    V2LUSD  = auto()
+    V2LEUR  = auto()
+    V2LSGD  = auto()
+    V2LGBP  = auto()
+    L2VUSD  = auto()
+    L2VEUR  = auto()
+    L2VSGD  = auto()
+    L2VGBP  = auto()
+    V2B     = auto()
+    B2V     = auto()
+    UNKOWN  = auto()
+
+##db index(redis)
+class dbindexbase(enumbase):
+    RECORD  = 1
+    #scan chain
+    VFILTER = 2
+    LFILTER = 3
+    BFILTER = 4
+    #proof datas
+    V2LUSD  = 10
+    V2LEUR  = 11
+    V2LSGD  = 12
+    V2LGBP  = 13
+    L2VUSD  = 20
+    L2VEUR  = 21
+    L2VSGD  = 22
+    L2VGBP  = 23
+    V2B     = 20
+    B2V     = 25
+    UNKOWN = 255
+
+#work mod 
+class workmod(autoname):
+    COMM         = auto()   
+    VFILTER      = auto()    #scan violas chain
+    LFILTER      = auto()
+    #chain : libra ;  data source: lfilter ; result : transaction proof ; format : L2V + token_id + PROOF
+    L2VUSDPROOF  = auto()
+    L2VEURPROOF  = auto()
+    L2VGBPPROOF  = auto()
+    L2VSGDPROOF  = auto()
+    #chain : violas ; data source: vfilter ; result : transaction proof : fromat : V2L + token_id + PROOF
+    V2LUSDPROOF  = auto()
+    V2LEURPROOF  = auto()
+    V2LGBPPROOF  = auto()
+    V2LSGDPROOF  = auto()
+    #exchange : libra token id -> violas token id; format : L2V + token id + EX
+    L2VUSDEX     = auto()
+    L2VEUREX     = auto()
+    L2VGBPEX     = auto()
+    L2VSGDEX     = auto()
+    #exchange : violas token id -> libra token id; format : V2L + token id + EX
+    V2LUSDEX     = auto()
+    V2LEUREX     = auto()
+    V2LGBPEX     = auto()
+    V2LSGDEX     = auto()
+
+    V2BPROOF     = auto()
+
+    BFILTER      = auto() #scan bitcoin chain
+    B2VPROOF     = auto()
+    B2VEX        = auto()
+    V2BEX        = auto()
+
+if __name__ == "__main__":
+    print(dbindexbase.UNKOWN.info)
+    print(workmod.COMM.info)

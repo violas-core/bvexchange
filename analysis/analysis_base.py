@@ -13,6 +13,7 @@ import comm
 import comm.error
 import comm.result
 import comm.values
+from comm.values import trantypebase, datatypebase
 from comm.result import result, parse_except
 from comm.error import error
 from db.dbv2b import dbv2b
@@ -29,24 +30,8 @@ name="abase"
 COINS = comm.values.COINS
 class abase(baseobject):
     #enum name must be transaction datas "type"
-    class datatype(Enum):
-        V2B = 1
-        B2V = 2
-        V2LUSD = 3
-        V2LEUR = 4
-        V2LSGD = 5
-        V2LGBP = 6
-        L2VUSD = 10
-        L2VEUR = 11
-        L2VSGD = 12
-        L2VGBP = 13
-        UNKOWN = 255
-
-    class trantype(Enum):
-        VIOLAS = 1
-        LIBRA  = 2
-        BTC    = 3
-        UNKOWN = 255
+    datatype = datatypebase
+    trantype = trantypebase
 
     def __init__(self, name, ttype, dtype, dbconf, vnodes, chain="violas"):
         baseobject.__init__(self, name)
