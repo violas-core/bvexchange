@@ -13,6 +13,7 @@ import datetime
 import sqlalchemy
 import random
 import redis
+from comm.values import dbindexbase
 from comm.error import error
 from comm.result import result, parse_except
 from sqlalchemy import create_engine
@@ -32,21 +33,7 @@ class dbvbase(baseobject):
     __key_latest_saved_ver      = "latest_saved_ver"
     __key_min_valid_ver         = "min_valid_ver"
 
-    class dbindex(Enum):
-        RECORD  = 0
-        VFILTER = 1
-        LFILTER = 2
-        BFILTER = 3
-        V2B     = 4
-        B2V     = 5
-        V2LUSD  = 6
-        V2LEUR  = 7
-        V2LGBP  = 8
-        V2LSGD  = 9
-        L2VUSD  = 20
-        L2VEUR  = 21
-        L2VGBP  = 22
-        L2VSGD  = 23
+    dbindex = dbindexbase
 
     def __init__(self, name, host, port, db, passwd = None):
         baseobject.__init__(self, name)
