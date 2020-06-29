@@ -31,9 +31,10 @@ name="aproof"
 COINS = comm.values.COINS
 class aproof(abase):
     class proofstate(Enum):
-        START = 1
-        END = 2
-        CANCEL = 3
+        START   = 1
+        END     = 2
+        CANCEL  = 3
+        STOP    = 4
         UNKOWN = 255
 
     def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, fdbconf = None, rdbconf = None, nodes = None, chain = "violas"):

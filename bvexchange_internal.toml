@@ -62,7 +62,7 @@ v2b_maxtimes = 99
     port = 6378
     db = "vfilter"
     password = "violas"
-    step = 500
+    step = 1
 
 [[db_list]]
     host = "127.0.0.1"
@@ -71,6 +71,7 @@ v2b_maxtimes = 99
     password = "violas"
     step = 500
 
+#b2v/v2b proof db
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
@@ -81,28 +82,65 @@ v2b_maxtimes = 99
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
-    db = "l2v"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "v2l"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
     db = "b2v"
     password = "violas"
     step = 500
 
+#l2vxxx proof db
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
-    db = "b2v"
+    db = "l2vusd"
+    password = "violas"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "l2veur"
+    password = "violas"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "l2vsgd"
+    password = "violas"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "l2vgbp"
+    password = "violas"
+    step = 500
+
+#v2lxxx proof db
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "v2lusd"
+    password = "violas"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "v2leur"
+    password = "violas"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "v2lsgd"
+    password = "violas"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "v2lgbp"
     password = "violas"
     step = 500
 
@@ -124,8 +162,8 @@ v2b_maxtimes = 99
 
 #opt type -> target token
 [type_token_map]
-    v2lusd = "USD"
-    v2leur = "EUR"
+    v2lusd = "Coin1"
+    v2leur = "Coin2"
     l2vusd = "VLSUSD"
     l2veur = "VLSEUR"
     l2vsgd = "VLSSGD"

@@ -31,9 +31,15 @@ class abase(baseobject):
     #enum name must be transaction datas "type"
     class datatype(Enum):
         V2B = 1
-        V2L = 2
-        L2V = 3
-        B2V = 4
+        B2V = 2
+        V2LUSD = 3
+        V2LEUR = 4
+        V2LSGD = 5
+        V2LGBP = 6
+        L2VUSD = 10
+        L2VEUR = 11
+        L2VSGD = 12
+        L2VGBP = 13
         UNKOWN = 255
 
     class trantype(Enum):
@@ -52,7 +58,6 @@ class abase(baseobject):
         self._dbclient = None
         self._rdbclient = None
         self._connect_db(name, dbconf)
-        self._modules = None
         self._token_id = None
         if chain == "btc":
             self._connect_btc(name, vnodes, chain)
@@ -73,7 +78,10 @@ class abase(baseobject):
     def _connect_db(self, name, rconf):
         self._dbclient = None
         if rconf is not None:
-            self._dbclient = dbvbase(name, rconf.get("host", "127.0.0.1"), rconf.get("port", 6378), rconf.get("db"), rconf.get("password", None))
+            self._dbclient = dbvbase(name, rconf.get("host"), \
+                    rconf.get("port"), \
+                    rconf.get("db"), \
+                    rconf.get("password"))
         return self._dbclient
 
     def _connect_violas(self, name, vnodes, chain="violas"):
@@ -139,15 +147,6 @@ class abase(baseobject):
         if step is None or step <= 0:
             return
         self._step = step
-
-    def append_module(self, name, address):
-        if self._modules is None:
-            self._modules = {name:address}
-        else:
-            self._modules.update({name:address})
-
-    def is_valid_module(self, module):
-        return self._modules is None or module in self._modules.values()
 
     def append_token_id(self, name, token_id):
         if self._token_id is None:
@@ -227,11 +226,6 @@ class abase(baseobject):
             if not datas["tran_state"]:
                return tran 
 
-            #must has event(data)
-            events = transaction.get("events", None)
-            if events is None or len(events) == 0:
-               return tran
-
             data = transaction.get("data")
             if data is None or len(data) == 0:
                 return tran
@@ -244,20 +238,21 @@ class abase(baseobject):
             if not self.is_valid_flag(data_dict.get("flag", None)):
                 return tran
             
-            datas["flag"]           = self.parse_tran_type(data_dict.get("flag", None))
-            datas["type"]           = self.parse_data_type(data_dict.get("type", None))
-            datas["from_address"]   = data_dict.get("from_address", None)
-            datas["to_address"]     = data_dict.get("to_address", None)
-            datas["nettype"]        = data_dict.get("nettype", None)
-            datas["state"]          = data_dict.get("state", None)
+            datas["flag"]           = self.parse_tran_type(data_dict.get("flag"))
+            datas["type"]           = self.parse_data_type(data_dict.get("type"))
+            datas["from_address"]   = data_dict.get("from_address")
+            datas["to_address"]     = data_dict.get("to_address")
+            datas["times"]          = data_dict.get("times")
+            datas["out_amount"]     = data_dict.get("out_amount")
+            datas["nettype"]        = data_dict.get("nettype")
+            datas["state"]          = data_dict.get("state")
             datas["amount"]         = transaction.get("amount", 0)
-            datas["sender"]         = transaction.get("sender", None)
-            datas["receiver"]       = transaction.get("receiver", None)
-            datas["token"]          = transaction.get("token_owner", None)
-            datas["token_id"]       = transaction.get("token_id", None)
+            datas["sender"]         = transaction.get("sender")
+            datas["receiver"]       = transaction.get("receiver")
+            datas["token"]          = transaction.get("token_owner")
+            datas["token_id"]       = transaction.get("token_id")
             datas["expiration_time"]= transaction.get("expiration_time", 0)
-            tran_id                 = data_dict.get("tran_id", None)
-            datas["tran_id"]        = tran_id
+            datas["tran_id"]        = data_dict.get("tran_id")
             datas["sequence"]       = transaction.get("sequence_number")
             datas["module"]         = transaction.get("module_address")
 
