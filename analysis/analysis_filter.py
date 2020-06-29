@@ -32,7 +32,7 @@ class afilter(abase):
         #db user dbvfilter
         abase.__init__(self, name, ttype, dtype, None, nodes, chain) #no-use defalut db
         if dbconf is not None:
-            self._dbclient = dbvfilter(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password", None))
+            self._dbclient = dbvfilter(name, dbconf.get("host"), dbconf.get("port"), dbconf.get("db"), dbconf.get("password"))
 
     def __del__(self):
         abase.__del__(self)
@@ -42,19 +42,24 @@ class afilter(abase):
         tran_data = data.to_json()
         if isinstance(tran_data, str):
             tran_data = json.loads(tran_data)
-        if isviolas and "token_id" not in tran_data:
+
+        if "token_id" not in tran_data:
             tran_data["token_id"] = data.get_currency_code()
+
         if "data" not in tran_data:
                 tran_data["data"] = data.get_data()
-        events = data.get_events()
-        if events is not None and len(events) > 0:
-            event = events[0]
-            tran_data["events"] = [json.loads(str(event))]
+
         if tran_data["data"] is not None:
             try:
                 tran_data["data"] = bytes.fromhex(tran_data["data"]).decode()
             except Exception as e:
                 parse_except(e)
+
+        #remove no-use key
+        no_use = ["currency_code"]
+        for key in no_use:
+            tran_data.pop(key)
+
         return tran_data
 
     def is_target_tran(self, tran_data):
@@ -63,10 +68,8 @@ class afilter(abase):
         if ret.state != error.SUCCEED or \
                 ret.datas.get("flag", None) not in self.get_tran_types() or \
                 ret.datas.get("type") == self.datatype.UNKOWN or \
-                not ret.datas.get("tran_state", False) or \
-                not self.is_valid_module(ret.datas.get("module")):
+                not ret.datas.get("tran_state", False):
                 return False
-        self._logger.debug(ret.datas)
         return True
 
     def start(self):
@@ -109,8 +112,7 @@ class afilter(abase):
                 if self.is_target_tran(tran_data) == False:
                     continue
 
-                print(tran_data["data"])
-                self._logger.debug(f"version: {version}: {tran_data['data']}")
+                self._logger.debug(f"found new transaction. version: {version}: {tran_data['data']}")
                 #save to redis db
                 ret = self._dbclient.set(version, json.dumps(tran_data))
                 if ret.state != error.SUCCEED:
@@ -125,13 +127,17 @@ class afilter(abase):
             self._logger.debug("end filter work")
         return ret
         
-def works(ttype, dtype):
+def works():
     try:
+        stmanage.set_conf_env("../bvexchange.toml")
         #ttype: chain name. data's flag(violas/libra). ex. ttype = "violas"
         #dtype: save transaction's data type(vfilter/lfilter) . ex. dtype = "vfilter" 
-        filter = vfilter(name, ttype, None, stmanage.get_db(dtype),  stmanage.get_violas_nodes())
-        filter.set_step(stmanage.get_db(dtype).get("step", 1000))
-        ret = filter.start()
+        dtype = "vfilter"
+        obj = afilter(name="vfilter", ttype="violas", \
+                dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
+        obj.set_step(1)
+        obj.set_min_valid_version(459987)
+        ret = obj.start()
         if ret.state != error.SUCCEED:
             print(ret.message)
 

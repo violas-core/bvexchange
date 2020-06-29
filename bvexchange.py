@@ -26,18 +26,30 @@ from enum import Enum
 name="bvexchange"
 
 class work_mod(Enum):
-    COMM        = 0
-    B2V         = 1
-    V2B         = 2
-    VFILTER     = 3
-    V2BPROOF    = 4
-    LFILTER     = 5
-    L2VPROOF    = 6
-    V2LPROOF    = 7
-    L2V         = 8
-    V2L         = 9
-    BFILTER     = 10
-    B2VPROOF    = 11
+    COMM         = 1   
+    VFILTER      = 4
+    V2BPROOF     = 5
+    LFILTER      = 6
+    L2VUSDPROOF  = 7
+    L2VEURPROOF  = 8
+    L2VGBPPROOF  = 9
+    L2VSGDPROOF  = 10
+    V2LUSDPROOF  = 11
+    V2LEURPROOF  = 12
+    V2LGBPPROOF  = 13
+    V2LSGDPROOF  = 14
+    L2VUSDEX     = 20
+    L2VEUREX     = 21
+    L2VGBPEX     = 22
+    L2VSGDEX     = 23
+    V2LUSDEX     = 30
+    V2LEUREX     = 31
+    V2LGBPEX     = 32
+    V2LSGDEX     = 33
+    BFILTER      = 40
+    B2VPROOF     = 41
+    B2VEX        = 50
+    V2BEX        = 51
 
 class works:
     __threads = []
@@ -46,10 +58,12 @@ class works:
     __record_db = "record"
 
     __libra_min_valid_version   = 1952696
-    __violas_min_valid_version  = 120_1808
+    __violas_min_valid_version  = 45_9987
     __btc_min_valid_version     = 0
     def __init__(self):
         logger.debug("works __init__")
+        self.__funcs_map = {}
+        self.init_func_map()
         for mod in self.__work_looping:
             self.__work_looping[mod.name] = 1
 
@@ -131,8 +145,6 @@ class works:
                     dtype = "vfilter"
                     obj = analysis_filter.afilter(name="vfilter", ttype="violas", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
-                    obj.append_module("v2b", stmanage.get_module_address("v2b", "violas", False))
-                    obj.append_module("v2l", stmanage.get_module_address("v2l", "violas", False))
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     self.set_work_obj(obj)
@@ -155,7 +167,6 @@ class works:
                     basedata = "vfilter"
                     obj = analysis_proof.aproof(name="v2bproof", ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.append_module(dtype, stmanage.get_module_address(dtype, "violas", False))
                     obj.append_token_id(dtype, stmanage.get_token_id(dtype, "violas"))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
@@ -380,46 +391,93 @@ class works:
         finally:
             logger.debug("thread_append")
 
+    def create_func_dict(self, mod, func):
+        print(f"{mod.name}: {func.__name__}")
+        return {mod.name : func}
+
+    @property
+    def funcs_map(self):
+        return self.__funcs_map
+
+    def init_func_map(self):
+        self.__funcs_map = {}
+        #append proof
+        for item in work_mod:
+            name = item.name
+            if name == "VFILTER":
+                self.__funcs_map.update(self.create_func_dict(item, self.work_vfilter))
+            elif name == "LFILTER":
+                self.__funcs_map.update(self.create_func_dict(item, self.work_lfilter))
+            elif name == "BFILTER":
+                self.__funcs_map.update(self.create_func_dict(item, self.work_bfilter))
+            elif name == "V2BPROOF":
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2bproof))
+            elif name.startswith("V2L") and len(name) == 11 and name.endswith("PROOF"):
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2lproof))
+            elif name.startswith("L2V") and len(name) == 11 and name.endswith("PROOF"):
+                self.funcs_map.update(self.create_func_dict(item, self.work_l2vproof))
+            elif name.startswith("B2V") and len(name) == 8 and name.endswith("PROOF"):
+                self.funcs_map.update(self.create_func_dict(item, self.work_b2vproof))
+            elif name.startswith("V2B") and len(name) == 8 and name.endswith("PROOF"):
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2bproof))
+            elif name.startswith("L2V") and len(name) == 8 and name.endswith("EX"):
+                self.funcs_map.update(self.create_func_dict(item, self.work_l2v))
+            elif name.startswith("V2L") and len(name) == 8 and name.endswith("EX"):
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2l))
+            elif name.startswith("B2V") and name.endswith("EX"):
+                self.__funcs_map.update(self.create_func_dict(item, self.work_b2v))
+            elif name.startswith("V2B") and name.endswith("EX"):
+                self.__funcs_map.update(self.create_func_dict(item, self.work_v2b))
+            elif name == "COMM":
+                self.__funcs_map.update(self.create_func_dict(item, self.work_comm))
+            else:
+                logger.warning(f"not matched function:{item}")
+
     def start(self, work_mods):
         try:
             logger.debug("start works")
 
             self.__work_looping = work_mods
 
-            self.thread_append(self.work_comm, work_mod.COMM)
+            for name, state in work_mods.items():
+                if state:
+                    self.thread_append(self.funcs_map[name], work_mod[name])
 
-            if work_mods.get(work_mod.B2V.name, False):
-                self.thread_append(self.work_b2v, work_mod.B2V)
 
-            if work_mods.get(work_mod.V2B.name, False):
-                self.thread_append(self.work_v2b, work_mod.V2B)
+            #self.thread_append(self.work_comm, work_mod.COMM)
 
-            if work_mods.get(work_mod.VFILTER.name, False):
-                self.thread_append(self.work_vfilter, work_mod.VFILTER)
+            #if work_mods.get(work_mod.B2V.name, False):
+            #    self.thread_append(self.work_b2v, work_mod.B2V)
 
-            if work_mods.get(work_mod.V2LPROOF.name, False):
-                self.thread_append(self.work_v2lproof, work_mod.V2LPROOF)
+            #if work_mods.get(work_mod.V2B.name, False):
+            #    self.thread_append(self.work_v2b, work_mod.V2B)
 
-            if work_mods.get(work_mod.V2BPROOF.name, False):
-                self.thread_append(self.work_v2bproof, work_mod.V2BPROOF)
+            #if work_mods.get(work_mod.VFILTER.name, False):
+            #    self.thread_append(self.work_vfilter, work_mod.VFILTER)
 
-            if work_mods.get(work_mod.LFILTER.name, False):
-                self.thread_append(self.work_lfilter, work_mod.LFILTER)
+            #if work_mods.get(work_mod.V2LPROOF.name, False):
+            #    self.thread_append(self.work_v2lproof, work_mod.V2LPROOF)
 
-            if work_mods.get(work_mod.L2VPROOF.name, False):
-                self.thread_append(self.work_l2vproof, work_mod.L2VPROOF)
+            #if work_mods.get(work_mod.V2BPROOF.name, False):
+            #    self.thread_append(self.work_v2bproof, work_mod.V2BPROOF)
 
-            if work_mods.get(work_mod.L2V.name, False):
-                self.thread_append(self.work_l2v, work_mod.L2V)
+            #if work_mods.get(work_mod.LFILTER.name, False):
+            #    self.thread_append(self.work_lfilter, work_mod.LFILTER)
 
-            if work_mods.get(work_mod.V2L.name, False):
-                self.thread_append(self.work_v2l, work_mod.V2L)
+            #if work_mods.get(work_mod.L2VPROOF.name, False):
+            #    self.thread_append(self.work_l2vproof, work_mod.L2VPROOF)
 
-            if work_mods.get(work_mod.BFILTER.name, False):
-                self.thread_append(self.work_bfilter, work_mod.BFILTER)
+            #if work_mods.get(work_mod.L2V.name, False):
+            #    self.thread_append(self.work_l2v, work_mod.L2V)
 
-            if work_mods.get(work_mod.B2VPROOF.name, False):
-                self.thread_append(self.work_b2vproof, work_mod.B2VPROOF)
+            #if work_mods.get(work_mod.V2L.name, False):
+            #    self.thread_append(self.work_v2l, work_mod.V2L)
+
+            #if work_mods.get(work_mod.BFILTER.name, False):
+            #    self.thread_append(self.work_bfilter, work_mod.BFILTER)
+
+            #if work_mods.get(work_mod.B2VPROOF.name, False):
+            #    self.thread_append(self.work_b2vproof, work_mod.B2VPROOF)
 
             for work in self.__threads:
                 work.start() #start work

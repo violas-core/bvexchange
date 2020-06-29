@@ -126,7 +126,7 @@ def get_latest_transaction_version():
     ret = client.get_latest_transaction_version()
     logger.debug("latest version: {0}".format(ret.datas))
 
-def get_transactions(start_version, limit = 1, fetch_event = True):
+def get_transactions(start_version, limit = 1, fetch_event = True, raw = False):
     logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
 
     client = get_violasclient()
@@ -138,11 +138,11 @@ def get_transactions(start_version, limit = 1, fetch_event = True):
     print(f"count: {len(ret.datas)}")
 
     for data in ret.datas:
-        info = afilter.get_tran_data(data, chain=="violas")
-        json_print(info)
-        print("********************formt transaction****************************")
-        #finfo = afilter.parse_tran(info).datas
-        #json_print(finfo)
+        if raw:
+            print(data)
+        else:
+            info = afilter.get_tran_data(data, chain=="violas")
+            json_print(info)
 
 def get_address_version(address):
     logger.debug(f"start get_address_version({address})")
@@ -254,11 +254,12 @@ def init_args(pargs):
     pargs.append("bind_token_id", "bind address to token_id.", True, ["address", "token_id", "gas_token_id"])
     pargs.append("mint_coin", "mint some(amount) token(module) to target address.", True, ["address", "amount", "token_id", "module"])
     pargs.append("send_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "token_id", "module", "data[default = None  ex: "])
-    pargs.append("get_violas_balance", "get address's token(module) amount.", True, ["address", "token_id", "module"])
+    pargs.append("get_balance", "get address's token(module) amount.", True, ["address", "token_id", "module"])
     pargs.append("get_balances", "get address's tokens.", True, ["address"])
     pargs.append("get_account_transactions", "get account's transactions from violas server.", True, ["address", "module", "start", "limit", "state=(start/end)"])
     pargs.append("has_transaction", "check transaction is valid from violas server.", True, ["address", "module", "btcaddress", "sequence", "amount","version", "receiver"])
     pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=True"])
+    pargs.append("get_rawtransaction", "get transaction from violas nodes.", True, ["version", "fetch_event=True"])
     pargs.append("get_latest_transaction_version", "show latest transaction version.")
     pargs.append("get_address_version", "get address's latest version'.", True, ["address"])
     pargs.append("get_transaction_version", "get address's version'.", True, ["address", "sequence"])
@@ -352,7 +353,7 @@ def run(argc, argv):
             if len(arg) != 0:
                 pargs.exit_error_opt(opt)
             ret = new_account()
-        elif pargs.is_matched(opt, ["get_violas_balance"]):
+        elif pargs.is_matched(opt, ["get_balance"]):
             if len(arg_list) not in [3, 2]:
                 pargs.exit_error_opt(opt)
             module = None
@@ -362,7 +363,7 @@ def run(argc, argv):
             else:
                 module = arg_list[2]
                 token_id = arg_list[1]
-            get_violas_balance(arg_list[0],  token_id, module )
+            get_balance(arg_list[0],  token_id, module )
         elif pargs.is_matched(opt, ["get_balances"]):
             if len(arg_list) not in [1]:
                 pargs.exit_error_opt(opt)
@@ -395,6 +396,13 @@ def run(argc, argv):
                 get_transactions(int(arg_list[0]), int(arg_list[1]))
             elif len(arg_list) == 1:
                 get_transactions(int(arg_list[0]))
+        elif pargs.is_matched(opt, ["get_rawtransaction"]):
+            if len(arg_list) != 2 and len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            if len(arg_list) == 2:
+                get_transactions(int(arg_list[0]), 1, arg_list[1] in ("True"), True)
+            elif len(arg_list) == 1:
+                get_transactions(int(arg_list[0]), 1, False, True)
         elif pargs.is_matched(opt, ["has_transaction"]):
             if len(arg_list) != 7:
                 pargs.exit_error_opt(opt)
