@@ -58,7 +58,9 @@ def reg_run():
     for opt_type in l2v_opt_list:
         senders = stmanage.get_sender_address_list(opt_type, "violas")
         assert senders is not None and len(senders) > 0, f"{opt_type} senders not found."
-        comm_funs.init_address_list(vclient, wclient, senders, opt_list.get(opt_type))
+        #comm_funs.init_address_list(vclient, wclient, senders, opt_list.get(opt_type))
+        for token_id in violas_token_id_list:
+            comm_funs.init_address_list(vclient, wclient, senders, token_id, minamount = 100_000000)
     logger.debug("init l2v senders ok")
 
     logger.debug("***************************************bind module: v2l receiver*****************************")
@@ -67,7 +69,7 @@ def reg_run():
         receivers = stmanage.get_receiver_address_list(opt_type, "violas")
         assert receivers is not None and len(receivers) > 0, f"{opt_type} receiver not found."
         for token_id in violas_token_id_list:
-            comm_funs.init_address_list(vclient, wclient, receivers, token_id, minamount = 1_000000)
+            comm_funs.init_address_list(vclient, wclient, receivers, token_id, minamount = 100_000000)
 
 #test use: init client address
 def init_address(address):

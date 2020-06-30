@@ -133,17 +133,20 @@ class abase(baseobject):
             return
         self._step = step
 
-    def append_token_id(self, name, token_id):
+    def append_token_id(self, token_id):
+        assert isinstance(token_id, str) or isinstance(token_id, list), f"token_id({token_id}) is not str."
+        isstr = isinstance(token_id, str)
         if self._token_id is None:
-            self._token_id = {name:token_id}
-        else:
-            self._token_id.update({name:token_id}) 
+            self._token_id = []
 
-    def get_token_id(self, name):
-        return self.get(name, -1)
+        if isstr:
+            self._token_id.append(token_id) 
+        else:
+            self._token_id.extend(token_id)
 
     def is_valid_token_id(self, token_id):
-        return self._token_id is None or token_id in self._token_id.values()
+        assert isinstance(token_id, str), f"token_id({token_id}) is not str."
+        return self._token_id is None or token_id in self._token_id
 
     def get_step(self):
         return self._step

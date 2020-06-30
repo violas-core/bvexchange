@@ -37,16 +37,25 @@ class aproof(abase):
         STOP    = 4
         UNKOWN = 255
 
-    def __init__(self, name = "vproof", ttype = "violas", dtype = "v2b", dbconf = None, fdbconf = None, rdbconf = None, nodes = None, chain = "violas"):
+    def __init__(self, name = "vproof", 
+            ttype = "violas",       #metadata  flag: chain name(violas/libra)
+            dtype = "v2lusd",       #metadata  type:v2lxxx/l2vxxx
+            dbconf = None,          #save analysis result db conf
+            fdbconf = None,         #base data from lfilter/vfilter db conf
+            rdbconf = None,         #save transaction record db conf 
+            nodes = None,           #chain nodes libra/violas
+            chain = "violas"):
         self._fdbclient = None
         #db use dbvproof, dbvfilter, not use violas/libra nodes
         super().__init__(name, ttype, dtype, None, nodes, chain)
         self._dbclient = None
         self._fdbclient = None
         if dbconf is not None:
-            self._dbclient = dbvproof(name, dbconf.get("host", "127.0.0.1"), dbconf.get("port"), dbconf.get("db"), dbconf.get("password"))
+            self._dbclient = dbvproof(name, dbconf.get("host"), dbconf.get("port"), \
+                    dbconf.get("db"), dbconf.get("password"))
         if fdbconf is not None:
-            self._fdbclient = dbvfilter(name, fdbconf.get("host", "127.0.0.1"), fdbconf.get("port"), fdbconf.get("db"), fdbconf.get("password"))
+            self._fdbclient = dbvfilter(name, fdbconf.get("host"), fdbconf.get("port"), \
+                    fdbconf.get("db"), fdbconf.get("password"))
 
     def __del__(self):
         super().__del__()
@@ -55,7 +64,6 @@ class aproof(abase):
 
     def stop(self):
         super().stop()
-
 
     def proofstate_name_to_value(self, name):
         if name is None or len(name) == 0:
@@ -80,8 +88,7 @@ class aproof(abase):
         return tran_info.get("flag", None) in self.get_tran_types() and \
                self.proofstate_name_to_value(tran_info.get("state", None)) != self.proofstate.UNKOWN and \
                self.is_valid_datatype(tran_info.get("type")) and \
-               self.is_valid_token_id(tran_info.get("token_id")) and \
-               self.is_valid_module(tran_info.get("module"))
+               self.is_valid_token_id(tran_info.get("token_id")) 
 
     def is_valid_proofstate_change(self, new_state, old_state):
         if new_state == self.proofstate.UNKOWN:
@@ -212,7 +219,6 @@ class aproof(abase):
                 new_version = version
                 tran_data = json.loads(ret.datas)
                 if self.proofstate_name_to_value(tran_data.get("state")) == self.proofstate.START and \
-                        self.is_valid_module(tran_data.get("module")) and \
                         self.is_valid_token_id(tran_data.get("token_id")):
                     break
 
