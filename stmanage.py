@@ -194,7 +194,6 @@ def get_conf():
         info = {}
         info["receiver"] = get_receiver_address_list(mtype)
         info["sender"] = get_sender_address_list(mtype)
-        info["module"] = get_module_address(mtype, 'violas')
         info["db"] = get_db(mtype)
         if info["db"] is not None:
             info["db"]["password"] = "password is keep secret"
