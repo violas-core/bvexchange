@@ -42,14 +42,15 @@ def __get_address_list(atype, mtype, chain = None, full = True):
         parse_except(e)
     return None
 
-def __get_tokenid_list(atype, mtype, chain = None):
-    try:
-        return [dict.get("tokenid") for dict in setting.address_list.get(atype) \
-                if dict["type"] == mtype and mtype is not None and (chain is None or dict["chain"] == chain)]
-    except Exception as e:
-        parse_except(e)
-    return None
-
+#maybe use. so keep it until libra support usd eur ...
+#def __get_tokenid_list(atype, mtype, chain = None):
+#    try:
+#        return [dict.get("tokenid") for dict in setting.address_list.get(atype) \
+#                if dict["type"] == mtype and mtype is not None and (chain is None or dict["chain"] == chain)]
+#    except Exception as e:
+#        parse_except(e)
+#    return None
+#
 def get_receiver_address_list(mtype, chain = None, full = True):
     try:
         return __get_address_list("receiver", mtype, chain, full)
@@ -64,28 +65,17 @@ def get_sender_address_list(mtype, chain = None, full = True):
         parse_except(e)
     return None
 
-
-def get_module_address(mtype, chain = None, full = True):
-    try:
-        ms = __get_address_list("module", mtype, chain, full)
-        if ms is None or len(ms) == 0:
-            return None
-        assert len(ms) == 1, f"coin type({mtype}) chain({chain}) found multi module found, check it"
-        return ms[0]
-    except Exception as e:
-        parse_except(e)
-    return None
-
-def get_token_address(mtype, chain = None, full = True):
-    try:
-        ms = __get_address_list("token", mtype, chain, full)
-        if ms is None or len(ms) == 0:
-            return None
-        assert len(ms) == 1, f"token type({mtype}) chain({chain}) found multi coins found, check it"
-        return ms[0]
-    except Exception as e:
-        parse_except(e)
-    return None
+#maybe use. so keep it until libra support usd eur ...
+#def get_token_address(mtype, chain = None, full = True):
+#    try:
+#        ms = __get_address_list("token", mtype, chain, full)
+#        if ms is None or len(ms) == 0:
+#            return None
+#        assert len(ms) == 1, f"token type({mtype}) chain({chain}) found multi coins found, check it"
+#        return ms[0]
+#    except Exception as e:
+#        parse_except(e)
+#    return None
 
 def get_combine_address(mtype = "b2v", chain = "btc", full = True):
     try:
@@ -98,17 +88,18 @@ def get_combine_address(mtype = "b2v", chain = "btc", full = True):
         parse_except(e)
     return None
 
-def get_token_id(mtype = "b2v", chain = "btc"):
-    try:
-        ms = __get_tokenid_list("token", mtype, chain)
-        if ms is None or len(ms) == 0:
-            return None
-        assert len(ms) == 1, f"({mtype}) chain({chain}) found multi token id({ms}), check it"
-        return ms[0]
-    except Exception as e:
-        parse_except(e)
-    return None
-
+#maybe use. so keep it until libra support usd eur ...
+#def get_token_id(mtype = "b2v", chain = "btc"):
+#    try:
+#        ms = __get_tokenid_list("token", mtype, chain)
+#        if ms is None or len(ms) == 0:
+#            return None
+#        assert len(ms) == 1, f"({mtype}) chain({chain}) found multi token id({ms}), check it"
+#        return ms[0]
+#    except Exception as e:
+#        parse_except(e)
+#    return None
+#
 
 def get_db(mtype):
     try:

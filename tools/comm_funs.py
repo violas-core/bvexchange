@@ -129,9 +129,13 @@ def init_address_list(vclient, wclient, senders, token_id, minamount= 1000000000
     for sender in senders:
         ret = vclient.get_balance(account_address = sender, token_id = token_id)
         assert ret.state == error.SUCCEED, f"get_balance({sender}, {token_id}) failed."
-        if minamount is not None and ret.datas < min_balance:
-            mint_coin(vclient, wclient, sender, min_balance - ret.datas, token_id, auth_key_prefix = None, gas_token_id = gas_token_id)
-            vclient._logger.debug(f"mint coin({token_id}) {min_balance - ret.datas}")
+        cur_balance = ret.datas
+        if cur_balance is None or (minamount is not None and cur_balance < min_balance):
+            if cur_balance is None:
+                cur_balance = 0
+
+            mint_coin(vclient, wclient, sender, min_balance - cur_balance, token_id, auth_key_prefix = None, gas_token_id = gas_token_id)
+            vclient._logger.debug(f"mint coin({token_id}) {min_balance - cur_balance}")
 
         ret = vclient.get_balance(sender, token_id = token_id)
         assert ret.state == error.SUCCEED, f"get_violas_balance({sender}, {token_id}) failed."
