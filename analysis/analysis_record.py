@@ -31,7 +31,7 @@ class record(baseobject):
         #db use dbvproof, dbvfilter, not use violas/libra nodes
         self._rdbclient = None
         if rdbconf is not None:
-            self._rdbclient= dbvproof(name, rdbconf.get("host", "127.0.0.1"), rdbconf.get("port"), rdbconf.get("db"), rdbconf.get("password"))
+            self._rdbclient= dbvproof(name, rdbconf.get("host"), rdbconf.get("port"), rdbconf.get("db"), rdbconf.get("password"))
 
     def __del__(self):
         if self._rdbclient is not None:

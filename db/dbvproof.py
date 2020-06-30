@@ -100,5 +100,10 @@ class dbvproof(dbvbase):
         return f"{tran_info['version']}"
 
     def create_haddress_value(self, tran_info):
-        return json.dumps({"version":tran_info["version"], "type":tran_info["type"], "expiration_time":tran_info.get("expiration_time"),\
-            "state":tran_info["state"], "to_address":tran_info["to_address"], "amount":tran_info["amount"]})
+        return json.dumps({"version":tran_info["version"], \
+            "type":tran_info["type"], \
+            "opttype":tran_info["opttype"], \
+            "expiration_time":tran_info.get("expiration_time"),\
+            "state":tran_info["state"], \
+            "to_address":tran_info["to_address"], \
+            "amount":tran_info["amount"]})
