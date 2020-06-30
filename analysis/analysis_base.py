@@ -234,6 +234,7 @@ class abase(baseobject):
             datas["out_amount"]     = data_dict.get("out_amount")
             datas["nettype"]        = data_dict.get("nettype")
             datas["state"]          = data_dict.get("state")
+            datas["opttype"]        = data_dict.get("opttype", "swap")
             datas["amount"]         = transaction.get("amount", 0)
             datas["sender"]         = transaction.get("sender")
             datas["receiver"]       = transaction.get("receiver")

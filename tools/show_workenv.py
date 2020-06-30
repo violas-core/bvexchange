@@ -17,6 +17,7 @@ import comm
 import comm.error
 import comm.result
 import comm.values
+from comm.values import dbindexbase as dbindex
 from comm.functions import json_print
 from comm.result import result, parse_except
 from comm.error import error
@@ -41,7 +42,7 @@ logger = log.logger.getLogger(name)
 
 def show_db():
     infos = {}
-    for idx in dbvbase.dbindex:
+    for idx in dbindex:
         dbconf = stmanage.get_db(idx.name.lower())
         db = dbvbase(name, dbconf.get("host"), dbconf.get("port"), idx.name.lower(), dbconf.get("password"))
         info = { \

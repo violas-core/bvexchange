@@ -61,7 +61,6 @@ class dbindexbase(enumbase):
     L2VGBP  = 23
     V2B     = 20
     B2V     = 25
-    UNKOWN = 255
 
 #work mod 
 class workmod(enumbase):

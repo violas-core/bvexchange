@@ -163,7 +163,6 @@ class dbvbase(baseobject):
     def scan(self, cursor, match = None, count = None):
         try:
             pos, datas = self._client.scan(cursor, match, count)
-            print(datas)
             ret = result(error.SUCCEED, "", (pos, datas))
         except Exception as e:
             ret = parse_except(e)
