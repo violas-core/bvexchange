@@ -175,12 +175,20 @@ class tomlopt(tomlbase):
         return self.get("token_map")
 
     @property
-    def type_token_map(self):
-        return self.get("type_token_map")
+    def type_stable_token(self):
+        return self.get("type_stable_token")
+
+    @property
+    def type_lbr_token(self):
+        return self.get("type_lbr_token")
 
     @property
     def support_token_id(self):
         return self.get("support_token_id")
+
+    @property
+    def type_token(self):
+        return self.get("type_token")
 
 setting = tomlopt("bvexchange.toml")
 

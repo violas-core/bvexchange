@@ -41,16 +41,20 @@ class baseobject(object):
     def name(self):
         return self._name
 
+    @property
     def from_chain(self):
         return self._from_chain
 
-    def set_from_chain(self, name):
+    @from_chain.setter
+    def from_chain(self, name):
         self._from_chain = name
 
+    @property
     def map_chain(self):
         return self._map_chain
 
-    def set_map_chain(self, name):
+    @map_chain.setter
+    def map_chain(self, name):
         self._map_chain = name
 
 

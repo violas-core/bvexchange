@@ -160,29 +160,64 @@ def get_max_times(mtype):
         parse_except(e)
     return 0
 
+
 def get_token_map(token = None):
     try:
+        token_map = {}
+        for typename, tokens in setting.type_token.items():
+            if typename.startswith("v2"): #v2b v2l
+                token_map.update({tokens.get("stoken") : tokens.get("mtoken")})
         if token:
-            return setting.token_map.get(token)
-        return setting.token_map
+            return token_map.get(token)
+        return token_map
     except Exception as e:
         parse_except(e)
     return None
 
-def get_type_token_map(mtype = None):
+def get_type_stable_token(mtype = None):
     try:
+        type_stable_token = {}
+        for typename, tokens in setting.type_token.items():
+            if mtype is None or typename == mtype:
+                type_stable_token.update({typename : tokens.get("stoken")})
+
         if mtype:
-            return setting.type_token_map.get(mtype)
-        return setting.type_token_map
+            return type_stable_token.get(mtype)
+        return type_stable_token
     except Exception as e:
         parse_except(e)
     return None
 
-def get_support_token_id(chain = None):
+def get_type_lbr_token(mtype = None):
     try:
-        if chain:
-            return setting.support_token_id.get(chain)
-        return setting.support_token_id
+        type_lbr_token = {}
+        for typename, tokens in setting.type_token.items():
+            if mtype is None or typename == mtype:
+                type_lbr_token.update({mtype : tokens.get("mtoken")})
+
+        if mtype:
+            return type_lbr_token.get(mtype)
+        return type_lbr_token
+    except Exception as e:
+        parse_except(e)
+    return None
+
+def get_support_token_id(chain):
+    try:
+        assert chain is not None, "chain is violas/libra"
+        mtoken_list = []
+        opthead = "v2" #default is libra chain token
+        if chain == "violas":
+            opthead = "l2"
+            mtoken_list = [tokens.get("mtoken") for typename, tokens in setting.type_token.items() \
+                if typename.startswith(opthead)]
+
+        stoken_list = [tokens.get("stoken") for typename, tokens in setting.type_token.items() \
+                if typename.startswith(opthead)]
+
+
+        
+        return stoken_list + mtoken_list
     except Exception as e:
         parse_except(e)
     return None
@@ -216,7 +251,6 @@ def main():
     for mtype in mtypes:
         print(f"receiver address({mtype}): {get_receiver_address_list(mtype)}")
         print(f"sender address({mtype}): {get_sender_address_list(mtype)}")
-        print(f"module address({mtype}): {get_module_address(mtype, 'violas')}")
         print(f"get db({mtype}): {get_db(mtype)}")
         print(f"get looping sleep({mtype}):{get_looping_sleep(mtype)}")
         print(f"get max times({mtype})):{get_max_times(mtype)}")
@@ -230,11 +264,10 @@ def main():
     print(f"get db echo :{get_db_echo()}")
     print(f"get token_map: ")
     json_print(get_token_map())
-    print(f"get token_map(USD): {get_token_map('USD')}")
-    print(f"get type_token_map: ")
-    json_print(get_type_token_map())
-    print(f"get type_token_map(l2vusd): {get_type_token_map('l2vusd')}")
-    json_print(get_support_token_id())
+    print(f"get token_map(Coin1): {get_token_map('Coin1')}")
+    print(f"get type_stable_token: ")
+    json_print(get_type_stable_token())
+    print(f"get type_stable_token(l2vusd): {get_type_stable_token('l2vusd')}")
     print(f"get support_token_id(libra): {get_support_token_id('libra')}")
     print(f"get support_token_id(violas): {get_support_token_id('violas')}")
 

@@ -156,22 +156,30 @@ v2b_maxtimes = 99
 #libra coin map:AAA to violas coin:VLSBBB:  AAA(libra chain) -map-> LBRAAA(violas chain) -uniswap-> VLSBBB(violas chain)
 #btc map violas coin: 
 #violas btcbtc coin map btc coin:
-[token_map]
-    Coin1 = "LBRUSD"
-    Coin2 = "LBREUR"
 
-#opt type -> target token
-[type_token_map]
-    v2lusd = "Coin1"
-    v2leur = "Coin2"
-    l2vusd = "VLSUSD"
-    l2veur = "VLSEUR"
-    l2vsgd = "VLSSGD"
-    l2vgbp = "VLSGBP"
-
-[support_token_id]
-    libra=["Coin1", "Coin2"]
-    violas = ["VLSUSD", "VLSEUR", "VLSSGD", "VLSGBP", "LBRUSD", "LBREUR", "LBRGBP", "LBRSGD"]
+#
+#type : metadata's type; token is violas/libra token
+#stoken : stable token
+#mtoken : map token
+[type_token]
+    [type_token.v2lusd]
+        stoken= "Coin1"
+        mtoken = "LBRUSD"
+    [type_token.v2leur]
+        stoken = "Coin2"
+        mtoken = "LBREUR"
+    [type_token.l2vusd]
+        stoken = "VLSUSD"
+        mtoken = "LBRUSD"
+    [type_token.l2veur]
+        stoken = "VLSEUR"
+        mtoken = "LBREUR"
+    [type_token.l2vsgd]
+        stoken = "VLSSGD"
+        mtoken = "LBRSGD"
+    [type_token.l2vgbp]
+        stoken = "VLSGBP"
+        mtoken = "LBRGBP"
 
 [address_list]
     #receiver addresses
