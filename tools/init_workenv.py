@@ -41,7 +41,8 @@ def reg_run():
     libra_token_id_list = stmanage.get_support_token_id("libra")
     btc_token_id = "BTCBTC"
 
-    opt_list = stmanage.get_type_token_map()
+    #get support opt-type list id for chain
+    opt_list = stmanage.get_type_stable_token()
     l2v_opt_list = [opt for opt in opt_list.keys() if opt.startswith("l2v")]
     v2l_opt_list = [opt for opt in opt_list.keys() if opt.startswith("v2l")]
 
