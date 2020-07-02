@@ -215,7 +215,7 @@ def get_account_prefix(address):
 def swap(sender_account, token_in, token_out, amount_in, amount_out_min=0, module_address = None, is_blocking=True):
     client = get_violasclient()
     client.set_exchange_module_address(module_address)
-    ret = client.swap(sender_account = sender_account，token_in = token_in, \
+    ret = client.swap(sender_account = sender_account,token_in = token_in, \
             currency_out = token_out, amount_in = amount_in, amount_out_min = amount_out_min, \
             is_blocking = is_blocking)
 

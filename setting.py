@@ -192,6 +192,7 @@ class tomlopt(tomlbase):
 
     @property
     def swap_module(self):
-        return self.get("type_token")
+        return self.get("swap_module")
+
 setting = tomlopt("bvexchange.toml")
 
