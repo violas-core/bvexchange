@@ -77,7 +77,7 @@ class exlv(baseobject):
     def map_wallet(self):
         return self._mapwallet
 
-    def __get_map_sender_address(self, amount, module=None, gas=28_000):
+    def __get_map_sender_address(self, amount, gas=28_000):
         try:
             sender_account = None
             for sender in self._senders:

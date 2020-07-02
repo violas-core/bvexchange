@@ -181,6 +181,9 @@ v2b_maxtimes = 99
         stoken = "VLSGBP"
         mtoken = "LBRGBP"
 
+[swap_module]
+    module = "c8a39b68308f01fe8f1921be4635f76ae8f5ebfc0aebd0d7bf8c94a992a16038"
+
 [address_list]
     #receiver addresses
     ##violas chain receiver address
