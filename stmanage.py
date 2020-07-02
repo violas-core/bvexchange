@@ -152,7 +152,7 @@ def get_support_token_id(chain):
     return stoken_list + mtoken_list
 
 def get_swap_module():
-    return setting.swap_module.get("module")
+    return setting.swap_module.get("address")
 
 def get_conf():
     infos = {}
@@ -202,6 +202,7 @@ def main():
     print(f"get type_stable_token(l2vusd): {get_type_stable_token('l2vusd')}")
     print(f"get support_token_id(libra): {get_support_token_id('libra')}")
     print(f"get support_token_id(violas): {get_support_token_id('violas')}")
+    print(f"get swap module(violas): {get_swap_module()}")
 
     #json_print(get_conf())
 

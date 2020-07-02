@@ -117,7 +117,7 @@ def address_list_bind_token_id(vclient, wclient, senders, token_id, gas_token_id
         bind_token_id(vclient, wclient, sender, token_id, gas_token_id)
 
 def init_address_list(vclient, wclient, senders, token_id, minamount= 1000000000, gas_token_id = None):
-    vclient._logger.debug(f"start init_address_list(address, {token_id}, {minamount})")
+    vclient._logger.debug(f"start init_address_list({senders}, {token_id}, {minamount})")
     assert senders is not None and len(senders) > 0, f"senders is empty."
     for address in senders:
         assert address is not None and len(address) in VIOLAS_ADDRESS_LEN, f"address({address}) is invalid."

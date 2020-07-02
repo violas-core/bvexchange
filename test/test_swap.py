@@ -3,6 +3,7 @@ import operator
 import sys
 import json
 import os
+import time
 sys.path.append(os.getcwd())
 sys.path.append("..")
 import log
@@ -17,6 +18,7 @@ import comm
 import comm.error
 import comm.result
 import comm.values
+from tools import comm_funs
 from comm.result import result, parse_except
 from comm.error import error
 from db.dbb2v import dbb2v
@@ -26,10 +28,9 @@ from baseobject import baseobject
 from vlsopt.violasclient import violasclient, violaswallet
 import stmanage
 import redis
-import comm_funs
 #module name
 name="initworkenv"
-wallet_name="vwallet"
+wallet_name= "wallet" + time.strftime("%Y%m%d_%H%M%S", time.localtime()) + ".wlt"
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 logger = log.logger.getLogger(name)
 def reg_run():
@@ -47,7 +48,9 @@ def reg_run():
     v2l_opt_list = [opt for opt in opt_list.keys() if opt.startswith("v2l")]
 
     #get swap module
-    swap_module_address = stmanage.get_swap_module()
+    account_module = wclient.new_account().datas
+    swap_module_address = account_module.auth_key_prefix.hex() + account_module.address.hex()
+    #swap_module_address = stmanage.get_swap_module
     logger.debug(f"swap pool moudule address({swap_module_address})")
 
     init_address(vclient, wclient, swap_module_address)
@@ -111,9 +114,5 @@ if __name__ == "__main__":
     stmanage.set_conf_env("../bvexchange.toml")
     if len(sys.argv) == 1:
         reg_run()
-    elif len(sys.argv) == 2:
-        vclient = comm_funs.violasreg(name, stmanage.get_violas_nodes())
-        wclient = comm_funs.walletreg(name, wallet_name)
-        init_address(vclient, wclient, sys.argv[1])
     else:
         raise Exception(f"argument is None or address(violas)")

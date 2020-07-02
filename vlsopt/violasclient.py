@@ -400,72 +400,105 @@ class violasclient(baseobject):
     def swap(self, sender_account, token_in, token_out, amount_in, amount_out_min=0, is_blocking=True, **kwargs):
         try:
             datas = self.__client.swap(sender_account = sender_account, currency_in = token_in, currency_out = token_out, \
-                    amount_in = amount_in, amount_out_min = amount_out_min, is_blocking = is_blocking, kwargs = **kwargs)
+                    amount_in = amount_in, amount_out_min = amount_out_min, is_blocking = is_blocking, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
 
-    def swap_set_module_address(self, address):
+    def swap_set_module_address(self, address, **kwargs):
         try:
-            datas = self.__client.swap_publish_contract(address)
+            (_, addr) = self.split_full_address(address).datas
+            datas = self.__client.set_exchange_module_address(addr, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def swap_publish_contract(self, account):
+    def swap_publish_contract(self, account, **kwargs):
         try:
-            datas = self.__client.swap_publish_contract(account)
+            datas = self.__client.swap_publish_contract(account, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def swap_initialize(account):
+    def swap_initialize(self, account, **kwargs):
         try:
-            datas = self.__client.swap_initialize(account)
+            datas = self.__client.swap_initialize(account, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def swap_add_currency(self, account, token_id):
+    def swap_add_currency(self, account, token_id, **kwargs):
         try:
-            datas = self.__client.swap_add_currency(account, token_id)
+            datas = self.__client.swap_add_currency(account, token_id, gas_currency_code = token_id)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def swap_add_liquidity(self, account, token_a, token_b, amount_desired_a, amount_desired_b, amount_min_a = 0, amount_min_b = 0, is_blocking = True):
+    def swap_add_liquidity(self, account, token_a, token_b, amount_desired_a, amount_desired_b, amount_min_a = 0, amount_min_b = 0, is_blocking = True, **kwargs):
         try:
-            datas = self.__client.swap_add_liquidity(account, token_a, token_b, amount_desired_a, amount_desired_b, amount_min_a, amount_min_b, is_blocking = is_blocking)
+            datas = self.__client.swap_add_liquidity(account, token_a, token_b, amount_desired_a, amount_desired_b, amount_min_a, amount_min_b, is_blocking = is_blocking, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def swap_get_output_amount(self, token_in, token_out, amount_in):
+    def swap_get_output_amount(self, token_in, token_out, amount_in, **kwargs):
         try:
-            datas = self.__client.swap_get_swap_output_amount(token_in, token_out, amount_in):
+            datas = self.__client.swap_get_swap_output_amount(token_in, token_out, amount_in, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def swap_get_input_amount(self, token_in, token_out, amount_in):
+    def swap_get_input_amount(self, token_in, token_out, amount_in, **kwargs):
         try:
-            datas = self.__client.swap_get_swap_in_amount(token_in, token_out, amount_in):
+            datas = self.__client.swap_get_swap_in_amount(token_in, token_out, amount_in, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def swap_remove_liquidity(self, account, token_a, token_b, liquidity, amount_min_a = 0, amount_min_b = 0, is_blocking = True):
+    def swap_remove_liquidity(self, account, token_a, token_b, liquidity, amount_min_a = 0, amount_min_b = 0, is_blocking = True, **kwargs):
         try:
-            datas = self.__client.swap_remove_liquidity(account, token_a, token_b, liquidity, amount_min_a, amount_min_b, is_blocking = is_blocking)
+            datas = self.__client.swap_remove_liquidity(account, token_a, token_b, liquidity, amount_min_a, amount_min_b, is_blocking = is_blocking, **kwargs)
+            ret = result(error.SUCCEED, datas = datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def swap_get_reserves_resource(self, address):
+        try:
+            dates = None
+            ret = self.get_account_state(address)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            account_state = ret.datas
+            if account_state is not None:
+                datas = account_state.swap_get_reserves_resource()
+            ret = result(error.SUCCEED, datas = datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def swap_is_swap_address(self, address):
+        try:
+            (_, addr) = self.split_full_address(address).datas
+            ret = self.swap_get_reserves_resource(addr)
+            ret = result(state = ret.datas, datas = ret.datas is not None)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def swap_get_registered_tokens(self):
+        try:
+            datas = self.__client.swap_update_registered_currencies()
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
