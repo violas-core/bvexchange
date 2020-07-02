@@ -212,28 +212,36 @@ def get_account_prefix(address):
     account = wallet.get_account(address).datas
     logger.debug(f"address: {account.address.hex()}, auth_key_prefix: {account.auth_key_prefix.hex()}")
 
+def swap(sender_account, token_in, token_out, amount_in, amount_out_min=0, module_address = None, is_blocking=True):
+    client = get_violasclient()
+    client.set_exchange_module_address(module_address)
+    ret = client.swap(sender_account = sender_account，token_in = token_in, \
+            currency_out = token_out, amount_in = amount_in, amount_out_min = amount_out_min, \
+            is_blocking = is_blocking)
+
+
 '''
 *************************************************violasserver oper*******************************************************
 '''
 def get_violas_server():
     return violasserver(stmanage.get_violas_servers())
 
-def get_account_transactions(address, module, start, limit, state):
-    logger.debug("start get_account_transactions address= {} module = {}, start={}".format(address, module, start))
+def get_account_transactions(mtype, address, start, limit, state):
+    logger.debug(f"start get_account_transactions({address}, {start}, {limit}, {state})")
     #server = get_violas_server()
-    server = get_violasproof("v2b")
+    server = get_violasproof(mtype)
     if state == "start":
-        ret = server.get_transactions_for_start(address, module, start, limit)
+        ret = server.get_transactions_for_start(address, mtype, start, limit)
     elif state == "end":
-        ret = server.get_transactions_for_end(address, module, start, limit)
+        ret = server.get_transactions_for_end(address, mtype, start, limit)
     for tran in ret.datas:
         logger.debug(tran)
     
-def has_transaction(address, module, baddress, sequence, amount, version, receiver):
-    logger.debug("start has_transaction address= {} module = {}, baddress={}, sequence={}, amount={}, version={}, receiver={}".format(address, module, baddress, sequence, amount, version, receiver))
+def has_transaction(mtype, tranid):
+    logger.debug("start has_transaction({mtype}, {tranid})")
     #server = get_violas_server()
-    server = get_violasproof("v2b")
-    logger.debug(server.has_transaction(address, module, baddress, sequence, amount, version, receiver).datas)
+    server = get_violasproof(mtype)
+    logger.debug(server.has_transaction(tranid).datas)
 
     
 '''
@@ -256,8 +264,8 @@ def init_args(pargs):
     pargs.append("send_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "token_id", "module", "data[default = None  ex: "])
     pargs.append("get_balance", "get address's token(module) amount.", True, ["address", "token_id", "module"])
     pargs.append("get_balances", "get address's tokens.", True, ["address"])
-    pargs.append("get_account_transactions", "get account's transactions from violas server.", True, ["address", "module", "start", "limit", "state=(start/end)"])
-    pargs.append("has_transaction", "check transaction is valid from violas server.", True, ["address", "module", "btcaddress", "sequence", "amount","version", "receiver"])
+    pargs.append("get_account_transactions", "get account's transactions from violas server.", True, ["mtype", "address", "start", "limit", "state=(start/end)"])
+    pargs.append("has_transaction", "check transaction is valid from violas server.", True, ["mtype", "tranid"])
     pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=True"])
     pargs.append("get_rawtransaction", "get transaction from violas nodes.", True, ["version", "fetch_event=True"])
     pargs.append("get_latest_transaction_version", "show latest transaction version.")
@@ -267,6 +275,7 @@ def init_args(pargs):
     pargs.append("show_all_token_list", "show token list.")
     pargs.append("get_account_prefix", "get account prefix.", True, ["address"])
     pargs.append("account_has_token_id", "check account is published token_id.", True, ["address", "token_id"])
+    pargs.append("swap", "swap violas chain token.", True, ["address", "token_in", "token_out", "amount_in", "amount_out_min", "module_address"])
 
 
 def run(argc, argv):
@@ -371,8 +380,8 @@ def run(argc, argv):
         elif pargs.is_matched(opt, ["get_account_transactions"]):
             if len(arg_list) < 2 or len(arg_list) > 5:
                 pargs.exit_error_opt(opt)
-            receiver = arg_list[0]
-            module = arg_list[1]
+            mtype = arg_list[0]
+            receiver = arg_list[1]
             start = -1
             limit = 10
             state = "start"
@@ -386,7 +395,7 @@ def run(argc, argv):
             if len(arg_list) >= 5:
                 state = arg_list[4]
 
-            get_account_transactions(receiver, module, start, limit, state)
+            get_account_transactions(mtype, receiver, start, limit, state)
         elif pargs.is_matched(opt, ["get_transactions"]):
             if len(arg_list) != 3 and len(arg_list) != 2 and len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
@@ -404,9 +413,9 @@ def run(argc, argv):
             elif len(arg_list) == 1:
                 get_transactions(int(arg_list[0]), 1, False, True)
         elif pargs.is_matched(opt, ["has_transaction"]):
-            if len(arg_list) != 7:
+            if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
-            has_transaction(arg_list[0], arg_list[1], arg_list[2], int(arg_list[3]), int(arg_list[4]), int(arg_list[5]), arg_list[6])
+            has_transaction(arg_list[0], arg_list[1])
         elif pargs.is_matched(opt, ["account_has_token_id"]):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
@@ -428,6 +437,10 @@ def run(argc, argv):
         elif pargs.is_matched(opt, ["show_all_token_list"]):
             show_all_token_list()
         elif pargs.is_matched(opt, ["get_account_prefix"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            get_account_prefix(arg_list[0])
+        elif pargs.is_matched(opt, ["swap"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             get_account_prefix(arg_list[0])

@@ -21,26 +21,18 @@ def get_conf_env():
     return setting.get_conf_env()
 
 def get_looping_sleep(mtype):
-    try:
-        sleep = setting.looping_sleep.get(mtype, 1)
-    except Exception as e:
-        sleep = 1
-    return sleep
+    sleep = setting.looping_sleep.get(mtype, 1)
 
 def __get_address_list(atype, mtype, chain = None, full = True):
-    try:
-        addresses =  [dict.get("address") for dict in setting.address_list.get(atype) \
-                if dict["type"] == mtype and mtype is not None and (chain is None or dict["chain"] == chain)]
-        if addresses is not None and len(addresses) > 0:
-            if full:
-                return addresses
-            else:
-                min_len = min(VIOLAS_ADDRESS_LEN)
-                assert min_len > 0 , "address min(VIOLAS_ADDRESS_LEN) is invalid."
-                return [get_address_from_full_address(addr) for addr in addresses]
-    except Exception as e:
-        parse_except(e)
-    return None
+    addresses =  [dict.get("address") for dict in setting.address_list.get(atype) \
+            if dict["type"] == mtype and mtype is not None and (chain is None or dict["chain"] == chain)]
+    if addresses is not None and len(addresses) > 0:
+        if full:
+            return addresses
+        else:
+            min_len = min(VIOLAS_ADDRESS_LEN)
+            assert min_len > 0 , "address min(VIOLAS_ADDRESS_LEN) is invalid."
+            return [get_address_from_full_address(addr) for addr in addresses]
 
 #maybe use. so keep it until libra support usd eur ...
 #def __get_tokenid_list(atype, mtype, chain = None):
@@ -52,18 +44,10 @@ def __get_address_list(atype, mtype, chain = None, full = True):
 #    return None
 #
 def get_receiver_address_list(mtype, chain = None, full = True):
-    try:
-        return __get_address_list("receiver", mtype, chain, full)
-    except Exception as e:
-        parse_except(e)
-    return None
+    return __get_address_list("receiver", mtype, chain, full)
 
 def get_sender_address_list(mtype, chain = None, full = True):
-    try:
-        return __get_address_list("sender", mtype, chain, full)
-    except Exception as e:
-        parse_except(e)
-    return None
+    return __get_address_list("sender", mtype, chain, full)
 
 #maybe use. so keep it until libra support usd eur ...
 #def get_token_address(mtype, chain = None, full = True):
@@ -78,15 +62,11 @@ def get_sender_address_list(mtype, chain = None, full = True):
 #    return None
 
 def get_combine_address(mtype = "b2v", chain = "btc", full = True):
-    try:
-        ms = __get_address_list("combine", mtype, chain, full)
-        if ms is None or len(ms) == 0:
-            return None
-        assert len(ms) == 1, f"({mtype}) chain({chain}) found multi combin address , check it"
-        return ms[0]
-    except Exception as e:
-        parse_except(e)
-    return None
+     ms = __get_address_list("combine", mtype, chain, full)
+     if ms is None or len(ms) == 0:
+         return None
+     assert len(ms) == 1, f"({mtype}) chain({chain}) found multi combin address , check it"
+     return ms[0]
 
 #maybe use. so keep it until libra support usd eur ...
 #def get_token_id(mtype = "b2v", chain = "btc"):
@@ -102,125 +82,77 @@ def get_combine_address(mtype = "b2v", chain = "btc", full = True):
 #
 
 def get_db(mtype):
-    try:
-        dbs = [dict for dict in setting.db_list if dict.get("db") == mtype and mtype is not None]
-        if dbs is not None and len(dbs) > 0:
-            return dbs[0]
-    except Exception as e:
-        parse_except(e)
-    return None
-
+    dbs = [dict for dict in setting.db_list if dict.get("db") == mtype and mtype is not None]
+    if dbs is not None and len(dbs) > 0:
+        return dbs[0]
 
 def get_libra_nodes():
-    try:
-        return setting.libra_nodes
-    except Exception as e:
-        parse_except(e)
-    return None
+    return setting.libra_nodes
 
 def get_violas_servers():
-    try:
-        return setting.violas_servers
-    except Exception as e:
-        parse_except(e)
-    return None
+    return setting.violas_servers
 
 def get_violas_nodes():
-    try:
-        return setting.violas_nodes
-    except Exception as e:
-        parse_except(e)
-    return None
+    return setting.violas_nodes
 
 def get_btc_conn():
-    try:
-        return setting.btc_conn
-    except Exception as e:
-        parse_except(e)
-    return None
+    return setting.btc_conn
 
 def get_traceback_limit():
-    try:
-        return setting.traceback_limit
-    except Exception as e:
-        parse_except(e)
-    return 0
+    return setting.traceback_limit
 
 def get_db_echo():
-    try:
-        return setting.db_echo
-    except Exception as e:
-        parse_except(e)
-    return None
+    return setting.db_echo
 
 def get_max_times(mtype):
-    try:
-        return setting.v2b_maxtimes
-    except Exception as e:
-        parse_except(e)
-    return 0
-
+    return setting.v2b_maxtimes
 
 def get_token_map(token = None):
-    try:
-        token_map = {}
-        for typename, tokens in setting.type_token.items():
-            if typename.startswith("v2"): #v2b v2l
-                token_map.update({tokens.get("stoken") : tokens.get("mtoken")})
-        if token:
-            return token_map.get(token)
-        return token_map
-    except Exception as e:
-        parse_except(e)
-    return None
+    token_map = {}
+    for typename, tokens in setting.type_token.items():
+        if typename.startswith("v2"): #v2b v2l
+            token_map.update({tokens.get("stoken") : tokens.get("mtoken")})
+    if token:
+        return token_map.get(token)
+    return token_map
 
 def get_type_stable_token(mtype = None):
-    try:
-        type_stable_token = {}
-        for typename, tokens in setting.type_token.items():
-            if mtype is None or typename == mtype:
-                type_stable_token.update({typename : tokens.get("stoken")})
+    type_stable_token = {}
+    for typename, tokens in setting.type_token.items():
+        if mtype is None or typename == mtype:
+            type_stable_token.update({typename : tokens.get("stoken")})
 
-        if mtype:
-            return type_stable_token.get(mtype)
-        return type_stable_token
-    except Exception as e:
-        parse_except(e)
-    return None
+    if mtype:
+        return type_stable_token.get(mtype)
+    return type_stable_token
 
 def get_type_lbr_token(mtype = None):
-    try:
-        type_lbr_token = {}
-        for typename, tokens in setting.type_token.items():
-            if mtype is None or typename == mtype:
-                type_lbr_token.update({mtype : tokens.get("mtoken")})
+    type_lbr_token = {}
+    for typename, tokens in setting.type_token.items():
+        if mtype is None or typename == mtype:
+            type_lbr_token.update({mtype : tokens.get("mtoken")})
 
-        if mtype:
-            return type_lbr_token.get(mtype)
-        return type_lbr_token
-    except Exception as e:
-        parse_except(e)
-    return None
-
+    if mtype:
+        return type_lbr_token.get(mtype)
+    return type_lbr_token
 def get_support_token_id(chain):
-    try:
-        assert chain is not None, "chain is violas/libra"
-        mtoken_list = []
-        opthead = "v2" #default is libra chain token
-        if chain == "violas":
-            opthead = "l2"
-            mtoken_list = [tokens.get("mtoken") for typename, tokens in setting.type_token.items() \
-                if typename.startswith(opthead)]
+    assert chain is not None, "chain is violas/libra"
+    mtoken_list = []
+    opthead = "v2" #default is libra chain token
+    if chain == "violas":
+        opthead = "l2"
+        mtoken_list = [tokens.get("mtoken") for typename, tokens in setting.type_token.items() \
+            if typename.startswith(opthead)]
 
-        stoken_list = [tokens.get("stoken") for typename, tokens in setting.type_token.items() \
-                if typename.startswith(opthead)]
+    stoken_list = [tokens.get("stoken") for typename, tokens in setting.type_token.items() \
+            if typename.startswith(opthead)]
 
 
-        
-        return stoken_list + mtoken_list
-    except Exception as e:
-        parse_except(e)
-    return None
+    
+    return stoken_list + mtoken_list
+
+def get_swap_module():
+    return setting.swap_module.get("module")
 
 def get_conf():
     infos = {}

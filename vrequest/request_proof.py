@@ -59,21 +59,13 @@ class requestproof(requestbase):
         return ret
 
 
-    def has_transaction(self, address, module, to_address, sequence, amount, version, receiver):
+    def has_transaction(self, tranid):
         try:
-            ret = self.get(version)
+            ret = self.get(tranid)
             if ret.state != error.SUCCEED:
                 return ret
 
-            tran_info = json.loads(ret.datas)
-            beque = tran_info.get("sender") == address and \
-                    tran_info.get("to_address") == to_address and \
-                    tran_info.get("sequence") == sequence and \
-                    tran_info.get("amount") == amount and \
-                    tran_info.get("version") == version and \
-                    tran_info.get("receiver") == receiver
-
-            ret = result(error.SUCCEED, "", beque)
+            ret = result(error.SUCCEED, datas = True)
         except Exception as e:
             ret = parse_except(e)
         finally:

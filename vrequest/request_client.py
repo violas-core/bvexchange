@@ -46,7 +46,15 @@ class requestclient(baseobject):
                 toaddress   = data["to_address"]
                 tran_id     = data["tran_id"]
                 token_id    = data["token_id"]
-                datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "to_address":toaddress, "tran_id":tran_id, "token_id":token_id})
+
+                datas.append({"address": address, \
+                        "amount":amount, \
+                        "sequence":sequence,  \
+                        "version":version, \
+                        "to_address":toaddress, \
+                        "tran_id":tran_id, \
+                        "token_id":token_id})
+
             self._logger.debug(f"count={len(datas)}")
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
@@ -70,7 +78,14 @@ class requestclient(baseobject):
                 baddress    = data["to_address"]
                 tran_id     = data["tran_id"]
                 token_id    = data["token_id"]
-                datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "to_address":baddress, "tran_id":tran_id, "token_id":token_id})
+                datas.append({"address": address, \
+                        "amount":amount, \
+                        "sequence":sequence,  \
+                        "version":version, \
+                        "to_address":baddress, \
+                        "tran_id":tran_id, \
+                        "token_id":token_id})
+
             self._logger.debug(f"count={len(datas)}")
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
