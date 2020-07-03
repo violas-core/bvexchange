@@ -30,7 +30,8 @@ import stmanage
 import redis
 #module name
 name="initworkenv"
-wallet_name= "wallet" + time.strftime("%Y%m%d_%H%M%S", time.localtime()) + ".wlt"
+#wallet_name= "wallet" + time.strftime("%Y%m%d_%H%M%S", time.localtime()) + ".wlt"
+wallet_name= "vwallet"
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 logger = log.logger.getLogger(name)
 def reg_run():
@@ -48,9 +49,9 @@ def reg_run():
     v2l_opt_list = [opt for opt in opt_list.keys() if opt.startswith("v2l")]
 
     #get swap module
-    account_module = wclient.new_account().datas
-    swap_module_address = account_module.auth_key_prefix.hex() + account_module.address.hex()
-    #swap_module_address = stmanage.get_swap_module
+    #account_module = wclient.new_account().datas
+    #swap_module_address = account_module.auth_key_prefix.hex() + account_module.address.hex()
+    swap_module_address = stmanage.get_swap_module()
     logger.debug(f"swap pool moudule address({swap_module_address})")
 
     init_address(vclient, wclient, swap_module_address)
@@ -67,6 +68,10 @@ def reg_run():
     init_address(vclient, wclient, module_account.address.hex())
 
     gas_token_id = violas_token_id_list[0]
+
+    #receive swap token
+    receiver_address = "eda54651162270ccc0ff81cbcfffcded8ee2a1a52bd868c0baadb0d226731832"
+    init_address(vclient, wclient, receiver_address)
 
     if not vclient.swap_is_swap_address(module_account.address.hex()).datas:
         logger.debug(f"init swap contract({module_account.address.hex()})")
@@ -98,6 +103,62 @@ def reg_run():
             logger.debug(f"append swap liquidity({token_a} - {token_b})")
             ret = vclient.swap_add_liquidity(account_l, token_a, token_b, 1_000000, 1_000000, gas_currency_code = gas_token_id)
             assert ret.state == error.SUCCEED
+
+    
+    #swap 
+    account_s = wclient.new_account().datas
+    addr_s = account_s.auth_key_prefix.hex() + account_s.address.hex()
+    init_address(vclient, wclient, addr_s)
+    swap_info = []
+    logger.debug(f"swap address :{addr_s}")
+    for token_a in violas_token_id_list:
+        for token_b in violas_token_id_list:
+            if token_a == token_b:
+                continue
+            logger.debug(f"swap start:{token_a}/{token_b}")
+            swap_amount = 1_000000
+
+            ret = vclient.swap_get_output_amount(token_a, token_b, swap_amount)
+            assert ret.state == error.SUCCEED
+            amount_out, gas = ret.datas
+            logger.debug(f"swap amount out:{token_a}/{token_b} value = {amount_out}, gas = {gas}")
+
+            ret = vclient.get_balance(addr_s, token_a)
+            assert ret.state == error.SUCCEED
+            amount_before_a = ret.datas
+
+            ret = vclient.get_balance(addr_s, token_b)
+            assert ret.state == error.SUCCEED
+            amount_before_b = ret.datas
+
+            logger.debug(f"will exec swap")
+            ret = vclient.get_balance(receiver_address, token_b)
+            assert ret.state == error.SUCCEED
+            receiver_amount_before_b = ret.datas
+
+            ret = vclient.swap(account_s, token_a, token_b, swap_amount, amount_out, receiver = receiver_address, gas_currency_code = gas_token_id)
+            assert ret.state == error.SUCCEED
+
+            ret = vclient.get_balance(receiver_address, token_b)
+            assert ret.state == error.SUCCEED
+            receiver_amount_after_b = ret.datas
+
+            logger.debug(f"exec swap end")
+            ret = vclient.get_balance(addr_s, token_a)
+            assert ret.state == error.SUCCEED
+            amount_after_a = ret.datas
+
+            ret = vclient.get_balance(addr_s, token_b)
+            assert ret.state == error.SUCCEED
+            amount_after_b = ret.datas
+
+            check_avg = amount_before_a == amount_after_a + gas
+            diff_b = amount_after_b - amount_before_b
+            diff_a = amount_after_a - amount_before_a
+            swap_info.append({"receiver_amount_before_b": receiver_amount_before_b, "receiver_amount_after_b": receiver_amount_after_b, "receiver_change": receiver_amount_after_b - receiver_amount_before_b, "amount_out": amount_out, "before_a": amount_before_a, "before_b" : amount_before_b, "after_a": amount_after_a, "after_b": amount_after_b, "a/b":token_a + "/" + token_b, "gas":gas, "diff_a": diff_a, "diff_b":diff_b})
+    
+    for info in swap_info:
+        print(info)
 
 
 #test use: init client address
