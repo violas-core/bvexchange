@@ -86,7 +86,7 @@ class clientproxy(Client):
     def swap_remove_liquidity(self, sender_account, currencyA, currencyB, liquidity, amounta_min=0, amountb_min=0, is_blocking=True, **kwargs):
         pass
 
-    def swap(self, sender_account, currency_in, currency_out, amount_in, amount_out_min=0, is_blocking=True, **kwargs):
+    def swap(self, sender_account, currency_in, currency_out, amount_in, amount_out_min=0, receiver_address = None, is_blocking=True, **kwargs):
         pass
 
 def main():

@@ -182,7 +182,7 @@ v2b_maxtimes = 99
         mtoken = "LBRGBP"
 
 [swap_module]
-    address = "c8a39b68308f01fe8f1921be4635f76ae8f5ebfc0aebd0d7bf8c94a992a16038"
+    address = "8c66c50156dc8cb4a2410cb54c13522510dfbe77f8a09e9dfcb77bb3d44a14fc"
 
 [address_list]
     #receiver addresses
