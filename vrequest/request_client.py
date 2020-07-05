@@ -31,6 +31,17 @@ class requestclient(baseobject):
             self._rclient = requestproof(name, dbconf.get("host"), dbconf.get("port", 6378), dbconf.get("db"), dbconf.get("password"))
         except Exception as e:
             pass
+
+    def filter_proof_datas(self, data):
+        datas = {"address": data["sender"], \
+                "amount":int(data["amount"]), \
+                "sequence":int(data["sequence"]),  \
+                "version":int(data["version"]), \
+                "to_address":data["to_address"], \
+                "tran_id":data["tran_id"], \
+                "token_id":data["token_id"]}
+
+
     def get_transactions_for_start(self, address, module, token_id, start = -1, limit = 10):
         try:
             datas = []
@@ -39,21 +50,7 @@ class requestclient(baseobject):
                 return ret
             
             for data in ret.datas:
-                version     = int(data["version"])
-                address     = data["sender"]
-                amount      = int(data["amount"])
-                sequence    = int(data["sequence"])
-                toaddress   = data["to_address"]
-                tran_id     = data["tran_id"]
-                token_id    = data["token_id"]
-
-                datas.append({"address": address, \
-                        "amount":amount, \
-                        "sequence":sequence,  \
-                        "version":version, \
-                        "to_address":toaddress, \
-                        "tran_id":tran_id, \
-                        "token_id":token_id})
+                datas.append(self.filter_proof_datas(data))
 
             self._logger.debug(f"count={len(datas)}")
             ret = result(error.SUCCEED, "", datas)
@@ -71,20 +68,7 @@ class requestclient(baseobject):
                 return ret
             
             for data in ret.datas:
-                version     = int(data["version"])
-                address     = data["sender"]
-                amount      = int(data["amount"])
-                sequence    = int(data["sequence"])
-                baddress    = data["to_address"]
-                tran_id     = data["tran_id"]
-                token_id    = data["token_id"]
-                datas.append({"address": address, \
-                        "amount":amount, \
-                        "sequence":sequence,  \
-                        "version":version, \
-                        "to_address":baddress, \
-                        "tran_id":tran_id, \
-                        "token_id":token_id})
+                datas.append(self.filter_proof_datas(data))
 
             self._logger.debug(f"count={len(datas)}")
             ret = result(error.SUCCEED, "", datas)
@@ -127,6 +111,17 @@ class requestclient(baseobject):
     def get_tran(self, version):
         try:
             ret = self._rclient.get(version)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_tran_by_tranid(self, tranid):
+        try:
+            ret = self._rclient.get(tranid)
+            if ret.state != error.SUCCEED:
+                return ret
+            
+            ret = self.get_tran(ret.datas)
         except Exception as e:
             ret = parse_except(e)
         return ret

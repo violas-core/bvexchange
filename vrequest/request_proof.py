@@ -72,6 +72,7 @@ class requestproof(requestbase):
             self._logger.debug("end has_transaction.")
         return ret
 
+
     def get_transaction_record(self, sender, flag, cursor = 0, match = None, limit = 10):
         try:
             tran_info = {"flag":flag,"sender":sender}

@@ -53,9 +53,13 @@ class dbv2l(baseobject):
     class state(Enum):
         START       = 0  #no use
         SUCCEED     = 1  #send token ok 
-        FAILED      = 2  #send map token failed
-        VFAILED     = 3  #send change state transaction failed
-        VSUCCEED    = 4  #send change state transaction succeed
+        FAILED      = 2  #execute before swap failed, this time can re-execute 
+        QBFAILED    = 3  #get <to_token_id> blance(swap end) with localdb version, calc diff balance 
+        FILLFAILED  = 4  #fill map sender failed
+        PFAILED     = 5  #payment(libra token) failed
+        PSUCCEED    = 6  #payment(libra token) succeed
+        VFAILED     = 7  #send change state transaction failed
+        VSUCCEED    = 8  #send change state transaction succeed
         COMPLETE    = 128  #change state is confirmed
     
     #exc_traceback_objle : info
@@ -66,9 +70,11 @@ class dbv2l(baseobject):
         created     = Column(DateTime, default=datetime.datetime.now)
         times       = Column(Integer, nullable=False, default=1)
         tranid      = Column(String(64), nullable=False, primary_key=True)
+        receiver    = Column(String(64), nullable=False)
+        detail      = Column(String(64))
     
         def __repr__(self):
-            return f"<info(version={self.version}, state={self.state}, created={self.created}, times={self.times}, tranid={self.tranid})>"
+            return f"<info(version={self.version}, state={self.state}, created={self.created}, times={self.times}, tranid={self.tranid}, receiver = {self.receiver}, detail={detail})>"
 
     def __init_db(self, dbfile):
         self._logger.debug("start __init_db(dbfile={})".format(dbfile))
@@ -86,11 +92,11 @@ class dbv2l(baseobject):
     def __uninit_db(self):
         pass
         
-    def insert(self, version, state, tranid):
+    def insert(self, version, state, tranid, receiver, detail = ""):
         try:
-            self._logger.info(f"start insert(version={version}, state={state.name}, tranid={tranid}") 
+            self._logger.info(f"start insert(version={version}, state={state.name}, tranid={tranid}, receiver = {receiver}, detail={detail}") 
 
-            data = self.info(version=version,state=state.value, tranid=tranid)
+            data = self.info(version=version,state=state.value, tranid=tranid, receiver = receiver, detail={detail})
             self.__session.add(data)
 
             ret = result(error.SUCCEED)
@@ -98,9 +104,9 @@ class dbv2l(baseobject):
             ret = parse_except(e)
         return ret
 
-    def insert_commit(self, version, state, tranid):
+    def insert_commit(self, version, state, tranid, receiver, detail = ""):
         try:
-            ret = self.insert(version, state, tranid)
+            ret = self.insert(version, state, tranid, receiver)
             if ret.state != error.SUCCEED:
                 return ret 
             ret = self.commit()
@@ -165,6 +171,9 @@ class dbv2l(baseobject):
             ret = parse_except(e)
         return ret
 
+    def query_with_state(self, state, maxtimes = 999999999):
+        return self.__query_state(state, maxtimes)
+
     def query_is_start(self, maxtimes = 999999999):
         return self.__query_state(self.state.START, maxtimes)
 
@@ -183,20 +192,20 @@ class dbv2l(baseobject):
     def query_is_vsucceed(self, maxtimes = 999999999):
         return self.__query_state(self.state.VSUCCEED, maxtimes)
 
-    def __update(self, tranid, state):
+    def __update(self, tranid, state, detail = ""):
         try:
-            self._logger.info(f"start update(tranid={tranid}, state={state})")
+            self._logger.info(f"start update(tranid={tranid}, state={state}, detail = {detail})")
             filter_tranid = (self.info.tranid==tranid)
             datas = self.__session.query(self.info).filter(filter_tranid)\
-                    .update({self.info.state:state.value, self.info.times:self.info.times + 1})
+                    .update({self.info.state:state.value, self.info.times:self.info.times + 1, self.detail = detail})
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def __update_commit(self, tranid, state):
+    def __update_commit(self, tranid, state, detail = ""):
         try:
-            ret = self.__update(tranid, state)
+            ret = self.__update(tranid, state, detail)
             if ret.state != error.SUCCEED:
                 self._logger.error("update_info_commit failed")
                 return ret
@@ -206,23 +215,8 @@ class dbv2l(baseobject):
             ret = parse_except(e)
         return ret
 
-    def update_to_start_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.START)
-
-    def update_to_succeed_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.SUCCEED)
-
-    def update_to_failed_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.FAILED)
-
-    def update_to_complete_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.COMPLETE)
-
-    def update_to_vfailed_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.VFAILED)
-
-    def update_to_vsucceed_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.VSUCCEED)
+    def update_state_commit(self, tranid, state, detail = ""):
+        return self.__update_commit(tranid, state, detail)
 
     def flushinfo(self):
         self.__session.execute("delete from v2linfo")
@@ -263,6 +257,7 @@ def test_dbv2l():
             9, \
             dbv2l.state.START, \
             tran_id,            
+            "receiver000000000000000000000000"
             )
     assert ret.state == error.SUCCEED, "insert_commit failed."
 
@@ -270,6 +265,7 @@ def test_dbv2l():
             10, \
             dbv2l.state.START, \
             "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
+            "receiver111111111111111111111111111111111111111111111"
             )
     assert ret.state == error.SUCCEED, "insert_commit failed."
 
@@ -282,22 +278,22 @@ def test_dbv2l():
     
     show_state_count(db, logger)
 
-    ret = db.update_to_failed_commit(tran_id)
+    ret = db.update_state_commit(tran_id, dbv2l.state.FAILED)
     show_state_count(db, logger)
 
-    ret = db.update_to_succeed_commit(tran_id)
+    ret = db.update_state_commit(tran_id, dbv2l.state.SUCCEED)
     show_state_count(db, logger)
 
-    ret = db.update_to_start_commit(tran_id)
+    ret = db.update_commit(tran_id, dbv2l.state.START)
     show_state_count(db, logger)
 
-    ret = db.update_to_vfailed_commit(tran_id)
+    ret = db.update_commit(tran_id, dbv2l.state.VFAILED)
     show_state_count(db, logger)
 
-    ret = db.update_to_vsucceed_commit(tran_id)
+    ret = db.update_state_commit(tran_id, dbv2l.state.VSUCCEED)
     show_state_count(db, logger)
 
-    ret = db.update_to_complete_commit(tran_id)
+    ret = db.update_state_commit(tran_id, dbv2l.state.COMPLETE)
     show_state_count(db, logger)
 
 if __name__ == "__main__":
