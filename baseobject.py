@@ -57,4 +57,7 @@ class baseobject(object):
     def map_chain(self, name):
         self._map_chain = name
 
+    def check_state_raise(self, result, message):
+        if result.state != error.SUCCEED:
+            raise Exception(message)
 

@@ -59,7 +59,7 @@ class works:
 
     def work_b2v(self, **kargs):
         try:
-            logger.critical("start: b2v")
+            logger.critical("start: b2vxxx")
             nsec = kargs.get("nsec", 0)
             mod = kargs.get("mod")
             assert mod is not None, f"mod name is None"
@@ -294,17 +294,13 @@ class works:
                 logger.debug(f"looping: {mod}")
                 try:
                     obj = exlv.exlv(mod, 
+                            dtype,
                             stmanage.get_violas_nodes(), 
                             stmanage.get_libra_nodes(),
                             stmanage.get_db(dtype), 
-                            stmanage.get_module_address(dtype, "violas", False), 
-                            stmanage.get_token_id(dtype, "violas"),
-                            None,
-                            None,
                             list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
-                            "violas",
-                            "libra")
+                            list(set(stmanage.get_sender_address_list(dtype, "libra", False)))
+                            )
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:

@@ -223,23 +223,8 @@ class dbl2v(baseobject):
             ret = parse_except(e)
         return ret
 
-    def update_to_start_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.START)
-
-    def update_to_succeed_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.SUCCEED)
-
-    def update_to_failed_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.FAILED)
-
-    def update_to_complete_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.COMPLETE)
-
-    def update_to_vfailed_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.VFAILED)
-
-    def update_to_vsucceed_commit(self, tranid):
-        return self.__update_commit(tranid, self.state.VSUCCEED)
+    def update_state_commit(self, tranid, state):
+        return self.__update_commit(tranid, state)
 
     def flushinfo(self):
         self.__session.execute("delete from l2vinfo")
@@ -317,22 +302,22 @@ def test_dbl2v():
     
     show_state_count(db, logger)
 
-    ret = db.update_to_failed_commit(tran_id)
+    ret = db.update_state_commit(tran_id, dbl2v.state.FAILED)
     show_state_count(db, logger)
 
-    ret = db.update_to_succeed_commit(tran_id)
+    ret = db.update_state_commit(tran_id, dbl2v.state.SUCCEED)
     show_state_count(db, logger)
 
-    ret = db.update_to_start_commit(tran_id)
+    ret = db.update_state_commit(tran_id, dbl2v.state.START)
     show_state_count(db, logger)
 
-    ret = db.update_to_vfailed_commit(tran_id)
+    ret = db.update_state_commit(tran_id, dbl2v.state.VFAILED)
     show_state_count(db, logger)
 
-    ret = db.update_to_vsucceed_commit(tran_id)
+    ret = db.update_state_commit(tran_id, dbl2v.state.VSUCCEED)
     show_state_count(db, logger)
 
-    ret = db.update_to_complete_commit(tran_id)
+    ret = db.update_state_commit(tran_id, dbl2v.state.COMPLETE)
     show_state_count(db, logger)
 
 if __name__ == "__main__":
