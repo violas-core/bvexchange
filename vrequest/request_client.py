@@ -101,6 +101,20 @@ class requestclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def is_end(self, tran_id):
+        try:
+            ret = self._rclient.is_stop(tran_id)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def is_cancel(self, tran_id):
+        try:
+            ret = self._rclient.is_cancel(tran_id)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def get_latest_saved_ver(self):
         try:
          ret = self._rclient.get_latest_saved_ver()

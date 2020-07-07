@@ -60,6 +60,8 @@ class dbv2l(baseobject):
         PSUCCEED    = 6  #payment(libra token) succeed
         VFAILED     = 7  #send change state transaction failed
         VSUCCEED    = 8  #send change state transaction succeed
+        SFAILED     = 9  #stop swap failed
+        SSUCCEED    = 10  #stop swap failed
         COMPLETE    = 128  #change state is confirmed
     
     #exc_traceback_objle : info
