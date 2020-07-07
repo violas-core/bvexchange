@@ -99,6 +99,10 @@ class aproof(abase):
 
         if new_state in (self.proofstate.END, self.proofstate.CANCEL) and old_state != self.proofstate.START:
             return False
+
+        if new_state in (self.proofstate.STOP, self.proofstate.CANCEL) and old_state != self.proofstate.START:
+            return False
+
         return True
 
     def update_proof_info(self, tran_info):

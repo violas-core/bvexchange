@@ -345,8 +345,8 @@ class exl2v(baseobject):
             #get map sender from  senders
             ret = self.__get_map_sender_address()
             self.check_state_raise(ret, f"not found map sender{toaddress} or amount too low. check address and amount")
-            mapsender = ret.datas
-            self._logger.debug(f"mapsender({type(mapsender)}): {mapsender.address.hex()}")
+            map_sender = ret.datas
+            self._logger.debug(f"map_sender({type(map_sender)}): {map_sender.address.hex()}")
 
             for receiver in receivers:
                 if not self.work() :
@@ -406,14 +406,14 @@ class exl2v(baseobject):
                         _, gas = ret.datas
 
                         #mint LBRXXX to sender(type = LBRXXX), or check sender's token amount is enough
-                        ret = self.__fill_address_token(mapsender.address.hex(), from_token_id, amount, gas)
+                        ret = self.__fill_address_token(map_sender.address.hex(), from_token_id, amount, gas)
                         if ret.state != error.SUCCEED:
                             ret = self._db.insert_commit(version, dbv2l.state.FAILED, tran_id, receiver)
                             assert (ret.state == error.SUCCEED), "db error"
                             continue
 
                         #swap LBRXXX -> VLSYYY
-                        ret = self.from_client.swap(mapsender, from_token_id, to_token_id, amount, out_amount, receiver = toaddress, gas_currency_code = from_token_id)
+                        ret = self.from_client.swap(map_sender, from_token_id, to_token_id, amount, out_amount, receiver = toaddress, gas_currency_code = from_token_id)
 
                         if ret.state != error.SUCCEED:
                             ret = self._db.update_state_commit(tran_id, localdb.state.SUCCEED)
@@ -445,6 +445,60 @@ class exl2v(baseobject):
             self._logger.warning(f"found transaction(tran_id = {tran_id})) in db(maybe first run {self.dtype}). ignore it and process next.")
         return ret.datas
 
+    def use_module(self, state, module_state):
+        return state is None or state.value <= module_state.value
+
+    def exec_exchange(data, from_sender, map_sender, receiver, state = None, detail = {}):
+        fromaddress = data["address"]
+        amount      = int(data["amount"]) 
+        sequence    = data["sequence"] 
+        version     = data["version"]
+        toaddress   = data["to_address"] #map token to
+        tran_id     = data["tran_id"]
+        out_amount  = data["out_amount"]
+        times       = data["times"]
+        opttype     = data["opttype"]
+        stable_token_id = data["token_id"]
+        from_token_id = stmanage.get_token_map(stable_token_id) #stable token -> LBRXXX token
+        to_token_id    = self.to_token_id #token_id is map 
+
+        self._logger.info(f"start exchange l2v.sender={fromaddress},  receiver={receiver}, sequence={sequence} " + \
+                f"version={version}, toaddress={toaddress}, amount={amount}, tran_id={tran_id}, " + \
+                f"from_token_id = {from_token_id} to_token_id={to_token_id} datas from server.")
+
+        self._latest_version[receiver] = max(version, self._latest_version.get(receiver, -1))
+
+        #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
+        if self.has_info(tran_id):
+            continue
+    
+        if not self.chain_data_is_valid(data):
+            continue
+
+        ret = self.map_client.swap_get_output_amount(from_token_id, to_token_id, amount)
+        assert ret.state == error.SUCCEED, f"swap_get_output_amount failed."
+        _, gas = ret.datas
+
+        #mint LBRXXX to sender(type = LBRXXX), or check sender's token amount is enough
+        ret = self.__fill_address_token(map_sender.address.hex(), from_token_id, amount, gas)
+        if ret.state != error.SUCCEED:
+            ret = self._db.insert_commit(version, dbv2l.state.FAILED, tran_id, receiver)
+            assert (ret.state == error.SUCCEED), "db error"
+            continue
+
+        #swap LBRXXX -> VLSYYY and send VLSXXX to toaddress(client payee address)
+        ret = self.from_client.swap(map_sender, from_token_id, to_token_id, amount, out_amount, receiver = toaddress, gas_currency_code = from_token_id)
+        if ret.state != error.SUCCEED:
+            ret = self._db.insert_commit(version, dbv2l.state.FAILED, tran_id, receiver)
+            assert (ret.state == error.SUCCEED), "db error"
+            continue
+        else:
+            ret = self._db.insert_commit(version, dbv2l.state.SUCCEED, tran_id, receiver)
+            assert (ret.state == error.SUCCEED), "db error"
+        
+        #send libra token to toaddress
+        #sendexproofmark succeed , send violas coin with data for change tran state
+        self._send_coin_for_update_state_to_end(fromsender, receiver, tran_id, from_token_id)
     def start(self):
     
         try:
@@ -471,8 +525,8 @@ class exl2v(baseobject):
             #get map sender from senders
             ret = self.__get_map_sender_address()
             self.check_state_raise(ret, f"not found map sender{toaddress} or amount too low. check address and amount")
-            mapsender = ret.datas
-            self._logger.debug(f"mapsender({type(mapsender)}): {mapsender.address.hex()}")
+            map_sender = ret.datas
+            self._logger.debug(f"map_sender({type(map_sender)}): {map_sender.address.hex()}")
 
             receivers = self.receivers
             #modulti receiver, one-by-one
@@ -526,14 +580,14 @@ class exl2v(baseobject):
                         _, gas = ret.datas
 
                         #mint LBRXXX to sender(type = LBRXXX), or check sender's token amount is enough
-                        ret = self.__fill_address_token(mapsender.address.hex(), from_token_id, amount, gas)
+                        ret = self.__fill_address_token(map_sender.address.hex(), from_token_id, amount, gas)
                         if ret.state != error.SUCCEED:
                             ret = self._db.insert_commit(version, dbv2l.state.FAILED, tran_id, receiver)
                             assert (ret.state == error.SUCCEED), "db error"
                             continue
 
                         #swap LBRXXX -> VLSYYY and send VLSXXX to toaddress(client payee address)
-                        ret = self.from_client.swap(mapsender, from_token_id, to_token_id, amount, out_amount, receiver = toaddress, gas_currency_code = from_token_id)
+                        ret = self.from_client.swap(map_sender, from_token_id, to_token_id, amount, out_amount, receiver = toaddress, gas_currency_code = from_token_id)
                         if ret.state != error.SUCCEED:
                             ret = self._db.insert_commit(version, dbv2l.state.FAILED, tran_id, receiver)
                             assert (ret.state == error.SUCCEED), "db error"

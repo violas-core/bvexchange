@@ -40,6 +40,12 @@ class violasproof(violasclient):
     def create_data_for_end(self, flag, dtype, tranid, txid=""):
         return json.dumps({"flag": flag, "type":dtype, "tran_id":tranid, "state": "end", "txid":txid})
 
+    def create_data_for_stop(self, flag, dtype, tranid, txid=""):
+        return json.dumps({"flag": flag, "type":dtype, "tran_id":tranid, "state": "stop", "txid":txid})
+
+    def create_data_for_cancel(self, flag, dtype, tranid, txid=""):
+        return json.dumps({"flag": flag, "type":dtype, "tran_id":tranid, "state": "cancel", "txid":txid})
+
     def create_data_for_mark(self, flag, dtype, id, sequence):
         return json.dumps({"flag": flag, "type":dtype + "_mark", "id":id, "sequence":sequence})
             
