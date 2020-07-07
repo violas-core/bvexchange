@@ -26,6 +26,7 @@ class baseobject(object):
         self._map_chain = None
         self._work = work
         self._name = name
+
         if self._logger is None:
             self._logger = getlogger(name) 
 
@@ -41,23 +42,30 @@ class baseobject(object):
     def name(self):
         return self._name
 
-    @property
-    def from_chain(self):
-        return self._from_chain
+    def init_defalut_property(self):
+        ppts = {"from_chain": None, "map_chain":None, }
+        for name, value in ppts.items:
+            self.append_property(name, value)
 
-    @from_chain.setter
-    def from_chain(self, name):
-        self._from_chain = name
+    #@property
+    #def from_chain(self):
+    #    return self._from_chain
 
-    @property
-    def map_chain(self):
-        return self._map_chain
+    #@from_chain.setter
+    #def from_chain(self, name):
+    #    self._from_chain = name
 
-    @map_chain.setter
-    def map_chain(self, name):
-        self._map_chain = name
+    #@property
+    #def map_chain(self):
+    #    return self._map_chain
+
+    #@map_chain.setter
+    #def map_chain(self, name):
+    #    self._map_chain = name
 
     def check_state_raise(self, result, message):
         if result.state != error.SUCCEED:
             raise Exception(message)
 
+    def append_property(self, name, value):
+        setter(self, name, value)

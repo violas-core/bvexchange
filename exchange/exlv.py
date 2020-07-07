@@ -25,6 +25,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
+from exchange.vlbase import vlbase
 
 #module self.name
 #name="exlv"
@@ -32,26 +33,9 @@ wallet_name = "vwallet"
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
-class exlv(baseobject):    
+class exlv(vlbase):    
     def __init__(self, name, fromnodes , mapnodes, proofdb, frommodule, fromtokenid, mapmodule, maptokenid, receivers, senders, fromchain = "libra", mapchain='violas'):
-        baseobject.__init__(self, name)
-        self._latest_version = {}
-        self.set_from_chain(fromchain)
-        self.set_map_chain(mapchain)
-        self._fromclient = violasproof(name, fromnodes, fromchain)
-        self._mapclient = violasproof(name, mapnodes, mapchain)
-        self._db = dbl2v(name, f"{self.from_chain()}_{self.name()}.db")
-        self._fromwallet = violaswallet(name, wallet_name, fromchain)
-        self._mapwallet = violaswallet(name, wallet_name, mapchain)
-    
-        #violas/libra init
-        self._pserver = requestclient(name, proofdb)
-        self._from_module = frommodule
-        self._map_module = mapmodule
-        self._receivers = receivers
-        self._senders = senders
-        self._from_token_id = fromtokenid
-        self._map_token_id = maptokenid
+        exlv.__init__(self, name)
 
     def __del__(self):
         del self._fromclient
