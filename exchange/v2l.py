@@ -34,16 +34,38 @@ wallet_name = "vwallet"
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 class v2l(vlbase):    
-    def __init__(self, name, dtype, vlsnodes, lbrnodes, proofdb, receivers, senders, combine):
-        vlbase.__init__(self, name, dtype, vlsnodes, lbrnodes, proofdb, receivers, senders, "violas", "libra")
-        self.append_property("combine ", combine)
+    def __init__(self, name, dtype, vlsnodes, lbrnodes, proofdb, receivers, senders, combine, swap_module):
+        vlbase.__init__(self, name, dtype, vlsnodes, lbrnodes, proofdb, receivers, senders, swap_module, \
+                "violas", "libra")
+        self.append_property("combine", combine)
 
-        ret  = self.from_wallet.get_account(self.combine)
-        self.check_state_raise(ret, f"get combin({self.combine})'s account failed.")
-        self.append_property("combine_account", ret.datas)
+        self.init_extend_property()
+        self.init_exec_states()
 
     def __del__(self):
         pass
+
+    def init_extend_property(self):
+        ret = self.from_wallet.get_account(self.combine)
+        self.check_state_raise(ret, f"get combine({self.combine})'s account failed.")
+        self.append_property("combine_account", ret.datas)
+
+    def init_exec_states(self):
+        use_exec_failed_state = []
+        use_exec_failed_state.append(localdb.state.FAILED)
+        use_exec_failed_state.append(localdb.state.QBFAILED)
+        use_exec_failed_state.append(localdb.state.FILLFAILED)
+        use_exec_failed_state.append(localdb.state.PFAILED)
+        use_exec_failed_state.append(localdb.state.VFAILED)
+        use_exec_failed_state.append(localdb.state.SFAILED)
+        self.append_property("use_exec_failed_state", 
+                use_exec_failed_state)
+
+        use_exec_update_db_states = []
+        use_exec_update_db_states.append(localdb.state.VSUCCEED)
+        use_exec_update_db_states.append(localdb.state.SSUCCEED)
+        self.append_property("use_exec_update_db_states", 
+                use_exec_update_db_states)
 
     def __get_reexchange(self):
         try:
@@ -70,23 +92,26 @@ class v2l(vlbase):
             ret = parse_except(e)
         return ret
 
-    def fill_address_token_violas(self, address, token_id, amount, gas=40_000):
+    def fill_address_token(self, address, token_id, amount, gas=40_000):
         try:
-            ret = self.violas_client.get_balance(address, token_id = token_id)
-            assert ret.state == SUCCEED, f"get balance failed"
+            ret = self.libra_client.get_balance(address, token_id = token_id)
+            assert ret.state == error.SUCCEED, f"get balance failed"
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
-                ret = self.from_client.mint_coin(address, amount = amount + gas - cur_amount, token_id = token_id)
-                return ret
+                #get some coin for address
+                pass
 
-            return result(error.SUCCEED)
+            ret = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, state = None, detail = {}):
-        fromaddress = data["address"]
+    def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
+            state = None, detail = {}):
+
+        print(data)
+        sender      = data["address"]
         amount      = int(data["amount"]) 
         sequence    = data["sequence"] 
         version     = data["version"]
@@ -95,16 +120,18 @@ class v2l(vlbase):
         out_amount  = data["out_amount"]
         times       = data["times"]
         opttype     = data["opttype"]
-        stable_token_id = data["token_id"]
-        from_token_id = stmanage.get_token_map(stable_token_id) #stable token -> LBRXXX token
-        to_token_id    = self.to_token_id #token_id is map 
+        from_token_id = data["token_id"] #VLSXXX
+        to_token_id = self.to_token_id
+        map_token_id = stmanage.get_token_map(to_token_id) #stable token -> LBRXXX token
 
         ret = result(error.FAILED)
-        self._logger.info(f"start exchange sender={fromaddress},  receiver={receiver}, sequence={sequence} " + \
+        self._logger.info(f"start exchange sender={sender},  receiver={receiver}, sequence={sequence} " + \
                 f"version={version}, toaddress={toaddress}, amount={amount}, tran_id={tran_id}, " + \
-                f"from_token_id = {from_token_id} to_token_id={to_token_id} datas from server.")
+                f"from_token_id = {from_token_id} to_token_id={self.to_token_id} map_token_id = {map_token_id}" + \
+                " state = {state} detail = {detail} datas from server.")
 
-        self._latest_version[receiver] = max(version, self._latest_version.get(receiver, -1))
+        if state is not None:
+            self.latest_version[receiver] = max(version, self.latest_version.get(receiver, -1))
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
         if state is None and self.has_info(tran_id):
@@ -113,64 +140,81 @@ class v2l(vlbase):
         if not self.chain_data_is_valid(data):
             return ret 
 
-        #get swap before amount(to_token_id)
+        #get swap before amount(map_token_id)
         
         if self.use_module(state, localdb.state.FAILED):
-            ret = self.map_client.get_balance(combine_account.address.hex(), to_token_id)
+            ret = self.violas_client.get_balance(combine_account.address.hex(), map_token_id)
             if ret.state != error.SUCCEED:
                 self.insert_to_localdb_with_check(version, localdb.state.FAILED, tran_id, receiver)
                 return ret
-            before_amount = ret.balance
+            before_amount = ret.datas
             detail.update({"before_amount": before_amount})
 
             #get gas for swap
-            ret = self.map_client.swap_get_output_amount(from_token_id, to_token_id, amount)
+            ret = self.violas_client.swap_get_output_amount(from_token_id, map_token_id, amount)
             if ret.state != error.SUCCEED:
                 self.insert_to_localdb_with_check(version, localdb.state.FAILED, tran_id, receiver)
-            _, gas = ret.datas
-            detail.update({"gas", gas})
+            out_amount_chian, gas = ret.datas
+
+            #temp value(test)
+            if out_amount <= 0:
+                out_amount = out_amount_chian
+            detail.update({"gas": gas})
 
             #swap LBRXXX -> VLSYYY
-            ret = self.from_client.swap(map_sender, from_token_id, to_token_id, amount, out_amount, receiver = combine_account.address.hex(), gas_currency_code = from_token_id)
+            print(out_amount)
+            ret = self.violas_client.swap(from_sender, from_token_id, map_token_id, \
+                    amount, out_amount, receiver = combine_account.address.hex(), \
+                    gas_currency_code = from_token_id)
+
+            print(ret.state.name)
             if ret.state != error.SUCCEED:
                 self.insert_to_localdb_with_check(version, localdb.state.FAILED, tran_id, receiver)
                 return ret
             else:
                 self.insert_to_localdb_with_check(version, localdb.state.SUCCEED, tran_id, receiver)
 
-            #get swap after amount(to_token_id)
-            ret = self.map_client.get_balance(combine_account.address.hex(), to_token_id)
+            #get swap after amount(map_token_id)
+            ret = self.violas_client.get_balance(combine_account.address.hex(), map_token_id)
             if ret.state != error.SUCCEED:
-                ret = self.from_client.get_address_version(combine_account.address.hex())
+                ret = self.violas_client.get_address_version(combine_account.address.hex())
                 self.check_state_raise(ret, f"get_address_version({combine_account.address.hex})")
                 detail.update({"swap_version": ret.datas})
 
-                #if get balance, next execute, balance will change , so re swap, but combine token(to_token_id) is change, this time swap token_id should be burn
+                #if get balance, next execute, balance will change , so re swap, but combine token(map_token_id) is change, this time swap token_id should be burn
                 self.update_localdb_state_with_check(tran_id, localdb.state.QBFAILED, json.dumps(detail)) #should get swap to_token balance from version
                 return ret
-            after_amount = ret.balance
+            after_amount = ret.datas
 
             #clac diff balance
             diff_balance = after_amount - before_amount
             detail.update({"diff_balance": diff_balance})
         
         if self.use_module(state, localdb.state.QBFAILED):
-            diff_balance = 1
-            assert state != localdb.state.QBFAILED, "get swap token count from detail['swap_version'], here we think get_balance is always succeed"
+            diff_balance = detail["diff_balance"]
+            assert diff_balance > 0, "get swap token count from detail['swap_version'], here we think get_balance is always succeed"
 
         #mint LBRXXX to sender(type = LBRXXX), or check sender's token amount is enough
         if self.use_module(state, localdb.state.FILLFAILED):
-            ret = self.fill_address_token(map_sender.address.hex(), to_token_id, detail["diff_balance"], detail["gas"])
+            ret = self.fill_address_token(map_sender.address.hex(), to_token_id, \
+                    detail["diff_balance"], detail["gas"])
+
             if ret.state != error.SUCCEED:
-                self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, json.dumps(detail))
+                self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
+                        json.dumps(detail))
                 return ret
 
         #send libra token to payee address. P = payee
         if self.use_module(state, localdb.state.PFAILED):
-            markdata = self.map_client.create_data_for_mark(self.map_chain, self.dtype, tran_id, version)
-            ret = self.map_client.send_coin(combine_account, toaddress, detail["diff_balance"], to_token_id, data=markdata)
+            markdata = self.libra_client.create_data_for_mark(self.libra_chain, self.dtype, \
+                    tran_id, version)
+
+            ret = self.libra_client.send_coin(map_sender, toaddress, \
+                    detail["diff_balance"], to_token_id, data=markdata)
+
             if ret.state != error.SUCCEED:
-                self.update_localdb_state_with_check(tran_id, localdb.state.PFAILED, json.dumps(detail))
+                self.update_localdb_state_with_check(tran_id, localdb.state.PFAILED, \
+                        json.dumps(detail))
                 return ret
             else:
                 self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED)
@@ -182,9 +226,21 @@ class v2l(vlbase):
 
 def main():
        print("start main")
-       lv = exlv()
        
-       ret = lv.start()
+       stmanage.set_conf_env("../bvexchange.toml")
+       mod = "v2l"
+       dtype = "v2lusd"
+       obj = v2l(mod, 
+               dtype,
+               stmanage.get_violas_nodes(), 
+               stmanage.get_libra_nodes(),
+               stmanage.get_db(dtype), 
+               list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
+               list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
+               stmanage.get_combine_address(dtype, "violas"),
+               stmanage.get_swap_module()
+               )
+       ret = obj.start()
        if ret.state != error.SUCCEED:
            print(ret.message)
 

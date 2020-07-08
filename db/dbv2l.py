@@ -61,7 +61,7 @@ class dbv2l(baseobject):
         VFAILED     = 7  #send change state transaction failed
         VSUCCEED    = 8  #send change state transaction succeed
         SFAILED     = 9  #stop swap failed
-        SSUCCEED    = 10  #stop swap failed
+        SSUCCEED    = 10  #stop swap succeed
         COMPLETE    = 128  #change state is confirmed
     
     #exc_traceback_objle : info
@@ -73,7 +73,7 @@ class dbv2l(baseobject):
         times       = Column(Integer, nullable=False, default=1)
         tranid      = Column(String(64), nullable=False, primary_key=True)
         receiver    = Column(String(64), nullable=False)
-        detail      = Column(String(64))
+        detail      = Column(String(256))
     
         def __repr__(self):
             return f"<info(version={self.version}, state={self.state}, created={self.created}, times={self.times}, tranid={self.tranid}, receiver = {self.receiver}, detail={detail})>"
@@ -98,7 +98,7 @@ class dbv2l(baseobject):
         try:
             self._logger.info(f"start insert(version={version}, state={state.name}, tranid={tranid}, receiver = {receiver}, detail={detail}") 
 
-            data = self.info(version=version,state=state.value, tranid=tranid, receiver = receiver, detail={detail})
+            data = self.info(version=version,state=state.value, tranid=tranid, receiver = receiver, detail=detail)
             self.__session.add(data)
 
             ret = result(error.SUCCEED)
@@ -199,7 +199,7 @@ class dbv2l(baseobject):
             self._logger.info(f"start update(tranid={tranid}, state={state}, detail = {detail})")
             filter_tranid = (self.info.tranid==tranid)
             datas = self.__session.query(self.info).filter(filter_tranid)\
-                    .update({self.info.state:state.value, self.info.times:self.info.times + 1, self.detail = detail})
+                    .update({self.info.state:state.value, self.info.times:self.info.times + 1, self.info.detail : detail})
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)

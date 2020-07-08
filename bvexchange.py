@@ -30,7 +30,7 @@ class works:
     __record_db = "record"
 
     __libra_min_valid_version   = 1952696
-    __violas_min_valid_version  = 45_9987
+    __violas_min_valid_version  = 1413729
     __btc_min_valid_version     = 0
     def __init__(self):
         logger.debug("works __init__")
@@ -299,7 +299,8 @@ class works:
                             stmanage.get_libra_nodes(),
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "libra", False)))
+                            list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
+                            stmanage.get_combine_address(dtype, "violas")
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -396,7 +397,7 @@ class works:
             self.__work = work
 
         def run(self):
-            logger.debug("work thread run")
+            logger.debug(f"work thread run{self.__kargs}")
             self.__work(**self.__kargs)
 
     def get_dtype_from_mod(self, modname):
@@ -519,6 +520,8 @@ def list_valid_mods():
     return valid_mods
 
 def run(mods):
+    stmanage.reset()
+    
     valid_mods = list_valid_mods()
     for mod in mods:
         if mod is None or mod not in valid_mods:

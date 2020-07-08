@@ -48,7 +48,7 @@ class abase(baseobject):
             self._connect_btc(name, vnodes, chain)
         else:
             self._connect_violas(name, vnodes, chain)
-        self.set_from_chain(chain)
+        self.from_chain = chain
 
         self.append_data_type(dtype)
         self.append_tran_type(ttype)
@@ -134,6 +134,7 @@ class abase(baseobject):
         self._step = step
 
     def append_token_id(self, token_id):
+        print(token_id)
         assert isinstance(token_id, str) or isinstance(token_id, list), f"token_id({token_id}) is not str."
         isstr = isinstance(token_id, str)
         if self._token_id is None:
@@ -230,8 +231,8 @@ class abase(baseobject):
             datas["type"]           = self.parse_data_type(data_dict.get("type"))
             datas["from_address"]   = data_dict.get("from_address")
             datas["to_address"]     = data_dict.get("to_address")
-            datas["times"]          = data_dict.get("times")
-            datas["out_amount"]     = data_dict.get("out_amount")
+            datas["times"]          = data_dict.get("times", 0)
+            datas["out_amount"]     = data_dict.get("out_amount", 0)
             datas["nettype"]        = data_dict.get("nettype")
             datas["state"]          = data_dict.get("state")
             datas["opttype"]        = data_dict.get("opttype", "swap")

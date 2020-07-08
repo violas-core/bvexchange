@@ -39,12 +39,12 @@ class exv2b(baseobject):
     def __init__(self, name, vnodes , bnode, proofdb, module, token_id, receivers, chain = "violas"):
         baseobject.__init__(self, name)
         self._latest_version = {}
-        self.set_from_chain(chain)
-        self.set_map_chain("btc")
+        self.from_chain = chain
+        self.map_chain = "btc"
         self._vclient = violasproof(name, vnodes)
         #btc init
         self._bclient = btcclient(name, bnode)
-        self._v2b = dbv2b(name, f"{self.from_chain()}_{self.name()}.db")
+        self._v2b = dbv2b(name, f"{self.from_chain}_{self.name()}.db")
         self._wallet = violaswallet(name, wallet_name)
         self.token_id = token_id
         self.step = 10
@@ -242,7 +242,7 @@ class exv2b(baseobject):
                     self._send_violas_coin_and_update_state_to_end(vsender, receiver, module, tran_id, token_id, txid)
 
     def _send_violas_coin_and_update_state_to_end(self, vsender, receiver, module,  tran_id, token_id, txid, amount = 1):
-            tran_data = self._vclient.create_data_for_end(self.from_chain(), self.name(), tran_id, txid)
+            tran_data = self._vclient.create_data_for_end(self.from_chain, self.name(), tran_id, txid)
             ret = self._vclient.send_violas_coin(vsender, receiver, amount, token_id, module, tran_data)
             if ret.state == error.SUCCEED:
                 ret = self._v2b.update_v2binfo_to_vsucceed_commit(tran_id, txid = txid)
@@ -250,19 +250,19 @@ class exv2b(baseobject):
             return ret
         
     def __checks(self):
-        assert (len(stmanage.get_sender_address_list(self._name, self.map_chain())) > 0), "btc senders is invalid"
+        assert (len(stmanage.get_sender_address_list(self._name, self.map_chain)) > 0), "btc senders is invalid"
         assert (len(self._module_address) in VIOLAS_ADDRESS_LEN), "module_address is invalid"
-        assert (len(stmanage.get_receiver_address_list(self._name, self.from_chain())) > 0), "violas server is invalid."
-        for violas_receiver in stmanage.get_receiver_address_list(self._name, self.from_chain()):
+        assert (len(stmanage.get_receiver_address_list(self._name, self.from_chain)) > 0), "violas server is invalid."
+        for violas_receiver in stmanage.get_receiver_address_list(self._name, self.from_chain):
             assert len(violas_receiver) in VIOLAS_ADDRESS_LEN, "violas receiver({}) is invalid".format(violas_receiver)
     
-        for sender in stmanage.get_sender_address_list(self._name, self.map_chain()):
+        for sender in stmanage.get_sender_address_list(self._name, self.map_chain):
             assert len(sender) >= 20, "btc address({}) is invalied".format(sender)
     
     def __get_btc_sender_address(self, excludeds, amount, gas):
         try:
             use_sender = None
-            for sender in stmanage.get_sender_address_list(self._name, self.map_chain()):
+            for sender in stmanage.get_sender_address_list(self._name, self.map_chain):
                 if sender not in excludeds:
                    #check btc amount
                    ret = self._bclient.has_btc_banlance(sender, amount, gas)
@@ -355,7 +355,7 @@ class exv2b(baseobject):
                             self._logger.warning(f"not found transaction({data}) from violas server.")
                             continue
     
-                        #get btc sender from stmanage.get_sender_address_list(self._name, self.map_chain())
+                        #get btc sender from stmanage.get_sender_address_list(self._name, self.map_chain)
                         ret = self.__get_btc_sender_address([baddress], vamount, gas) #vamount and gas unit is satoshi
                         if ret.state != error.SUCCEED:
                             self._logger.warning("not found btc sender{baddress} or amount too low. check btc address and amount")

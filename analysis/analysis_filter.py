@@ -108,7 +108,7 @@ class afilter(abase):
                 if ret.state != error.SUCCEED:
                     return ret
 
-                tran_data = self.get_tran_data(data, self.from_chain() == "violas")   
+                tran_data = self.get_tran_data(data, self.from_chain == "violas")   
                 if self.is_target_tran(tran_data) == False:
                     continue
 
@@ -136,7 +136,7 @@ def works():
         obj = afilter(name="vfilter", ttype="violas", \
                 dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
         obj.set_step(1)
-        obj.set_min_valid_version(459987)
+        obj.set_min_valid_version(1070858)
         ret = obj.start()
         if ret.state != error.SUCCEED:
             print(ret.message)

@@ -164,22 +164,30 @@ v2b_maxtimes = 99
 [type_token]
     [type_token.v2lusd]
         stoken= "Coin1"
-        mtoken = "LBRUSD"
+        mtoken = "USD"
     [type_token.v2leur]
         stoken = "Coin2"
-        mtoken = "LBREUR"
+        mtoken = "EUR"
     [type_token.l2vusd]
         stoken = "VLSUSD"
-        mtoken = "LBRUSD"
+        mtoken = "USD"
     [type_token.l2veur]
         stoken = "VLSEUR"
-        mtoken = "LBREUR"
+        mtoken = "EUR"
     [type_token.l2vsgd]
         stoken = "VLSSGD"
-        mtoken = "LBRSGD"
+        mtoken = "SGD"
     [type_token.l2vgbp]
         stoken = "VLSGBP"
-        mtoken = "LBRGBP"
+        mtoken = "GBP"
+#[type_token.l2b]
+#        mtoken = "BTC"
+#    [type_token.b2lusd]
+#        stoken = "Coin1"
+#        mtoken = "USD"
+#    [type_token.b2leur]
+#        stoken = "Coin2"
+#        mtoken = "EUR"
 
 [swap_module]
     address = "8c66c50156dc8cb4a2410cb54c13522510dfbe77f8a09e9dfcb77bb3d44a14fc"
@@ -229,6 +237,18 @@ v2b_maxtimes = 99
         type = "l2vsgd"
         chain = "libra"
 
+    [[address_list.receiver]]
+        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+        type = "l2b"
+        chain = "libra"
+    [[address_list.receiver]]
+        address = "" #btc address
+        type = "b2lusd"
+        chain = "btc" #btc address
+    [[address_list.receiver]]
+        address = "" #btc address
+        type = "b2leur"
+        chain = "btc"
     #sender address
     ##send btcbtc
     [[address_list.sender]]
@@ -283,6 +303,10 @@ v2b_maxtimes = 99
         type = "v2leur"
         chain = "libra"
 
+    [[address_list.combine]]
+        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
+        type = "v2lusd"
+        chain = "violas"
 #    #token info moudule <-> token_id: check token_is is valid.
 #    [[address_list.token]]
 #        address = "0000000000000000000000000000000000000000000000000000000000000000"

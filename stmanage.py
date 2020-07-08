@@ -13,17 +13,28 @@ def check_setting():
 
 def set_conf_env_default():
     setting.set_conf_env_default()
+    setting.reset()
 
 def set_conf_env(conffile):
     setting.set_conf_env(conffile)
+    setting.reset()
+
+def reset():
+    setting.reset()
 
 def get_conf_env():
     return setting.get_conf_env()
 
 def get_looping_sleep(mtype):
-    sleep = setting.looping_sleep.get(mtype, 1)
+    sleep = int(setting.looping_sleep.get(mtype, 1))
+    return sleep
 
 def __get_address_list(atype, mtype, chain = None, full = True):
+    ''' 
+       full: get address type 
+           True: auth_prefix + address 
+           False: address
+    '''
     addresses =  [dict.get("address") for dict in setting.address_list.get(atype) \
             if dict["type"] == mtype and mtype is not None and (chain is None or dict["chain"] == chain)]
     if addresses is not None and len(addresses) > 0:
@@ -61,7 +72,7 @@ def get_sender_address_list(mtype, chain = None, full = True):
 #        parse_except(e)
 #    return None
 
-def get_combine_address(mtype = "b2v", chain = "btc", full = True):
+def get_combine_address(mtype, chain, full = True):
      ms = __get_address_list("combine", mtype, chain, full)
      if ms is None or len(ms) == 0:
          return None
@@ -113,6 +124,7 @@ def get_token_map(token = None):
         if typename.startswith("v2"): #v2b v2l
             token_map.update({tokens.get("stoken") : tokens.get("mtoken")})
     if token:
+        print(token_map)
         return token_map.get(token)
     return token_map
 
@@ -186,7 +198,7 @@ def main():
         print(f"get db({mtype}): {get_db(mtype)}")
         print(f"get looping sleep({mtype}):{get_looping_sleep(mtype)}")
         print(f"get max times({mtype})):{get_max_times(mtype)}")
-        print(f"combin address({mtype}): {get_combine_address(mtype)}")
+        print(f"combin address({mtype}): {get_combine_address(mtype, 'violas')}")
 
     print(f"get traceback limit: {get_traceback_limit()}")
     print(f"get btc_node: {get_btc_conn()}")

@@ -68,4 +68,4 @@ class baseobject(object):
             raise Exception(message)
 
     def append_property(self, name, value):
-        setter(self, name, value)
+        setattr(self, name.strip(), value)

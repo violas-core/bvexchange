@@ -114,6 +114,12 @@ class requestproof(requestbase):
     def is_end(self, tran_id):
         return self._is_target_state(proofstate.END, tran_id)
 
+    def is_stop(self, tran_id):
+        return self._is_target_state(proofstate.STOP, tran_id)
+
+    def is_cancel(self, tran_id):
+        return self._is_target_state(proofstate.CANCEL, tran_id)
+
     def is_cancel(self, tran_id):
         return self._is_target_state(proofstate.CANCEL, tran_id)
 

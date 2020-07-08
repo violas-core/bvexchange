@@ -133,8 +133,8 @@ class aproof(abase):
                     tran_id = self.create_tran_id(tran_info["flag"], tran_info["type"], tran_info['sender'], \
                             tran_info['receiver'], tran_info['module'], tran_info['version'])
 
-                tran_info["flag"] = tran_info["flag"].name
-                tran_info["type"] = tran_info["type"].name
+                tran_info["flag"] = tran_info["flag"].value
+                tran_info["type"] = tran_info["type"].value
                 tran_info["tran_id"] = tran_id
                 ret = self._dbclient.set_proof(version, json.dumps(tran_info))
                 if ret.state != error.SUCCEED:
@@ -152,8 +152,8 @@ class aproof(abase):
                 if ret.state != error.SUCCEED:
                     #btc transaction is end , diff libra and violas
                     if tran_info["flag"] == self.trantype.BTC:
-                        tran_info["flag"] = tran_info["flag"].name
-                        tran_info["type"] = tran_info["type"].name
+                        tran_info["flag"] = tran_info["flag"].value
+                        tran_info["type"] = tran_info["type"].value
                         ret = self._dbclient.set_proof(version, json.dumps(tran_info))
                         if ret.state != error.SUCCEED:
                             return ret
