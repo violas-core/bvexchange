@@ -33,12 +33,27 @@ wallet_name = "vwallet"
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 class vlbase(baseobject):    
-    def __init__(self, name, dtype, vlsnodes, lbrnodes, proofdb, receivers, senders,  fromchain, mapchain):
+    def __init__(self, name, dtype, \
+            fromnodes, mapnodes, \
+            proofdb, receivers, senders, \
+            swap_module, \
+            fromchain, mapchain):
+        ''' swap token and send coin to payee(metadata's to_address)
+            fromnodes: swap source chain conf
+            mapnodes : swap target chain conf
+            proofdb  : transaction proof source
+            receivers: receive swap chain' addresses
+            senders  : sender target chain token adderss
+            swap_module: violas chain swap module address
+            fromchain: source chain name
+            mapchain : target chain name
+        '''
+
         baseobject.__init__(self, name)
-        self._latest_version = {}
+        self.latest_version = {}
         self.from_chain = fromchain
         self.map_chain = mapchain
-        self.append_property("from_client", violasproof(name, vlsnodes, self.from_chain))
+        self.append_property("from_client", violasproof(name, fromnodes, self.from_chain))
         self.append_property("map_client", violasproof(name, mapnodes, mapchain))
         self.append_property("db", localdb(name, f"{self.from_chain}_{self.name()}.db"))
         self.append_property("from_wallet", violaswallet(name, wallet_name, self.from_chain))
@@ -50,6 +65,7 @@ class vlbase(baseobject):
         self.append_property("senders ", senders)
         self.append_property("dtype", dtype)
         self.append_property("to_token_id ", stmanage.get_type_stable_token(dtype))
+        self.append_property("swap_module", swap_module)
 
 
         #use the above property, so call set_local_workspace here
@@ -70,16 +86,19 @@ class vlbase(baseobject):
     def set_local_workspace(self):
         self.append_property(f"{self.from_chain}_client", self.from_client)
         self.append_property(f"{self.map_chain}_client", self.map_client)
+        self.append_property(f"{self.from_chain}_chain", self.from_chain)
+        self.append_property(f"{self.map_chain}_chain", self.map_chain)
+        self.violas_client.swap_set_module_address(self.swap_module)
 
-    def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = ""):
+    def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):
         ret = self.db.insert_commit(version, localdb.state.FAILED, tran_id, receiver, detail)
         assert (ret.state == error.SUCCEED), "db error"
 
-    def update_localdb_state_with_check(self, tran_id, state, detail = ""):
+    def update_localdb_state_with_check(self, tran_id, state, detail = json.dumps({"default":"no-use"})):
         ret = self.db.update_state_commit(tran_id, state, detail = detail)
         assert (ret.state == error.SUCCEED), "db error"
 
-    def get_map_sender_address(self, amount, module=None, gas=28_000):
+    def get_map_sender_address(self):
         try:
             sender_account = None
             for sender in self.senders:
@@ -109,9 +128,13 @@ class vlbase(baseobject):
             self._logger.debug("start merge_db_to_rpcparams")
             for info in dbinfos:
                 new_data = {
-                        "version":info.version, "tran_id":info.tranid, "state":info.state, "detail":info.detail}
+                        "version":info.version, 
+                        "tran_id":info.tranid, 
+                        "state":info.state, 
+                        "detail":info.detail,
+                        "times":info.times}
                 #server receiver address
-                if info.toaddress in rpcparams.keys():
+                if info.receiver in rpcparams.keys():
                     rpcparams[info.receiver].append(new_data)
                 else:
                     rpcparams[info.receiver] = [new_data]
@@ -160,8 +183,9 @@ class vlbase(baseobject):
             ret = self.get_record_from_localdb_with_state(states)
             if ret.state != error.SUCCEED:
                 return ret
+            rpcparams = ret.datas
             
-            for key in ret.datas.keys():
+            for key in rpcparams.keys():
                 datas = ret.datas.get(key)
                 for data in datas:
                     tran_id = data.get("tran_id")
@@ -179,68 +203,25 @@ class vlbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    #new transaction for change state to end/stop 
-    def rechange_tran_state(self, states):
-            ##update violas/libra blockchain state to end, if sendexproofmark is ok
-            ret_datas = self.get_reset_history_state_to_resend_tran()
-            if ret_datas.state != error.SUCCEED:
-                return ret_datas
-            
-            for receiver in self.receivers:
-                if not self.work() :
-                    break
-
-                datas = ret_datas.datas.get(receiver)
-                for his in datas:
-                    tran_id = his.get("tran_id")
-                    if tran_id is None:
-                        continue
-
-                    ret = self.pserver.get_tran_by_tranid(tran_id)
-                    if ret.state != error.SUCCEED:
-                        continue
-                    data = ret.datas
-
-                    receiver_tran = data.get("receiver")
-                    if receiver != receiver_tran:
-                        continue
-
-                    stable_token_id = data.get("token_id")
-                    token_id = stmanage.get_token_map(stable_token_id) #stable token -> LBRXXX token
-
-                    #state is end? maybe changing state rasise except, but transaction is SUCCEED
-                    ret = self.pserver.is_end(tran_id)
-                    if ret.state == error.SUCCEED and ret.datas == True:
-                       self.update_localdb_state_with_check(tran_id, localdb.state.COMPLETE)
-                       continue
-
-                    ret  = self.from_wallet.get_account(receiver)
-                    if ret.state != error.SUCCEED:
-                        continue
-                    sender = ret.datas
-
-                    #sendexproofmark succeed , change violas state
-                    self.send_coin_for_update_state_to_end(sender, receiver, tran_id, token_id)
-
     def send_coin_for_update_state_to_end(self, sender, receiver, tran_id, token_id, amount = 1):
             self._logger.debug(f"start send_coin_for_update_state_to_end(sender={sender.address.hex()},"\
                     f"recever={receiver}, tran_id={tran_id}, amount={amount})")
-            tran_data = self.from_client.create_data_for_end(self.from_chain(), self.name(), tran_id, "")
-                ret = self.from_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
+            tran_data = self.from_client.create_data_for_end(self.from_chain, self.name(), tran_id, "")
+            ret = self.from_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.VFAILED)
             else:
                 self.update_localdb_state_with_check(tran_id, localdb.state.VSUCCEED)
             return ret
-        
-    def __checks(self):
-        assert (len(stmanage.get_sender_address_list(self.name(), self.map_chain())) > 0), f"{self.map_chain()} senders is invalid"
-        for sender in stmanage.get_sender_address_list(self.name(), self.map_chain()):
-            assert len(sender) in VIOLAS_ADDRESS_LEN, f"{self.map_chain()} address({f}) is invalied"
 
-        assert (len(stmanage.get_receiver_address_list(self.name(), self.from_chain())) > 0), f"{self.from_chain()} receivers is invalid."
-        for receiver in stmanage.get_receiver_address_list(self.name(), self.from_chain()):
-            assert len(receiver) in VIOLAS_ADDRESS_LEN, f"{self.from_chain()} receiver({receiver}) is invalid"
+    def __checks(self):
+        assert (len(self.senders) > 0), f"{self.map_chain} senders is invalid"
+        for sender in self.senders:
+            assert len(sender) in VIOLAS_ADDRESS_LEN, f"address({sender}) is invalied"
+
+        assert (len(self.receivers) > 0), f"{self.from_chain} receivers is invalid."
+        for receiver in self.receivers:
+            assert len(receiver) in VIOLAS_ADDRESS_LEN, f"receiver({receiver}) is invalid"
     
     def stop(self):
         try:
@@ -263,7 +244,7 @@ class vlbase(baseobject):
 
     def chain_data_is_valid(self, data):
         if len(data["to_address"]) not in VIOLAS_ADDRESS_LEN:
-            self._logger.warning(f"transaction(tran_id = {data["tran_id"]})) is invalid. ignore it and process next.")
+            self._logger.warning(f"transaction(tran_id = {data['tran_id']})) is invalid. ignore it and process next.")
             return False
         return True
 
@@ -271,13 +252,13 @@ class vlbase(baseobject):
         ret = self.db.has_info(tranid)
         assert ret.state == error.SUCCEED, f"has_info({tranid}) failed."
         if ret.datas == True:
-            self._logger.warning(f"found transaction(tran_id = {tran_id})) in db(maybe first run {self.dtype}). ignore it and process next.")
+            self._logger.warning(f"found transaction(tran_id = {tranid})) in db(maybe first run {self.dtype}). ignore it and process next.")
         return ret.datas
 
     def use_module(self, state, module_state):
         return state is None or state.value <= module_state.value
 
-    def exec_refund(self, from_sender):
+    def exec_refund(self, data, from_sender):
         amount      = int(data["amount"]) 
         tran_id     = data["tran_id"]
         stable_token_id = data["token_id"]
@@ -291,14 +272,14 @@ class vlbase(baseobject):
         else:
             self.update_localdb_state_with_check(tran_id, localdb.state.SSUCCEED)
 
-    def reexchange_data_from_failed(self, gas = 1000):
+    def reexchange_data_from_failed(self, states):
         try:
             #get all excluded info from db
-            rpcparams = {}
-            ret = self.__get_reexchange()
-            if(ret.state != error.SUCCEED):
+            ret = self.get_record_from_localdb_with_state(states)
+            if ret.state != error.SUCCEED:
                 return ret
             rpcparams = ret.datas
+
             receivers = self.receivers
 
             #modulti receiver, one-by-one
@@ -309,11 +290,12 @@ class vlbase(baseobject):
             
             #get map sender from  senders
             ret = self.get_map_sender_address()
-            self.check_state_raise(ret, f"not found map sender{toaddress} or amount too low. check address and amount")
+            self.check_state_raise(ret, f"not found map sender" + 
+                    f"check address and amount")
             map_sender = ret.datas
             self._logger.debug(f"map_sender({type(map_sender)}): {map_sender.address.hex()}")
 
-            combine_account = getattr("combine_account", None)
+            combine_account = getattr(self, "combine_account", None)
 
             for receiver in receivers:
                 if not self.work() :
@@ -323,30 +305,40 @@ class vlbase(baseobject):
                 self.check_state_raise(ret, f"get receiver({receiver})'s account failed.")
                 from_sender = ret.datas
 
-                #get old transaction from db, check transaction. version and receiver is current value
+                #get old transaction from db, check transaction. 
+                #version and receiver is current value
                 faileds = rpcparams.get(receiver)
                 if faileds is not None:
-                    self._logger.debug("start exchange failed datas from db. receiver={}".format(receiver))
+                    self._logger.debug(f"start exchange failed datas from db. receiver={receiver}")
                     for failed in faileds:
                         if (self.work() == False):
                             break
 
+                        tran_id = failed["tran_id"]
                         times = failed["times"]
-                        state = localdb.state[failed["state"]]
-                        detail = localdb.state[failed["detail"]]
-                        if detail is not None:
-                            detail = json.loads(detail)
+                        state = localdb.state(failed["state"])
+                        detail = failed["detail"]
+                        if detail is None or len(detail) == 0:
+                            detail = {}
+                        else:
+                            detail = json.loads(failed["detail"])
                     
                         ret = self.pserver.get_tran_by_tranid(tran_id)
-                        if ret.state != error.SUCCEED:
+                        if ret.state != error.SUCCEED or ret.datas is None:
                             continue
+        
                         data = ret.datas
+                        retry = data.get("times")
 
-                        if retry > 0 and retry >= times:
+                        #refund case: 
+                        #   case 1: failed times check(metadata: times > 0 (0 = always))  
+                        #   case 2: pre exec_refund is failed
+                        if (retry != 0 and retry >= times) or state == localdb.state.SFAILED:
                             self.exec_refund(data, from_sender)
                             continue
 
-                        ret = self.__class__.exec_exchange(data, from_sender, map_sender, combine_account, receiver, state = state, detail = detail)
+                        ret = self.exec_exchange(data, from_sender, map_sender, \
+                                combine_account, receiver, state = state, detail = detail)
 
             ret = result(error.SUCCEED)
         except Exception as e:
@@ -363,23 +355,18 @@ class vlbase(baseobject):
             #requirement checks
             self.__checks()
     
-            #db state: VFAILED
-            #send token is succeed, but change transaction state is failed, 
-            ##so resend transaction to change state = end
-            self._rechange_tran_state()
-
             #db state: FAILED
             #if history datas is found state = failed, exchange it until succeed
-            self.reexchange_data_from_failed(gas)
+            self.reexchange_data_from_failed(self.use_exec_failed_state)
     
             #db state: SUCCEED
             #check state from blockchain, and change exchange history data, 
             ##when change it to complete, can truncature history db
-            self._rechange_db_state()
+            self.rechange_db_state(self.use_exec_update_db_states)
 
             #get map sender from senders
             ret = self.get_map_sender_address()
-            self.check_state_raise(ret, f"not found map sender{toaddress} or amount too low. check address and amount")
+            self.check_state_raise(ret, f"not found map sender. check address")
             map_sender = ret.datas
             self._logger.debug(f"map_sender({type(map_sender)}): {map_sender.address.hex()}")
 
@@ -395,12 +382,12 @@ class vlbase(baseobject):
                 ret  = self.from_wallet.get_account(receiver)
                 self.check_state_raise(ret, f"get receiver({receiver})'s account failed.")
                 from_sender = ret.datas
-                latest_version = self._latest_version.get(receiver, -1) + 1
+                latest_version = self.latest_version.get(receiver, -1) + 1
 
                 #get new transaction from server
                 ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version)
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
-                    self._logger.debug("start exchange datas from violas server. receiver={}".format(receiver))
+                    self._logger.debug(f"start exchange datas from violas server.receiver={receiver}")
                     for data in ret.datas:
                         if not self.work() :
                             break
@@ -409,7 +396,7 @@ class vlbase(baseobject):
                 #get cancel transaction, this version not support
                 #ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version)
                 #if ret.state == error.SUCCEED and len(ret.datas) > 0:
-                #    self._logger.debug("start exchange datas from violas server. receiver={}".format(receiver))
+                #    self._logger.debug("start exchange datas from violas server.receiver={receiver}")
                 #    for data in ret.datas:
                 #        if not self.work() :
                 #            break

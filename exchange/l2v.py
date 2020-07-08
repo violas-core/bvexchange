@@ -25,6 +25,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
+from exchange.vlbase import vlbase
 
 #module self.name
 #name="exlv"
@@ -32,88 +33,12 @@ wallet_name = "vwallet"
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
-class exl2v(baseobject):    
+class l2v(vlbase):    
     def __init__(self, name, dtype, vlsnodes, lbrnodes, proofdb, receivers, senders):
-        baseobject.__init__(self, name)
-        self._latest_version = {}
-        self.from_chain = "libra"
-        self.map_chain = "violas"
-        self._from_client = violasproof(name, vlsnodes, self.from_chain)
-        self._map_client = violasproof(name, mapnodes, mapchain)
-        self._db = localdb(name, f"{self.from_chain}_{self.name()}.db")
-        self._fromwallet = violaswallet(name, wallet_name, self.from_chain)
-        self._mapwallet = violaswallet(name, wallet_name, self.map_chain)
-    
-        #violas/libra init
-        self._pserver = requestclient(name, proofdb)
-        self._receivers = receivers
-        self._senders = senders
-        self._dtype = dtype
-        self.to_token_id = stmanage.get_type_stable_token(dtype)
+        vlbase.__init__(self, name, dtype, vlsnodes, lbrnodes, proofdb, receivers, senders, "libra", "violas")
 
     def __del__(self):
-        del self._from_client
-        del self._map_client
-        del self._work
-        del self._db
-        del self._pserver
-        del self._receivers
-
-    @property
-    def receivers(self):
-        return self._receivers
-
-    @property
-    def pserver(self):
-        return self._pserver
-
-    @property
-    def dtype(self):
-        return self._dtype
-
-    @property
-    def to_token_id(self):
-        return self._to_token_id
-
-    @property 
-    def from_wallet(self):
-        return self._fromwallet
-
-    @property
-    def map_wallet(self):
-        return self._mapwallet
-
-    @property
-    def from_client(self):
-        return self._from_client
-
-    @property
-    def map_client(self):
-        return self._map_client
-
-    def __get_map_sender_address(self, amount, module=None, gas=28_000):
-        try:
-            sender_account = None
-            for sender in self._senders:
-                sender_account = self.map_wallet.get_account(sender)
-                ret = result(error.SUCCEED, "", sender_account.datas)
-                return ret
-
-            return result(error.FAILED, "not found sender account")
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def __check_address_token_is_enough(self, address, token_id, amount):
-        try:
-            ret = self.from_client.get_balance(address, token_id = token_id)
-            assert ret.state == SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            return result(error.SUCCEED, datas = cur_amount >= amount)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        pass
 
     def __fill_address_token(self, address, token_id, amount, gas=40_000):
         try:
@@ -129,200 +54,6 @@ class exl2v(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
-
-    def __merge_db_to_rpcparams(self, rpcparams, dbinfos):
-        try:
-            self._logger.debug("start __merge_db_to_rpcparams")
-            for info in dbinfos:
-                new_data = {
-                        "version":info.version, "tran_id":info.tranid}
-                #server receiver address
-                if info.toaddress in rpcparams.keys():
-                    rpcparams[info.receiver].append(new_data)
-                else:
-                    rpcparams[info.receiver] = [new_data]
-    
-            return result(error.SUCCEED, "", rpcparams)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-    
-    def __get_reexchange(self):
-        try:
-            maxtimes = 5
-            rpcparams = {}
-            #transactions that should be __get_reexchange(xxx.db)
-            
-            ## failed 
-            if stmanage.get_max_times(self.name()) > 0:
-                maxtimes = stmanage.get_max_times(self._name)
-            bflddatas = self._db.query_is_failed(maxtimes)
-            if(bflddatas.state != error.SUCCEED):
-                return bflddatas
-    
-            ret = self.__merge_db_to_rpcparams(rpcparams, bflddatas.datas)
-            if(ret.state != error.SUCCEED):
-                return ret
-            
-            ret = result(error.SUCCEED, "", rpcparams)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-
-    def __get_reset_history_state_to_complete(self):
-        try:
-            maxtimes = 5
-            rpcparams = {}
-            
-            ## failed 
-            if stmanage.get_max_times(self.name()) > 0:
-                maxtimes = stmanage.get_max_times(self.name())
-            bflddatas = self._db.query_is_vsucceed(maxtimes)
-            if(bflddatas.state != error.SUCCEED):
-                return bflddatas
-    
-            ret = self.__merge_db_to_rpcparams(rpcparams, bflddatas.datas)
-            if(ret.state != error.SUCCEED):
-                return ret
-            
-            ret = result(error.SUCCEED, "", rpcparams)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def _rechange_db_state(self):
-        try:
-            ##update violas blockchain state to end, if sendexproofmark is ok
-            ret = self.__get_reset_history_state_to_complete()
-            if ret.state != error.SUCCEED:
-                return ret
-            
-            for key in ret.datas.keys():
-                datas = ret.datas.get(key)
-                for data in datas:
-                    tran_id = data.get("tran_id")
-                    if tran_id is None:
-                        continue
-                    ret = self._pserver.is_end(tran_id)
-                    if ret.state == error.SUCCEED and ret.datas == True:
-                       ret = self._db.update_state_commit(tran_id, localdb.state.COMPLETE)
-                       assert (ret.state == error.SUCCEED), "db error"
-
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def __get_reset_history_state_to_resend_tran(self):
-        try:
-            maxtimes = 5
-            rpcparams = {}
-            
-            ## failed 
-            if stmanage.get_max_times(self.name()) > 0:
-                maxtimes = stmanage.get_max_times(self.name())
-
-            #change state transaction failed
-            vfdatas = self._db.query_is_vfailed(maxtimes)
-            if(vfdatas.state != error.SUCCEED):
-                return vfdatas
-    
-            ret = self.__merge_db_to_rpcparams(rpcparams, vfdatas.datas)
-            if(ret.state != error.SUCCEED):
-                return ret
-            
-            sudatas = self._db.query_is_succeed(maxtimes)
-            if(sudatas.state != error.SUCCEED):
-                return sudatas
-    
-            ret = self.__merge_db_to_rpcparams(rpcparams, sudatas.datas)
-            if(ret.state != error.SUCCEED):
-                return ret
-            
-            ret = result(error.SUCCEED, "", rpcparams)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def _rechange_tran_state(self):
-            ##update violas/libra blockchain state to end, if sendexproofmark is ok
-            ret_datas = self.__get_reset_history_state_to_resend_tran()
-            if ret_datas.state != error.SUCCEED:
-                return ret_datas
-            
-            for receiver in self.receivers:
-                if not self.work() :
-                    break
-
-                datas = ret_datas.datas.get(receiver)
-                for his in datas:
-                    tran_id = his.get("tran_id")
-                    if tran_id is None:
-                        continue
-
-                    ret = self.pserver.get_tran_by_tranid(tran_id)
-                    if ret.state != error.SUCCEED:
-                        continue
-                    data = ret.datas
-
-                    receiver_tran = data.get("receiver")
-                    if receiver != receiver_tran:
-                        continue
-
-                    stable_token_id = data.get("token_id")
-                    token_id = stmanage.get_token_map(stable_token_id) #stable token -> LBRXXX token
-
-                    #state is end? maybe changing state rasise except, but transaction is SUCCEED
-                    ret = self._pserver.is_end(tran_id)
-                    if ret.state == error.SUCCEED and ret.datas == True:
-                       ret = self._db.update_state_commit(tran_id, localdb.state.COMPLETE)
-                       assert (ret.state == error.SUCCEED), "db error"
-                       continue
-
-                    ret  = self.from_wallet.get_account(receiver)
-                    if ret.state != error.SUCCEED:
-                        continue
-                    sender = ret.datas
-
-                    #sendexproofmark succeed , change violas state
-                    self._send_coin_for_update_state_to_end(sender, receiver, tran_id, token_id)
-
-    def _send_coin_for_update_state_to_end(self, sender, receiver, tran_id, token_id, amount = 1):
-            self._logger.debug(f"start _send_coin_for_update_state_to_end(sender={sender.address.hex()},"\
-                    f"recever={receiver}, tran_id={tran_id}, amount={amount})")
-            tran_data = self.from_client.create_data_for_end(self.from_chain(), self.name(), tran_id, "")
-                ret = self.from_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
-            if ret.state == error.SUCCEED:
-                ret = self._db.update_state_commit(tran_id, localdb.state.VSUCCEED)
-                assert (ret.state == error.SUCCEED), "db error"
-            return ret
-        
-    def __checks(self):
-        assert (len(stmanage.get_sender_address_list(self.name(), self.map_chain())) > 0), f"{self.map_chain()} senders is invalid"
-        for sender in stmanage.get_sender_address_list(self.name(), self.map_chain()):
-            assert len(sender) in VIOLAS_ADDRESS_LEN, f"{self.map_chain()} address({f}) is invalied"
-
-        assert (len(stmanage.get_receiver_address_list(self.name(), self.from_chain())) > 0), f"{self.from_chain()} receivers is invalid."
-        for receiver in stmanage.get_receiver_address_list(self.name(), self.from_chain()):
-            assert len(receiver) in VIOLAS_ADDRESS_LEN, f"{self.from_chain()} receiver({receiver}) is invalid"
-    
-    def stop(self):
-        try:
-            self.map_client.stop()
-            self.from_client.stop()
-            self.work_stop()
-            pass
-        except Exception as e:
-            parse_except(e)
-
-    def db_data_is_valid(self, data):
-        try:
-            toaddress   = data["receiver"]
-            self._logger.debug(f"check address{toaddress}. len({toaddress}) in {VIOLAS_ADDRESS_LEN}?")
-            return len(toaddress) in VIOLAS_ADDRESS_LEN
-        except Exception as e:
-            pass
-        return False
 
     def reexchange_data_from_failed(self, gas = 1000):
         try:
@@ -499,6 +230,7 @@ class exl2v(baseobject):
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state
         self._send_coin_for_update_state_to_end(fromsender, receiver, tran_id, from_token_id)
+
     def start(self):
     
         try:

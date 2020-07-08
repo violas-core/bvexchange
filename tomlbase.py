@@ -33,6 +33,8 @@ class tomlbase():
 
         assert isinstance(self.__content, TOMLDocument)
         self.is_loaded = True
+        for key, value in self.__content.items():
+            setattr(self, key, value)
 
     def __get_conf_file(self):
         release_path = ""
@@ -60,6 +62,12 @@ class tomlbase():
     def __check_load_conf(self):
         if not self.is_loaded:
             self.__load_conf()
+
+    def reset(self):
+        self.__check_load_conf()
+        if not self.is_loaded:
+            print("not found configure file(toml).")
+            sys.exit(-1)
 
     @property
     def toml_file(self):

@@ -306,7 +306,7 @@ def run(argc, argv):
             stmanage.set_conf_env(arg)
             break
     if stmanage.get_conf_env() is None:
-        stmanage.set_conf_env_default() 
+        stmanage.set_conf_env("../bvexchange.toml") 
 
     global chain
     for opt, arg in opts:

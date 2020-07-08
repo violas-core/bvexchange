@@ -235,7 +235,7 @@ class exlv(vlbase):
     def _send_coin_for_update_state_to_end(self, sender, receiver, module, tran_id, token_id, amount = 1):
             self._logger.debug(f"start _send_coin_for_update_state_to_end(sender={sender.address.hex()},"\
                     f"recever={receiver}, module={module}, tran_id={tran_id}, amount={amount})")
-            tran_data = self._fromclient.create_data_for_end(self.from_chain(), self.name(), tran_id, "")
+            tran_data = self._fromclient.create_data_for_end(self.from_chain, self.name(), tran_id, "")
             if module is None or module == "0000000000000000000000000000000000000000000000000000000000000000":
                 ret = self._fromclient.send_platform_coin(sender, receiver, amount, tran_data)
             else: 
@@ -246,13 +246,13 @@ class exlv(vlbase):
             return ret
         
     def __checks(self):
-        assert (len(stmanage.get_sender_address_list(self.name(), self.map_chain())) > 0), f"{self.map_chain()} senders is invalid"
-        for sender in stmanage.get_sender_address_list(self.name(), self.map_chain()):
-            assert len(sender) in VIOLAS_ADDRESS_LEN, f"{self.map_chain()} address({f}) is invalied"
+        assert (len(stmanage.get_sender_address_list(self.name(), self.map_chain)) > 0), f"{self.map_chain} senders is invalid"
+        for sender in stmanage.get_sender_address_list(self.name(), self.map_chain):
+            assert len(sender) in VIOLAS_ADDRESS_LEN, f"{self.map_chain} address({f}) is invalied"
 
-        assert (len(stmanage.get_receiver_address_list(self.name(), self.from_chain())) > 0), f"{self.from_chain()} receivers is invalid."
-        for receiver in stmanage.get_receiver_address_list(self.name(), self.from_chain()):
-            assert len(receiver) in VIOLAS_ADDRESS_LEN, f"{self.from_chain()} receiver({receiver}) is invalid"
+        assert (len(stmanage.get_receiver_address_list(self.name(), self.from_chain)) > 0), f"{self.from_chain} receivers is invalid."
+        for receiver in stmanage.get_receiver_address_list(self.name(), self.from_chain):
+            assert len(receiver) in VIOLAS_ADDRESS_LEN, f"{self.from_chain} receiver({receiver}) is invalid"
     
     def stop(self):
         try:
@@ -365,7 +365,7 @@ class exlv(vlbase):
                         self._logger.debug(f"mapsender: {mapsender.address.hex()}")
     
                         ##send map transaction and mark to OP_RETURN
-                        tran_data = self._mapclient.create_data_for_mark(self.map_chain(), self.name(), tran_id, version)
+                        tran_data = self._mapclient.create_data_for_mark(self.map_chain, self.name(), tran_id, version)
                         ret = self._mapclient.send_violas_coin(mapsender, toaddress, vamount, token_id, mapmodule, tran_data)
                         #update db state
                         if ret.state == error.SUCCEED:
@@ -415,7 +415,7 @@ class exlv(vlbase):
             ##when change it to complete, can truncature history db
             self._rechange_db_state()
 
-            #receivers = list(set(stmanage.get_receiver_address_list(self.name(), self.from_chain())))
+            #receivers = list(set(stmanage.get_receiver_address_list(self.name(), self.from_chain)))
             receivers = self._receivers
             #modulti receiver, one-by-one
             for receiver in receivers:
@@ -475,7 +475,7 @@ class exlv(vlbase):
                         self._logger.debug(f"mapsender({type(mapsender)}): {mapsender.address.hex()}")
     
                         ##send map transaction and mark data
-                        tran_data = self._mapclient.create_data_for_mark(self.map_chain(), self.name(), tran_id, version)
+                        tran_data = self._mapclient.create_data_for_mark(self.map_chain, self.name(), tran_id, version)
                         ret = self._mapclient.send_violas_coin(mapsender, toaddress, amount, token_id, self._map_module, tran_data)
 
                         if ret.state != error.SUCCEED:

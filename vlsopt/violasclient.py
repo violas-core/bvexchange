@@ -399,7 +399,7 @@ class violasclient(baseobject):
 
     def swap(self, sender_account, token_in, token_out, amount_in, amount_out_min=0, receiver = None, is_blocking=True, **kwargs):
         try:
-            self._logger.debug(f"start swap({sender_account.address.hex()}, {token_in}, {token_out},{amount_in}, {amount_out_min}, {receiver}, {is_blocking}")
+            self._logger.debug(f"start swap({sender_account.address.hex()}, {token_in}, {token_out}, {amount_in}, {amount_out_min}, {receiver}, {is_blocking})")
             (_, addr) = self.split_full_address(receiver).datas
             datas = self.__client.swap(sender_account = sender_account, currency_in = token_in, currency_out = token_out, \
                     amount_in = amount_in, amount_out_min = amount_out_min, receiver_address = addr, is_blocking = is_blocking, **kwargs)

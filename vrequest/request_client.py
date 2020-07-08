@@ -39,13 +39,18 @@ class requestclient(baseobject):
                 "version":int(data["version"]), \
                 "to_address":data["to_address"], \
                 "tran_id":data["tran_id"], \
+                "receiver":data.get("receiver"), \
+                "times":data.get("times", 0), \
+                "out_amount":data.get("out_amount", 0), \
+                "opttype":data.get("opttyoe"), \
                 "token_id":data["token_id"]}
+        return datas
 
 
-    def get_transactions_for_start(self, address, module, token_id, start = -1, limit = 10):
+    def get_transactions_for_start(self, address, token_id, start = -1, limit = 10):
         try:
             datas = []
-            ret = self._rclient.get_transactions_for_start(address, module, token_id, start, limit)
+            ret = self._rclient.get_transactions_for_start(address, token_id, start, limit)
             if ret.state != error.SUCCEED:
                 return ret
             
@@ -101,7 +106,7 @@ class requestclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def is_end(self, tran_id):
+    def is_stop(self, tran_id):
         try:
             ret = self._rclient.is_stop(tran_id)
         except Exception as e:
@@ -136,6 +141,10 @@ class requestclient(baseobject):
                 return ret
             
             ret = self.get_tran(ret.datas)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            ret = result(error.SUCCEED, datas = self.filter_proof_datas(json.loads(ret.datas)))
         except Exception as e:
             ret = parse_except(e)
         return ret

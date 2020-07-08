@@ -130,69 +130,69 @@ class tomlopt(tomlbase):
     def __init__(self, tomlfile):
         super().__init__(tomlfile)
 
-    @property
-    def looping_sleep(self):
-        return self.get("looping_sleep")
+    #@property
+    #def looping_sleep(self):
+    #    return self.get("looping_sleep")
 
-    @property
-    def db_list(self):
-        return self.get("db_list")
+    #@property
+    #def db_list(self):
+    #    return self.get("db_list")
 
-    @property
-    def btc_conn(self):
-        return self.get("btc_conn")
+    #@property
+    #def btc_conn(self):
+    #    return self.get("btc_conn")
 
-    @property
-    def traceback_limit(self):
-        return self.get("traceback_limit")
+    #@property
+    #def traceback_limit(self):
+    #    return self.get("traceback_limit")
 
-    @property
-    def db_echo(self):
-        return self.get("db_echo")
+    #@property
+    #def db_echo(self):
+    #    return self.get("db_echo")
 
-    @property
-    def v2b_maxtimes(self):
-        return self.get("v2b_maxtimes")
+    #@property
+    #def v2b_maxtimes(self):
+    #    return self.get("v2b_maxtimes")
 
-    @property
-    def violas_nodes(self):
-        return self.get("violas_nodes")
+    #@property
+    #def violas_nodes(self):
+    #    return self.get("violas_nodes")
 
-    @property
-    def libra_nodes(self):
-        return self.get("libra_nodes")
+    #@property
+    #def libra_nodes(self):
+    #    return self.get("libra_nodes")
 
-    @property
-    def violas_servers(self):
-        return self.get("violas_servers")
+    #@property
+    #def violas_servers(self):
+    #    return self.get("violas_servers")
 
-    @property
-    def address_list(self):
-        return self.get("address_list")
+    #@property
+    #def address_list(self):
+    #    return self.get("address_list")
 
-    @property
-    def token_map(self):
-        return self.get("token_map")
+    #@property
+    #def token_map(self):
+    #    return self.get("token_map")
 
-    @property
-    def type_stable_token(self):
-        return self.get("type_stable_token")
+    #@property
+    #def type_stable_token(self):
+    #    return self.get("type_stable_token")
 
-    @property
-    def type_lbr_token(self):
-        return self.get("type_lbr_token")
+    #@property
+    #def type_lbr_token(self):
+    #    return self.get("type_lbr_token")
 
-    @property
-    def support_token_id(self):
-        return self.get("support_token_id")
+    #@property
+    #def support_token_id(self):
+    #    return self.get("support_token_id")
 
-    @property
-    def type_token(self):
-        return self.get("type_token")
+    #@property
+    #def type_token(self):
+    #    return self.get("type_token")
 
-    @property
-    def swap_module(self):
-        return self.get("swap_module")
+    #@property
+    #def swap_module(self):
+    #    return self.get("swap_module")
 
 setting = tomlopt("bvexchange.toml")
 
