@@ -142,10 +142,10 @@ class violaswallet(baseobject):
         return ret
 
 class violasclient(baseobject):
-    __node = None
     def __init__(self, name, nodes, chain = "violas"):
         baseobject.__init__(self, name, chain)
         self.__client = None
+        self.__node = None
         if nodes is not None:
             ret = self.conn_node(name, nodes, chain)
             if ret.state != error.SUCCEED:
@@ -154,15 +154,18 @@ class violasclient(baseobject):
     def __del__(self):
         self.disconn_node()
 
+    def clientname(self):
+        return self.__client.clientname()
+
     def conn_node(self, name, nodes, chain = "violas"):
         try:
             if nodes is None or len(nodes) == 0:
                 return result(error.ARG_INVALID, repr(nodes), "")
             
             if chain in ("violas"):
-                from vlsopt.violasproxy import clientproxy
+                from vlsopt.violasproxy import violasproxy as clientproxy
             elif chain in ("libra"):
-                from vlsopt.libraproxy import clientproxy
+                from vlsopt.libraproxy import libraproxy as clientproxy
             else:
                 raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas node")
 
@@ -414,7 +417,8 @@ class violasclient(baseobject):
         try:
             self._logger.debug(f"start swap_set_module_address({address}, {kwargs})")
             (_, addr) = self.split_full_address(address).datas
-            datas = self.__client.set_exchange_module_address(addr, **kwargs)
+            print(self.__client.clientname())
+            datas = self.__client.set_exchange_module_address(addr)
             ret = result(error.SUCCEED, datas = datas)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:

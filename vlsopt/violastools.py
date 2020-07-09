@@ -212,6 +212,13 @@ def get_account_prefix(address):
     account = wallet.get_account(address).datas
     logger.debug(f"address: {account.address.hex()}, auth_key_prefix: {account.auth_key_prefix.hex()}")
 
+
+def show_swap_registered_tokens(module):
+    client = get_violasclient()
+    client.swap_set_module_address(module)
+    json_print(client.swap_get_registered_tokens().to_json())
+
+
 def swap(sender_account, token_in, token_out, amount_in, amount_out_min=0, module_address = None, is_blocking=True):
     client = get_violasclient()
     client.set_exchange_module_address(module_address)
@@ -276,6 +283,10 @@ def init_args(pargs):
     pargs.append("get_account_prefix", "get account prefix.", True, ["address"])
     pargs.append("account_has_token_id", "check account is published token_id.", True, ["address", "token_id"])
     pargs.append("swap", "swap violas chain token.", True, ["address", "token_in", "token_out", "amount_in", "amount_out_min", "module_address"])
+
+
+    #swap opt
+    pargs.append("show_swap_registered_tokens", "show registered tokens for module.", True, ["address"])
 
 
 def run(argc, argv):
@@ -444,6 +455,10 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             get_account_prefix(arg_list[0])
+        elif pargs.is_matched(opt, ["show_swap_registered_tokens"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            show_swap_registered_tokens(arg_list[0])
         else:
             raise Exception(f"not found matched opt{opt}")
     logger.debug("end manage.main")

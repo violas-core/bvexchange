@@ -49,7 +49,10 @@ class walletproxy(Wallet):
         return (-1, None)
 
 
-class clientproxy(Client):
+class libraproxy(Client):
+    def clientname(self):
+        return name
+
     @classmethod
     def connect(self, host, port = None, faucet_file = None, timeout =30, debug = False):
         url = host
@@ -68,29 +71,32 @@ class clientproxy(Client):
                 is_blocking = is_blocking, data = data, \
                 max_gas_amount=max_gas_amount, gas_unit_price=unit_price)
 
-    def get_account_sequence_number(self, address):
-        return self.get_sequence_number(address)
+    #def get_account_sequence_number(self, address):
+    #    return self.get_sequence_number(address)
 
-    def swap_publish_contract(self, sender_account, is_blocking=True, **kwargs):
-        pass
+    #def swap_publish_contract(self, sender_account, is_blocking=True, **kwargs):
+    #    pass
 
-    def swap_add_currency(self, exchange_account, currency_code, is_blocking=True, **kwargs):
-        pass
+    #def swap_add_currency(self, exchange_account, currency_code, is_blocking=True, **kwargs):
+    #    pass
 
-    def swap_add_liquidity(self, sender_account, currencyA, currencyB, amounta_desired, amountb_desired, amounta_min=None, amountb_min=None, is_blocking=True, **kwargs):
-        pass
+    #def swap_add_liquidity(self, sender_account, currencyA, currencyB, amounta_desired, amountb_desired, amounta_min=None, amountb_min=None, is_blocking=True, **kwargs):
+    #    pass
 
-    def swap_initialize(self, module_account, is_blocking=True, **kwargs):
-        pass
+    #def swap_initialize(self, module_account, is_blocking=True, **kwargs):
+    #    pass
 
-    def swap_remove_liquidity(self, sender_account, currencyA, currencyB, liquidity, amounta_min=0, amountb_min=0, is_blocking=True, **kwargs):
-        pass
+    #def swap_remove_liquidity(self, sender_account, currencyA, currencyB, liquidity, amounta_min=0, amountb_min=0, is_blocking=True, **kwargs):
+    #    pass
 
-    def swap(self, sender_account, currency_in, currency_out, amount_in, amount_out_min=0, receiver_address = None, is_blocking=True, **kwargs):
-        pass
+    #def swap(self, sender_account, currency_in, currency_out, amount_in, amount_out_min=0, receiver_address = None, is_blocking=True, **kwargs):
+    #    pass
 
-    def swap_get_swap_output_amount(self, *aargs, **kwargs):
-        pass
+    #def swap_get_swap_output_amount(self, *aargs, **kwargs):
+    #    pass
+
+    #def set_exchange_module_address(self, addr):
+    #    pass
 
 def main():
     client = clientproxy.connect("https://client.testnet.libra.org")

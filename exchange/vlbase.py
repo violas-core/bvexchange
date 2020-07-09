@@ -53,8 +53,12 @@ class vlbase(baseobject):
         self.latest_version = {}
         self.from_chain = fromchain
         self.map_chain = mapchain
-        self.append_property("from_client", violasproof(name, fromnodes, self.from_chain))
-        self.append_property("map_client", violasproof(name, mapnodes, mapchain))
+        if self.from_chain == "violas":
+            self.append_property("from_client", violasproof(name, fromnodes, self.from_chain))
+            self.append_property("map_client", violasproof(name, mapnodes, self.map_chain))
+        else:
+            self.append_property("map_client", violasproof(name, mapnodes, self.map_chain))
+            self.append_property("from_client", violasproof(name, fromnodes, self.from_chain))
         self.append_property("db", localdb(name, f"{self.from_chain}_{self.name()}.db"))
         self.append_property("from_wallet", violaswallet(name, wallet_name, self.from_chain))
         self.append_property("map_wallet", violaswallet(name, wallet_name, self.map_chain))
@@ -88,10 +92,12 @@ class vlbase(baseobject):
         self.append_property(f"{self.map_chain}_client", self.map_client)
         self.append_property(f"{self.from_chain}_chain", self.from_chain)
         self.append_property(f"{self.map_chain}_chain", self.map_chain)
+        self.append_property(f"{self.from_chain}_wallet", self.from_wallet)
+        self.append_property(f"{self.map_chain}_wallet", self.map_wallet)
         self.violas_client.swap_set_module_address(self.swap_module)
 
     def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):
-        ret = self.db.insert_commit(version, localdb.state.FAILED, tran_id, receiver, detail)
+        ret = self.db.insert_commit(version, state, tran_id, receiver, detail)
         assert (ret.state == error.SUCCEED), "db error"
 
     def update_localdb_state_with_check(self, tran_id, state, detail = json.dumps({"default":"no-use"})):
@@ -370,9 +376,7 @@ class vlbase(baseobject):
             map_sender = ret.datas
             self._logger.debug(f"map_sender({type(map_sender)}): {map_sender.address.hex()}")
 
-            ret  = self.from_wallet.get_account(self.combine)
-            self.check_state_raise(ret, f"get combin({self.combine})'s account failed.")
-            combine_account = ret.datas
+            combine_account = self.combine_account
 
             #modulti receiver, one-by-one
             for receiver in receivers:
