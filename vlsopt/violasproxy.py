@@ -42,9 +42,12 @@ class walletproxy(Wallet):
     def load(self, filename):
         return self.recover(filename)
 
-class clientproxy(Client):
+class violasproxy(Client):
     def __init__(self):
         pass
+
+    def clientname(self):
+        return name
 
     @classmethod
     def connect(self, host, port = None, faucet_file = None, 

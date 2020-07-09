@@ -34,8 +34,18 @@ wallet_name = "vwallet"
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 class v2l(vlbase):    
-    def __init__(self, name, dtype, vlsnodes, lbrnodes, proofdb, receivers, senders, combine, swap_module):
-        vlbase.__init__(self, name, dtype, vlsnodes, lbrnodes, proofdb, receivers, senders, swap_module, \
+    def __init__(self, 
+            name, 
+            dtype, 
+            vlsnodes, 
+            lbrnodes, 
+            proofdb, 
+            receivers, 
+            senders, 
+            combine, 
+            swap_module):
+        vlbase.__init__(self, name, dtype, vlsnodes, lbrnodes, \
+                proofdb, receivers, senders, swap_module, \
                 "violas", "libra")
         self.append_property("combine", combine)
 
@@ -46,7 +56,7 @@ class v2l(vlbase):
         pass
 
     def init_extend_property(self):
-        ret = self.from_wallet.get_account(self.combine)
+        ret = self.violas_wallet.get_account(self.combine)
         self.check_state_raise(ret, f"get combine({self.combine})'s account failed.")
         self.append_property("combine_account", ret.datas)
 
@@ -67,31 +77,6 @@ class v2l(vlbase):
         self.append_property("use_exec_update_db_states", 
                 use_exec_update_db_states)
 
-    def __get_reexchange(self):
-        try:
-            maxtimes = 5
-            rpcparams = {}
-            #transactions that should be __get_reexchange(xxx.db)
-            
-            ## failed 
-            if stmanage.get_max_times(self.name()) > 0:
-                maxtimes = stmanage.get_max_times(self._name)
-
-            states = []
-            states.append(localdb.state.FAILED)
-            states.append(localdb.state.QBFAILED)
-            states.append(localdb.state.FILLFAILED)
-            states.append(localdb.state.PFAILED)
-            states.append(localdb.state.VFAILED)
-            states.append(localdb.state.SFAILED)
-            for state in states:
-                self.load_record_and_merge(rpcparams, state, maxtimes)
-
-            ret = result(error.SUCCEED, "", rpcparams)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
     def fill_address_token(self, address, token_id, amount, gas=40_000):
         try:
             ret = self.libra_client.get_balance(address, token_id = token_id)
@@ -109,8 +94,6 @@ class v2l(vlbase):
 
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
             state = None, detail = {}):
-
-        print(data)
         sender      = data["address"]
         amount      = int(data["amount"]) 
         sequence    = data["sequence"] 
@@ -125,10 +108,10 @@ class v2l(vlbase):
         map_token_id = stmanage.get_token_map(to_token_id) #stable token -> LBRXXX token
 
         ret = result(error.FAILED)
-        self._logger.info(f"start exchange sender={sender},  receiver={receiver}, sequence={sequence} " + \
-                f"version={version}, toaddress={toaddress}, amount={amount}, tran_id={tran_id}, " + \
-                f"from_token_id = {from_token_id} to_token_id={self.to_token_id} map_token_id = {map_token_id}" + \
-                " state = {state} detail = {detail} datas from server.")
+        self._logger.info(f"start exchange sender={sender},  receiver={receiver}, " + \
+            f"sequence={sequence} version={version}, toaddress={toaddress}, amount={amount}, " + \
+            f"tran_id={tran_id}, from_token_id = {from_token_id} to_token_id={self.to_token_id} " + \
+            f"map_token_id = {map_token_id}, state = {state}, detail = {detail} datas from server.")
 
         if state is not None:
             self.latest_version[receiver] = max(version, self.latest_version.get(receiver, -1))
@@ -163,11 +146,10 @@ class v2l(vlbase):
 
             #swap LBRXXX -> VLSYYY
             print(out_amount)
-            ret = self.violas_client.swap(from_sender, from_token_id, map_token_id, \
-                    amount, out_amount, receiver = combine_account.address.hex(), \
+            ret = self.violas_client.swap(from_sender, from_token_id, map_token_id, amount, \
+                    out_amount, receiver = combine_account.address.hex(), \
                     gas_currency_code = from_token_id)
 
-            print(ret.state.name)
             if ret.state != error.SUCCEED:
                 self.insert_to_localdb_with_check(version, localdb.state.FAILED, tran_id, receiver)
                 return ret
