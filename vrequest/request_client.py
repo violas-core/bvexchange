@@ -47,10 +47,10 @@ class requestclient(baseobject):
         return datas
 
 
-    def get_transactions_for_start(self, address, token_id, start = -1, limit = 10):
+    def get_transactions_for_state(self, address, mtype, start = -1, limit = 10):
         try:
             datas = []
-            ret = self._rclient.get_transactions_for_start(address, token_id, start, limit)
+            ret = self._rclient.get_transactions_for_start(address, mtype, start, limit)
             if ret.state != error.SUCCEED:
                 return ret
             
@@ -65,23 +65,18 @@ class requestclient(baseobject):
             self._logger.debug("end get_transactions_for_start.")
         return ret
 
-    def get_transactions_for_end(self, address, module, token_id, start, limit = 10):
-        try:
-            datas = []
-            ret = self._rclient.get_transactions_for_end(address, module, token_id, start, limit)
-            if ret.state != error.SUCCEED:
-                return ret
-            
-            for data in ret.datas:
-                datas.append(self.filter_proof_datas(data))
+    def get_transactions_for_start(self, address, mtype, start, limit = 10):
+        self.get_transactions_for_state("start", address, mtype, start, limit)
 
-            self._logger.debug(f"count={len(datas)}")
-            ret = result(error.SUCCEED, "", datas)
-        except Exception as e:
-            ret = parse_except(e)
-        finally:
-            self._logger.debug("end get_transactions_for_end.")
-        return ret
+    def get_transactions_for_cancel(self, address, mtype, start, limit = 10):
+        self.get_transactions_for_state("cancel", address, mtype, start, limit)
+
+    def get_transactions_for_end(self, address, mtype, start, limit = 10):
+        self.get_transactions_for_state("end", address, mtype, start, limit)
+
+    def get_transactions_for_stop(self, address, mtype, start, limit = 10):
+        self.get_transactions_for_state("stop", address, mtype, start, limit)
+
     def has_transaction(self, sender, module, toaddress, sequence, amount, version, receiver):
         try:
             self._logger.debug("start has_transaction(sender={}, module={}, toaddress={}, sequence={}, amount={}, version={}, receiver={})"\

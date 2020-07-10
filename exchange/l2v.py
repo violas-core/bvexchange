@@ -131,6 +131,9 @@ class l2v(vlbase):
             #temp value(test)
             if out_amount <= 0:
                 out_amount = out_amount_chian
+            elif out_amount > out_amount_chian: #don't execute swap, Reduce the cost of the budget
+                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, receiver)
+                return ret
             detail.update({"gas": gas})
 
         if self.use_module(state, localdb.state.FILLFAILED):

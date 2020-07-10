@@ -398,13 +398,13 @@ class vlbase(baseobject):
                         self.exec_exchange(data, from_sender, map_sender, combine_account, receiver)
 
                 #get cancel transaction, this version not support
-                #ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version)
-                #if ret.state == error.SUCCEED and len(ret.datas) > 0:
-                #    self._logger.debug("start exchange datas from violas server.receiver={receiver}")
-                #    for data in ret.datas:
-                #        if not self.work() :
-                #            break
-                #        self.exec_refund(data, from_sender)
+                ret = self.pserver.get_transactions_for_cancel(receiver, self.dtype, latest_version)
+                if ret.state == error.SUCCEED and len(ret.datas) > 0:
+                    self._logger.debug("start exchange datas from violas server.receiver={receiver}")
+                    for data in ret.datas:
+                        if not self.work() :
+                            break
+                        self.exec_refund(data, from_sender)
     
             ret = result(error.SUCCEED) 
     
