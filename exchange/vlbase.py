@@ -53,12 +53,14 @@ class vlbase(baseobject):
         self.latest_version = {}
         self.from_chain = fromchain
         self.map_chain = mapchain
-        if self.from_chain == "violas":
-            self.append_property("from_client", violasproof(name, fromnodes, self.from_chain))
-            self.append_property("map_client", violasproof(name, mapnodes, self.map_chain))
-        else:
-            self.append_property("map_client", violasproof(name, mapnodes, self.map_chain))
-            self.append_property("from_client", violasproof(name, fromnodes, self.from_chain))
+        self.append_property("from_client", violasproof(name, fromnodes, self.from_chain))
+        self.append_property("map_client", violasproof(name, mapnodes, self.map_chain))
+        #if self.from_chain == "violas":
+        #    self.append_property("from_client", violasproof(name, fromnodes, self.from_chain))
+        #    self.append_property("map_client", violasproof(name, mapnodes, self.map_chain))
+        #else:
+        #    self.append_property("map_client", violasproof(name, mapnodes, self.map_chain))
+        #    self.append_property("from_client", violasproof(name, fromnodes, self.from_chain))
         self.append_property("db", localdb(name, f"{self.from_chain}_{self.name()}.db"))
         self.append_property("from_wallet", violaswallet(name, wallet_name, self.from_chain))
         self.append_property("map_wallet", violaswallet(name, wallet_name, self.map_chain))
@@ -262,7 +264,7 @@ class vlbase(baseobject):
         return ret.datas
 
     def use_module(self, state, module_state):
-        return state is None or state.value <= module_state.value
+        return state is None or state.value < module_state.value
 
     def exec_refund(self, data, from_sender):
         amount      = int(data["amount"]) 
