@@ -56,20 +56,15 @@ class l2v(vlbase):
         self.append_property("combine_account", None)
 
     def init_exec_states(self):
-        use_exec_failed_state = []
-        use_exec_failed_state.append(localdb.state.FAILED)
-        use_exec_failed_state.append(localdb.state.FILLFAILED)
-        use_exec_failed_state.append(localdb.state.PFAILED)
-        use_exec_failed_state.append(localdb.state.VFAILED)
-        use_exec_failed_state.append(localdb.state.SFAILED)
-        self.append_property("use_exec_failed_state", 
-                use_exec_failed_state)
 
-        use_exec_update_db_states = []
-        use_exec_update_db_states.append(localdb.state.VSUCCEED)
-        use_exec_update_db_states.append(localdb.state.SSUCCEED)
         self.append_property("use_exec_update_db_states", 
-                use_exec_update_db_states)
+                [localdb.state.VSUCCEED, localdb.state.SSUCCEED])
+
+        self.append_property("use_exec_failed_state", 
+            [state for state in localdb.state \
+                    if state not in [localdb.state.COMPLETE, \
+                        localdb.state.VSUCCEED, \
+                        localdb.state.SSUCCEED]])
 
     def fill_address_token(self, address, token_id, amount, gas=40_000):
         try:
@@ -121,11 +116,16 @@ class l2v(vlbase):
         if self.use_module(state, localdb.state.START):
             self.insert_to_localdb_with_check(version, localdb.state.START, tran_id, receiver)
 
-        if self.use_module(state, localdb.state.FAILED):
+        if self.use_module(state, localdb.state.PSUCCEED) or \
+                self.use_module(state, localdb.state.ESUCCEED) \
+                self.use_module(state, localdb.state.FILLSUCCEED):
+            #get output and gas
             ret = self.violas_client.swap_get_output_amount(map_token_id, to_token_id, amount)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, receiver)
                 return ret
+            else:
+                self.update_localdb_state_with_check(tran_id, localdb.state.ESUCCEED, receiver)
 
             out_amount_chian, gas = ret.datas
             #temp value(test)
@@ -136,25 +136,28 @@ class l2v(vlbase):
                 return ret
             detail.update({"gas": gas})
 
-        if self.use_module(state, localdb.state.FILLFAILED):
             #mint LBRXXX to sender(type = LBRXXX), or check sender's token amount is enough
             ret = self.fill_address_token(map_sender.address.hex(), map_token_id, amount, detail["gas"])
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
                       json.dumps(detail))
                 return ret
+            else:
+                self.update_localdb_state_with_check(tran_id, localdb.state.FILLSUCCEED, \
+                      json.dumps(detail))
 
-        if self.use_module(state, localdb.state.PFAILED):
             #swap LBRXXX -> VLSYYY and send VLSXXX to toaddress(client payee address)
             ret = self.violas_client.swap(map_sender, map_token_id, to_token_id, amount, \
                     out_amount, receiver = toaddress, gas_currency_code = map_token_id)
             if ret.state != error.SUCCEED:
-                self.insert_to_localdb_with_check(version, localdb.state.PFAILED, tran_id, receiver)
+                self.update_localdb_state_with_check(tran_id, localdb.state.PFAILED, json.dumps(detail))
                 return ret
+            else:
+                self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED, json.dumps(detail))
         
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state
-        if self.use_module(state, localdb.state.VFAILED):
+        if self.use_module(state, localdb.state.VSUCCEED):
             self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, from_token_id)
 
 def main():

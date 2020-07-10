@@ -23,30 +23,6 @@ name="requestproof"
 class requestproof(requestbase):
     def __init__(self, name, host, port, db, passwd = None):
         requestbase.__init__(self, name, host, port, db, passwd)
-    
-    def get_transactions_for_state_fast(self, proofstate, receiver = None, mtype = None, start = -1, limit = 10):
-        try:
-            ret = self.get_proof_min_version_for_start()
-            if ret.state == error.SUCCEED:
-                start = max(start, int(ret.datas))
-
-            self._logger.debug(f"get transactions for {proofstate.START.name}. receiver = {receiver} mtype = {mtype} start = {start} limit = {limit}")
-            ret = self._get_transaction_for_state(proofstate.START, receiver, mtype, start, limit)
-        except Exception as e:
-            parse_except(e)
-        return ret
-
-    def get_transactions_for_start(self, receiver = None, mtype = None, start = -1, limit = 10):
-        return self.get_transactions_for_state_fast(proofstate.START, receiver, mtype, start, limit)
-
-    def get_transactions_for_end(self, receiver = None, mtype = None, start = -1, limit = 10):
-        return self.get_transactions_for_state_fast(proofstate.END, receiver, mtype, start, limit)
-
-    def get_transactions_for_cancel(self, receiver = None, mtype = None, start = -1, limit = 10):
-        return self._get_transaction_for_state_fast(proofstate.CANCEL, receiver, mtype, start, limit)
-
-    def get_transactions_for_stop(self, receiver = None, mtype = None, start = -1, limit = 10):
-        return self._get_transaction_for_state_fast(proofstate.STOP, receiver, mtype, start, limit)
 
     def has_transaction_for_tranid(self, tranid):
         try:
@@ -97,7 +73,7 @@ class requestproof(requestbase):
             ret = parse_except(e)
         return ret
 
-    def _is_target_state(self, state, tran_id):
+    def is_target_state(self, state, tran_id):
         try:
             ret = self.get_proof_by_hash(tran_id)
             if ret.state != error.SUCCEED:
@@ -113,23 +89,6 @@ class requestproof(requestbase):
 
         return ret
 
-    def is_start(self, tran_id):
-        return self._is_target_state(proofstate.START, tran_id)
-
-    def is_end(self, tran_id):
-        return self._is_target_state(proofstate.END, tran_id)
-
-    def is_stop(self, tran_id):
-        return self._is_target_state(proofstate.STOP, tran_id)
-
-    def is_cancel(self, tran_id):
-        return self._is_target_state(proofstate.CANCEL, tran_id)
-
-    def is_cancel(self, tran_id):
-        return self._is_target_state(proofstate.CANCEL, tran_id)
-
-    def is_stop(self, tran_id):
-        return self._is_target_state(proofstate.STOP, tran_id)
 def main():
     try:
         pass

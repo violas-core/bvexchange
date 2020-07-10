@@ -47,10 +47,10 @@ class requestclient(baseobject):
         return datas
 
 
-    def get_transactions_for_state(self, address, mtype, start = -1, limit = 10):
+    def get_transactions_for_state(self, state, address, mtype, start = -1, limit = 10):
         try:
             datas = []
-            ret = self._rclient.get_transactions_for_start(address, mtype, start, limit)
+            ret = self._rclient.get_transactions_for_state(state, address, mtype, start, limit)
             if ret.state != error.SUCCEED:
                 return ret
             
@@ -66,68 +66,37 @@ class requestclient(baseobject):
         return ret
 
     def get_transactions_for_start(self, address, mtype, start, limit = 10):
-        self.get_transactions_for_state("start", address, mtype, start, limit)
+        return self.get_transactions_for_state(proofstate.START, address, mtype, start, limit)
 
     def get_transactions_for_cancel(self, address, mtype, start, limit = 10):
-        self.get_transactions_for_state("cancel", address, mtype, start, limit)
+        return self.get_transactions_for_state(proofstate.CANCEL, address, mtype, start, limit)
 
     def get_transactions_for_end(self, address, mtype, start, limit = 10):
-        self.get_transactions_for_state("end", address, mtype, start, limit)
+        return self.get_transactions_for_state(proofstate.END, address, mtype, start, limit)
 
     def get_transactions_for_stop(self, address, mtype, start, limit = 10):
-        self.get_transactions_for_state("stop", address, mtype, start, limit)
+        return self.get_transactions_for_state(proofstate.STOP, address, mtype, start, limit)
 
     def has_transaction(self, sender, module, toaddress, sequence, amount, version, receiver):
-        try:
-            self._logger.debug("start has_transaction(sender={}, module={}, toaddress={}, sequence={}, amount={}, version={}, receiver={})"\
-                    .format(sender, module, toaddress, sequence, amount, version, receiver))
-            ret = self._rclient.has_transaction(sender, module, toaddress, sequence, amount, version, receiver)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self._rclient.has_transaction(sender, module, toaddress, sequence, amount, version, receiver)
 
     def has_transaction_for_tranid(self, tranid):
-        try:
-            self._logger.debug(f"start has_transaction_for_tranid({tranid})")
-            ret = self._rclient.has_transaction_for_tranid(tranid)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self._rclient.has_transaction_for_tranid(tranid)
 
     def is_end(self, tran_id):
-        try:
-            ret = self._rclient.is_end(tran_id)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self._rclient.is_target_state(proofstate.END, tran_id)
 
     def is_stop(self, tran_id):
-        try:
-            ret = self._rclient.is_stop(tran_id)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self._rclient.is_target_state(proofstate.STOP, tran_id)
 
     def is_cancel(self, tran_id):
-        try:
-            ret = self._rclient.is_cancel(tran_id)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self._rclient.is_target_state(proofstate.CANCEL, tran_id)
 
     def get_latest_saved_ver(self):
-        try:
-         ret = self._rclient.get_latest_saved_ver()
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self._rclient.get_latest_saved_ver()
 
     def get_tran(self, version):
-        try:
-            ret = self._rclient.get(version)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self._rclient.get(version)
 
     def get_tran_by_tranid(self, tranid):
         try:
@@ -145,23 +114,11 @@ class requestclient(baseobject):
         return ret
 
     def select(self, name):
-        try:
-            ret = self._rclient.select(name)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self._rclient.select(name)
 
     def get_transaction_record(self, sender, flag, cursor = 0, match=None, limit = 10):
-        try:
-            ret = self._rclient.get_transaction_record(sender, flag.upper(), cursor, match, limit)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self._rclient.get_transaction_record(sender, flag.upper(), cursor, match, limit)
 
     def list_record_address_for_chain(self, chain, cursor = 0, limit = 10):
-        try:
-            ret = self._rclient.scan(cursor, f"*_{chain.upper()}", limit)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self._rclient.scan(cursor, f"*_{chain.upper()}", limit)
 

@@ -33,16 +33,16 @@ class requestbase(dbvproof):
             ret = parse_except(e)
         return ret
         
-    def _get_transaction_for_state(self, proofstate = None, receiver = None, mtype = None, start = -1, limit = 10):
+    def get_transactions_for_state(self, proofstate = None, receiver = None, mtype = None, start = 0, limit = 10):
         try:
             trans = []
 
             start_version = start
-            if start < 0:
+            if proofstate is not None:
                 ret = self.get_proof_min_version_for_state(proofstate.name.lower())
                 if ret.state != error.SUCCEED:
                     return ret
-                start_version = int(ret.datas)
+                start_version = max(int(ret.datas), start)
 
             ret = self.get_latest_saved_ver()
             if ret.state != error.SUCCEED:
