@@ -24,7 +24,7 @@ class requestproof(requestbase):
     def __init__(self, name, host, port, db, passwd = None):
         requestbase.__init__(self, name, host, port, db, passwd)
     
-    def get_transactions_for_start(self, receiver = None, mtype = None, start = -1, limit = 10):
+    def get_transactions_for_state_fast(self, proofstate, receiver = None, mtype = None, start = -1, limit = 10):
         try:
             ret = self.get_proof_min_version_for_start()
             if ret.state == error.SUCCEED:
@@ -36,12 +36,17 @@ class requestproof(requestbase):
             parse_except(e)
         return ret
 
+    def get_transactions_for_start(self, receiver = None, mtype = None, start = -1, limit = 10):
+        return self.get_transactions_for_state_fast(proofstate.START, receiver, mtype, start, limit)
+
     def get_transactions_for_end(self, receiver = None, mtype = None, start = -1, limit = 10):
-        try:
-            ret = self._get_transaction_for_state(proofstate.END, receiver, mtype, start, limit)
-        except Exception as e:
-            parse_except(e)
-        return ret
+        return self.get_transactions_for_state_fast(proofstate.END, receiver, mtype, start, limit)
+
+    def get_transactions_for_cancel(self, receiver = None, mtype = None, start = -1, limit = 10):
+        return self._get_transaction_for_state_fast(proofstate.CANCEL, receiver, mtype, start, limit)
+
+    def get_transactions_for_stop(self, receiver = None, mtype = None, start = -1, limit = 10):
+        return self._get_transaction_for_state_fast(proofstate.STOP, receiver, mtype, start, limit)
 
     def has_transaction_for_tranid(self, tranid):
         try:

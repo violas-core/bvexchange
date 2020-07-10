@@ -39,7 +39,7 @@ class requestbase(dbvproof):
 
             start_version = start
             if start < 0:
-                ret = self.get_proof_min_version_for_start()
+                ret = self.get_proof_min_version_for_state(proofstate.name.lower())
                 if ret.state != error.SUCCEED:
                     return ret
                 start_version = int(ret.datas)

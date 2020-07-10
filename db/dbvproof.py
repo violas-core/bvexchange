@@ -29,7 +29,7 @@ name="dbvproof"
 #load logging
 
 class dbvproof(dbvbase):
-    __KEY_MIN_VERSION_START = "min_version_start"
+    __KEY_MIN_VERSION_ = "min_version_"
     def __init__(self, name, host, port, db, passwd = None):
         dbvbase.__init__(self, name, host, port, db, passwd)
 
@@ -76,22 +76,39 @@ class dbvproof(dbvbase):
             ret = parse_except(e)
         return ret
 
-    def set_proof_min_version_for_start(self, version):
+    def set_proof_min_version_for_state(self, version, state):
         try:
-            ret = self.set(self.__KEY_MIN_VERSION_START, version)
+            ret = self.set(f"self.__KEY_MIN_VERSION_{state}", version)
         except Exception as e:
             ret = parse_except(e)
         return ret
+    def set_proof_min_version_for_start(self, version):
+        return self.set_proof_min_version_for_state(version, "start")
 
-    def get_proof_min_version_for_start(self):
+    def set_proof_min_version_for_cancel(self, version):
+        return self.set_proof_min_version_for_state(version, "cancel")
+
+    def set_proof_min_version_for_stop(self, version):
+        return self.set_proof_min_version_for_stop(version, "stop")
+
+    def get_proof_min_version_for_state(self, state):
         try:
-            ret = self.get(self.__KEY_MIN_VERSION_START)
+            ret = self.get("self.__KEY_MIN_VERSION_{state}")
             if ret.state == error.SUCCEED:
                 if ret.datas is None:
                     ret = result(error.SUCCEED, "", '0')
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def get_proof_min_version_for_start(self):
+        return get_proof_min_version_for_state(state, "start")
+
+    def get_proof_min_version_for_cancel(self):
+        return get_proof_min_version_for_state(state, "cancel")
+
+    def get_proof_min_version_for_stop(self):
+        return get_proof_min_version_for_state(state, "stop")
 
     def create_haddress_name(self, tran_info):
         return f"{tran_info['sender']}_{tran_info['flag']}"
