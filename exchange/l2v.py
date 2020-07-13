@@ -109,6 +109,8 @@ class l2v(vlbase):
             self._latest_version[receiver] = max(version, self._latest_version.get(receiver, -1))
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
+        if state is None and self.has_info(tran_id):
+            return ret
 
         if not self.chain_data_is_valid(data):
            return 
@@ -117,7 +119,7 @@ class l2v(vlbase):
             self.insert_to_localdb_with_check(version, localdb.state.START, tran_id, receiver)
 
         if self.use_module(state, localdb.state.PSUCCEED) or \
-                self.use_module(state, localdb.state.ESUCCEED) \
+                self.use_module(state, localdb.state.ESUCCEED) or \
                 self.use_module(state, localdb.state.FILLSUCCEED):
             #get output and gas
             ret = self.violas_client.swap_get_output_amount(map_token_id, to_token_id, amount)
