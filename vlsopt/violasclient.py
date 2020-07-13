@@ -533,6 +533,16 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def swap_set_owner_address(self, address):
+        try:
+            self._logger.debug(f"start swap_set_owner_address({address})")
+            datas = self.__client.set_exchange_owner_address(address)
+            ret = result(error.SUCCEED, datas = datas)
+            self._logger.debug(f"result: {ret.datas}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
 class violasserver(baseobject):
     __node = None
     def __init__(self, name, nodes):
