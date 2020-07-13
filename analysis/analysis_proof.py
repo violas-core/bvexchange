@@ -127,19 +127,32 @@ class aproof(abase):
             return ret
         return result(error.SUCCEED, "", {"new_proof":True, "tran_id":tran_id})
 
+    def has_update_state_authority(self, state, old_tran_info, new_tran_info):
+        #only recevier can change state (start -> end/cancel)
+
+        old_sender = old_tran_info["sender"]
+        old_receiver = old_tran_info["receiver"]
+        new_sender = new_tran_info["sender"]
+        new_receiver = new_tran_info["receiver"]
+
+        if state in (self.proofstate.END, self.proofstate.STOP):
+            return old_receiver == new_sender
+        elif state == self.proofstate.CANCEL:
+            return old_sender == new_sender
+
+        return False
+
     def update_proof_info(self, tran_info):
         try:
             self._logger.debug(f"start update_proof_info tran info: {tran_info}")
             version = tran_info.get("version", None)
 
             tran_id = None
-            new_proof = False
             new_proofstate = self.proofstate_name_to_value(tran_info.get("state", ""))
-            if new_proofstate == self.proofstate.START:
-                new_proof = True
+            new_proof = new_proofstate == self.proofstate.START
 
             self._logger.debug(f"new proof: {new_proof}")
-            if new_proof == True:
+            if new_proof:
                 ret  = self._dbclient.key_is_exists(version)
                 if ret.state != error.SUCCEED:
                     return ret
@@ -192,9 +205,8 @@ class aproof(abase):
                             old state is {old_proofstate.name}. tran version: {tran_info.get('version')}")
 
                 #only recevier can change state (start -> end/cancel)
-                if db_tran_info.get("receiver", "start state receiver") != tran_info.get("sender", "to end address"):
-                    return result(error.TRAN_INFO_INVALID, f"change state error. sender[state = end] != recever[state = start] \
-                            sender: {tran_info.get('receiver')}  receiver : {db_tran_info.get('sender')} version = {tran_info.get('version')}") 
+                if not self.has_update_state_authority(new_proofstate, db_tran_info, tran_info)
+                    return result(error.TRAN_INFO_INVALID, f"change state error. check transaction's sender is valid.") 
 
                 db_tran_info["state"] = tran_info["state"]
                 self._dbclient.set_proof(db_tran_info.get("version"), json.dumps(db_tran_info))
