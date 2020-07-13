@@ -1,9 +1,6 @@
-[submodule "libra-client"]
-	path = libra-client
+[submodule "libraclient"]
+	path = libraclient
 	url = https://github.com/palliums-developers/libra-client
 [submodule "tomlkit"]
 	path = tomlkit
 	url = https://github.com/sdispater/tomlkit
-[submodule "violas-client"]
-	path = violas-client
-	url = https://github.com/palliums-developers/libra-client
