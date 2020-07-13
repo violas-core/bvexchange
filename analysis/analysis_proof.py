@@ -205,7 +205,7 @@ class aproof(abase):
                             old state is {old_proofstate.name}. tran version: {tran_info.get('version')}")
 
                 #only recevier can change state (start -> end/cancel)
-                if not self.has_update_state_authority(new_proofstate, db_tran_info, tran_info)
+                if not self.has_update_state_authority(new_proofstate, db_tran_info, tran_info):
                     return result(error.TRAN_INFO_INVALID, f"change state error. check transaction's sender is valid.") 
 
                 db_tran_info["state"] = tran_info["state"]

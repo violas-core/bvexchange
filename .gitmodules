@@ -1,3 +1,9 @@
 [submodule "tomlkit"]
 	path = tomlkit
 	url = https://github.com/sdispater/tomlkit
+[submodule "libraclient"]
+	path = libraclient
+	url = https://github.com/palliums-developers/libra-client
+[submodule "violasclient"]
+	path = violasclient
+	url = https://github.com/palliums-developers/libra-client
