@@ -115,7 +115,12 @@ The type of transaction mapping, l2vxxx is to map stablecoins from violas chain 
   <tr>
    <td><strong>v2b</strong></td>
    <td>string</td>
-   <td>btc mapping to libra‘s stable coin ≋SGD.</td>
+   <td>violas token map to btc</td>
+  </tr>
+  <tr>
+   <td><strong>l2b</strong></td>
+   <td>string</td>
+   <td>libra token map to btc</td>
   </tr>
 </table>
 
@@ -1297,11 +1302,11 @@ LBRSGD Mapping ≋SGD completed
 '{"flag":"violas", "type":"v2lsgd", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
 
-### b2v - start
+### v2b - start
 
 **Description**
 
-BTC Mapping ≋SGD 
+violas token map to btc
 
 
 #### Attributes
@@ -1323,14 +1328,14 @@ BTC Mapping ≋SGD
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
   <td>string</td>
-  <td>v2lsgd</td>
+  <td>v2b</td>
   <td>Distinguish between different mapping types</td>
  </tr>
  <tr>
   <td><strong>to_address</strong></td>
   <td>string</td>
   <td>hex-str(btc address)</td>
-  <td>The tran_id corresponding to the transaction to be modified</td>
+  <td>Payee Address</td>
  </tr>
  <tr>
   <td><strong><a href="#States---type">state</a></strong></td>
@@ -1357,11 +1362,11 @@ BTC Mapping ≋SGD
 ```
 
 
-### b2v - end/cancel/stop
+### v2b - end/cancel/stop
 
 **Description**
 
-BTC Mapping ≋SGD completed
+BTC swap end/cancel/stop
 
 
 #### Attributes
@@ -1383,7 +1388,7 @@ BTC Mapping ≋SGD completed
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
   <td>string</td>
-  <td>v2lsgd</td>
+  <td>v2b</td>
   <td>Distinguish between different mapping types</td>
  </tr>
  <tr>
@@ -1402,4 +1407,111 @@ BTC Mapping ≋SGD completed
 
 ```
 '{"flag":"violas", "type":"v2b", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
+```
+
+### l2b - start
+
+**Description**
+
+libra token map to btc
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>libra</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>l2b</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>to_address</strong></td>
+  <td>string</td>
+  <td>hex-str(btc address)</td>
+  <td>Payee Address</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>start</td>
+  <td>Mapping</td>
+ </tr>
+ <tr>
+  <td><strong>out_amount</strong></td>
+  <td>uint64</td>
+  <td>1~max(uint64)</td>
+  <td>exchange quantity</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times</td>
+ </tr>
+</table>
+
+```
+'{"flag":"libra", "type":"l2b", "times": 0, "to_address":"2MxBZG7295wfsXaUj69quf8vucFzwG35UWh", "out_amount": 1000000, "state":"start"}'
+```
+
+
+### l2b - end/cancel/stop
+
+**Description**
+
+swap end/cancel/stop
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>libra</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>l2b</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>tran_id</strong></td>
+  <td>string</td>
+  <td>hex-str(btc address)</td>
+  <td>The tran_id corresponding to the transaction to be modified</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>end/cancel/stop</td>
+  <td>Mapping completed</td>
+ </tr>
+</table>
+
+```
+'{"flag":"libra", "type":"l2b", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
