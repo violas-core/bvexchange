@@ -1,6 +1,3 @@
-[submodule "libraclient"]
-	path = libraclient
-	url = https://github.com/palliums-developers/libra-client
 [submodule "tomlkit"]
 	path = tomlkit
 	url = https://github.com/sdispater/tomlkit
