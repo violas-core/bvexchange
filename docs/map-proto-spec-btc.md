@@ -8,7 +8,7 @@ Mapping Protocol is based on the [OP_RETURN](https://github.com/bitcoin/bitcoin/
 
 ## Version
 
-v1.3.0
+v1.4.1
 
 
 
@@ -227,58 +227,197 @@ transaction type code
 <table>
  <tr>
   <td><strong>Value</strong></td>
+  <td><strong>Name</strong></td>
   <td><strong>Description</strong></td>
  </tr>
  <tr>
   <td><strong>0x1030</strong></td>
-  <td><strong>btc Deposit certificate</strong></td>
+  <td>btcmark</td>
+  <td>btc Deposit certificate</td>
+ </tr>
+ <tr>
+  <td><strong>0x2000</strong></td>
+  <td>v2bmark</td>
+  <td>violas token mapping btc mark</td>
  </tr>
  <tr>
   <td><strong>0x3000</strong></td>
-  <td>request mapping violas token btc</td>
+  <td>b2v-start</td>
+  <td>violas token mapping btc mark</td>
  </tr>
  <tr>
   <td><strong>0x3001</strong></td>
-  <td>mapping violas token completed</td>
+  <td>b2v-cancel</td>
+  <td>violas token mapping btc mark</td>
  </tr>
  <tr>
   <td><strong>0x3002</strong></td>
-  <td>mapping violas token cancel. (no-use)</td>
+  <td>b2v-end</td>
+  <td>violas token mapping btc mark</td>
  </tr>
  <tr>
-  <td><strong>0x3010</strong></td>
+  <td><strong>0x3003</strong></td>
+  <td>b2v-stop</td>
   <td>violas token mapping btc mark</td>
  </tr>
  <tr>
   <td><strong>0x4000</strong></td>
+  <td>b2vusd-start</td>
   <td>btc swap violas vlsusd token</td>
  </tr>
  <tr>
   <td><strong>0x4001</strong></td>
-  <td>btc swap violas vlseur token</td>
+  <td>b2vusd-cancel</td>
+  <td>btc swap violas vlsusd token</td>
  </tr>
  <tr>
   <td><strong>0x4002</strong></td>
-  <td>btc swap violas vlssgd token</td>
+  <td>b2vusd-end</td>
+  <td>btc swap violas vlsusd token</td>
  </tr>
  <tr>
   <td><strong>0x4003</strong></td>
+  <td>b2vusd-stop</td>
+  <td>btc swap violas vlsusd token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4010</strong></td>
+  <td>b2veur-start</td>
+  <td>btc swap violas vlseur token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4011</strong></td>
+  <td>b2veur-cancel</td>
+  <td>btc swap violas vlseur token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4012</strong></td>
+  <td>b2veur-end</td>
+  <td>btc swap violas vlseur token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4013</strong></td>
+  <td>b2veur-stop</td>
+  <td>btc swap violas vlseur token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4020</strong></td>
+  <td>b2vsgd-start</td>
+  <td>btc swap violas vlssgd token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4021</strong></td>
+  <td>b2vsgd-cancel</td>
+  <td>btc swap violas vlssgd token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4022</strong></td>
+  <td>b2vsgd-end</td>
+  <td>btc swap violas vlssgd token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4023</strong></td>
+  <td>b2vsgd-stop</td>
+  <td>btc swap violas vlssgd token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4030</strong></td>
+  <td>b2vgbp-start</td>
+  <td>btc swap violas vlsgbp token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4031</strong></td>
+  <td>b2vgbp-cancel</td>
+  <td>btc swap violas vlsgbp token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4032</strong></td>
+  <td>b2vgbp-end</td>
+  <td>btc swap violas vlsgbp token</td>
+ </tr>
+ <tr>
+  <td><strong>0x4033</strong></td>
+  <td>b2vgbp-stop</td>
   <td>btc swap violas vlsgbp token</td>
  </tr>
  <tr>
   <td><strong>0x5000</strong></td>
+  <td>b2lusd-start</td>
   <td>btc swap libra usd token</td>
  </tr>
  <tr>
   <td><strong>0x5001</strong></td>
-  <td>btc swap libra eur token</td>
+  <td>b2lusd-cancel</td>
+  <td>btc swap libra usd token</td>
  </tr>
  <tr>
   <td><strong>0x5002</strong></td>
-  <td>btc swap libra sgd token</td>
+  <td>b2lusd-end</td>
+  <td>btc swap libra usd token</td>
  </tr>
  <tr>
   <td><strong>0x5003</strong></td>
+  <td>b2lusd-stop</td>
+  <td>btc swap libra usd token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5010</strong></td>
+  <td>b2leur-start</td>
+  <td>btc swap libra eur token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5011</strong></td>
+  <td>b2leur-cancel</td>
+  <td>btc swap libra eur token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5012</strong></td>
+  <td>b2leur-end</td>
+  <td>btc swap libra eur token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5013</strong></td>
+  <td>b2leur-stop</td>
+  <td>btc swap libra eur token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5020</strong></td>
+  <td>b2lsgd-start</td>
+  <td>btc swap libra sgd token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5021</strong></td>
+  <td>b2lsgd-cancel</td>
+  <td>btc swap libra sgd token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5022</strong></td>
+  <td>b2lsgd-end</td>
+  <td>btc swap libra sgd token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5023</strong></td>
+  <td>b2lsgd-stop</td>
+  <td>btc swap libra sgd token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5030</strong></td>
+  <td>b2lgbp-start</td>
+  <td>btc swap libra gbp token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5031</strong></td>
+  <td>b2lgbp-cancel</td>
+  <td>btc swap libra gbp token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5032</strong></td>
+  <td>b2lgbp-end</td>
+  <td>btc swap libra gbp token</td>
+ </tr>
+ <tr>
+  <td><strong>0x5033</strong></td>
+  <td>b2lgbp-stop</td>
   <td>btc swap libra gbp token</td>
  </tr>
 </table>
@@ -358,12 +497,11 @@ fields:
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
 ```
 
-
-### mapping - end
+### mapping - cancel
 
 **Description**
 
-btc mapping violas token end
+btc mapping violas token cancel
 
 
 #### Attributes
@@ -395,6 +533,59 @@ btc mapping violas token end
   <td>20200110006</td>
   <td>timestamps</td>
  </tr>
+</table>
+
+```
+hex-Vstr: 6a2276696f6c617300033001c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6
+
+fields:
+    OP_RETURN head:
+        6a : OP_RETURN(0x6a)
+        22 : data len(34)
+    payload datas:
+        76696f6c6173 : mark(violas)
+        0003 : version(0x0003)
+        3001 : type(0x3001)
+        c91806cabcd5b2b5fa25ae1c50bed3c6 : payee_address
+        00000004b40537b6 : sequence(20200110006)
+``` 
+
+### mapping - end
+
+**Description**
+
+btc mapping violas token end
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Versions---type">version</a></strong></td>
+  <td>0x0003</td>
+  <td></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>0x3002</td>
+  <td></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Fields---type">payee_address</a></strong></td>
+  <td>c91806cabcd5b2b5fa25ae1c50bed3c6</td>
+  <td>payee address</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Fields---type">sequence</a></strong></td>
+  <td>20200110006</td>
+  <td>timestamps</td>
+ </tr>
  <tr>
   <td><strong><a href="#Fields---type">violas_amount</a></strong></td>
   <td>10000</td>
@@ -408,7 +599,7 @@ btc mapping violas token end
 </table>
 
 ```
-hex-Vstr: 6a3276696f6c617300033001c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b60000000000002710000000000000271A
+hex-Vstr: 6a3276696f6c617300033002c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b60000000000002710000000000000271A
 
 fields:
     OP_RETURN head:
@@ -417,11 +608,65 @@ fields:
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
-        3001 : type(0x3001)
+        3001 : type(0x3002)
         c91806cabcd5b2b5fa25ae1c50bed3c6 : payee_address
         00000004b40537b6 : sequence(20200110006)
         000000000002710 : violas_amount(10000)
         00000000000271A : violas_version(10010)
+``` 
+
+
+### mapping - stop
+
+**Description**
+
+btc mapping violas token stop
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Versions---type">version</a></strong></td>
+  <td>0x0003</td>
+  <td></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>0x3003</td>
+  <td></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Fields---type">payee_address</a></strong></td>
+  <td>c91806cabcd5b2b5fa25ae1c50bed3c6</td>
+  <td>payee address</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Fields---type">sequence</a></strong></td>
+  <td>20200110006</td>
+  <td>timestamps</td>
+ </tr>
+</table>
+
+```
+hex-Vstr: 6a2276696f6c617300033003c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6
+
+fields:
+    OP_RETURN head:
+        6a : OP_RETURN(0x6a)
+        22 : data len(34)
+    payload datas:
+        76696f6c6173 : mark(violas)
+        0003 : version(0x0003)
+        3001 : type(0x3003)
+        c91806cabcd5b2b5fa25ae1c50bed3c6 : payee_address
+        00000004b40537b6 : sequence(20200110006)
 ``` 
 
 ### deposit_certificate
@@ -583,7 +828,7 @@ btc swap violas token(vlseur) request
  </tr>
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
-  <td>0x4001</td>
+  <td>0x4010</td>
   <td></td>
  </tr>
  <tr>
@@ -614,7 +859,7 @@ btc swap violas token(vlseur) request
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300034001c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300034010c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
 
 fields:
     OP_RETURN head:
@@ -623,7 +868,7 @@ fields:
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
-        4001 : type(0x4001)
+        4010 : type(0x4010)
         c91806cabcd5b2b5fa25ae1c50bed3c6 : payee_address
         00000004b40537b6 : sequence(20200110006)
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
@@ -654,7 +899,7 @@ btc swap violas token(vlssgd) request
  </tr>
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
-  <td>0x4002</td>
+  <td>0x4020</td>
   <td></td>
  </tr>
  <tr>
@@ -685,7 +930,7 @@ btc swap violas token(vlssgd) request
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300034002c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300034020c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
 
 fields:
     OP_RETURN head:
@@ -694,7 +939,7 @@ fields:
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
-        4002 : type(0x4002)
+        4020 : type(0x4020)
         c91806cabcd5b2b5fa25ae1c50bed3c6 : payee_address
         00000004b40537b6 : sequence(20200110006)
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
@@ -725,7 +970,7 @@ btc swap violas token(vlsgbp) request
  </tr>
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
-  <td>0x4003</td>
+  <td>0x4030</td>
   <td></td>
  </tr>
  <tr>
@@ -756,7 +1001,7 @@ btc swap violas token(vlsgbp) request
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300034003c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300034030c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
 
 fields:
     OP_RETURN head:
@@ -765,7 +1010,7 @@ fields:
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
-        4003 : type(0x4003)
+        4030 : type(0x4030)
         c91806cabcd5b2b5fa25ae1c50bed3c6 : payee_address
         00000004b40537b6 : sequence(20200110006)
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
@@ -867,7 +1112,7 @@ btc swap libra token(eur) request
  </tr>
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
-  <td>0x5001</td>
+  <td>0x5010</td>
   <td></td>
  </tr>
  <tr>
@@ -898,7 +1143,7 @@ btc swap libra token(eur) request
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300034001c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300035010c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
 
 fields:
     OP_RETURN head:
@@ -907,7 +1152,7 @@ fields:
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
-        5001 : type(0x5001)
+        5010 : type(0x5010)
         c91806cabcd5b2b5fa25ae1c50bed3c6 : payee_address
         00000004b40537b6 : sequence(20200110006)
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
@@ -938,7 +1183,7 @@ btc swap libra token(sgd) request
  </tr>
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
-  <td>0x5002</td>
+  <td>0x5020</td>
   <td></td>
  </tr>
  <tr>
@@ -969,7 +1214,7 @@ btc swap libra token(sgd) request
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300035002c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300035020c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
 
 fields:
     OP_RETURN head:
@@ -978,7 +1223,7 @@ fields:
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
-        5002 : type(0x5002)
+        5020 : type(0x5020)
         c91806cabcd5b2b5fa25ae1c50bed3c6 : payee_address
         00000004b40537b6 : sequence(20200110006)
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
@@ -1009,7 +1254,7 @@ btc swap libra token(gbp) request
  </tr>
  <tr>
   <td><strong><a href="#Types---type">type</a></strong></td>
-  <td>0x5003</td>
+  <td>0x5030</td>
   <td></td>
  </tr>
  <tr>
@@ -1040,7 +1285,7 @@ btc swap libra token(gbp) request
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300035003c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-str: 6a3c76696f6c617300035030c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
 
 fields:
     OP_RETURN head:
@@ -1049,7 +1294,7 @@ fields:
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
-        5003 : type(0x5003)
+        5030 : type(0x5030)
         c91806cabcd5b2b5fa25ae1c50bed3c6 : payee_address
         00000004b40537b6 : sequence(20200110006)
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
@@ -1057,3 +1302,44 @@ fields:
         0000:times(0)
 ```
 
+### swap - cancel(no-use)
+
+**Description**
+
+btc swap violas/libra stable request for cancel
+
+Attributes refer to [mapping - cancel](#mapping---cancel)
+
+
+### swap - end
+
+**Description**
+
+btc swap violas/libra stable token request for end
+
+Attributes refer to [mapping - end](#mapping---end)
+
+
+### swap - stop
+
+**Description**
+
+btc swap violas/libra stable token request for stop 
+
+Attributes refer to [mapping - stop](#mapping---stop)
+
+
+# state change 
+    - start -> end
+    - start -> stop
+    - start -> cancel -> stop(Unrealized)
+
+
+# version list
+## 1.4.1
+  - change types values: append start cancel end stop state for last four bit. 
+## 1.4.0
+  - change version : 0x0003
+  - violas address len changed(no prefixed): 16 
+  - append btc swap violas stable token
+  - append btc swap libra stable token
