@@ -1515,3 +1515,32 @@ swap end/cancel/stop
 ```
 '{"flag":"libra", "type":"l2b", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
+
+
+
+---
+
+
+
+
+# state change authority
+  - start : client
+  - cancel : client
+  - end : server
+  - stop : server
+
+# state change 
+  - start -> end
+  - start -> stop
+  - start -> cancel -> stop(Unrealized)
+
+
+# version list
+
+## v2.0.0
+  - added violas stable token and libra stable token swap
+  - added violas stable token and btc swap
+  - added libra stable token and btc swap
+  - added violas token and btc map
+
+
