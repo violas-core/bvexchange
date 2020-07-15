@@ -1341,6 +1341,19 @@ btc swap violas/libra stable token request for stop
 Attributes refer to [mapping - stop](#mapping---stop)
 
 
+
+---
+
+
+
+
+
+# state change authority
+  - start : client
+  - cancel : client
+  - end : server
+  - stop : server
+
 # state change 
   - start -> end
   - start -> stop
@@ -1348,13 +1361,13 @@ Attributes refer to [mapping - stop](#mapping---stop)
 
 
 # version list
-## 1.4.2
+## v1.4.2
   - modified [mapping-start](#mapping---start): added "out_amount" and "times" for format alignment
 
-## 1.4.1
+## v1.4.1
   - change types values: append start cancel end stop state for last four bit. 
 
-## 1.4.0
+## v1.4.0
   - change version : 0x0003
   - violas address len changed(no prefixed): 16 
   - append btc swap violas stable token
