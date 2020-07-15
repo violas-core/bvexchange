@@ -8,7 +8,7 @@ Mapping Protocol is based on the [OP_RETURN](https://github.com/bitcoin/bitcoin/
 
 ## Version
 
-v1.4.1
+v1.4.2
 
 
 
@@ -479,15 +479,25 @@ btc mapping violas token(btc) request
   <td>524689a4f870c46d6a5d901b5ac1fdb2</td>
   <td>module address of violas swap(btc)</td>
  </tr>
+ <tr>
+  <td><strong><a href="#Fields---type">out_amount</a></strong></td>
+  <td>0000000</td>
+  <td>map violas btc token amount microamount(1000000), this field no-use. Format alignment </td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Fields---type">times</a></strong></td>
+  <td>0</td>
+  <td>retry map violas btc token number of times, this field no-use, Format alignment</td>
+ </tr>
 </table>
 
 ```
-hex-Vstr: 6a3276696f6c617300033000c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb2
+hex-Vstr: 6a3c76696f6c617300033000c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000000000000
 
 fields:
     OP_RETURN head:
         6a : OP_RETURN(0x6a)
-        32 : data len(50)
+        3c : data len(60)
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
@@ -495,6 +505,8 @@ fields:
         c91806cabcd5b2b5fa25ae1c50bed3c6 : payee_address
         00000004b40537b6 : sequence(20200110006)
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
+        0000000000002710 : out_amount(10000)
+        0000 : times(0)
 ```
 
 ### mapping - cancel
@@ -1330,14 +1342,18 @@ Attributes refer to [mapping - stop](#mapping---stop)
 
 
 # state change 
-    - start -> end
-    - start -> stop
-    - start -> cancel -> stop(Unrealized)
+  - start -> end
+  - start -> stop
+  - start -> cancel -> stop(Unrealized)
 
 
 # version list
+## 1.4.2
+  - modified [mapping-start](#mapping---start): added "out_amount" and "times" for format alignment
+
 ## 1.4.1
   - change types values: append start cancel end stop state for last four bit. 
+
 ## 1.4.0
   - change version : 0x0003
   - violas address len changed(no prefixed): 16 
