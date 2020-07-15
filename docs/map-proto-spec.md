@@ -95,22 +95,22 @@ The type of transaction mapping, l2vxxx is to map stablecoins from violas chain 
   <tr>
    <td><strong>v2lgbp</strong></td>
    <td>string</td>
-   <td>liolas's stable coin(any token) mapping to libra‘s stable coin ≋GBP.</td>
+   <td>violas's stable coin(any token) mapping to libra‘s stable coin ≋GBP.</td>
   </tr>
   <tr>
    <td><strong>v2leur</strong></td>
    <td>string</td>
-   <td>liolas's stable coin(any token) mapping to libra‘s stable coin ≋EUR.</td>
+   <td>violas's stable coin(any token) mapping to libra‘s stable coin ≋EUR.</td>
   </tr>
   <tr>
    <td><strong>v2ljpy</strong></td>
    <td>string</td>
-   <td>liolas's stable coin(any token) mapping to libra‘s stable coin ≋JPY.</td>
+   <td>violas's stable coin(any token) mapping to libra‘s stable coin ≋JPY.</td>
   </tr>
   <tr>
    <td><strong>v2lsgd</strong></td>
    <td>string</td>
-   <td>liolas's stable coin(any token) mapping to libra‘s stable coin ≋SGD.</td>
+   <td>violas's stable coin(any token) mapping to libra‘s stable coin ≋SGD.</td>
   </tr>
   <tr>
    <td><strong>v2b</strong></td>
