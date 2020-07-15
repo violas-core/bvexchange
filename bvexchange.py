@@ -388,17 +388,17 @@ class works:
         __threadId = 0
         __nsec = 1
         __work = ""
-        def __init__(self, work, threadId, name, **kargs):
-            logger.debug(f"work thread __init__(work_funcs = {work.__name__} threadId = {threadId} name = {name}  kargs = {kargs})")
+        def __init__(self, work, threadId, name, **kwargs):
+            logger.debug(f"work thread __init__(work_funcs = {work.__name__} threadId = {threadId} name = {name}  kwargs = {kwargs})")
             threading.Thread.__init__(self)
             self.__threadId = threadId
             self.__name = name
-            self.__kargs = kargs
+            self.__kwargs = kwargs
             self.__work = work
 
         def run(self):
-            logger.debug(f"work thread run{self.__kargs}")
-            self.__work(**self.__kargs)
+            logger.debug(f"work thread run{self.__kwargs}")
+            self.__work(**self.__kwargs)
 
     def get_dtype_from_mod(self, modname):
         dtype = modname.lower()
