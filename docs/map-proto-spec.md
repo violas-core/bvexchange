@@ -65,62 +65,62 @@ The type of transaction mapping, l2vxxx is to map stablecoins from violas chain 
   <tr>
    <td><strong>l2vusd</strong></td>
    <td>string</td>
-   <td>libra's stable coin ≋USD mapping to violas‘s stable coin LBRUSD.</td>
+   <td>libra's stable coin(any token) mapping to violas‘s stable coin VLSUSD.</td>
   </tr>
   <tr>
    <td><strong>l2vgbp</strong></td>
    <td>string</td>
-   <td>libra's stable coin ≋GBP mapping to violas‘s stable coin LBRGBP.</td>
+   <td>libra's stable coin(any token) mapping to violas‘s stable coin VLSGBP.</td>
   </tr>
   <tr>
    <td><strong>l2veur</strong></td>
    <td>string</td>
-   <td>libra's stable coin ≋EUR mapping to violas‘s stable coin LBREUR.</td>
+   <td>libra's stable coin(any token) mapping to violas‘s stable coin VLSEUR.</td>
   </tr>
   <tr>
    <td><strong>l2vjpy</strong></td>
    <td>string</td>
-   <td>libra's stable coin ≋JPY mapping to violas‘s stable coin LBRJPY.</td>
+   <td>libra's stable coin(any token) mapping to violas‘s stable coin VLSJPY.</td>
   </tr>
   <tr>
    <td><strong>l2vsgd</strong></td>
    <td>string</td>
-   <td>libra's stable coin ≋SGD mapping to violas‘s stable coin LBRSGD.</td>
+   <td>libra's stable coin(any token) mapping to violas‘s stable coin VLSSGD.</td>
   </tr>
   <tr>
    <td><strong>v2lusd</strong></td>
    <td>string</td>
-   <td>liolas's stable coin LBRUSD mapping to libra‘s stable coin ≋USD.</td>
+   <td>liolas's stable coin(any token) mapping to libra‘s stable coin ≋USD.</td>
   </tr>
   <tr>
    <td><strong>v2lgbp</strong></td>
    <td>string</td>
-   <td>liolas's stable coin LBRGBP mapping to libra‘s stable coin ≋GBP.</td>
+   <td>liolas's stable coin(any token) mapping to libra‘s stable coin ≋GBP.</td>
   </tr>
   <tr>
    <td><strong>v2leur</strong></td>
    <td>string</td>
-   <td>liolas's stable coin LBREUR mapping to libra‘s stable coin ≋EUR.</td>
+   <td>liolas's stable coin(any token) mapping to libra‘s stable coin ≋EUR.</td>
   </tr>
   <tr>
    <td><strong>v2ljpy</strong></td>
    <td>string</td>
-   <td>liolas's stable coin LBRJPY mapping to libra‘s stable coin ≋JPY.</td>
+   <td>liolas's stable coin(any token) mapping to libra‘s stable coin ≋JPY.</td>
   </tr>
   <tr>
    <td><strong>v2lsgd</strong></td>
    <td>string</td>
-   <td>liolas's stable coin LBRSGD mapping to libra‘s stable coin ≋SGD.</td>
+   <td>liolas's stable coin(any token) mapping to libra‘s stable coin ≋SGD.</td>
   </tr>
   <tr>
    <td><strong>v2b</strong></td>
    <td>string</td>
-   <td>violas token map to btc</td>
+   <td>violas stable token(any token) swap to btc</td>
   </tr>
   <tr>
    <td><strong>l2b</strong></td>
    <td>string</td>
-   <td>libra token map to btc</td>
+   <td>libra stable token(any token) swap to btc</td>
   </tr>
 </table>
 
