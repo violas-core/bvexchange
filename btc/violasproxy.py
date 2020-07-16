@@ -18,29 +18,43 @@ from comm.result import result, parse_except
 from comm.error import error
 from comm.functions import split_full_address, json_print
 from baseobject import baseobject
-from enum import Enum
+from enum import Enum, auto
 from btc.btcwallet import btcwallet
-
+from comm.values import autoname 
 #module name
 name="violasproxy"
 
 class violasproxy(baseobject):
 
-    class opt(Enum):
-        GET = 'get'
-        SET = 'set'
-        CHECK = "check"
+    class opt(autoname):
+        GET = auto()
+        SET = auto()
+        CHECK = auto()
 
-    class opttype(Enum):
-        B2V     = 'b2v'
-        FILTER  = 'filter'
-        MARK    = 'mark'
-        BTCMARK = 'btcmark'
-        BALANCE = 'balance'
-        START   = 'start'
-        END     = 'end'
-        CANCEL  = 'cancel'
-        LISTUNSPENT = "listunspent"
+    class txstate(autoname):
+        START   = auto()
+        CANCEL  = auto()
+        END     = auto()
+        STOP    = auto()
+        BTCMARK = auto()
+        MARK    = auto()
+
+    class opttype(autoname):
+        BTCMARK = auto() # btc mark
+        V2BMARK = auto() # mark
+        B2VMAP  = auto() 
+        B2VUSD  = auto() 
+        B2VEUR  = auto() 
+        B2VSGD  = auto() 
+        B2VGBP  = auto() 
+        B2LUSD  = auto() 
+        B2LEUR  = auto() 
+        B2LSGD  = auto() 
+        B2LGBP  = auto() 
+        
+        FILTER  = auto()
+        BALANCE = auto()
+        LISTUNSPENT = auto()
 
     def __init__(self, name, host, port = None, user = None, password = None, domain="violaslayer", walletname="bwallet"):
         baseobject.__init__(self, name)
@@ -146,13 +160,21 @@ class violasproxy(baseobject):
                 return True
         return False
 
-    def violas_listexproofforstate(self, state, extype, receiver, excluded = None):
+    @property
+    def valid_state(self):
+        return [self.txstate.START.value, self.txstate.CANCEL.value, self.txstate.END.value, self.txstate.STOP.value]
+
+    @property
+    def valid_swap_type(self):
+        return (comm.values.EX_TYPE_B2V, comm.values.EX_TYPE_B2L)
+
+    def violas_listexproofforstate(self, opttype, state, extype, receiver, excluded = None):
         url = None
         if len(receiver) == 0:
             raise Exception(f"receiver is empty")
 
-        if extype == comm.values.EX_TYPE_B2V and state in (self.opttype.START.value, self.opttype.END.value, self.opttype.CANCEL.value):
-            url = self.create_opt_url(self.opt.GET, self.opttype.B2V, address=receiver, state=state, cursor = 0, limit=10)
+        if extype in self.valid_swap_type and state in self.valid_state:
+            url = self.create_opt_url(self.opt.GET, self.opttype[opttype.upper()], address=receiver, state=state, cursor = 0, limit=10)
         elif extype == comm.values.EX_TYPE_V2B and state == self.opttype.MARK:
             url = self.create_opt_url(self.opt.GET, self.opttype.MARK, address=receiver)
         else:
@@ -166,10 +188,10 @@ class violasproxy(baseobject):
     def stop(self):
         self.work_stop()
 
-    def violas_listexproof(self, extype, cursor = 0, limit = 10):
+    def violas_listexproof(self, opttype, extype, cursor = 0, limit = 10):
         url = None
-        if extype == comm.values.EX_TYPE_B2V:
-            url = self.create_opt_url(self.opt.GET, self.opttype.B2V, cursor=cursor, limit=limit)
+        if extype in self.valid_swap_type:
+            url = self.create_opt_url(self.opt.GET, self.opttype[opttype.upper()], cursor=cursor, limit=limit)
         elif extype == comm.values.EX_TYPE_V2B:
             url = self.create_opt_url(self.opt.GET, self.opttype.MARK, cursor=cursor, limit=limit)
         else:
@@ -177,13 +199,13 @@ class violasproxy(baseobject):
 
         return self.run_request(url)
 
-    def violas_isexproofcomplete(self, address, sequence):
-        url = self.create_opt_url(self.opt.CHECK, self.opttype.B2V, address=address, sequence=sequence)
+    def violas_isexproofcomplete(self, opttype, address, sequence):
+        url = self.create_opt_url(self.opt.CHECK, self.opttype[opttype.upper()], address=address, sequence=sequence)
         ret = requests.get(url).json()
         return self.run_request(url)
 
-    def violas_getexprooflatestindex(self, extype = comm.values.EX_TYPE_B2V):
-        url = self.create_opt_url(self.opt.GET, self.opttype.B2V, datatype="version")
+    def violas_getexprooflatestindex(self, opttype, extype = comm.values.EX_TYPE_B2V):
+        url = self.create_opt_url(self.opt.GET, self.opttype[opttype.upper()], datatype="version")
         ret = requests.get(url).json()
         return self.run_request(url)
 
@@ -198,19 +220,33 @@ class violasproxy(baseobject):
 
         return privkeys
 
-    def violas_sendexproofstart(self, fromaddress, toaddress, amount, vaddress, sequence, vtoken, fromprivkeys = None):#BTC
+    def violas_sendexproofstart(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, vtoken, fromprivkeys = None):#BTC
 
         fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
-        url = self.create_opt_url(self.opt.SET, self.opttype.START, \
+        url = self.create_opt_url(self.opt.SET, self.opttype[opttype.upper()], state="start", \
                 fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
                 vreceiver=vaddress, sequence=sequence, module=vtoken, fromprivkeys=json.dumps(fromprivkeys))
         return self.run_request(url)
 
-    def violas_sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, version, fromprivkeys = None):#BTC
+    def violas_sendexproofend(self, opttype, fromaddress, toaddress, vaddress, sequence, amount, version, fromprivkeys = None):#BTC
         fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
-        url = self.create_opt_url(self.opt.SET, self.opttype.END, \
+        url = self.create_opt_url(self.opt.SET, self.opttype[opttype.upper()], state="end", \
                 fromaddress=fromaddress, toaddress=toaddress, toamount=0, \
                 vreceiver=vaddress, sequence=sequence, amount = amount, version=version, fromprivkeys=json.dumps(fromprivkeys))
+        return self.run_request(url)
+
+    def violas_sendexproofcancel(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, fromprivkeys = None):#BTC
+        fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
+        url = self.create_opt_url(self.opt.SET, self.opttype[opttype.upper()], state="cancel", \
+                fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
+                vreceiver=vaddress, sequence=sequence, fromprivkeys=json.dumps(fromprivkeys))
+        return self.run_request(url)
+
+    def violas_sendexproofstop(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, fromprivkeys = None):#BTC
+        fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
+        url = self.create_opt_url(self.opt.SET, self.opttype[opttype.upper()], state="stop", \
+                fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
+                vreceiver=vaddress, sequence=sequence, fromprivkeys=json.dumps(fromprivkeys))
         return self.run_request(url)
 
     def sendtoaddress(self, address, amount):#BTC
@@ -218,7 +254,7 @@ class violasproxy(baseobject):
    
     def violas_sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, version, fromprivkeys = None):
         fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
-        url = self.create_opt_url(self.opt.SET, self.opttype.MARK, \
+        url = self.create_opt_url(self.opt.SET, self.opttype.V2BMARK, state="v2bmark", \
                 fromaddress=fromaddress, toaddress=toaddress, toamount=toamount, \
                 vreceiver=vaddress, sequence=sequence, version=version, fromprivkeys=json.dumps(fromprivkeys))
         return self.run_request(url)
@@ -251,12 +287,12 @@ def main():
        conf = stmanage.get_btc_conn()
        print(conf)
        client = violasproxy(name, conf.get("host"), conf.get("port"), conf.get("user"), conf.get("password"), conf.get("domain", "violaslayer"))
-       ret = client.violas_listexproofforstate("end", comm.values.EX_TYPE_B2V, receiver=receiver, excluded = None)
+       ret = client.violas_listexproofforstate("b2vusd","end", comm.values.EX_TYPE_B2V, receiver=receiver, excluded = None)
        json_print(ret)
 
        print("*"*30 + "get start ")
        client = violasproxy(name, conf.get("host"), conf.get("port"), conf.get("user"), conf.get("password"), conf.get("domain", "violaslayer"))
-       ret = client.violas_listexproofforstate("start", comm.values.EX_TYPE_B2V, receiver=receiver, excluded = None)
+       ret = client.violas_listexproofforstate("b2vusd", "start", comm.values.EX_TYPE_B2V, receiver=receiver, excluded = None)
        json_print(ret)
 
 

@@ -72,7 +72,7 @@ def get_sender_address_list(mtype, chain = None, full = True):
 #        parse_except(e)
 #    return None
 
-def get_combine_address(mtype, chain, full = True):
+def get_combine_address(mtype, chain , full = True):
      ms = __get_address_list("combine", mtype, chain, full)
      if ms is None or len(ms) == 0:
          return None
@@ -178,7 +178,7 @@ def get_conf():
             info["db"]["password"] = "password is keep secret"
         info["loop sleep"] = get_looping_sleep(mtype)
         info["max times"] = get_max_times(mtype)
-        info["combine"] = get_combine_address(mtype)
+        info["combine"] = get_combine_address(mtype, "violas")
         infos[mtype] = info
     infos["traceback limit"] = get_traceback_limit()
     infos["btc conn"] = get_btc_conn()
