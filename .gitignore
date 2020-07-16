@@ -4,8 +4,8 @@ __pycache__/
 *$py.class
 
 libviolas/
-violasclient/
-libraclient/
+lbviolasclient/
+lblibraclient/
 *.wlt
 *.wlt.rotate
 *.key
