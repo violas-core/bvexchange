@@ -5,8 +5,8 @@ import json
 import os
 sys.path.append(os.getcwd())
 sys.path.append("..")
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../violasclient"))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../violasclient/violas_client"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libviolasclient"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../libviolasclient/violas_client"))
 
 import log
 import log.logger
@@ -30,8 +30,8 @@ VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #from violas.client import Client
 #from violas.wallet import Wallet
 #from violas.client import Client
-from violasclient.violas_client.wallet_library import Wallet
-from violasclient.violas_client.client import Client
+from libviolasclient.violas_client.wallet_library import Wallet
+from libviolasclient.violas_client.client import Client
 
 #module name
 name="violasproxy"

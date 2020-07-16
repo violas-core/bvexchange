@@ -310,7 +310,7 @@ def main():
     except Exception as e:
         parse_except(e)
     finally:
-        self._logger.info("end main")
+        print("end main")
 
 if __name__ == "__main__":
     main()
