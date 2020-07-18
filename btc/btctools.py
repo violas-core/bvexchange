@@ -75,9 +75,9 @@ def listunspent(minconf = 1, maxconf = 9999999, addresses = None, include_unsafe
     for data in ret.datas:
         print("address:{}, amount:{}".format(data["address"], data["amount"]))
 
-def listexproofforstart(receiver, excluded = None):
+def listexproofforstart(opttype, receiver, excluded = None):
     client = getbtcclient()
-    ret = client.listexproofforstart(receiver, excluded)
+    ret = client.listexproofforstart(opttype, receiver, excluded)
     assert ret.state == error.SUCCEED, " listexproofforstart failed"
     for data in ret.datas:
         print(data)
@@ -130,7 +130,7 @@ def init_args(pargs):
     pargs.append("sendexproofmark", "create new exchange mark proof.", True, ["fromaddress", "toaddress", "toamount", "vaddress", "sequence", "version"])
     pargs.append("generatetoaddress", "generate new block to address.", True, ["count", "address"])
     pargs.append("listunspent", "returns array of unspent transaction outputs.", True, ["minconf", "maxconf", "addresses", "include_unsafe", "query_options"])
-    pargs.append("listexproofforstart", "returns array of proof state is start .", True, ["receiver"])
+    pargs.append("listexproofforstart", "returns array of proof state is start .", True, ["opttype", "receiver"])
     pargs.append("listexproofforend", "returns array of proof state is end .", True, ["receiver"])
     pargs.append("listexproofformark", "returns array of proof state is mark .", True, ["receiver"])
     pargs.append("listexproofforb2v", "returns array of proof list type = b2v. .", True, ["cursor", "limit"])
@@ -202,9 +202,9 @@ def run(argc, argv):
             else:
                 ret = listunspent(int(arg_list[0]), int(arg_list[1]))
         elif pargs.is_matched(opt, ["listexproofforstart"]):
-            if len(arg_list) != 1:
+            if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
-            ret = listexproofforstart(arg_list[0])
+            ret = listexproofforstart(arg_list[0], arg_list[1])
         elif pargs.is_matched(opt, ["listexproofforend"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)

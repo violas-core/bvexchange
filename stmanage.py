@@ -54,11 +54,15 @@ def __get_address_list(atype, mtype, chain = None, full = True):
 #        parse_except(e)
 #    return None
 #
+
 def get_receiver_address_list(mtype, chain = None, full = True):
     return __get_address_list("receiver", mtype, chain, full)
 
 def get_sender_address_list(mtype, chain = None, full = True):
     return __get_address_list("sender", mtype, chain, full)
+
+def get_combine_address_list(mtype, chain = None, full = True):
+    return __get_address_list("combine", mtype, chain, full)
 
 #maybe use. so keep it until libra support usd eur ...
 #def get_token_address(mtype, chain = None, full = True):
@@ -124,7 +128,6 @@ def get_token_map(token = None):
         if typename.startswith("v2"): #v2b v2l
             token_map.update({tokens.get("stoken") : tokens.get("mtoken")})
     if token:
-        print(token_map)
         return token_map.get(token)
     return token_map
 
@@ -132,7 +135,8 @@ def get_type_stable_token(mtype = None):
     type_stable_token = {}
     for typename, tokens in setting.type_token.items():
         if mtype is None or typename == mtype:
-            type_stable_token.update({typename : tokens.get("stoken")})
+            if tokens.get("stoken") is not None: 
+                type_stable_token.update({typename : tokens.get("stoken")})
 
     if mtype:
         return type_stable_token.get(mtype)

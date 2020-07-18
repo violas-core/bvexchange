@@ -86,9 +86,9 @@ class btcclient(baseobject):
                 return result(error.ARG_INVALID, error.argument_invalid, "")
             
             if excluded is None or len(excluded) == 0:
-                datas = self.__rpc_connection.violas_listexproofforstate(optype, state, extype, receiver)
+                datas = self.__rpc_connection.violas_listexproofforstate(opttype, state, extype, receiver)
             else:
-                datas = self.__rpc_connection.violas_listexproofforstate(optype, state, extype, receiver, excluded)
+                datas = self.__rpc_connection.violas_listexproofforstate(opttype, state, extype, receiver, excluded)
 
             ret = result(error.SUCCEED, "", datas)
             self._logger.info(f"result: {len(ret.datas)}")
