@@ -297,7 +297,7 @@ def main():
 
 
        print("*"*30 + "get proof latest index")
-       ret = client.violas_getexprooflatestindex()
+       ret = client.violas_getexprooflatestindex("b2vusd")
        json_print(ret)
 
 

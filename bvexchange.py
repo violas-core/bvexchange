@@ -542,11 +542,12 @@ def run(mods):
     signal.signal(signal.SIGTERM, signal_stop)
     work_mods = {}
     for mod in mods:
-        work_mods[mod.lower()] = True
         if mod == "all":
             for wm in work_mod:
                 work_mods[wm.name.lower()] = True
             break
+        else:
+            work_mods[mod.lower()] = True
 
     logger.critical(f"work_mods= {work_mods}")
     work_manage.start(work_mods)
