@@ -192,8 +192,8 @@ v2b_maxtimes = 99
 [swap_module]
     #AssocRoot: 0000000000000000000000000a550c18
     #TreasuryCompliance: 0000000000000000000000000b1e55ed
-    #address = "8c66c50156dc8cb4a2410cb54c13522510dfbe77f8a09e9dfcb77bb3d44a14fc"
-    address = "0000000000000000000000000a550c18"
+    address = "10dfbe77f8a09e9dfcb77bb3d44a14fc"
+    #address = "0000000000000000000000000a550c18"
 
 [address_list]
     #receiver addresses

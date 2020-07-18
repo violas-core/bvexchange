@@ -79,16 +79,16 @@ class btcclient(baseobject):
     def disconn_node(self):
         pass
 
-    def __listexproofforstate(self, state, extype, receiver, excluded):
+    def __listexproofforstate(self, opttype, state, extype, receiver, excluded):
         try:
-            self._logger.debug(f"start __listexproofforstate(state={state} type={extype} receiver={receiver} excluded={excluded})")
+            self._logger.debug(f"start __listexproofforstate(opttype={opttype} state={state} type={extype} receiver={receiver} excluded={excluded})")
             if(len(receiver) == 0):
                 return result(error.ARG_INVALID, error.argument_invalid, "")
             
             if excluded is None or len(excluded) == 0:
-                datas = self.__rpc_connection.violas_listexproofforstate(state, extype, receiver)
+                datas = self.__rpc_connection.violas_listexproofforstate(optype, state, extype, receiver)
             else:
-                datas = self.__rpc_connection.violas_listexproofforstate(state, extype, receiver, excluded)
+                datas = self.__rpc_connection.violas_listexproofforstate(optype, state, extype, receiver, excluded)
 
             ret = result(error.SUCCEED, "", datas)
             self._logger.info(f"result: {len(ret.datas)}")
@@ -99,11 +99,11 @@ class btcclient(baseobject):
     def stop(self):
         self.work_stop()
 
-    def __listexproof(self, extype, cursor = 0, limit = 10):
+    def __listexproof(self, opttype, extype, cursor = 0, limit = 10):
         try:
-            self._logger.debug(f"start __listexproof(type={extype} cursor={cursor} limit={limit})")
+            self._logger.debug(f"start __listexproof(opttype={opttype} type={extype} cursor={cursor} limit={limit})")
             
-            datas = self.__rpc_connection.violas_listexproof(extype, cursor, limit)
+            datas = self.__rpc_connection.violas_listexproof(opttype, extype, cursor, limit)
 
             ret = result(error.SUCCEED, "", datas)
             self._logger.info(f"result: {len(ret.datas)}")
@@ -111,36 +111,39 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def isexproofcomplete(self, address, sequence):
+    def isexproofcomplete(self, opttype, address, sequence):
         try:
-            self._logger.debug(f"start isexproofcomplete(address = {address} sequence={sequence})")
+            self._logger.debug(f"start isexproofcomplete(opttype={opttype} address = {address} sequence={sequence})")
             if(len(address) != 64 or sequence < 0):
                 return result(error.ARG_INVALID, error.argument_invalid, "")
                 
-            datas = self.__rpc_connection.violas_isexproofcomplete(address, sequence)
+            datas = self.__rpc_connection.violas_isexproofcomplete(opttype, address, sequence)
             ret = result(error.SUCCEED, "", datas)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def listexproofforstart(self, receiver, excluded):
-        return self.__listexproofforstate(self.proofstate.START.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+    def listexproofforstart(self, opttype, receiver, excluded):
+        return self.__listexproofforstate(opttype, self.proofstate.START.value, comm.values.EX_TYPE_B2V, receiver, excluded)
 
-    def listexproofforend(self, receiver, excluded):
-        return self.__listexproofforstate(self.proofstate.END.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+    def listexproofforend(self, opttype, receiver, excluded):
+        return self.__listexproofforstate(opttype, self.proofstate.END.value, comm.values.EX_TYPE_B2V, receiver, excluded)
 
-    def listexproofforcancel(self, receiver, excluded):
-        return self.__listexproofforstate(self.proofstate.CANCEL.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+    def listexproofforcancel(self, opttype, receiver, excluded):
+        return self.__listexproofforstate(opttype, self.proofstate.CANCEL.value, comm.values.EX_TYPE_B2V, receiver, excluded)
 
-    def listexproofformark(self, receiver, excluded):
-        return self.__listexproofforstate(self.proofstate.MARK.value, comm.values.EX_TYPE_V2B, receiver, excluded)
+    def listexproofformark(self, opttype, receiver, excluded):
+        return self.__listexproofforstate(opttype, self.proofstate.MARK.value, comm.values.EX_TYPE_V2B, receiver, excluded)
 
-    def listexproofforb2v(self, cursor, limit):
-        return self.__listexproof(comm.values.EX_TYPE_B2V, cursor, limit)
+    def listexproofforb2v(self, opttype, cursor, limit):
+        return self.__listexproof(opttype, comm.values.EX_TYPE_B2V, cursor, limit)
 
     def __map_tran(self, data):
-        tran_data = json.dumps({"flag":"btc", "type":"b2v", "state":data.get("state"), "to_address":data.get("address"), "to_module":data.get("vtoken"), "tran_id":data.get("txid"), "sequence":data.get("sequence")})
+        tran_data = json.dumps({"flag":"btc", \
+            "type":"b2v", "state":data.get("state"), "to_address":data.get("address"), "to_module":data.get("vtoken"), \
+            "out_ampunt":data.get("out_amount"), "times":data.get("times"), "tran_id":data.get("txid"), \
+            "sequence":data.get("sequence")})
         _, module = split_full_address(data.get("vtoken"))
         return {
                 "version": data.get("index"),\
@@ -158,9 +161,9 @@ class btcclient(baseobject):
                 "module_address":module \
                 }
 
-    def get_transactions(self, cursor, limit = 1, nouse=True):
+    def get_transactions(self, opttype, cursor, limit = 1, nouse=True):
         try:
-            ret = self.listexproofforb2v(cursor, limit)
+            ret = self.listexproofforb2v(opttype, cursor, limit)
             if ret.state != error.SUCCEED:
                 return ret
             datas = []
@@ -182,26 +185,20 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def sendexproofstart(self, fromaddress, toaddress, amount, vaddress, sequence, vtoken):
+    def sendexproofstart(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, vtoken):
         try:
-            self._logger.info(f"start sendexproofstart (fromaddress={fromaddress}, toaddress={toaddress}, amount={amount:.8f}, vaddress={vaddress}, sequence={sequence}, vtoken={vtoken})")
-            if(len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) != 64 \
-                    or sequence < 0 or len(vtoken) != 64):
-                return result(error.ARG_INVALID, "len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) != 64 or sequence < 0 or len(vtoken) !=64", "")
-            datas = self.__rpc_connection.violas_sendexproofstart(fromaddress, toaddress, f"{amount:.8f}", vaddress, sequence, vtoken)
+            self._logger.info(f"start sendexproofstart (opttype={opttype}, fromaddress={fromaddress}, toaddress={toaddress}, amount={amount:.8f}, vaddress={vaddress}, sequence={sequence}, vtoken={vtoken})")
+            datas = self.__rpc_connection.violas_sendexproofstart(opttype, fromaddress, toaddress, f"{amount:.8f}", vaddress, sequence, vtoken)
             ret = result(error.SUCCEED, "", datas)
             self._logger.info(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def sendexproofend(self, fromaddress, toaddress, vaddress, sequence, amount, version):
+    def sendexproofend(self, opttype, fromaddress, toaddress, vaddress, sequence, amount, version):
         try:
-            self._logger.info(f"start sendexproofend (fromaddress={fromaddress}, toaddress={toaddress}, vaddress={vaddress}, sequence={sequence}, amount={amount:.8f}, version={version})")
-            if(len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) != 64 
-                    or sequence < 0 or version< 0):
-                return result(error.ARG_INVALID, "len(fromaddress) == 0 or len(toaddress) == 0 or fromaddress == toaddress or len(vaddress) == 0 or sequence < 0 or version < 0", "")
-            datas = self.__rpc_connection.violas_sendexproofend(fromaddress, toaddress, vaddress, sequence, f"{amount:.8f}", version)
+            self._logger.info(f"start sendexproofend (opttype={opttype}, fromaddress={fromaddress}, toaddress={toaddress}, vaddress={vaddress}, sequence={sequence}, amount={amount:.8f}, version={version})")
+            datas = self.__rpc_connection.violas_sendexproofend(opttype, fromaddress, toaddress, vaddress, sequence, f"{amount:.8f}", version)
             ret = result(error.SUCCEED, "", datas)
             self._logger.info(f"result: {ret.datas}")
         except Exception as e:
