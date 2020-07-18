@@ -159,8 +159,9 @@ v2b_maxtimes = 99
 
 #
 #type : metadata's type; token is violas/libra token
-#stoken : stable token
-#mtoken : map token
+#stoken : target chain stable token
+#mtoken : violas chain map token
+#mtoken : stoken = 1:1
 [type_token]
     [type_token.v2lusd]
         stoken= "Coin1"
@@ -180,6 +181,26 @@ v2b_maxtimes = 99
     [type_token.l2vgbp]
         stoken = "VLSGBP"
         mtoken = "GBP"
+    [type_token.b2vusd]
+        stoken = "VLSUSD"
+        mtoken = "BTC"
+    [type_token.b2veur]
+        stoken = "VLSEUR"
+        mtoken = "BTC"
+    [type_token.b2vsgd]
+        stoken = "VLSSGD"
+        mtoken = "BTC"
+    [type_token.b2vgbp]
+        stoken = "VLSGBP"
+        mtoken = "BTC"
+    [type_token.b2lusd]
+        stoken = "Coin1"
+        mtoken = "BTC"
+    [type_token.b2leur]
+        stoken = "Coin2"
+        mtoken = "BTC"
+    [type_token.l2b]
+        mtoken = "BTC"
 #[type_token.l2b]
 #        mtoken = "BTC"
 #    [type_token.b2lusd]
@@ -195,6 +216,35 @@ v2b_maxtimes = 99
     address = "10dfbe77f8a09e9dfcb77bb3d44a14fc"
     #address = "0000000000000000000000000a550c18"
 
+#swap rule:
+#  thd chain -> violas chain : x2v--- . ex l2vusd is libra token to swap violas token(usd)
+#  violas chain -> thd chain : v2x--- . ex v2lusd is violas token to swap libra token(coin1)
+#  l2vusd:
+#     case 1: Coin1/Coin2 -> vlsusd  
+#             a. libra transaction: send coinX to address_list.receiver.address(type = l2vusd and chain = "libra")
+#             b. bs(bvexchange server) get transaction(type = l2vusd and receiver = a.address) info(amount toaddress ex..)
+#             c. bs get address(address_list.sender.address(type = l2vusd and chain = "violas"))
+#             d. bs mint map-token(name = usd  amount = b.amount)
+#             e. bs execute swap to vlsusd and designated address(b.toaddress)
+#             f. bs change transaction state to end(libra transaction and use a.address)
+#  v2lusd:
+#     case 1: vlsusd/vlseur/vlssgd/vlsgbp -> Coin1
+#             a. violas transaction: send vlsXXX to address_list.receiver.address(type = v2lusd and chain = "violas")
+#             b. bs get transaction(type = v2lusd and receiver = a.address) info(amount toaddress ex..)
+#             c. bs get address_list.combine.address(type = v2lusd and chain = "violas") for swap use to receiver usd token
+#             d. bs execute swap, if succeed , get c.address token(usd) changed amount.
+#             e. libra transaction: send Coin1 to b.toaddress(amount = d.amount)
+#             f. bs change transaction state to end(violas transaction and use a.address)
+#             g. bs burn c.address's changed token(usd , amount)
+#
+# note:
+#  1. swap server is single thread(one-token -> one-token), so receiver is multi, but traget token only one address, 
+#     in this configure, we can work multi thread(every-type has only one thread)
+#  2. libra chain has't swap, so can use the same address(testnet mod), maybe transaction will failed(libra support multi thread 
+#     for thread???), anyway wo first ignore it for fast work
+#  3. combine address must be difference, because we will calaculation swap result with combine address's token changed
+#  4. address_list.sender.address(type = X2vXXX and chain = "violas") must be difference, because we will execute mint token to it
+#     and execute swap function with this address. 
 [address_list]
     #receiver addresses
     ##violas chain receiver address
@@ -215,10 +265,33 @@ v2b_maxtimes = 99
 
     ##btc chain receiver address
     [[address_list.receiver]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
         type = "b2v"
         chain = "btc"
-    
+    [[address_list.receiver]]
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        type = "b2vusd"
+        chain = "btc"
+    [[address_list.receiver]]
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        type = "b2veur"
+        chain = "btc"
+    [[address_list.receiver]]
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        type = "b2vsgd"
+        chain = "btc"
+    [[address_list.receiver]]
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        type = "b2vgbp"
+        chain = "btc"
+    [[address_list.receiver]]
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        type = "b2lusd"
+        chain = "btc"
+    [[address_list.receiver]]
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        type = "b2leur"
+        chain = "btc"
     ##libra chain receiver address
     [[address_list.receiver]]
         address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
@@ -244,37 +317,24 @@ v2b_maxtimes = 99
         address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
         type = "l2b"
         chain = "libra"
-    [[address_list.receiver]]
-        address = "" #btc address
-        type = "b2lusd"
-        chain = "btc" #btc address
-    [[address_list.receiver]]
-        address = "" #btc address
-        type = "b2leur"
-        chain = "btc"
+
     #sender address
-    ##send btcbtc
+    ##send btc
     [[address_list.sender]]
-        address = "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
+        address = "7d572ec38dd124ad4faec3fc077217efab88cc9dd86f72d8816b3cabf155eb86"
         type = "b2v"
         chain = "violas"
 
     ##send btc
     [[address_list.sender]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
         type = "v2b"
         chain = "btc"
 
     [[address_list.sender]]
-        address = "2N9fQcit5KB8vJHmBF5Z4DkUUTCgJA8GKb3"
-        type = "v2b"
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        type = "l2b"
         chain = "btc"
-
-    [[address_list.sender]]
-        address = "2MwBFJJn1f5Sg242D3wNUinKUCKS3GzCn7j"
-        type = "v2b"
-        chain = "btc"
-
     ##send violas tokens
     [[address_list.sender]]
         address = "ea6649bcbe1377106201f3829902748278a69a80e181f0c4eefff64a589883aa"
@@ -306,9 +366,45 @@ v2b_maxtimes = 99
         type = "v2leur"
         chain = "libra"
 
+    [[address_list.sender]]
+        address = "98cd4e572f88b780e485a187fd8088d831ff3012cef45601b1e2abf670d619e5"
+        type = "b2vusd"
+        chain = "violas"
+
+    [[address_list.sender]]
+        address = "47535b0273d05a3689680409b18c76db4a5d8ad92880cf11fcbed74310b67bfc"
+        type = "b2veur"
+        chain = "violas"
+
+    [[address_list.sender]]
+        address = "ed997d48192d313deda1d0335722a9bf231bded0afc5ff71c3882b4865cc2f0b"
+        type = "b2vsgd"
+        chain = "violas"
+
+    [[address_list.sender]]
+        address = "607586552150ab702006dd1731f0a9169326aa2ff707002c6bab92b8c8fd4dd3"
+        type = "b2vgbp"
+        chain = "violas"
+    #combine 
     [[address_list.combine]]
         address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
         type = "v2lusd"
+        chain = "violas"
+    [[address_list.combine]]
+        address = "c62da985e679fa642f51f84f694be65a8d3b6ca4b293491b63adf1dfc9754a33"
+        type = "v2leur"
+        chain = "violas"
+    [[address_list.combine]]
+        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
+        type = "l2b"
+        chain = "btc"
+    [[address_list.combine]]
+        address = "c8a39b68308f01fe8f1921be4635f76ae8f5ebfc0aebd0d7bf8c94a992a16038"
+        type = "v2b"
+        chain = "violas"
+    [[address_list.combine]]
+        address = "785bc36d0cc97aa3fef3c583625578717701909c5685e581533295bc590c7190"
+        type = "l2b"
         chain = "violas"
 #    #token info moudule <-> token_id: check token_is is valid.
 #    [[address_list.token]]

@@ -39,38 +39,48 @@ def reg_run():
 
     violas_token_id_list = stmanage.get_support_token_id("violas")
     libra_token_id_list = stmanage.get_support_token_id("libra")
-    btc_token_id = "BTCBTC"
 
     #get support opt-type list id for chain
     opt_list = stmanage.get_type_stable_token()
-    l2v_opt_list = [opt for opt in opt_list.keys() if opt.startswith("l2v")]
-    v2l_opt_list = [opt for opt in opt_list.keys() if opt.startswith("v2l")]
+    #l2v_opt_list = [opt for opt in opt_list.keys() if opt.startswith("l2v")]
+    #v2l_opt_list = [opt for opt in opt_list.keys() if opt.startswith("v2l")]
+    #v2b_opt_list = [opt for opt in opt_list.keys() if opt.startswith("v2b")]
+    #b2v_opt_list = [opt for opt in opt_list.keys() if opt.startswith("b2v")]
 
-    #logger.debug("***************************************init vbtc sender*****************************")
-    ##vbtc sender bind  token_id
-    #senders = stmanage.get_sender_address_list("b2v", "violas")
-    #assert senders is not None and len(senders) > 0, f"v2b senders[{senders}] not found."
-    #comm_funs.address_list_bind_token_id(vclient, wclient, senders, )
-    #comm_funs.init_address_list(vclient, wclient, senders, vbtc_token_address, btc_token_id)
-    #logger.debug("init b2v senders ok")
+    for opt_type in opt_list:
+        logger.debug("start bind dtype = {opt_type} chain = violas receiver")
+        senders = stmanage.get_sender_address_list(opt_type, "violas")
+        receiver = stmanage.get_receiver_address_list(opt_type, "violas")
+        combine = stmanage.get_combine_address_list(opt_type, "violas")
+        addresses = []
+        if senders :
+            addresses.extend(senders)
+        if receiver:
+            addresses.extend(receiver)
+        if combine:
+            addresses.extend(combine)
+        for token_id in violas_token_id_list:
+        
+            comm_funs.init_address_list(vclient, wclient, addresses, token_id, minamount = 100_000000)
 
     #vlibra sender bind token_id
-    logger.debug("***************************************init vlibra sender*****************************")
-    for opt_type in l2v_opt_list:
-        senders = stmanage.get_sender_address_list(opt_type, "violas")
-        assert senders is not None and len(senders) > 0, f"{opt_type} senders not found."
-        #comm_funs.init_address_list(vclient, wclient, senders, opt_list.get(opt_type))
-        for token_id in violas_token_id_list:
-            comm_funs.init_address_list(vclient, wclient, senders, token_id, minamount = 100_000000)
-    logger.debug("init l2v senders ok")
+    #logger.debug("***************************************init vlibra sender*****************************")
+    #for opt_type in l2v_opt_list:
+    #    senders = stmanage.get_sender_address_list(opt_type, "violas")
+    #    assert senders is not None and len(senders) > 0, f"{opt_type} senders not found."
+    #    #comm_funs.init_address_list(vclient, wclient, senders, opt_list.get(opt_type))
+    #    for token_id in violas_token_id_list:
+    #        comm_funs.init_address_list(vclient, wclient, senders, token_id, minamount = 100_000000)
+    #logger.debug("init l2v senders ok")
 
-    logger.debug("***************************************bind module: v2l receiver*****************************")
-    for opt_type in v2l_opt_list:
-        logger.debug("start bind dtype = {opt_type} chain = violas receiver")
-        receivers = stmanage.get_receiver_address_list(opt_type, "violas")
-        assert receivers is not None and len(receivers) > 0, f"{opt_type} receiver not found."
-        for token_id in violas_token_id_list:
-            comm_funs.init_address_list(vclient, wclient, receivers, token_id, minamount = 100_000000)
+    #logger.debug("***************************************bind module: v2l receiver*****************************")
+    #for opt_type in v2l_opt_list:
+    #    logger.debug("start bind dtype = {opt_type} chain = violas receiver")
+    #    receivers = stmanage.get_receiver_address_list(opt_type, "violas")
+    #    assert receivers is not None and len(receivers) > 0, f"{opt_type} receiver not found."
+    #    for token_id in violas_token_id_list:
+    #        comm_funs.init_address_list(vclient, wclient, receivers, token_id, minamount = 100_000000)
+
 
 #test use: init client address
 def init_address(address):
