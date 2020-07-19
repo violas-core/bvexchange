@@ -225,15 +225,6 @@ class vlbase(baseobject):
         for receiver in self.receivers:
             assert len(receiver) in VIOLAS_ADDRESS_LEN, f"receiver({receiver}) is invalid"
     
-    def stop(self):
-        try:
-            self.map_client.stop()
-            self.from_client.stop()
-            self.work_stop()
-            pass
-        except Exception as e:
-            parse_except(e)
-
     def db_data_is_valid(self, data):
         try:
             toaddress   = data["receiver"]
