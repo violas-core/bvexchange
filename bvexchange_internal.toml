@@ -160,7 +160,7 @@ v2b_maxtimes = 99
 #
 #type : metadata's type; token is violas/libra token
 #stoken : target chain stable token
-#mtoken : violas chain map token
+#mtoken : violas chain map token only from violas chain swap use this field
 #mtoken : stoken = 1:1
 [type_token]
     [type_token.v2lusd]
@@ -171,35 +171,28 @@ v2b_maxtimes = 99
         mtoken = "EUR"
     [type_token.l2vusd]
         stoken = "VLSUSD"
-        mtoken = "USD"
     [type_token.l2veur]
         stoken = "VLSEUR"
-        mtoken = "EUR"
     [type_token.l2vsgd]
         stoken = "VLSSGD"
-        mtoken = "SGD"
     [type_token.l2vgbp]
         stoken = "VLSGBP"
-        mtoken = "GBP"
     [type_token.b2vusd]
         stoken = "VLSUSD"
-        mtoken = "BTC"
     [type_token.b2veur]
         stoken = "VLSEUR"
-        mtoken = "BTC"
     [type_token.b2vsgd]
         stoken = "VLSSGD"
-        mtoken = "BTC"
     [type_token.b2vgbp]
         stoken = "VLSGBP"
-        mtoken = "BTC"
     [type_token.b2lusd]
         stoken = "Coin1"
-        mtoken = "BTC"
     [type_token.b2leur]
         stoken = "Coin2"
-        mtoken = "BTC"
     [type_token.l2b]
+        mtoken = "BTC"
+    [type_token.v2b]
+        stoken = "BTC"
         mtoken = "BTC"
 #[type_token.l2b]
 #        mtoken = "BTC"

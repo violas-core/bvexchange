@@ -151,9 +151,11 @@ class works:
                 logger.debug(f"looping: {mod}")
                 try:
                     basedata = "vfilter"
+                    ttype = "violas"
                     obj = analysis_proof.aproof(name=mod, ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.append_token_id(dtype, stmanage.get_token_id(dtype, "violas"))
+                    #set can receive token of violas transaction
+                    obj.append_token_id(stmanage.get_support_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
@@ -204,8 +206,11 @@ class works:
                 logger.debug(f"looping: {mod}")
                 try:
                     basedata = "lfilter"
-                    obj = analysis_proof.aproof(name=mod, ttype="libra", dtype=dtype, \
+                    ttype = "libra"
+                    obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+                    #set can receive token of libra transaction
+                    obj.append_token_id(stmanage.get_support_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
@@ -231,9 +236,11 @@ class works:
                 logger.debug(f"looping: {mod}")
                 try:
                     basedata = "vfilter"
-                    obj = analysis_proof.aproof(name=mod, ttype="violas", dtype=dtype, \
+                    ttype = "violas"
+                    obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.append_token_id(stmanage.get_support_token_id("violas"))
+                    #set can receive token of violas transaction
+                    obj.append_token_id(stmanage.get_support_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
@@ -263,14 +270,9 @@ class works:
                             stmanage.get_libra_nodes(),
                             stmanage.get_violas_nodes(), 
                             stmanage.get_db(dtype), 
-                            None, #from libra module is fixed
-                            None, #libra no token_id
-                            stmanage.get_module_address(dtype, "violas", False), 
-                            stmanage.get_token_id(dtype, "violas"),
                             list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
-                            "libra",
-                            "violas")
+                            )
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
@@ -352,9 +354,11 @@ class works:
                 logger.debug("looping: b2vproof")
                 try:
                     basedata = "bfilter"
+                    ttype = "btc"
                     obj = analysis_proof.aproof(name=mod, ttype="btc", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    obj.append_module(dtype, stmanage.get_module_address(dtype, "btc", False))
+                    #set can receive token of btc transaction
+                    obj.append_token_id(stmanage.get_support_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__btc_min_valid_version - 1)

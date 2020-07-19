@@ -122,6 +122,7 @@ def get_db_echo():
 def get_max_times(mtype):
     return setting.v2b_maxtimes
 
+#get btc/libra chain stable's map token
 def get_token_map(token = None):
     token_map = {}
     for typename, tokens in setting.type_token.items():
@@ -131,6 +132,7 @@ def get_token_map(token = None):
         return token_map.get(token)
     return token_map
 
+#get opttype' stable token
 def get_type_stable_token(mtype = None):
     type_stable_token = {}
     for typename, tokens in setting.type_token.items():
@@ -151,21 +153,30 @@ def get_type_lbr_token(mtype = None):
     if mtype:
         return type_lbr_token.get(mtype)
     return type_lbr_token
+
 def get_support_token_id(chain):
-    assert chain is not None, "chain is violas/libra"
+    assert chain is not None, "chain is violas/libra/btc"
     mtoken_list = []
-    opthead = "v2" #default is libra chain token
+    opthead = [] 
     if chain == "violas":
-        opthead = "l2"
-        mtoken_list = [tokens.get("mtoken") for typename, tokens in setting.type_token.items() \
+        #get map tokens only violas use
+        for opthead in ["v2l", "v2b"]:
+            mtokens = [tokens.get("mtoken") for typename, tokens in setting.type_token.items() \
+                if typename.startswith(opthead)]
+            mtoken_list.extend(mtokens)
+        optheads = ["l2v", "b2v"]
+
+    elif chain == "libra":
+        optheads = ["v2l"]
+    elif chain == "btc":
+        optheads = ["v2b"]
+
+    #get target chain stable token
+    for opthead in optheads:
+        stoken_list = [tokens.get("stoken") for typename, tokens in setting.type_token.items() \
             if typename.startswith(opthead)]
-
-    stoken_list = [tokens.get("stoken") for typename, tokens in setting.type_token.items() \
-            if typename.startswith(opthead)]
-
-
     
-    return stoken_list + mtoken_list
+    return list(set(stoken_list + mtoken_list))
 
 def get_swap_module():
     return setting.swap_module.get("address")
@@ -216,8 +227,14 @@ def main():
     print(f"get type_stable_token: ")
     json_print(get_type_stable_token())
     print(f"get type_stable_token(l2vusd): {get_type_stable_token('l2vusd')}")
+    print(f"get type_stable_token(v2lusd): {get_type_stable_token('v2lusd')}")
+    print(f"get type_stable_token(l2b): {get_type_stable_token('l2b')}")
+    print(f"get type_stable_token(b2lusd): {get_type_stable_token('b2lusd')}")
+    print(f"get type_stable_token(b2leur): {get_type_stable_token('b2leur')}")
+    print(f"get token_map(Coin2): {get_token_map('Coin2')}")
     print(f"get support_token_id(libra): {get_support_token_id('libra')}")
     print(f"get support_token_id(violas): {get_support_token_id('violas')}")
+    print(f"get support_token_id(btc): {get_support_token_id('btc')}")
     print(f"get swap module(violas): {get_swap_module()}")
 
     #json_print(get_conf())

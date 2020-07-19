@@ -55,6 +55,7 @@ class violasproxy(baseobject):
         FILTER  = auto()
         BALANCE = auto()
         LISTUNSPENT = auto()
+        PROOF   = auto()
 
     def __init__(self, name, host, port = None, user = None, password = None, domain="violaslayer", walletname="bwallet"):
         baseobject.__init__(self, name)
@@ -188,10 +189,10 @@ class violasproxy(baseobject):
     def stop(self):
         self.work_stop()
 
-    def violas_listexproof(self, opttype, extype, cursor = 0, limit = 10):
+    def violas_listexproof(self, extype, cursor = 0, limit = 10):
         url = None
         if extype in self.valid_swap_type:
-            url = self.create_opt_url(self.opt.GET, self.opttype[opttype.upper()], cursor=cursor, limit=limit)
+            url = self.create_opt_url(self.opt.GET, self.opttype.PROOF, cursor=cursor, limit=limit)
         elif extype == comm.values.EX_TYPE_V2B:
             url = self.create_opt_url(self.opt.GET, self.opttype.MARK, cursor=cursor, limit=limit)
         else:
@@ -204,8 +205,8 @@ class violasproxy(baseobject):
         ret = requests.get(url).json()
         return self.run_request(url)
 
-    def violas_getexprooflatestindex(self, opttype, extype = comm.values.EX_TYPE_B2V):
-        url = self.create_opt_url(self.opt.GET, self.opttype[opttype.upper()], datatype="version")
+    def violas_getexprooflatestindex(self, extype = comm.values.EX_TYPE_B2V):
+        url = self.create_opt_url(self.opt.GET, self.opttype.FILTER, datatype="version")
         ret = requests.get(url).json()
         return self.run_request(url)
 

@@ -24,6 +24,7 @@ class autoname(enumbase):
         return name.lower()
 
 #transaction type for transaction's data flag
+#parse metadata
 class trantypebase(autoname):
     VIOLAS = auto()
     LIBRA  = auto()
@@ -31,6 +32,7 @@ class trantypebase(autoname):
     UNKOWN = auto()
 
 #datatype for transaction's data type
+#parse metadata
 class datatypebase(autoname):
     V2LUSD  = auto()
     V2LEUR  = auto()
@@ -45,6 +47,7 @@ class datatypebase(autoname):
     UNKOWN  = auto()
 
 ##db index(redis)
+#dbindexbase item must be eq datatypebase item(B2Vxxx B2Lxxx L2Vxxx V2Lxxx)
 class dbindexbase(enumbase):
     RECORD  = 1
     #scan chain
@@ -64,6 +67,7 @@ class dbindexbase(enumbase):
     B2V     = 25
 
 #work mod 
+#workmod item(PROOF/EX) must be eq dbindexbase 
 class workmod(enumbase):
     COMM         = auto()   
     VFILTER      = auto()    #scan violas chain

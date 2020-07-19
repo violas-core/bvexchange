@@ -44,12 +44,15 @@ class btcclient(baseobject):
         def get_data(self):
             return ""
         def get_token_id(self):
-            return "3"
+            return "btc"
+        def get_current_code(self):
+            return "btc"
 
     class proofstate(Enum):
         START   = "start"
         END     = "end"
         CANCEL  = "cancel"
+        STOP    = "stop"
         MARK    = "mark"
 
     def __init__(self, name, btc_conn):
@@ -81,7 +84,7 @@ class btcclient(baseobject):
 
     def __listexproofforstate(self, opttype, state, extype, receiver, excluded):
         try:
-            self._logger.debug(f"start __listexproofforstate(opttype={opttype} state={state} type={extype} receiver={receiver} excluded={excluded})")
+            self._logger.debug(f"start __listexproofforstate(opttype = {opttype} state={state} type={extype} receiver={receiver} excluded={excluded})")
             if(len(receiver) == 0):
                 return result(error.ARG_INVALID, error.argument_invalid, "")
             
@@ -99,11 +102,11 @@ class btcclient(baseobject):
     def stop(self):
         self.work_stop()
 
-    def __listexproof(self, opttype, extype, cursor = 0, limit = 10):
+    def __listexproof(self, extype, cursor = 0, limit = 10):
         try:
-            self._logger.debug(f"start __listexproof(opttype={opttype} type={extype} cursor={cursor} limit={limit})")
+            self._logger.debug(f"start __listexproof(type={extype} cursor={cursor} limit={limit})")
             
-            datas = self.__rpc_connection.violas_listexproof(opttype, extype, cursor, limit)
+            datas = self.__rpc_connection.violas_listexproof(extype, cursor, limit)
 
             ret = result(error.SUCCEED, "", datas)
             self._logger.info(f"result: {len(ret.datas)}")
@@ -133,11 +136,14 @@ class btcclient(baseobject):
     def listexproofforcancel(self, opttype, receiver, excluded):
         return self.__listexproofforstate(opttype, self.proofstate.CANCEL.value, comm.values.EX_TYPE_B2V, receiver, excluded)
 
+    def listexproofforstop(self, opttype, receiver, excluded):
+        return self.__listexproofforstate(opttype, self.proofstate.STOP.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+
     def listexproofformark(self, opttype, receiver, excluded):
         return self.__listexproofforstate(opttype, self.proofstate.MARK.value, comm.values.EX_TYPE_V2B, receiver, excluded)
 
-    def listexproofforb2v(self, opttype, cursor, limit):
-        return self.__listexproof(opttype, comm.values.EX_TYPE_B2V, cursor, limit)
+    def listexproofforb2v(self, cursor, limit):
+        return self.__listexproof(comm.values.EX_TYPE_B2V, cursor, limit)
 
     def __map_tran(self, data):
         tran_data = json.dumps({"flag":"btc", \
@@ -161,9 +167,9 @@ class btcclient(baseobject):
                 "module_address":module \
                 }
 
-    def get_transactions(self, opttype, cursor, limit = 1, nouse=True):
+    def get_transactions(self, cursor, limit = 1, nouse=True):
         try:
-            ret = self.listexproofforb2v(opttype, cursor, limit)
+            ret = self.listexproofforb2v(cursor, limit)
             if ret.state != error.SUCCEED:
                 return ret
             datas = []
