@@ -57,6 +57,8 @@ class aproof(abase):
             self._fdbclient = dbvfilter(name, fdbconf.get("host"), fdbconf.get("port"), \
                     fdbconf.get("db"), fdbconf.get("password"))
 
+        self.init_valid_state()
+
     def __del__(self):
         super().__del__()
         if self._fdbclient is not None:
@@ -90,10 +92,29 @@ class aproof(abase):
         return dtype in self.get_data_types()
 
     def check_tran_is_valid(self, tran_info):
-        return tran_info.get("flag", None) in self.get_tran_types() and \
-               self.proofstate_name_to_value(tran_info.get("state", None)) != self.proofstate.UNKOWN and \
-               self.is_valid_datatype(tran_info.get("type")) and \
-               self.is_valid_token_id(tran_info.get("token_id")) 
+
+        if tran_info.get("flag", None) not in self.get_tran_types():
+            self._logger.warning(f"flag({tran_info.get('flag', None)}) is invalid.")
+            return False
+
+        if self.proofstate_name_to_value(tran_info.get("state", None)) == self.proofstate.UNKOWN:
+            self._logger.warning(f"state({tran_info.get('state', None)}) is invalid.")
+            return False
+
+        if not self.is_valid_datatype(tran_info.get("type")):
+            self._logger.warning(f"type({tran_info.get('type', None)}) is invalid.")
+            return False
+
+        if not self.is_valid_token_id(tran_info.get("token_id")): 
+            self._logger.warning(f"token_id({tran_info.get('token_id', None)}) is invalid.token_id:{self._token_id}")
+            return False
+
+        return True
+
+        #return tran_info.get("flag", None) in self.get_tran_types() and \
+        #       self.proofstate_name_to_value(tran_info.get("state", None)) != self.proofstate.UNKOWN and \
+        #       self.is_valid_datatype(tran_info.get("type")) and \
+        #       self.is_valid_token_id(tran_info.get("token_id")) 
 
     def is_valid_proofstate_change(self, new_state, old_state):
         if new_state == self.proofstate.START:
@@ -162,7 +183,7 @@ class aproof(abase):
                     return result(error.TRAN_INFO_INVALID, f"key{version} is exists, db datas is old, flushdb ?. violas tran info : {tran_info}")
 
                 #create tran id
-                tran_id = get_tran_id(tran_info)
+                tran_id = self.get_tran_id(tran_info)
 
                 tran_info["flag"] = tran_info["flag"].value
                 tran_info["type"] = tran_info["type"].value
@@ -216,10 +237,10 @@ class aproof(abase):
         except Exception as e:
             ret = parse_except(e)
         return ret
-        
+
     def update_min_version_for_state(self, state):
         try:
-            self._logger.debug(f"start update_min_version_for_start")
+            self._logger.debug(f"start update_min_version_for_state")
             #update min version for state is start
             ret = self._dbclient.get_proof_min_version_for_state(state)
             if ret.state != error.SUCCEED:
@@ -263,6 +284,7 @@ class aproof(abase):
         try:
             self._logger.debug("start vproof work")
 
+            new_state = "start"
             ret = self._dbclient.get_latest_filter_ver()
             if ret.state != error.SUCCEED:
                 return ret
@@ -278,7 +300,7 @@ class aproof(abase):
 
             #not found new transaction to change state
             if start_version > max_version:
-                self._logger.debug(f"start version:{start_version} max version:{max_version}")
+                self._logger.debug(f"start version:{start_version}  > max version:{max_version}")
                 return result(error.SUCCEED)
 
             version  = start_version
@@ -345,7 +367,8 @@ class aproof(abase):
 
             #here version is not analysis
             self._dbclient.set_latest_filter_ver(latest_filter_ver)
-            self.update_min_version_for_start()
+            for state in ["start", "stop", "cancel"]:
+                self.update_min_version_for_state(state)
             ret = result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)

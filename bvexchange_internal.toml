@@ -144,6 +144,34 @@ v2b_maxtimes = 99
     password = "violas"
     step = 500
 
+#b2vxxx proof db
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "b2vusd"
+    password = "violas"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "b2veur"
+    password = "violas"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "b2vsgd"
+    password = "violas"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "b2vgbp"
+    password = "violas"
+    step = 500
 [[db_list]]
     host = "127.0.0.1"
     port = 6378

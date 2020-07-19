@@ -343,19 +343,19 @@ class works:
 
     def work_b2vproof(self, **kargs):
         try:
-            logger.critical("start: btc b2v proof")
             nsec = kargs.get("nsec", 0)
             mod = kargs.get("mod")
             assert mod is not None, f"mod name is None"
+            logger.critical(f"start: btc {mod} proof")
 
             #libra transaction's data types 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug("looping: b2vproof")
+                logger.debug(f"looping: {mod}")
                 try:
                     basedata = "bfilter"
                     ttype = "btc"
-                    obj = analysis_proof.aproof(name=mod, ttype="btc", dtype=dtype, \
+                    obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of btc transaction
                     obj.append_token_id(stmanage.get_support_token_id(ttype))
@@ -406,7 +406,7 @@ class works:
 
     def get_dtype_from_mod(self, modname):
         dtype = modname.lower()
-        if dtype[:3] in ["v2b", "b2v", "l2v", "v2l"]:
+        if dtype[:3] in ["v2b", "b2v", "l2v", "v2l", "b2l", "l2b"]:
             if dtype.endswith("ex"):
                 return dtype[:-2]
             elif dtype.endswith("proof"):
@@ -448,13 +448,13 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2lproof))
             elif name.startswith("L2V") and len(name) == 11 and name.endswith("PROOF"):
                 self.funcs_map.update(self.create_func_dict(item, self.work_l2vproof))
-            elif name.startswith("B2V") and len(name) == 8 and name.endswith("PROOF"):
+            elif name.startswith("B2V") and name.endswith("PROOF"):
                 self.funcs_map.update(self.create_func_dict(item, self.work_b2vproof))
-            elif name.startswith("V2B") and len(name) == 8 and name.endswith("PROOF"):
+            elif name.startswith("V2B") and name.endswith("PROOF"):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2bproof))
-            elif name.startswith("L2V") and len(name) == 8 and name.endswith("EX"):
+            elif name.startswith("L2V") and name.endswith("EX"):
                 self.funcs_map.update(self.create_func_dict(item, self.work_l2v))
-            elif name.startswith("V2L") and len(name) == 8 and name.endswith("EX"):
+            elif name.startswith("V2L") and name.endswith("EX"):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2l))
             elif name.startswith("B2V") and name.endswith("EX"):
                 self.__funcs_map.update(self.create_func_dict(item, self.work_b2v))
