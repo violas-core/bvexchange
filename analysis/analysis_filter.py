@@ -58,7 +58,8 @@ class afilter(abase):
         #remove no-use key
         no_use = ["currency_code"]
         for key in no_use:
-            tran_data.pop(key)
+            if key in tran_data:
+                tran_data.pop(key)
 
         return tran_data
 

@@ -44,9 +44,9 @@ class btcclient(baseobject):
         def get_data(self):
             return ""
         def get_token_id(self):
-            return "btc"
-        def get_current_code(self):
-            return "btc"
+            return "BTC"
+        def get_currency_code(self):
+            return "BTC"
 
     class proofstate(Enum):
         START   = "start"

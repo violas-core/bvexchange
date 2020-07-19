@@ -78,7 +78,7 @@ class dbvproof(dbvbase):
 
     def set_proof_min_version_for_state(self, version, state):
         try:
-            ret = self.set(f"self.__KEY_MIN_VERSION_{state}", version)
+            ret = self.set(f"{self.__KEY_MIN_VERSION_}{state.lower()}", version)
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -93,7 +93,7 @@ class dbvproof(dbvbase):
 
     def get_proof_min_version_for_state(self, state):
         try:
-            ret = self.get("self.__KEY_MIN_VERSION_{state}")
+            ret = self.get(f"{self.__KEY_MIN_VERSION_}{state.lower()}")
             if ret.state == error.SUCCEED:
                 if ret.datas is None:
                     ret = result(error.SUCCEED, "", '0')
