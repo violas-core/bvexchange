@@ -167,7 +167,7 @@ class violasproxy(baseobject):
 
     @property
     def valid_swap_type(self):
-        return (comm.values.EX_TYPE_B2V, comm.values.EX_TYPE_B2L)
+        return (comm.values.EX_TYPE_B2V, comm.values.EX_TYPE_B2L, comm.values.EX_TYPE_PROOF)
 
     def violas_listexproofforstate(self, opttype, state, extype, receiver, excluded = None):
         url = None

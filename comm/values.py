@@ -11,6 +11,7 @@ MIN_EST_GAS = 1000 * COINS / 100000000  #estimate min gas value(satoshi), check 
 EX_TYPE_B2V = "b2v"
 EX_TYPE_B2L = "b2l"
 EX_TYPE_V2B = "v2b"
+EX_TYPE_PROOF = "proof"
 
 VIOLAS_ADDRESS_LEN = [32, 64]
 

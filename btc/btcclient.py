@@ -127,11 +127,17 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_transactions_for_start(receiver, opttype, start_version = None):
+        return self.__listexproofforstate(opttype, self.proofstate.START.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+
     def listexproofforstart(self, opttype, receiver, excluded):
         return self.__listexproofforstate(opttype, self.proofstate.START.value, comm.values.EX_TYPE_B2V, receiver, excluded)
 
     def listexproofforend(self, opttype, receiver, excluded):
         return self.__listexproofforstate(opttype, self.proofstate.END.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+
+    def get_transactions_for_cancel(receiver, opttype, start_version, excluded = None):
+        return self.__listexproofforstate(opttype, self.proofstate.CANCEL.value, comm.values.EX_TYPE_B2V, receiver, excluded)
 
     def listexproofforcancel(self, opttype, receiver, excluded):
         return self.__listexproofforstate(opttype, self.proofstate.CANCEL.value, comm.values.EX_TYPE_B2V, receiver, excluded)
@@ -268,6 +274,9 @@ class btcclient(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def get_balance(address, token_id = None):
+        return self.getwalletbalance(address)
 
     def getwalletaddressbalance(self, address):
         try:
