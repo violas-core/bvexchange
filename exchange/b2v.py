@@ -2,8 +2,9 @@
 import operator
 import sys, os
 import json
-import log
 sys.path.append(os.getcwd())
+sys.path.append("..")
+import log
 import log.logger
 import traceback
 import datetime
@@ -16,486 +17,172 @@ import comm.result
 import comm.values
 from comm.result import result, parse_except
 from comm.error import error
-from db.dbb2v import dbb2v
-from btc.btcclient import btcclient
-import vlsopt.violasclient
-from vlsopt.violasclient import violasclient, violaswallet
-from vlsopt.violasproof import violasproof
-from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
+from db.dbl2v import dbl2v as localdb
 from baseobject import baseobject
 from enum import Enum
-from comm.functions import split_full_address, merge_full_address
+from vrequest.request_client import requestclient
+from exchange.vbbase import vbbase
 
-COINS = comm.values.COINS
-VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
-#load logging
-name="b2v"
+#module self.name
+#name="exlv"
 wallet_name = "vwallet"
 
-class exb2v(baseobject):
-    def __init__(self, name, vnodes , bnode,  module, token_id, combin, chain = "violas"):
-        self.__warning_count = {}
-        self.__show_warning_count = 1
-        baseobject.__init__(self, name);
-        self.from_chain = "btc"
-        self.map_chain = chain
-        #btc init
-        self._bclient = btcclient(name, bnode)
-        self._b2v = dbb2v(self.name(), f"{self.from_chain}_{self.name()}.db")
-    
-        #violas init
-        self._vclient = violasproof(self.name(), vnodes)
-        self._vwallet = violaswallet(self.name(), wallet_name)
-    
-        _, mod = split_full_address(module)
-        self._module_address = mod
-        self._combineaddress = combin
-        print(token_id)
-        self.token_id = token_id
+VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
+#load logging
+class b2v(vbbase):    
+    def __init__(self, name, 
+            dtype, 
+            btcnodes, 
+            vlsnodes, 
+            proofdb, 
+            receivers, 
+            senders, 
+            swap_module):
 
-    @property
-    def token_id(self):
-        return self._token_id
+        vlbase.__init__(self, name, dtype, btcnodes, vlsnodes, \
+                proofdb, receivers, senders, swap_module, \
+                "btc", "violas")
+        self.init_extend_property()
+        self.init_exec_states()
 
-    @token_id.setter
-    def token_id(self, value):
-        self._token_id = value
-        assert self._token_id >=0, f"token id({self._token_id}) is invalid."
+    def __del__(self):
+        pass
 
-    def append_waning(self, key):
-        if key in self.__warning_count:
-            self.__warning_count[key] += 1
-        else:
-            self.__warning_count[key] = 1
+    def init_extend_property(self):
+        self.append_property("combine_account", None)
 
-    def set_show_warning_count(self, count):
-        self.__show_warning_count = count
+    def init_exec_states(self):
 
-    def get_show_warning_count(self):
-        return self.__show_warning_count
+        self.append_property("use_exec_update_db_states", 
+                [localdb.state.VSUCCEED, localdb.state.SSUCCEED])
 
-    def can_show_waning(self, key, update = True):
-        count = 0
-        if key in self.__warning_count:
-            count = self.__warning_count[key]
-        if update == True:
-            self.append_waning(key)
-        return count < self.__show_warning_count
+        self.append_property("use_exec_failed_state", 
+            [state for state in localdb.state \
+                    if state not in [localdb.state.COMPLETE, \
+                        localdb.state.VSUCCEED, \
+                        localdb.state.SSUCCEED]])
 
-    def __merge_proof_to_rpcparams_for_resend(self, rpcparams, dbinfos):
+        ret = self.get_record_from_localdb_with_state(states)
+        if ret.state != error.SUCCEED:
+            return ret
+        setattr(self, "excluded", ret.datas)
+
+    def fill_address_token(self, address, token_id, amount, gas=40_000):
         try:
-            self._logger.debug("start __merge_proof_to_rpcparams")
-            for info in dbinfos:
-                #append key for excluded, must be dict {"address":"xxx" , "sequence":"xxx"} ,match btc rpc excluded params format
-                value = {"address":"%s"%(info.vaddress), "sequence":info.sequence, "bamount": info.bamount, \
-                        "sequence":info.sequence, "height":info.height, "receiver":info.toaddress, "module":info.vtoken, "fromaddress":info.fromaddress}
-                if info.toaddress in rpcparams.keys():
-                    rpcparams[info.toaddress].append(value)
-                else:
-                    rpcparams[info.toaddress] = [value]
-    
-            return result(error.SUCCEED, "", rpcparams)
+            ret = self.btc_client.get_balance(address, token_id = token_id)
+            assert ret.state == error.SUCCEED, f"get balance failed"
+
+            cur_amount = ret.datas
+            if cur_amount < amount + gas:
+                ret = self.violas_client.mint_coin(address, \
+                        amount = amount + gas - cur_amount, \
+                        token_id = token_id)
+                return ret
+
+            return result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
         return ret
-    
-    def __merge_proof_to_rpcparams(self, rpcparams, dbinfos):
-        try:
-            self._logger.debug("start __merge_proof_to_rpcparams")
-            for info in dbinfos:
-                #append key for excluded, must be dict {"address":"xxx" , "sequence":"xxx"} ,match btc rpc excluded params format
-                value = {"address":"%s"%(info.vaddress), "sequence":info.sequence}
-                if info.toaddress in rpcparams.keys():
-                    rpcparams[info.toaddress].append(value)
-                else:
-                    rpcparams[info.toaddress] = [value]
-    
-            return result(error.SUCCEED, "", rpcparams)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-    def __get_excluded(self, b2v):
-        try:
-            rpcparams = {}
-            #Proof that integration should be excluded(dbb2v.db)
-            ## succeed
-            scddatas = b2v.query_b2vinfo_is_succeed()
-            if(scddatas.state != error.SUCCEED):
-                return scddatas
-    
-            ret = self.__merge_proof_to_rpcparams(rpcparams, scddatas.datas)
-            if(ret.state != error.SUCCEED):
-                return ret
-            
-            ## btcfailed 
-            bflddatas = b2v.query_b2vinfo_is_btcfailed()
-            if(bflddatas.state != error.SUCCEED):
-                return bflddatas
-    
-            ret = self.__merge_proof_to_rpcparams(rpcparams, bflddatas.datas)
-            if(ret.state != error.SUCCEED):
-                return ret
-    
-            ## btcsucceed
-            btcscddatas = b2v.query_b2vinfo_is_btcsucceed()
-            if(btcscddatas.state != error.SUCCEED):
-                return bflddatas
-    
-            ret = self.__merge_proof_to_rpcparams(rpcparams, btcscddatas.datas)
-            if(ret.state != error.SUCCEED):
-                return ret
-    
-            ret = result(error.SUCCEED, "", rpcparams)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-    
-    def __checks(self):
-        assert (len(stmanage.get_btc_conn()) >= 4), "btc_conn is invalid."
-        assert (len(stmanage.get_sender_address_list(self.name(), self.map_chain)) > 0 ), "violas sender not found."
-        for addr in stmanage.get_sender_address_list(self.name(), self.map_chain):
-            assert len(addr) in VIOLAS_ADDRESS_LEN, f"violas address({addr}) is invalid."
 
-        assert (len(stmanage.get_receiver_address_list(self.name(), self.from_chain)) > 0 ), "btc receiver not found."
-        for addr in stmanage.get_receiver_address_list(self.name(), self.from_chain):
-            assert len(addr) >= 20, f"btc address({addr}) is invalid."
-    
-        assert (len(stmanage.get_module_address(self.name(), self.map_chain)) in VIOLAS_ADDRESS_LEN), "module_address is invalid"
-        assert (len(stmanage.get_violas_nodes()) > 0), "violas_nodes is invalid."
-    
-    def __hasplatformbalance(self, vclient, address, vamount = 0):
-        try:
-            ret = vclient.get_platform_balance(address)
+    def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
+            state = None, detail = {}):
+        fromaddress = data["address"]
+        amount      = int(data["amount"]) 
+        sequence    = data["sequence"] 
+        version     = data["version"]
+        toaddress   = data["to_address"] #map token to
+        tran_id     = data["tran_id"]
+        out_amount  = data["out_amount"]
+        times       = data["times"]
+        opttype     = data["opttype"]
+        stable_token_id = data["token_id"]
+        from_token_id = stable_token_id
+        map_token_id = stmanage.get_token_map(stable_token_id) #stable token -> LBRXXX token
+        to_token_id    = self.to_token_id #token_id is map 
+
+        swap_amount = self.amountswap(amount, self.amountswap.amounttype.BTC)
+        amount = swap_amount.violas_amount
+
+        ret = result(error.FAILED)
+        self._logger.info(f"start exchange b2v.sender={fromaddress},  receiver={receiver}, " + \
+            f"sequence={sequence}, version={version}, toaddress={toaddress}, amount={amount}, " + \
+            f"tran_id={tran_id}, from_token_id = {from_token_id}, to_token_id={to_token_id} " + \
+            f"map_token_id = {map_token_id}, state = {state}, detail = {detail} datas from server.")
+
+        if state is not None:
+            self._latest_version[receiver] = max(version, self._latest_version.get(receiver, -1))
+
+        #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
+        if state is None and self.has_info(tran_id):
+            return ret
+
+        if self.use_module(state, localdb.state.START):
+            self.insert_to_localdb_with_check(version, localdb.state.START, tran_id, receiver)
+
+        if self.use_module(state, localdb.state.PSUCCEED) or \
+                self.use_module(state, localdb.state.ESUCCEED) or \
+                self.use_module(state, localdb.state.FILLSUCCEED):
+            #get output and gas
+            ret = self.violas_client.swap_get_output_amount(map_token_id, to_token_id, amount)
             if ret.state != error.SUCCEED:
+                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, receiver)
                 return ret
-    
-            self._logger.debug(f"platform balance {ret.datas}")
-            balance = ret.datas
-            if balance >= vamount:
-                ret = result(error.SUCCEED, "", True)
             else:
-                ret = result(error.SUCCEED, "", False)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-    
-    def __hasviolasbalance(self, vclient, address, module, vamount, token_id):
-        try:
-            ret = vclient.get_violas_balance(address, module, token_id)
-            if ret.state != error.SUCCEED:
+                self.update_localdb_state_with_check(tran_id, localdb.state.ESUCCEED, receiver)
+
+            out_amount_chian, gas = ret.datas
+            #temp value(test)
+            if out_amount <= 0:
+                out_amount = out_amount_chian
+            elif out_amount > out_amount_chian: #don't execute swap, Reduce the cost of the budget
+                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, receiver)
                 return ret
-    
-            self._logger.debug(f"violas coin balance {ret.datas}")
-            balance = ret.datas
-            if balance >= vamount:
-                ret = result(error.SUCCEED, "", True)
+            detail.update({"gas": gas})
+
+            #fill BTCXXX to sender(type = LBRXXX), or check sender's token amount is enough
+            ret = self.fill_address_token(map_sender, map_token_id, amount, detail["gas"])
+            if ret.state != error.SUCCEED:
+                self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
+                      json.dumps(detail))
+                return ret
             else:
-                ret = result(error.SUCCEED, "", False)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-    
-    def __update_db_btcsucceed_to_complete(self, bclient, b2v):
-        ##search db state is succeed
-        try:
-            scddatas = b2v.query_b2vinfo_is_btcsucceed()
-            if scddatas.state != error.SUCCEED:
-                self._logger.error("db error")
-                return result(error.FAILED)
-    
-            ##excluded btc blockchain state is not start,update dbb2v state to complete
-            ##dbb2v state is complete, that means  btc blockchain state is cancel or succeed
-            for row in scddatas.datas:
-                vaddress  = row.vaddress
-                sequence = row.sequence
-                ret = bclient.isexproofcomplete(vaddress, sequence)
-                if(ret.state == error.SUCCEED and ret.datas["result"] == "true"):
-                    ret = b2v.update_b2vinfo_to_complete_commit(vaddress, sequence)
-    
-            ret = result(error.SUCCEED)
-        except exception as e:
-            ret = parse_except(e)
-        return ret
-    
-    def __get_resend_btc(self, b2v):
-        try:
-            rpcparams = {}
-            scddatas = b2v.query_b2vinfo_is_succeed()
-            if(scddatas.state != error.SUCCEED):
-                return scddatas
-    
-            ret = self.__merge_proof_to_rpcparams_for_resend(rpcparams, scddatas.datas)
-            if(ret.state != error.SUCCEED):
+                self.update_localdb_state_with_check(tran_id, localdb.state.FILLSUCCEED, \
+                      json.dumps(detail))
+
+            #swap LBRXXX -> VLSYYY and send VLSXXX to toaddress(client payee address)
+            ret = self.violas_client.swap(map_sender, map_token_id, to_token_id, amount, \
+                    out_amount, receiver = toaddress, gas_currency_code = map_token_id)
+            if ret.state != error.SUCCEED:
+                self.update_localdb_state_with_check(tran_id, localdb.state.PFAILED, json.dumps(detail))
                 return ret
+            else:
+                self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED, json.dumps(detail))
 
-            bflddatas = b2v.query_b2vinfo_is_btcfailed()
-            if(bflddatas.state != error.SUCCEED):
-                return bflddatas
-
-            ret = self.__merge_proof_to_rpcparams_for_resend(rpcparams, bflddatas.datas)
-            if(ret.state != error.SUCCEED):
-                return ret
-
-            ret = result(error.SUCCEED, "", rpcparams)
-        except exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def __rechange_btcstate_to_end_from_btcfailed(self, bclient, b2v, combineaddress, module_address, receivers):
-        try:
-            self._logger.debug(f"start __rechange_btcstate_to_end_from_btcfailed(combineaddress={combineaddress}, module_address={module_address}, receivers={receivers})")
-            bflddatas = b2v.query_b2vinfo_is_btcfailed()
-            if(bflddatas.state != error.SUCCEED):
-                return bflddatas
-    
-            ret = self.__get_resend_btc(b2v)
-            if ret.state != error.SUCCEED:
-                return ret
-
-            datas = ret.datas
-            for receiver, value in datas.items():
-                if receiver not in receivers:
-                    self._logger.warning(f"db's {receiver} not match btc_recivers({receivers}), ignore it, next")
-                    continue
-
-                for data in value: 
-                    _, module = split_full_address(data["module"])
-                    if module_address != module:
-                        self._logger.warning(f"db's vtoken({module}) not match module_address({module_address}), ignore it, next")
-                        continue
-    
-                    vaddress = data["address"]
-                    bamount = data["bamount"]
-                    sequence = data["sequence"]
-                    height = data["height"]
-    
-                    #recheck b2v state in blockchain, may be performed manually
-                    ret = bclient.isexproofcomplete(vaddress, sequence)
-                    if(ret.state == error.SUCCEED and ret.datas["result"] == "true"):
-                        ret = b2v.update_b2vinfo_to_complete_commit(vaddress, sequence)
-                        self._logger.info(f"{vaddress}:{sequence} is complete. update db and next ...")
-                        continue
-    
-                    #The receiver of the start state can change the state to end
-                    full_addr = merge_full_address(vaddress)
-                    ret = bclient.sendexproofend(receiver, combineaddress, full_addr, sequence, float(bamount)/COINS, height)
-                    if ret.state != error.SUCCEED:
-                        ret = b2v.update_b2vinfo_to_btcfailed_commit(vaddress, sequence)
-                        assert (ret.state == error.SUCCEED), "db error"
-                    else:
-                        ret = b2v.update_b2vinfo_to_btcsucceed_commit(vaddress, sequence, ret.datas)
-                        assert (ret.state == error.SUCCEED), "db error"
-            ret     = result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-    
-    def __get_violas_sender(self, vclient, vwallet, module, vamount, min_gas, token_id):
-        for sender in stmanage.get_sender_address_list(self.name(), self.map_chain, False):
-            ret = vwallet.get_account(sender)
-            if ret.state != error.SUCCEED:
-                continue
-            asender = ret.datas
-    
-            #make sure sender address is binded module
-            ret = vclient.account_has_violas_module(sender, module)
-            if ret.state != error.SUCCEED:
-                self._logger.warning("violas client error, next ...")
-                continue
-    
-            if ret.datas != True:
-                self._logger.warning(f"sender account {sender} not bind module {module}. next ...")
-                continue
-    
-            #make sure sender address has enough platform coins
-            ret = self.__hasplatformbalance(vclient, sender, min_gas)
-            if ret.state != error.SUCCEED:
-                continue
-    
-            if ret.datas != True:
-                self._logger.warning(f"{sender} not enough platform coins {min_gas}, next ...")
-                continue
-    
-            #make sure sender address has enough violas coins
-            ret = self.__hasviolasbalance(vclient, sender, module, vamount, token_id)
-            if ret.state != error.SUCCEED:
-                continue
-    
-            if ret.datas != True:
-                self._logger.warning(f"{sender} not enough {module} coins {vamount}, token_id {token_id} next ...")
-                continue
-            return result(error.SUCCEED, "", (asender, sender))
-    
-        return result(error.FAILED, "not found conform sender from wallet, check balance")
-    
-    
-    def stop(self):
-        self._vclient.stop()
-        self.work_stop()
+            version = self.violas_client.get_address_version(map_sender).datas
         
+        #send libra token to toaddress
+        #sendexproofmark succeed , send violas coin with data for change tran state
+        if self.use_module(state, localdb.state.VSUCCEED):
+            self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, \
+                    from_token_id, amount = 0, version = version)
 
-    def is_excluded(self, address, sequence, excludeds):
-        if excludeds is None:
-            return False
+def main():
+       print("start main")
+       stmanage.set_conf_env("../bvexchange.toml")
+       mod = "b2v"
+       dtype = "b2vusd"
+       obj = b2v(mod, 
+               dtype,
+               stmanage.get_btc_nodes(), 
+               stmanage.get_violas_nodes(),
+               stmanage.get_db(dtype), 
+               list(set(stmanage.get_receiver_address_list(dtype, "btc", False))),
+               list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+               stmanage.get_swap_module()
+               )
+       ret = obj.start()
+       if ret.state != error.SUCCEED:
+           print(ret.message)
 
-        for excluded in excludeds:
-            if address == excluded.get("address", "") and sequence == excluded.get("sequence"):
-                return True
-        return False
-
-    def start(self):
-        try:
-            self._logger.debug("start b2v work")
-    
-            #requirement checks
-            self.__checks()
-    
-            #btc init
-            bclient = self._bclient
-            b2v = self._b2v
-    
-            #violas init
-            vclient = self._vclient
-            vwallet = self._vwallet
-    
-            module_address = self._module_address
-            combineaddress = self._combineaddress
-    
-            #update db state by proof state
-            ret = self.__update_db_btcsucceed_to_complete(bclient, b2v)
-            if ret.state != error.SUCCEED:
-                return ret
-    
-            #update proof state to end, and update db state, prevstate is btcfailed in db. 
-            #When this happens, there is not enough Bitcoin, etc.
-            self.__rechange_btcstate_to_end_from_btcfailed(bclient, b2v, combineaddress, module_address, stmanage.get_receiver_address_list(self.name(), self.from_chain))
-    
-            #get all excluded info from db
-            rpcparams = {}
-            ret = self.__get_excluded(b2v)
-            if ret.state != error.SUCCEED:
-                self._logger.error("db error")
-                return result(error.FAILED)
-    
-            rpcparams = ret.datas
-            min_gas = comm.values.MIN_EST_GAS 
-    
-            #set receiver: get it from stmanage or get it from blockchain
-            receivers = list(set(stmanage.get_receiver_address_list(self.name(), self.from_chain)))
-    
-            #modulti receiver, one-by-one
-            for receiver in receivers:
-                if not self.work():
-                    break
-
-                #check receiver is included in wallet
-                ret = bclient.has_btc_banlance(receiver, 0)
-                if ret.state != error.SUCCEED or ret.datas != True:
-                    self._logger.warning(f"receiver({receiver}) has't enough satoshi ({comm.values.MIN_EST_GAS}). ignore it's b2v, next receiver.")
-                    continue 
-    
-                excluded = []
-                if receiver in rpcparams:
-                    excluded = rpcparams[receiver]
-    
-                self._logger.debug(f"check receiver={receiver} excluded={excluded}")
-                ret = bclient.listexproofforstart(receiver, excluded)
-                if ret.state == error.SUCCEED and len(ret.datas) > 0:
-                    for data in ret.datas:
-                        if not self.work():
-                            break
-
-                        #grant vbtc 
-                        ##check 
-                        to_address = data["address"]
-                        sequence = int(data["sequence"])
-                        _, to_module_address = split_full_address(data["vtoken"])
-                        vamount = int(float(data["amount"]) * COINS)
-                        
-                        if self.is_excluded(to_address, sequence, excluded):
-                            self._logger.warning(f"{address} {sequence} in db. ignore it, next...")
-                            continue
-
-                        if (len(module_address) not in VIOLAS_ADDRESS_LEN or module_address != to_module_address):
-                            if self.can_show_waning(f"vtoken is invalid{to_address}.{sequence}"):
-                               self._logger.warning(f"vtoken({to_module_address}) is invalid.(to_address:{to_address} sequence:{sequence}")
-                            continue
-    
-                        if vamount <= 0:
-                            self._logger.warning(f"amount({vamount}) is invalid.(to_address:{to_address} sequence:{sequence}")
-                            continue
-                        
-                        ret = self._vclient.account_has_violas_module(to_address, to_module_address)
-                        if ret.state != error.SUCCEED:
-                            self._logger.warning(f"call account_has_violas_module failed.")
-                            continue
-
-                        if not ret.datas:
-                            self._logger.warning(f"violas {to_address} not publish_resource({to_module_address})")
-                            continue
-
-                        #get sender account and address
-                        ret = self.__get_violas_sender(vclient, vwallet, to_module_address, vamount, min_gas, self.token_id)
-                        if ret.state != error.SUCCEED:
-                            self._logger.debug(f"get account failed. {ret.message}")
-                            continue
-    
-                        #violas sender, grant vbtc
-                        vsender  = ret.datas[0]
-                        vsender_address = ret.datas[1]
-                                    #make sure receiver address is binded module
-                        ret = vclient.account_has_violas_module(to_address, to_module_address)
-                        if ret.state != error.SUCCEED:
-                            continue
-    
-                        if ret.datas != True:
-                            self._logger.warning(f"account {to_address} not bind module {to_module_address}")
-                            continue
-
-                        self._logger.info(f"start new btc -> vbtc(address={to_address}, sequence={int(data['sequence'])}, amount={vamount}, module={to_module_address}")
-                        ##send vbtc to vaddress, vtoken and amount
-                        tran_data = vclient.create_data_for_mark(self.map_chain, self.name(), data["txid"], int(data["sequence"]))
-                        ret = vclient.send_violas_coin(vsender, to_address, amount = vamount, module_address = to_module_address, token_id = self.token_id, data=tran_data)
-                        if ret.state != error.SUCCEED:
-                            continue
-                        
-                        ##create new row to db. state = start 
-                        ret = b2v.has_b2vinfo(data["address"], data["sequence"])
-                        assert (ret.state == error.SUCCEED), "db error"
-    
-                        if ret.datas == False:
-                            ret = b2v.insert_b2vinfo_commit(data["txid"], data["issuer"], data["receiver"], int(float(data["amount"]) * COINS), 
-                                    data["address"], int(data["sequence"]), int(float(data["amount"]) * COINS), data["vtoken"], data["creation_block"], data["update_block"], self.token_id)
-                            assert (ret.state == error.SUCCEED), "db error"
-    
-                        rettmp = vclient.get_address_version(vsender_address)
-                        height = -1
-                        ##update db 
-                        ###succeed:dbb2v state = succeed
-                        if rettmp.state == error.SUCCEED:
-                            height =  rettmp.datas
-                            ret =b2v.update_b2vinfo_to_succeed_commit(to_address, int(data["sequence"]), height)
-                            assert (ret.state == error.SUCCEED), "db error"
-                        
-                        #The receiver of the start state can change the state to end
-                        full_addr = merge_full_address(to_address)
-                        ret = bclient.sendexproofend(receiver, combineaddress, full_addr, int(data["sequence"]), float(vamount)/COINS, height)
-                        if ret.state != error.SUCCEED:
-                            ret = b2v.update_b2vinfo_to_btcfailed_commit(to_address, int(data["sequence"]))
-                            assert (ret.state == error.SUCCEED), "db error"
-                        else:
-                            ret = b2v.update_b2vinfo_to_btcsucceed_commit(to_address, int(data["sequence"]), ret.datas)
-                            assert (ret.state == error.SUCCEED), "db error"
-    
-            ret = result(error.SUCCEED) 
-    
-        except Exception as e:
-            ret = parse_except(e)
-        finally:
-            
-            #vclient.disconn_node()
-            #vwallet.dump_wallet()
-            self._logger.debug("works end.")
-    
-        return ret
-    
+if __name__ == "__main__":
+    main()

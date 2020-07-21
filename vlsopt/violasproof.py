@@ -34,19 +34,19 @@ class violasproof(violasclient):
     def __del__(self):
         violasclient.__del__(self)
 
-    def create_data_for_start(self, flag, dtype, to_address):
+    def create_data_for_start(self, flag, dtype, to_address, **kwargs):
         return json.dumps({"flag": flag, "type":dtype, "to_address":to_address, "state": "start"})
 
-    def create_data_for_end(self, flag, dtype, tranid, txid=""):
+    def create_data_for_end(self, flag, dtype, tranid, txid="", **kwargs):
         return json.dumps({"flag": flag, "type":dtype, "tran_id":tranid, "state": "end", "txid":txid})
 
-    def create_data_for_stop(self, flag, dtype, tranid, txid=""):
+    def create_data_for_stop(self, flag, dtype, tranid, txid="", **kwargs):
         return json.dumps({"flag": flag, "type":dtype, "tran_id":tranid, "state": "stop", "txid":txid})
 
-    def create_data_for_cancel(self, flag, dtype, tranid, txid=""):
+    def create_data_for_cancel(self, flag, dtype, tranid, txid="", **kwargs):
         return json.dumps({"flag": flag, "type":dtype, "tran_id":tranid, "state": "cancel", "txid":txid})
 
-    def create_data_for_mark(self, flag, dtype, id, sequence):
-        return json.dumps({"flag": flag, "type":dtype + "_mark", "id":id, "sequence":sequence})
+    def create_data_for_mark(self, flag, dtype, id, version, **kwargs):
+        return json.dumps({"flag": flag, "type":dtype + "_mark", "id":id, "version":version})
             
 

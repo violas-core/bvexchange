@@ -138,7 +138,7 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def get_transactions_for_start(receiver, opttype, start_version = None):
+    def get_transactions_for_start(receiver, opttype, start_version = None, excluded):
         return self.__listexproofforstate(opttype, self.proofstate.START.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
 
     def listexproofforstart(self, opttype, receiver, excluded):
@@ -234,24 +234,31 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def create_data_for_end(self, flag, opttype, tranid, version):
+    def create_data_for_end(self, flag, opttype, tranid, **kwargs):
         address_seq = tranid.split("_")
         return {"type": "end", "flag": flag, "opttype":opttype, "address":address_seq[0], \
-                "sequence":address_seq[1], "version":version}
+                "sequence":address_seq[1], "version":kwargs.get("version", 0)}
 
-    def create_data_for_end(self, flag, opttype, tranid, version):
+    def create_data_for_stop(self, flag, opttype, tranid, **kwargs):
         address_seq = tranid.split("_")
         return {"type": "stop", "flag": flag, "opttype":opttype, "address":address_seq[0], \
-                "sequence":address_seq[1], "version":version}
+                "sequence":address_seq[1]}
+
+    def create_data_for_mark(self, flag, dtype, id, version, **kwargs):
+        address_seq = tranid.split("_")
+        return {"type": "stop", "flag": flag, "opttype":opttype, "address":address_seq[0], \
+                "sequence":address_seq[1], "version":version }
 
     def send_coin(fromaddress, toaddress, amount, token_id, data):
         if data["type"] == "end":
             self.sendexproofend(data["opttype"], fromaddress, toaddress, data["address"], \
-                    data["sequence"], data["amount"], data["version"])
+                    data["sequence"], amount, data["version"])
         elif data["type"] == "stop":
             self.sendexproofstop(data["opttype"], fromaddress, toaddress, amount, data["address"], \
                     data["sequence"])
-
+        elif data["type"] == "mark":
+            self.sendexproofmark(fromaddress, toaddress, amount, data["address"], data["sequence"], \
+                    data["version"])
 
     def sendexproofend(self, opttype, fromaddress, toaddress, vaddress, sequence, amount, version):
         try:
@@ -390,6 +397,30 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def is_end(self, tranid):
+        try:
+            ret = self.get_transaction(tranid)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            ret = result(error.SUCCEED, datas = ret.datas.get("state", "end") == "true")
+            self._logger.debug(f"result: {ret.datas}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+
+    def is_stop(self, tranid):
+        try:
+            ret = self.get_transaction(tranid)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            ret = result(error.SUCCEED, datas = ret.datas.get("state", "stop") == "true")
+            self._logger.debug(f"result: {ret.datas}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
 
 def main():
     try:
