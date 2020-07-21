@@ -38,6 +38,12 @@ def getb2vtransaction(cursor, limit = 1):
     for data in ret.datas:
         print(data.to_json())
 
+def gettransaction(tranid):
+    client = getbtcclient()
+    ret = client.get_tran_by_tranid(tranid)
+    assert ret.state == error.SUCCEED, " gettransaction failed"
+    print(ret.to_json())
+
 def sendtoaddress(address, count):
     client = getbtcclient()
     ret = client.sendtoaddress(address, count)
@@ -145,7 +151,8 @@ def init_args(pargs):
     pargs.append("btchelp", "returns bitcoin-cli help.")
     pargs.append("getwalletbalance", "returns wallet balance.")
     pargs.append("getwalletaddressbalance", "returns wallet target address's balance.", True, ["address"])
-    pargs.append("getb2vtransaction", "returns array of proof list type = b2v.[map to violas format]", True, ["cursor", "limit"])
+    pargs.append("getb2vtransaction", "returns array of proof list.[map to violas format]", True, ["cursor", "limit"])
+    pargs.append("gettransaction", "returns proof info.", True, ["address"])
 
 def run(argc, argv):
     try:
@@ -249,6 +256,10 @@ def run(argc, argv):
                 ret = getb2vtransaction(int(arg_list[0]), limit)
             else:
                 ret = getb2vtransaction(int(arg_list[0]))
+        elif pargs.is_matched(opt, ["gettransaction"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            ret = gettransaction(arg_list[0])
 
     logger.debug("end manage.main")
 

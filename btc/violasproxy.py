@@ -56,6 +56,7 @@ class violasproxy(baseobject):
         BALANCE = auto()
         LISTUNSPENT = auto()
         PROOF   = auto()
+        FIXTRAN = auto()
 
     def __init__(self, name, host, port = None, user = None, password = None, domain="violaslayer", walletname="bwallet"):
         baseobject.__init__(self, name)
@@ -167,7 +168,7 @@ class violasproxy(baseobject):
 
     @property
     def valid_swap_type(self):
-        return (comm.values.EX_TYPE_B2V, comm.values.EX_TYPE_B2L, comm.values.EX_TYPE_PROOF)
+        return (comm.values.EX_TYPE_PROOF)
 
     def violas_listexproofforstate(self, opttype, state, extype, receiver, excluded = None):
         url = None
@@ -176,7 +177,7 @@ class violasproxy(baseobject):
 
         if extype in self.valid_swap_type and state in self.valid_state:
             url = self.create_opt_url(self.opt.GET, self.opttype[opttype.upper()], address=receiver, state=state, cursor = 0, limit=10)
-        elif extype == comm.values.EX_TYPE_V2B and state == self.opttype.MARK:
+        elif extype == comm.values.EX_TYPE_MARK and state == self.opttype.MARK:
             url = self.create_opt_url(self.opt.GET, self.opttype.MARK, address=receiver)
         else:
             raise Exception(f"(state={state}, extype={extype}, receiver={receiver})")
@@ -193,19 +194,23 @@ class violasproxy(baseobject):
         url = None
         if extype in self.valid_swap_type:
             url = self.create_opt_url(self.opt.GET, self.opttype.PROOF, cursor=cursor, limit=limit)
-        elif extype == comm.values.EX_TYPE_V2B:
+        elif extype == comm.values.EX_TYPE_MARK:
             url = self.create_opt_url(self.opt.GET, self.opttype.MARK, cursor=cursor, limit=limit)
         else:
             raise Exception(f"extype is not found.(extype={extype})")
 
         return self.run_request(url)
 
-    def violas_isexproofcomplete(self, opttype, address, sequence):
-        url = self.create_opt_url(self.opt.CHECK, self.opttype[opttype.upper()], address=address, sequence=sequence)
-        ret = requests.get(url).json()
+    def violas_gettransaction(self, tranid):
+        url = None
+        url = self.create_opt_url(self.opt.GET, self.opttype.FIXTRAN, tranid = tranid)
         return self.run_request(url)
 
-    def violas_getexprooflatestindex(self, extype = comm.values.EX_TYPE_B2V):
+    def violas_isexproofcomplete(self, opttype, address, sequence):
+        url = self.create_opt_url(self.opt.CHECK, self.opttype[opttype.upper()], address=address, sequence=sequence)
+        return self.run_request(url)
+
+    def violas_getexprooflatestindex(self, extype = comm.values.EX_TYPE_PROOF):
         url = self.create_opt_url(self.opt.GET, self.opttype.FILTER, datatype="version")
         ret = requests.get(url).json()
         return self.run_request(url)
@@ -239,7 +244,7 @@ class violasproxy(baseobject):
     def violas_sendexproofcancel(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, fromprivkeys = None):#BTC
         fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
         url = self.create_opt_url(self.opt.SET, self.opttype[opttype.upper()], state="cancel", \
-                fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
+                fromaddress=fromaddress, toaddress=toaddress, toamount=0, \
                 vreceiver=vaddress, sequence=sequence, fromprivkeys=json.dumps(fromprivkeys))
         return self.run_request(url)
 
@@ -288,12 +293,12 @@ def main():
        conf = stmanage.get_btc_conn()
        print(conf)
        client = violasproxy(name, conf.get("host"), conf.get("port"), conf.get("user"), conf.get("password"), conf.get("domain", "violaslayer"))
-       ret = client.violas_listexproofforstate("b2vusd","end", comm.values.EX_TYPE_B2V, receiver=receiver, excluded = None)
+       ret = client.violas_listexproofforstate("b2vusd","end", comm.values.EX_TYPE_PROOF, receiver=receiver, excluded = None)
        json_print(ret)
 
        print("*"*30 + "get start ")
        client = violasproxy(name, conf.get("host"), conf.get("port"), conf.get("user"), conf.get("password"), conf.get("domain", "violaslayer"))
-       ret = client.violas_listexproofforstate("b2vusd", "start", comm.values.EX_TYPE_B2V, receiver=receiver, excluded = None)
+       ret = client.violas_listexproofforstate("b2vusd", "start", comm.values.EX_TYPE_PROOF, receiver=receiver, excluded = None)
        json_print(ret)
 
 
