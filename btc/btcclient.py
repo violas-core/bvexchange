@@ -82,6 +82,9 @@ class btcclient(baseobject):
     def disconn_node(self):
         pass
 
+    def stop(self):
+        self.disconn_node()
+
     def __listexproofforstate(self, opttype, state, extype, receiver, excluded):
         try:
             self._logger.debug(f"start __listexproofforstate(opttype = {opttype} state={state} type={extype} receiver={receiver} excluded={excluded})")
@@ -127,29 +130,37 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_transaction(self, tranid):
+        try:
+            datas = self.__rpc_connection.violas_gettransaction(tranid)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def get_transactions_for_start(receiver, opttype, start_version = None):
-        return self.__listexproofforstate(opttype, self.proofstate.START.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+        return self.__listexproofforstate(opttype, self.proofstate.START.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
 
     def listexproofforstart(self, opttype, receiver, excluded):
-        return self.__listexproofforstate(opttype, self.proofstate.START.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+        return self.__listexproofforstate(opttype, self.proofstate.START.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
 
     def listexproofforend(self, opttype, receiver, excluded):
-        return self.__listexproofforstate(opttype, self.proofstate.END.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+        return self.__listexproofforstate(opttype, self.proofstate.END.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
 
     def get_transactions_for_cancel(receiver, opttype, start_version, excluded = None):
-        return self.__listexproofforstate(opttype, self.proofstate.CANCEL.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+        return self.__listexproofforstate(opttype, self.proofstate.CANCEL.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
 
     def listexproofforcancel(self, opttype, receiver, excluded):
-        return self.__listexproofforstate(opttype, self.proofstate.CANCEL.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+        return self.__listexproofforstate(opttype, self.proofstate.CANCEL.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
 
     def listexproofforstop(self, opttype, receiver, excluded):
-        return self.__listexproofforstate(opttype, self.proofstate.STOP.value, comm.values.EX_TYPE_B2V, receiver, excluded)
+        return self.__listexproofforstate(opttype, self.proofstate.STOP.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
 
     def listexproofformark(self, opttype, receiver, excluded):
-        return self.__listexproofforstate(opttype, self.proofstate.MARK.value, comm.values.EX_TYPE_V2B, receiver, excluded)
+        return self.__listexproofforstate(opttype, self.proofstate.MARK.value, comm.values.EX_TYPE_MARK, receiver, excluded)
 
     def listexproofforb2v(self, cursor, limit):
-        return self.__listexproof(comm.values.EX_TYPE_B2V, cursor, limit)
+        return self.__listexproof(comm.values.EX_TYPE_PROOF, cursor, limit)
 
     def __map_tran(self, data):
         tran_data = json.dumps({"flag":"btc", \
@@ -173,6 +184,22 @@ class btcclient(baseobject):
                 "module_address":module \
                 }
 
+    def get_tran_by_tranid(self, tran_id):
+        try:
+            ret = self.get_transaction(tran_id)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            tran = self.__map_tran(ret.datas)
+            if tran["data"] is not None:
+                del tran["data"]
+            ret = result(error.SUCCEED, "", tran)
+            self._logger.debug(f"result: {ret.datas}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+
     def get_transactions(self, cursor, limit = 1, nouse=True):
         try:
             ret = self.listexproofforb2v(cursor, limit)
@@ -190,7 +217,7 @@ class btcclient(baseobject):
 
     def get_latest_transaction_version(self):
         try:
-            latest_index = self.__rpc_connection.violas_getexprooflatestindex(comm.values.EX_TYPE_B2V)
+            latest_index = self.__rpc_connection.violas_getexprooflatestindex(comm.values.EX_TYPE_PROOF)
             ret = result(error.SUCCEED, "", int(latest_index))
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
@@ -207,10 +234,49 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def create_data_for_end(self, flag, opttype, tranid, version):
+        address_seq = tranid.split("_")
+        return {"type": "end", "flag": flag, "opttype":opttype, "address":address_seq[0], \
+                "sequence":address_seq[1], "version":version}
+
+    def create_data_for_end(self, flag, opttype, tranid, version):
+        address_seq = tranid.split("_")
+        return {"type": "stop", "flag": flag, "opttype":opttype, "address":address_seq[0], \
+                "sequence":address_seq[1], "version":version}
+
+    def send_coin(fromaddress, toaddress, amount, token_id, data):
+        if data["type"] == "end":
+            self.sendexproofend(data["opttype"], fromaddress, toaddress, data["address"], \
+                    data["sequence"], data["amount"], data["version"])
+        elif data["type"] == "stop":
+            self.sendexproofstop(data["opttype"], fromaddress, toaddress, amount, data["address"], \
+                    data["sequence"])
+
+
     def sendexproofend(self, opttype, fromaddress, toaddress, vaddress, sequence, amount, version):
         try:
-            self._logger.info(f"start sendexproofend (opttype={opttype}, fromaddress={fromaddress}, toaddress={toaddress}, vaddress={vaddress}, sequence={sequence}, amount={amount:.8f}, version={version})")
-            datas = self.__rpc_connection.violas_sendexproofend(opttype, fromaddress, toaddress, vaddress, sequence, f"{amount:.8f}", version)
+            self._logger.info(f"start sendexproofend (opttype={opttype}, fromaddress={fromaddress},"+
+                    f" toaddress={toaddress}, vaddress={vaddress}, sequence={sequence}, " +
+                    f"amount={amount:.8f}, version={version})")
+
+            datas = self.__rpc_connection.violas_sendexproofend(opttype, \
+                    fromaddress, toaddress, vaddress, sequence, f"{amount:.8f}", version)
+
+            ret = result(error.SUCCEED, "", datas)
+            self._logger.info(f"result: {ret.datas}")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def sendexproofstop(self, opttype, fromaddress, toaddress, amount, vaddress, sequence):
+        try:
+            self._logger.info(f"start sendexproofstop(opttype={opttype}, fromaddress={fromaddress},"+
+                    f" toaddress={toaddress}, amount = {amount}, vaddress={vaddress}, " + 
+                    f"sequence={sequence})")
+
+            datas = self.__rpc_connection.violas_sendexproofstop(opttype, \
+                    fromaddress, toaddress, amount, vaddress, sequence)
+
             ret = result(error.SUCCEED, "", datas)
             self._logger.info(f"result: {ret.datas}")
         except Exception as e:
@@ -229,8 +295,13 @@ class btcclient(baseobject):
    
     def sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, version):
         try:
-            self._logger.info(f"start sendexproofmark(fromaddress={fromaddress}, toaddress={toaddress}, toamount={toamount:.8f}, vaddress={vaddress}, sequence={sequence}, version={version})")
-            datas = self.__rpc_connection.violas_sendexproofmark(fromaddress, toaddress, f"{toamount:.8f}", vaddress, sequence, version)
+            self._logger.info(f"start sendexproofmark(fromaddress={fromaddress}, " + 
+                    f"toaddress={toaddress}, toamount={toamount:.8f}, vaddress={vaddress}, " + 
+                    f"sequence={sequence}, version={version})")
+
+            datas = self.__rpc_connection.violas_sendexproofmark(fromaddress, toaddress, \
+                    f"{toamount:.8f}", vaddress, sequence, version)
+
             ret = result(error.SUCCEED, "", datas)
             self._logger.info(f"result: {ret.datas}")
         except Exception as e:
@@ -246,10 +317,16 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def listunspent(self, minconf = 1, maxconf = 9999999, addresses = None, include_unsafe = True, query_options = None):
+    def listunspent(self, minconf = 1, maxconf = 9999999, addresses = None, \
+            include_unsafe = True, query_options = None):
         try:
-            self._logger.debug(f"start listunspent(minconf={minconf}, maxconf={maxconf}, addresses={addresses}, include_unsafe={include_unsafe}, query_options={query_options})")
-            datas = self.__rpc_connection.listunspent(minconf, maxconf, addresses, include_unsafe, query_options)
+            self._logger.debug(f"start listunspent(minconf={minconf}, maxconf={maxconf}, " + 
+                    f"addresses={addresses}, include_unsafe={include_unsafe}, " + 
+                    f"query_options={query_options})")
+
+            datas = self.__rpc_connection.listunspent(minconf, maxconf, \
+                    addresses, include_unsafe, query_options)
+
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)

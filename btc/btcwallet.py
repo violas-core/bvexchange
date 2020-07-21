@@ -25,7 +25,8 @@ class btcwallet(baseobject):
     def __init__(self, name, walletname = "bwallet"):
         baseobject.__init__(self, name)
         self.__wallet_info = {}
-        self.loads(walletname)
+        if walletname is not None:
+            self.loads(walletname)
         
     def loads(self, walletname):
         self.wallet_info.clear()
@@ -60,6 +61,13 @@ class btcwallet(baseobject):
 
     def show_wallet_info(self):
         json_print(self.wallet_info)
+
+    def get_account(self, address):
+        try:
+            return result(error, datas = address)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
          
 def test_wallet():
     bwallet = btcwallet(name, "bwallet")
