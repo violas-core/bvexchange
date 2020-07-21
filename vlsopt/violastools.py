@@ -216,6 +216,10 @@ def get_account_prefix(address):
 def show_swap_registered_tokens(module):
     client = get_violasclient()
     client.swap_set_module_address(module)
+    if module == "00000000000000000000000000000001":
+        client.swap_set_owner_address("0000000000000000000000000a550c18")
+    else:
+        client.swap_set_owner_address(module)
     json_print(client.swap_get_registered_tokens().to_json())
 
 
@@ -225,6 +229,10 @@ def swap(sender_account, token_in, token_out, amount_in, amount_out_min=0, modul
     ret = client.swap(sender_account = sender_account,token_in = token_in, \
             currency_out = token_out, amount_in = amount_in, amount_out_min = amount_out_min, \
             is_blocking = is_blocking)
+
+def check_is_swap_address(address):
+    client = get_violasclient()
+    print(client.swap_is_swap_address(address))
 
 
 '''
@@ -283,6 +291,7 @@ def init_args(pargs):
     pargs.append("get_account_prefix", "get account prefix.", True, ["address"])
     pargs.append("account_has_token_id", "check account is published token_id.", True, ["address", "token_id"])
     pargs.append("swap", "swap violas chain token.", True, ["address", "token_in", "token_out", "amount_in", "amount_out_min", "module_address"])
+    pargs.append("check_is_swap_address", "check address is swap address.", True, ["address"])
 
 
     #swap opt
@@ -459,6 +468,10 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             show_swap_registered_tokens(arg_list[0])
+        elif pargs.is_matched(opt, ["check_is_swap_address"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            check_is_swap_address(arg_list[0])
         else:
             raise Exception(f"not found matched opt{opt}")
     logger.debug("end manage.main")

@@ -234,8 +234,8 @@ v2b_maxtimes = 99
 [swap_module]
     #AssocRoot: 0000000000000000000000000a550c18
     #TreasuryCompliance: 0000000000000000000000000b1e55ed
-    address = "10dfbe77f8a09e9dfcb77bb3d44a14fc"
-    #address = "0000000000000000000000000a550c18"
+#address = "10dfbe77f8a09e9dfcb77bb3d44a14fc"
+    address = "00000000000000000000000000000001"
 
 #swap rule:
 #  thd chain -> violas chain : x2v--- . ex l2vusd is libra token to swap violas token(usd)
