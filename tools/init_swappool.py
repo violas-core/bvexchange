@@ -39,7 +39,7 @@ def reg_run():
 
     violas_token_id_list = stmanage.get_support_token_id("violas")
     libra_token_id_list = stmanage.get_support_token_id("libra")
-    btc_token_id = "BTCBTC"
+    btc_token_id = "BTC"
 
     #get support opt-type list id for chain
     opt_list = stmanage.get_type_stable_token()
@@ -48,24 +48,34 @@ def reg_run():
 
     #get swap module
     swap_module_address = stmanage.get_swap_module()
-    logger.debug(f"swap pool moudule address({swap_module_address})")
+    swap_owner_address = swap_module_address
+    if swap_module_address == "00000000000000000000000000000001":
+        swap_owner_address = "0000000000000000000000000a550c18"
+    logger.debug(f"swap pool moudule address({swap_module_address}, owner address{swap_owner_address})")
 
-    init_address(vclient, wclient, swap_module_address)
+    init_address(vclient, wclient, swap_owner_address)
     #init swap contract
     ##create swap 
     ret = vclient.swap_set_module_address(swap_module_address)
     assert ret.state == error.SUCCEED
 
-    ret = wclient.get_account(swap_module_address)
-    assert ret.state == error.SUCCEED, f"account({swap_module_address}) is not found."
+    ret = vclient.swap_set_owner_address(swap_owner_address)
+    assert ret.state == error.SUCCEED
 
-    module_account = ret.datas
+    print(vclient.swap_is_swap_address(swap_owner_address).to_json())
 
-    init_address(vclient, wclient, module_account.address.hex())
+    if vclient.get_associate_address() == swap_owner_address:
+        module_account = vclient.get_associate_account()
+    else:
+        ret = wclient.get_account(swap_owner_address)
+        assert ret.state == error.SUCCEED, f"account({swap_owner_address}) is not found."
+        module_account = ret.datas
+
+    init_address(vclient, wclient, swap_owner_address)
 
     gas_token_id = violas_token_id_list[0]
 
-    if not vclient.swap_is_swap_address(module_account.address.hex()).datas:
+    if not vclient.swap_is_swap_address(swap_owner_address).datas: #and vclient.get_associate_address() != swap_owner_address:
         logger.debug(f"init swap contract({module_account.address.hex()})")
         ret = vclient.swap_publish_contract(module_account, gas_currency_code = gas_token_id)
         assert ret.state == error.SUCCEED
@@ -101,7 +111,7 @@ def reg_run():
 def init_address(vclient, wclient, address):
     violas_token_id_list = stmanage.get_support_token_id("violas")
     libra_token_id_list = stmanage.get_support_token_id("libra")
-    btc_token_id = "BTCBTC"
+    btc_token_id = "BTC"
 
     for token_id in violas_token_id_list:
         comm_funs.init_address_list(vclient, wclient, [address], token_id, minamount = 1000_000000)

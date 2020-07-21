@@ -517,7 +517,8 @@ class violasclient(baseobject):
             self._logger.debug(f"start swap_is_swap_address({address})")
             (_, addr) = self.split_full_address(address).datas
             ret = self.swap_get_reserves_resource(addr)
-            ret = result(state = ret.datas, datas = ret.datas is not None)
+            print(ret.datas)
+            ret = result(ret.state, datas = ret.datas is not None)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
@@ -542,6 +543,12 @@ class violasclient(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def get_associate_account(self):
+        return self.__client.associate_account
+
+    def get_associate_address(self):
+        return self.__client.associate_account.address_hex
 
 class violasserver(baseobject):
     __node = None
