@@ -65,10 +65,10 @@ class requestclient(baseobject):
             self._logger.debug("end get_transactions_for_start.")
         return ret
 
-    def get_transactions_for_start(self, address, mtype, start, limit = 10):
+    def get_transactions_for_start(self, address, mtype, start, limit = 10, excluded = None):
         return self.get_transactions_for_state(proofstate.START, address, mtype, start, limit)
 
-    def get_transactions_for_cancel(self, address, mtype, start, limit = 10):
+    def get_transactions_for_cancel(self, address, mtype, start, limit = 10, excluded = None):
         return self.get_transactions_for_state(proofstate.CANCEL, address, mtype, start, limit)
 
     def get_transactions_for_end(self, address, mtype, start, limit = 10):
