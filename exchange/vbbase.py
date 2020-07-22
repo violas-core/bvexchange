@@ -40,7 +40,8 @@ class vbbase(baseobject):
         class amounttype(Enum):
             VIOLAS = 1
             BTC    = 2
-        def __init__(self, value, atype = self.amounttype.VIOLAS):
+
+        def __init__(self, value, atype = amounttype.VIOLAS):
             
             if atype == self.amounttype.VIOLAS:
                 self.violas_amount = value
@@ -71,7 +72,6 @@ class vbbase(baseobject):
         def btc_amount(self, value):
             self.violas_amount = int(value / self.rate)
 
-        def btc_amount()
     def __init__(self, name, dtype, \
             btcnodes, violasnodes, \
             proofdb, receivers, senders, \
@@ -119,23 +119,23 @@ class vbbase(baseobject):
             parse_except(e)
 
     def set_local_workspace(self):
-        setattr("excluded", {})
+        setattr(self, "excluded", {})
         self.append_property(f"{self.from_chain}_chain", self.from_chain)
         self.append_property(f"{self.map_chain}_chain", self.map_chain)
         self.violas_client.swap_set_module_address(self.swap_module)
         if self.from_chain == "btc":
             self.append_property("pserver", self.btc_client)
-            self.append_property("from_wallet", btcwallet(self.name, None))
+            self.append_property("from_wallet", btcwallet(self.name(), None))
             self.append_property("from_client", self.btc_client)
         else:
-            self.append_property("pserver", requestclient(name, proofdb))
-            self.append_property("from_wallet", violaswallet(self.name, wallet_name, self.from_chain))
+            self.append_property("pserver", requestclient(self.name(), proofdb))
+            self.append_property("from_wallet", violaswallet(self.name(), wallet_name, self.from_chain))
             self.append_property("from_client", self.violas_client)
 
         if self.map_chain == "btc":
-            self.append_property("map_wallet", btcwallet(self.name, None))
+            self.append_property("map_wallet", btcwallet(self.name(), None))
         else:
-            self.append_property("map_wallet", violaswallet(self.name, wallet_name, self.map_chain))
+            self.append_property("map_wallet", violaswallet(self.name(), wallet_name, self.map_chain))
 
 
     def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):
@@ -261,7 +261,7 @@ class vbbase(baseobject):
     def send_coin_for_update_state_to_end(self, sender, receiver, tran_id, token_id, amount = 1, **kwargs):
             self._logger.debug(f"start send_coin_for_update_state_to_end(sender={sender.address.hex()},"\
                     f"recever={receiver}, tran_id={tran_id}, amount={amount}), version={version}")
-            tran_data = self.from_client.create_data_for_end(self.from_chain, self.name(), tran_id, **kwargs)
+            tran_data = self.from_client.create_data_for_end(self.from_chain, self.dtype, tran_id, **kwargs)
             ret = self.from_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.VFAILED)
@@ -270,13 +270,14 @@ class vbbase(baseobject):
             return ret
 
     def __checks(self):
-        assert (len(self.senders) > 0), f"{self.map_chain} senders is invalid"
-        for sender in self.senders:
-            assert len(sender) in VIOLAS_ADDRESS_LEN, f"address({sender}) is invalied"
+        return True
+        #assert (len(self.senders) > 0), f"{self.map_chain} senders is invalid"
+        #for sender in self.senders:
+        #    assert len(sender) in VIOLAS_ADDRESS_LEN, f"address({sender}) is invalied"
 
-        assert (len(self.receivers) > 0), f"{self.from_chain} receivers is invalid."
-        for receiver in self.receivers:
-            assert len(receiver) in VIOLAS_ADDRESS_LEN, f"receiver({receiver}) is invalid"
+        #assert (len(self.receivers) > 0), f"{self.from_chain} receivers is invalid."
+        #for receiver in self.receivers:
+        #    assert len(receiver) in VIOLAS_ADDRESS_LEN, f"receiver({receiver}) is invalid"
     
     def db_data_is_valid(self, data):
         try:
@@ -432,6 +433,7 @@ class vbbase(baseobject):
                     for data in ret.datas:
                         if not self.work() :
                             break
+                        print(data)
                         self.exec_exchange(data, from_sender, map_sender, combine_account, receiver)
 
                 #get cancel transaction, this version not support

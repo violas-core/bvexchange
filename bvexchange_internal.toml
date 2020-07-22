@@ -237,6 +237,9 @@ v2b_maxtimes = 99
 #address = "10dfbe77f8a09e9dfcb77bb3d44a14fc"
     address = "00000000000000000000000000000001"
 
+[swap_owner]
+    address = "0000000000000000000000000a550c18"
+
 #swap rule:
 #  thd chain -> violas chain : x2v--- . ex l2vusd is libra token to swap violas token(usd)
 #  violas chain -> thd chain : v2x--- . ex v2lusd is violas token to swap libra token(coin1)

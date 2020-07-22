@@ -64,7 +64,7 @@ class btcwallet(baseobject):
 
     def get_account(self, address):
         try:
-            return result(error, datas = address)
+            ret = result(error.SUCCEED, datas = address)
         except Exception as e:
             ret = parse_except(e)
         return ret

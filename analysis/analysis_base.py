@@ -23,7 +23,7 @@ from enum import Enum
 from db.dbvbase import dbvbase
 from baseobject import baseobject
 from analysis.analysis_record import record
-
+import analysis.parse_transaction as ptran
 #module name
 name="abase"
 
@@ -33,7 +33,7 @@ class abase(baseobject):
     datatype = datatypebase
     trantype = trantypebase
 
-    def __init__(self, name, ttype, dtype, dbconf, vnodes, chain="violas"):
+    def __init__(self, name, ttype = None, dtype = None, dbconf = None, vnodes = None, chain="violas"):
         baseobject.__init__(self, name)
         self._step = 1000
         self.__dtypes = []
@@ -114,7 +114,8 @@ class abase(baseobject):
         self.work_stop()
 
     def append_tran_type(self, ttype):
-        self._tran_types.append(self._trantype_name_to_type(ttype))
+        if ttype is not None:
+            self._tran_types.append(self._trantype_name_to_type(ttype))
 
     def get_tran_types(self):
         return self._tran_types
@@ -134,7 +135,6 @@ class abase(baseobject):
         self._step = step
 
     def append_token_id(self, token_id):
-        print(token_id)
         assert isinstance(token_id, str) or isinstance(token_id, list), f"token_id({token_id}) is not str."
         isstr = isinstance(token_id, str)
         if self._token_id is None:
@@ -188,65 +188,20 @@ class abase(baseobject):
 
     def parse_tran(self, transaction):
         try:
-            datas = {"flag"         : self.trantype.UNKOWN, 
-                    "type"          : self.datatype.UNKOWN, 
-                    "from_address"  : None,
-                    "to_address"    : None,
-                    "nettype"       : None,
-                    "state"         : None,
-                    "sequence"      : -1,
-                    "amount"        : 0,
-                    "sender"        : None,
-                    "receiver"      : None,
-                    "module"        : None,
-                    "token_id"      : 0,
-                    "token"         : None,
-                    "version"       : 0,
-                    "tran_id"       : None,
-                    "tran_state"    : False,
-                    "expiration_time": 0
-                    }
+            ret = ptran.parse_tran(transaction)
+            if ret.state == error.TRAN_INFO_INVALID:
+                #this transaction is not swap transaction, ignore it
+                return result(error.SUCCEED, datas = ret.datas)
+            elif ret.state != error.SUCCEED:
+                return ret
 
-            tran = result(error.SUCCEED, datas = datas)
-    
-            #check transaction state
-            datas["version"]    =  transaction.get("version", 0)
-            datas["tran_state"] =  transaction.get("success", False)
-            if not datas["tran_state"]:
-               return tran 
-
-            data = transaction.get("data")
-            if data is None or len(data) == 0:
-                return tran
-
-            ret = self.json_to_dict(data)
-            if ret.state != error.SUCCEED:
-                return tran
-
-            data_dict = ret.datas
-            if not self.is_valid_flag(data_dict.get("flag", None)):
-                return tran
+            tran = ret.datas
+            if not self.is_valid_flag(tran.get("flag", None)):
+                return result(error.SUCCEED, datas = tran)
             
-            datas["flag"]           = self.parse_tran_type(data_dict.get("flag"))
-            datas["type"]           = self.parse_data_type(data_dict.get("type"))
-            datas["from_address"]   = data_dict.get("from_address")
-            datas["to_address"]     = data_dict.get("to_address")
-            datas["times"]          = data_dict.get("times", 0)
-            datas["out_amount"]     = data_dict.get("out_amount", 0)
-            datas["nettype"]        = data_dict.get("nettype")
-            datas["state"]          = data_dict.get("state")
-            datas["opttype"]        = data_dict.get("opttype", "swap")
-            datas["amount"]         = transaction.get("amount", 0)
-            datas["sender"]         = transaction.get("sender")
-            datas["receiver"]       = transaction.get("receiver")
-            datas["token"]          = transaction.get("token_owner")
-            datas["token_id"]       = transaction.get("token_id")
-            datas["expiration_time"]= transaction.get("expiration_time", 0)
-            datas["tran_id"]        = data_dict.get("tran_id")
-            datas["sequence"]       = transaction.get("sequence_number")
-            datas["module"]         = transaction.get("module_address")
-
-            ret = result(error.SUCCEED, datas = datas)
+            tran["flag"] = self.parse_tran_type(tran.get("flag"))
+            tran["type"] = self.parse_data_type(tran.get("type"))
+            ret = result(error.SUCCEED, datas = tran)
         except Exception as e:
             ret = parse_except(e, transaction)
         return ret

@@ -43,9 +43,10 @@ class v2l(vlbase):
             receivers, 
             senders, 
             combine, 
-            swap_module):
+            swap_module, 
+            swap_owner):
         vlbase.__init__(self, name, dtype, vlsnodes, lbrnodes, \
-                proofdb, receivers, senders, swap_module, \
+                proofdb, receivers, senders, swap_module, swap_owner, \
                 "violas", "libra")
         self.append_property("combine", combine)
 
@@ -94,7 +95,7 @@ class v2l(vlbase):
         version     = data["version"]
         toaddress   = data["to_address"] #map token to
         tran_id     = data["tran_id"]
-        out_amount  = data["out_amount"]
+        out_amount  = int(data.get("out_amount", 0))
         times       = data["times"]
         opttype     = data["opttype"]
         from_token_id = data["token_id"] #VLSXXX
@@ -105,7 +106,7 @@ class v2l(vlbase):
         self._logger.info(f"start exchange sender={sender},  receiver={receiver}, " + \
             f"sequence={sequence} version={version}, toaddress={toaddress}, amount={amount}, " + \
             f"tran_id={tran_id}, from_token_id = {from_token_id} to_token_id={self.to_token_id} " + \
-            f"map_token_id = {map_token_id}, state = {state}, detail = {detail} datas from server.")
+            f"map_token_id = {map_token_id}, state(None: new swap) = {state}, detail = {detail} datas from server.")
 
         if state is not None:
             self.latest_version[receiver] = max(version, self.latest_version.get(receiver, -1))
@@ -137,12 +138,12 @@ class v2l(vlbase):
             if out_amount <= 0:
                 out_amount = out_amount_chian
             elif out_amount > out_amount_chian: #don't execute swap, Reduce the cost of the budget
+                self._logger.warning(f"don't execute swap(out_amount({out_amount}) > cur_outamount({out_amount_chian})), Reduce the cost of the budget")
                 self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, receiver)
                 return ret
             detail.update({"gas": gas})
 
             #swap LBRXXX -> VLSYYY
-            print(out_amount)
             ret = self.violas_client.swap(from_sender, from_token_id, map_token_id, amount, \
                     out_amount, receiver = combine_account.address.hex(), \
                     gas_currency_code = from_token_id)

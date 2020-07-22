@@ -23,6 +23,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
 from btc.violasproxy import violasproxy
+from analysis.parse_transaction import parse_tran
 
 #module name
 name="bclient"
@@ -138,8 +139,27 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def get_transactions_for_start(receiver, opttype, start_version = None, excluded):
-        return self.__listexproofforstate(opttype, self.proofstate.START.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
+    def format_to_local_proof_struct(self, trans):
+        datas = []
+        for data in trans:
+            tran = self.__map_tran(data)
+            ret = parse_tran(self.transaction(tran))
+            if ret.state == error.TRAN_INFO_INVALID:
+                continue
+            elif ret.state != error.SUCCEED:
+                return ret
+
+            datas.append(ret.datas)
+
+        return result(error.SUCCEED, datas = datas)
+
+    def get_transactions_for_start(self, receiver, opttype, start_version = None, excluded = None):
+        ret = self.__listexproofforstate(opttype, self.proofstate.START.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
+        if ret.state != error.SUCCEED:
+            return ret
+        return self.format_to_local_proof_struct(ret.datas)
+
+
 
     def listexproofforstart(self, opttype, receiver, excluded):
         return self.__listexproofforstate(opttype, self.proofstate.START.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
@@ -148,7 +168,10 @@ class btcclient(baseobject):
         return self.__listexproofforstate(opttype, self.proofstate.END.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
 
     def get_transactions_for_cancel(receiver, opttype, start_version, excluded = None):
-        return self.__listexproofforstate(opttype, self.proofstate.CANCEL.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
+        ret = self.__listexproofforstate(opttype, self.proofstate.CANCEL.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
+        if ret.state != error.SUCCEED:
+            return ret
+        return self.format_to_local_proof_struct(ret.datas)
 
     def listexproofforcancel(self, opttype, receiver, excluded):
         return self.__listexproofforstate(opttype, self.proofstate.CANCEL.value, comm.values.EX_TYPE_PROOF, receiver, excluded)
@@ -165,7 +188,7 @@ class btcclient(baseobject):
     def __map_tran(self, data):
         tran_data = json.dumps({"flag":"btc", \
             "type":"b2v", "state":data.get("state"), "to_address":data.get("address"), "to_module":data.get("vtoken"), \
-            "out_ampunt":data.get("out_amount"), "times":data.get("times"), "tran_id":data.get("txid"), \
+            "out_amount":data.get("out_amount"), "times":data.get("times"), "tran_id":data.get("tran_id"), \
             "sequence":data.get("sequence")})
         _, module = split_full_address(data.get("vtoken"))
         return {
@@ -176,7 +199,7 @@ class btcclient(baseobject):
                 "amount":int(data.get("amount") * COINS),\
                 "sequence_number":data.get("height"),\
                 "txid":data.get("txid"),\
-                "tran_id":data.get("txid"),\
+                "tran_id":data.get("tran_id"),\
                 "creation_block":data.get("creation_block"),\
                 "update_block":data.get("update_block"),\
                 "sender":data.get("issuer"), \
@@ -184,6 +207,7 @@ class btcclient(baseobject):
                 "module_address":module \
                 }
 
+    #parse tran datas to local proof format
     def get_tran_by_tranid(self, tran_id):
         try:
             ret = self.get_transaction(tran_id)
@@ -191,9 +215,7 @@ class btcclient(baseobject):
                 return ret
 
             tran = self.__map_tran(ret.datas)
-            if tran["data"] is not None:
-                del tran["data"]
-            ret = result(error.SUCCEED, "", tran)
+            ret = parse_tran(tran)
             self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
