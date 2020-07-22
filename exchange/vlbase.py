@@ -37,6 +37,7 @@ class vlbase(baseobject):
             fromnodes, mapnodes, \
             proofdb, receivers, senders, \
             swap_module, \
+            swap_owner, \
             fromchain, mapchain):
         ''' swap token and send coin to payee(metadata's to_address)
             fromnodes: swap source chain conf
@@ -45,6 +46,7 @@ class vlbase(baseobject):
             receivers: receive swap chain' addresses
             senders  : sender target chain token adderss
             swap_module: violas chain swap module address
+            swap_owner: violas chain swap module owner address
             fromchain: source chain name
             mapchain : target chain name
         '''
@@ -66,6 +68,7 @@ class vlbase(baseobject):
         self.append_property("dtype", dtype)
         self.append_property("to_token_id ", stmanage.get_type_stable_token(dtype))
         self.append_property("swap_module", swap_module)
+        self.append_property("swap_owner", swap_owner)
 
 
         #use the above property, so call set_local_workspace here
@@ -91,6 +94,8 @@ class vlbase(baseobject):
         self.append_property(f"{self.from_chain}_wallet", self.from_wallet)
         self.append_property(f"{self.map_chain}_wallet", self.map_wallet)
         self.violas_client.swap_set_module_address(self.swap_module)
+        self.violas_client.swap_set_owner_address(self.swap_owner)
+
 
     def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):
         ret = self.db.insert_commit(version, state, tran_id, receiver, detail)
@@ -208,7 +213,7 @@ class vlbase(baseobject):
     def send_coin_for_update_state_to_end(self, sender, receiver, tran_id, token_id, amount = 1):
             self._logger.debug(f"start send_coin_for_update_state_to_end(sender={sender.address.hex()},"\
                     f"recever={receiver}, tran_id={tran_id}, amount={amount})")
-            tran_data = self.from_client.create_data_for_end(self.from_chain, self.name(), tran_id, "")
+            tran_data = self.from_client.create_data_for_end(self.from_chain, self.dtype, tran_id, "")
             ret = self.from_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.VFAILED)

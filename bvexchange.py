@@ -15,7 +15,7 @@ from time import sleep, ctime
 import stmanage
 import subprocess
 import comm.functions as fn
-from exchange import b2v, v2b, exlv
+from exchange import b2v, v2b, v2l, l2v
 from comm.result import parse_except
 from analysis import analysis_base, analysis_filter, analysis_proof
 from enum import Enum
@@ -29,8 +29,8 @@ class works:
     __work_obj = {}
     __record_db = "record"
 
-    __libra_min_valid_version   = 56905575
-    __violas_min_valid_version  = 1413729
+    __libra_min_valid_version   = 332_00000
+    __violas_min_valid_version  = 8849006
     __btc_min_valid_version     = 0
     def __init__(self):
         logger.debug("works __init__")
@@ -266,12 +266,14 @@ class works:
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}")
                 try:
-                    obj = exlv.exlv(mod, 
-                            stmanage.get_libra_nodes(),
+                    obj = l2v.l2v(mod, 
                             stmanage.get_violas_nodes(), 
+                            stmanage.get_libra_nodes(),
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+                            stmanage.get_swap_module(),
+                            stmanage.get_swap_owner(),
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -295,14 +297,16 @@ class works:
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}")
                 try:
-                    obj = exlv.exlv(mod, 
+                    obj = v2l.v2l(mod, 
                             dtype,
                             stmanage.get_violas_nodes(), 
                             stmanage.get_libra_nodes(),
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
-                            stmanage.get_combine_address(dtype, "violas")
+                            stmanage.get_combine_address(dtype, "violas"),
+                            stmanage.get_swap_module(),
+                            stmanage.get_swap_owner(),
                             )
                     self.set_work_obj(obj)
                     obj.start()

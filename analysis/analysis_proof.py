@@ -282,7 +282,7 @@ class aproof(abase):
 
     def start(self):
         try:
-            self._logger.debug("start vproof work")
+            self._logger.debug(f"start vproof work")
 
             new_state = "start"
             ret = self._dbclient.get_latest_filter_ver()
@@ -300,7 +300,7 @@ class aproof(abase):
 
             #not found new transaction to change state
             if start_version > max_version:
-                self._logger.debug(f"start version:{start_version}  > max version:{max_version}")
+                self._logger.debug(f"start version:{start_version}  > max saved version:{max_version} :chain : self.chain, dtype:{self.name()}")
                 return result(error.SUCCEED)
 
             version  = start_version

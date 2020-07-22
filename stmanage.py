@@ -110,6 +110,9 @@ def get_violas_servers():
 def get_violas_nodes():
     return setting.violas_nodes
 
+def get_btc_nodes():
+    return setting.btc_conn
+
 def get_btc_conn():
     return setting.btc_conn
 
@@ -180,6 +183,9 @@ def get_support_token_id(chain):
 
 def get_swap_module():
     return setting.swap_module.get("address")
+
+def get_swap_owner():
+    return setting.swap_owner.get("address")
 
 def get_conf():
     infos = {}

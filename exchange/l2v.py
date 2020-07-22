@@ -41,10 +41,11 @@ class l2v(vlbase):
             proofdb, 
             receivers, 
             senders, 
-            swap_module):
+            swap_module,
+            swap_owner):
 
         vlbase.__init__(self, name, dtype, lbrnodes, vlsnodes, \
-                proofdb, receivers, senders, swap_module, \
+                proofdb, receivers, senders, swap_module, swap_owner,\
                 "libra", "violas")
         self.init_extend_property()
         self.init_exec_states()

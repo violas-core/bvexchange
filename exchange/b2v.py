@@ -39,7 +39,7 @@ class b2v(vbbase):
             senders, 
             swap_module):
 
-        vlbase.__init__(self, name, dtype, btcnodes, vlsnodes, \
+        vbbase.__init__(self, name, dtype, btcnodes, vlsnodes, \
                 proofdb, receivers, senders, swap_module, \
                 "btc", "violas")
         self.init_extend_property()
@@ -62,7 +62,8 @@ class b2v(vbbase):
                         localdb.state.VSUCCEED, \
                         localdb.state.SSUCCEED]])
 
-        ret = self.get_record_from_localdb_with_state(states)
+        excluded_states = [localdb.state.VFAILED, localdb.state.PFAILED]
+        ret = self.get_record_from_localdb_with_state(excluded_states)
         if ret.state != error.SUCCEED:
             return ret
         setattr(self, "excluded", ret.datas)
@@ -169,9 +170,8 @@ class b2v(vbbase):
 def main():
        print("start main")
        stmanage.set_conf_env("../bvexchange.toml")
-       mod = "b2v"
        dtype = "b2vusd"
-       obj = b2v(mod, 
+       obj = b2v(dtype, 
                dtype,
                stmanage.get_btc_nodes(), 
                stmanage.get_violas_nodes(),

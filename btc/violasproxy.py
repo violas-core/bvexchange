@@ -42,7 +42,7 @@ class violasproxy(baseobject):
     class opttype(autoname):
         BTCMARK = auto() # btc mark
         V2BMARK = auto() # mark
-        B2VMAP  = auto() 
+        B2V     = auto() 
         B2VUSD  = auto() 
         B2VEUR  = auto() 
         B2VSGD  = auto() 
@@ -184,8 +184,10 @@ class violasproxy(baseobject):
 
         datas = requests.get(url).json().get("datas")
 
-        return [data for data in datas if not self.is_excluded(data, excluded)]
+        if datas is None:
+            return []
 
+        return [data for data in datas if not self.is_excluded(data, excluded)]
 
     def stop(self):
         self.work_stop()
