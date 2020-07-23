@@ -25,7 +25,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
-from exchange.vlbase import vlbase
+from exchange.vbbase import vbbase
 
 #module self.name
 #name="exlv"
@@ -33,12 +33,12 @@ wallet_name = "vwallet"
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
-class v2b(vlbase):    
+class v2b(vbbase):    
     def __init__(self, 
             name, 
             dtype, 
-            btcnodes, 
             vlsnodes, 
+            btcnodes, 
             proofdb, 
             receivers, 
             senders, 
@@ -47,8 +47,8 @@ class v2b(vlbase):
             swap_owner):
         ''' violas stable token swap to bitcoin BTC
             @dtype : opttype
-            @btcnodes: btc node configure
             @vlsnodes: violas nodes configure
+            @btcnodes: btc node configure
             @proofdb: violas proof configure
             @receivers: violas receivers address
             @senders: btc address, use this address to transfer
@@ -56,7 +56,7 @@ class v2b(vlbase):
             @swap_module: swap module address
             @swap_owner: swap owner address
         '''
-        vlbase.__init__(self, name, dtype, btcnodes, vlsnodes, \
+        vbbase.__init__(self, name, dtype, btcnodes, vlsnodes, \
                 proofdb, receivers, senders, swap_module, swap_owner,\
                 "violas", "btc")
         self.append_property("combine", combine)
@@ -169,14 +169,14 @@ class v2b(vlbase):
             detail.update({"gas": gas})
 
             #swap LBRXXX -> VLSYYY
-            self._logger.debug("exec_exchange-3. start swap...")
+            self._logger.debug("exec_exchange-2. start swap...")
             ret = self.violas_client.swap(from_sender, from_token_id, map_token_id, amount, \
                     out_amount, receiver = combine_account.address.hex(), \
                     gas_currency_code = from_token_id)
 
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
-                self._logger.debug("exec_exchange-3.result: failed.")
+                self._logger.debug("exec_exchange-2.result: failed.")
                 return ret
             else:
                 self.update_localdb_state_with_check(tran_id, localdb.state.SUCCEED)
@@ -203,25 +203,27 @@ class v2b(vlbase):
         if self.use_module(state, localdb.state.FILLSUCCEED) or \
                 self.use_module(state, localdb.state.PSUCCEED):
 
-            self._logger.debug("exec_exchange-2. start fill_address_token...")
+            self._logger.debug("exec_exchange-3. start fill_address_token...")
             btc_amount = self.amountswap(detail["diff_balance"]).btc_amount
             ret = self.fill_address_token(map_sender.address.hex(), to_token_id, \
                     btc_amount)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
                         json.dumps(detail))
-                self._logger.debug("exec_exchange-2.result: failed.")
+                self._logger.debug("exec_exchange-3.result: failed.")
                 return ret
 
         #send btc token to payee address. P = payee
             markdata = self.btc_client.create_data_for_mark(self.btc_chain, self.dtype, \
                     tran_id, version)
 
+            self._logger.debug("exec_exchange-4. start send btc to {toaddress} amount = {btc_amount}...")
             ret = self.btc_client.send_coin(map_sender, toaddress, \
                     btc_amount, to_token_id, data=markdata)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.PFAILED, \
                         json.dumps(detail))
+                self._logger.debug("exec_exchange-4.result: failed.")
                 return ret
             else:
                 self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED)
@@ -229,19 +231,21 @@ class v2b(vlbase):
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state
         if self.use_module(state, localdb.state.VSUCCEED):
+            self._logger.debug("exec_exchange-5. start send_coin_for_update_state_to_end({receiver}, {tran_id})...")
             self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, \
                     from_token_id, version = version)
+        self._logger.debug("exec_exchange-end.")
 
 def main():
        print("start main")
        
        stmanage.set_conf_env("../bvexchange.toml")
-       mod = "v2busd"
-       dtype = "v2lusd"
+       mod = "v2b"
+       dtype = "v2b"
        obj = v2b(mod, 
                dtype,
                stmanage.get_violas_nodes(), 
-               stmanage.get_libra_nodes(),
+               stmanage.get_btc_nodes(),
                stmanage.get_db(dtype), 
                list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
                list(set(stmanage.get_sender_address_list(dtype, "btc", False))),
