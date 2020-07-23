@@ -94,7 +94,6 @@ class violasproxy(baseobject):
         url += f"&type={opttype.name.lower()}"
         url += self.convert_arg_to_url(kvargs)
 
-        print(f"url:{url}")
         return url
 
     @property
@@ -250,11 +249,11 @@ class violasproxy(baseobject):
                 vreceiver=vaddress, sequence=sequence, fromprivkeys=json.dumps(fromprivkeys))
         return self.run_request(url)
 
-    def violas_sendexproofstop(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, fromprivkeys = None):#BTC
+    def violas_sendexproofstop(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, fromprivkeys = None, withgas=False):#BTC
         fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
         url = self.create_opt_url(self.opt.SET, self.opttype[opttype.upper()], state="stop", \
                 fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
-                vreceiver=vaddress, sequence=sequence, fromprivkeys=json.dumps(fromprivkeys))
+                vreceiver=vaddress, sequence=sequence, fromprivkeys=json.dumps(fromprivkeys), withgas=withgas)
         return self.run_request(url)
 
     def sendtoaddress(self, address, amount):#BTC

@@ -29,7 +29,7 @@ class works:
     __work_obj = {}
     __record_db = "record"
 
-    __libra_min_valid_version   = 332_00000
+    __libra_min_valid_version   = 400_89736
     __violas_min_valid_version  = 8849006
     __btc_min_valid_version     = 0
     def __init__(self):
@@ -67,14 +67,17 @@ class works:
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}")
                 try:
-                    chain = "violas"
-                    obj = b2v.exb2v(mod,
-                            stmanage.get_violas_nodes(), 
-                            stmanage.get_btc_conn(), 
-                            stmanage.get_module_address(dtype, chain), 
-                            stmanage.get_token_id(dtype, chain), 
-                            stmanage.get_combine_address(), 
-                            chain=chain)
+                    obj = b2v.b2v(mod,
+                            dtype,
+                            stmanage.get_btc_nodes(), 
+                            stmanage.get_violas_nodes(),
+                            stmanage.get_db(dtype), 
+                            list(set(stmanage.get_receiver_address_list(dtype, "btc", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+                            stmanage.get_combine_address(dtype, "btc", True),
+                            stmanage.get_swap_module(),
+                            stmanage.get_swap_owner()
+                            )
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:

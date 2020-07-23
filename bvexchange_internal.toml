@@ -470,6 +470,10 @@ v2b_maxtimes = 99
         address = "2N9fQcit5KB8vJHmBF5Z4DkUUTCgJA8GKb3"
         type = "b2v"
         chain = "btc"
+    [[address_list.combine]]
+        address = "2N9fQcit5KB8vJHmBF5Z4DkUUTCgJA8GKb3"
+        type = "b2vusd"
+        chain = "btc"
 [looping_sleep]
     v2b = 1
     b2v = 1

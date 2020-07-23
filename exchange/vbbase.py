@@ -76,7 +76,9 @@ class vbbase(baseobject):
             btcnodes, violasnodes, \
             proofdb, receivers, senders, \
             swap_module, \
-            fromchain, mapchain):
+            swap_owner, \
+            fromchain, \
+            mapchain):
         ''' swap token and send coin to payee(metadata's to_address)
             fromnodes: swap source chain conf
             mapnodes : swap target chain conf
@@ -84,6 +86,7 @@ class vbbase(baseobject):
             receivers: receive swap chain' addresses
             senders  : sender target chain token adderss
             swap_module: violas chain swap module address
+            swap_owner: violas chain swap owner address
             fromchain: source chain name
             mapchain : target chain name
         '''
@@ -102,6 +105,7 @@ class vbbase(baseobject):
         self.append_property("dtype", dtype)
         self.append_property("to_token_id ", stmanage.get_type_stable_token(dtype))
         self.append_property("swap_module", swap_module)
+        self.append_property("swap_owner", swap_owner)
 
         #use the above property, so call set_local_workspace here
         self.set_local_workspace()
@@ -111,18 +115,19 @@ class vbbase(baseobject):
 
     def stop(self):
         try:
-            self.map_client.stop()
-            self.from_client.stop()
+            self.violas_client.stop()
+            self.btc_client.stop()
             self.work_stop()
             pass
         except Exception as e:
             parse_except(e)
 
     def set_local_workspace(self):
-        setattr(self, "excluded", {})
+        setattr(self, "excluded", [])
         self.append_property(f"{self.from_chain}_chain", self.from_chain)
         self.append_property(f"{self.map_chain}_chain", self.map_chain)
         self.violas_client.swap_set_module_address(self.swap_module)
+        self.violas_client.swap_set_owner_address(self.swap_owner)
         if self.from_chain == "btc":
             self.append_property("pserver", self.btc_client)
             self.append_property("from_wallet", btcwallet(self.name(), None))
@@ -174,7 +179,6 @@ class vbbase(baseobject):
 
     def merge_db_to_rpcparams(self, rpcparams, dbinfos):
         try:
-            self._logger.debug("start merge_db_to_rpcparams")
             for info in dbinfos:
                 new_data = {
                         "version":info.version, 
@@ -204,9 +208,21 @@ class vbbase(baseobject):
             ret = parse_except(e)
         return ret
 
+    def show_load_record_info(self, rpcparams):
+        infos = {}
+        for key, values in rpcparams.items():
+            for value in values:
+                info_key = f"{localdb.state(value.get('state')).name}"
+                if info_key not in infos:
+                    infos.update({info_key : 1})
+                else:
+                    infos[info_key] = infos[info_key] + 1
+        self._logger.debug(f"record info:{infos}")
+
+
     def get_record_from_localdb_with_state(self, states):
         try:
-            maxtimes = 5
+            maxtimes = 999999999
             rpcparams = {}
 
             assert states is not None and len(states) > 0, f"args states is invalid."
@@ -225,20 +241,22 @@ class vbbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def is_end(tran_id):
+    def is_end(self, tran_id):
         return self.pserver.is_end(tran_id)
 
-    def is_stop(tran_id):
+    def is_stop(self, tran_id):
         return self.pserver.is_stop(tran_id)
 
     # local db state is VSUCCEED , update state to COMPLETE
     def rechange_db_state(self, states):
         try:
             ##update violas blockchain state to end, if sendexproofmark is ok
+            self._logger.debug(f"start rechange_db_state({[state.name for state in states]})")
             ret = self.get_record_from_localdb_with_state(states)
             if ret.state != error.SUCCEED:
                 return ret
             rpcparams = ret.datas
+            self.show_load_record_info(rpcparams)
             
             for key in rpcparams.keys():
                 datas = ret.datas.get(key)
@@ -259,8 +277,8 @@ class vbbase(baseobject):
         return ret
 
     def send_coin_for_update_state_to_end(self, sender, receiver, tran_id, token_id, amount = 1, **kwargs):
-            self._logger.debug(f"start send_coin_for_update_state_to_end(sender={sender.address.hex()},"\
-                    f"recever={receiver}, tran_id={tran_id}, amount={amount}), version={version}")
+            self._logger.debug(f"start send_coin_for_update_state_to_end(sender={sender},"\
+                    f"recever={receiver}, tran_id={tran_id}, amount={amount})")
             tran_data = self.from_client.create_data_for_end(self.from_chain, self.dtype, tran_id, **kwargs)
             ret = self.from_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
             if ret.state != error.SUCCEED:
@@ -290,7 +308,7 @@ class vbbase(baseobject):
 
 
     def chain_data_is_valid(self, data):
-        if len(data["to_address"]) not in VIOLAS_ADDRESS_LEN:
+        if False: # btc and violas is diff ????????
             self._logger.warning(f"transaction(tran_id = {data['tran_id']})) is invalid. " + 
                     f"ignore it and process next.")
             return False
@@ -308,11 +326,16 @@ class vbbase(baseobject):
         return state is None or state.value < module_state.value
 
     def exec_refund(self, data, from_sender):
-        amount      = int(data["amount"]) 
-        tran_id     = data["tran_id"]
+        amount          = int(data["amount"]) 
+        tran_id         = data["tran_id"]
         stable_token_id = data["token_id"]
-        payee = data["sender"]
+        payee           = data["sender"]
 
+        ##convert to BTC satoshi(100000000satoshi == 1000000vBTC)
+        if self.from_chain == "BTC":
+            amount = amount * 100
+
+        self._logger.debug(f"execute refund({tran_id}, {amount}, {state_token_id})")
         data = self.from_client.create_data_for_stop(self.from_chain, self.dtype, tran_id, 0) 
         ret = self.from_client.send_coin(from_sender, payee, amount, stable_token_id, data=data)
         if ret.state != error.SUCCEED:
@@ -320,24 +343,25 @@ class vbbase(baseobject):
             return ret
         else:
             self.update_localdb_state_with_check(tran_id, localdb.state.SSUCCEED)
+        return result(error.SUCCEED)
 
     def reexchange_data_from_failed(self, states):
         try:
             #get all info from db
+            self._logger.debug(f"start re exchange failed transaction({[state.name for state in states]})")
             ret = self.get_record_from_localdb_with_state(states)
             if ret.state != error.SUCCEED:
                 return ret
             rpcparams = ret.datas
+            self.show_load_record_info(rpcparams)
 
             receivers = self.receivers
 
-            
             #get map sender from  senders
             ret = self.get_map_sender_address()
             self.check_state_raise(ret, f"not found map sender" + 
                     f"check address and amount")
             map_sender = ret.datas
-            self._logger.debug(f"map_sender({type(map_sender)}): {map_sender.address.hex()}")
 
             combine_account = getattr(self, "combine_account", None)
 
@@ -369,6 +393,7 @@ class vbbase(baseobject):
                     
                         ret = self.pserver.get_tran_by_tranid(tran_id)
                         if ret.state != error.SUCCEED or ret.datas is None:
+                            self._logger.error(f"get transaction(tran_id = {tran_id}) failed.")
                             continue
         
                         data = ret.datas
@@ -378,11 +403,15 @@ class vbbase(baseobject):
                         #   case 1: failed times check(metadata: times > 0 (0 = always))  
                         #   case 2: pre exec_refund is failed
                         if (retry != 0 and retry >= times) or state == localdb.state.SFAILED:
-                            self.exec_refund(data, from_sender)
+                            ret = self.exec_refund(data, from_sender)
+                            if ret.state != error.SUCCEED:
+                                self._logger.error(ret.message)
                             continue
 
                         ret = self.exec_exchange(data, from_sender, map_sender, \
                                 combine_account, receiver, state = state, detail = detail)
+                        if ret.state != error.SUCCEED:
+                            self._logger.error(ret.message)
 
             ret = result(error.SUCCEED)
         except Exception as e:
@@ -401,22 +430,24 @@ class vbbase(baseobject):
     
             #db state: FAILED
             #if history datas is found state = failed, exchange it until succeed
+            self._logger.debug(f"************************************************************ 1/4")
             self.reexchange_data_from_failed(self.use_exec_failed_state)
     
             #db state: SUCCEED
             #check state from blockchain, and change exchange history data, 
             ##when change it to complete, can truncature history db
+            self._logger.debug(f"************************************************************ 2/4")
             self.rechange_db_state(self.use_exec_update_db_states)
 
             #get map sender from senders
             ret = self.get_map_sender_address()
             self.check_state_raise(ret, f"not found map sender. check address")
             map_sender = ret.datas
-            self._logger.debug(f"map_sender({type(map_sender)}): {map_sender.address.hex()}")
 
             combine_account = self.combine_account
 
             #modulti receiver, one-by-one
+            self._logger.debug(f"************************************************************ 3/4")
             for receiver in receivers:
                 if not self.work() :
                     break
@@ -427,25 +458,31 @@ class vbbase(baseobject):
                 latest_version = self.latest_version.get(receiver, -1) + 1
 
                 #get new transaction from server
-                ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version, excluded = self.excluded.get(receiver))
+                self._logger.debug("start exchange(data type: start), datas from violas server.receiver={receiver}")
+                ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version, excluded = self.excluded)
+                self._logger.debug(f"will execute transaction(start) count: {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
-                    self._logger.debug(f"start exchange datas from violas server.receiver={receiver}")
                     for data in ret.datas:
                         if not self.work() :
                             break
-                        print(data)
-                        self.exec_exchange(data, from_sender, map_sender, combine_account, receiver)
+                        ret = self.exec_exchange(data, from_sender, map_sender, combine_account, receiver)
+                        if ret.state != error.SUCCEED:
+                            self._logger.error(ret.message)
 
                 #get cancel transaction, this version not support
-                ret = self.pserver.get_transactions_for_cancel(receiver, self.dtype, latest_version, excluded = self.excluded.get(receiver))
+                self._logger.debug("start exchange(data type: cancel), datas from violas server.receiver={receiver}")
+                ret = self.pserver.get_transactions_for_cancel(receiver, self.dtype, latest_version, excluded = self.excluded)
+                self._logger.debug(f"will execute transaction(cancel) count: {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
-                    self._logger.debug("start exchange datas from violas server.receiver={receiver}")
                     for data in ret.datas:
                         if not self.work() :
                             break
-                        self.exec_refund(data, from_sender)
+                        ret = self.exec_refund(data, from_sender)
+                        if ret.state != error.SUCCEED:
+                            self._logger.error(ret.message)
     
             ret = result(error.SUCCEED) 
+            self._logger.debug(f"************************************************************ 4/4")
     
         except Exception as e:
             ret = parse_except(e)

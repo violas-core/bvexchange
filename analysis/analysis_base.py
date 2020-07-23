@@ -203,7 +203,7 @@ class abase(baseobject):
             tran["type"] = self.parse_data_type(tran.get("type"))
             ret = result(error.SUCCEED, datas = tran)
         except Exception as e:
-            ret = parse_except(e, transaction)
+            ret = parse_except(e)
         return ret
 
         

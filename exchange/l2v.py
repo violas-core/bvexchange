@@ -125,17 +125,17 @@ class l2v(vlbase):
             #get output and gas
             ret = self.violas_client.swap_get_output_amount(map_token_id, to_token_id, amount)
             if ret.state != error.SUCCEED:
-                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, receiver)
+                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
                 return ret
             else:
-                self.update_localdb_state_with_check(tran_id, localdb.state.ESUCCEED, receiver)
+                self.update_localdb_state_with_check(tran_id, localdb.state.ESUCCEED)
 
             out_amount_chian, gas = ret.datas
             #temp value(test)
             if out_amount <= 0:
                 out_amount = out_amount_chian
             elif out_amount > out_amount_chian: #don't execute swap, Reduce the cost of the budget
-                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, receiver)
+                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
                 return ret
             detail.update({"gas": gas})
 

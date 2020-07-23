@@ -242,6 +242,7 @@ def main():
     print(f"get support_token_id(violas): {get_support_token_id('violas')}")
     print(f"get support_token_id(btc): {get_support_token_id('btc')}")
     print(f"get swap module(violas): {get_swap_module()}")
+    print(f"combin address(): {get_combine_address('b2vusd', 'btc')}")
 
     #json_print(get_conf())
 
