@@ -106,6 +106,7 @@ class vbbase(baseobject):
         self.append_property("to_token_id ", stmanage.get_type_stable_token(dtype))
         self.append_property("swap_module", swap_module)
         self.append_property("swap_owner", swap_owner)
+        self.append_property("proofdb", proofdb)
 
         #use the above property, so call set_local_workspace here
         self.set_local_workspace()
@@ -132,10 +133,12 @@ class vbbase(baseobject):
             self.append_property("pserver", self.btc_client)
             self.append_property("from_wallet", btcwallet(self.name(), None))
             self.append_property("from_client", self.btc_client)
+            self.append_property("btc_wallet", self.from_wallet)
         else:
-            self.append_property("pserver", requestclient(self.name(), proofdb))
+            self.append_property("pserver", requestclient(self.name(), self.proofdb))
             self.append_property("from_wallet", violaswallet(self.name(), wallet_name, self.from_chain))
             self.append_property("from_client", self.violas_client)
+            self.append_property("violas_wallet", self.from_wallet)
 
         if self.map_chain == "btc":
             self.append_property("map_wallet", btcwallet(self.name(), None))
