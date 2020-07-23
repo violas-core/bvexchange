@@ -82,7 +82,7 @@ class dbv2l(baseobject):
             return f"<info(version={self.version}, state={self.state}, created={self.created}, times={self.times}, tranid={self.tranid}, receiver = {self.receiver}, detail={detail})>"
 
     def __init_db(self, dbfile):
-        self._logger.debug("start __init_db(dbfile={})".format(dbfile))
+        self._logger.debug("start init_db(dbfile={})".format(dbfile))
         db_echo = False
 
         if stmanage.get_db_echo():
@@ -99,8 +99,6 @@ class dbv2l(baseobject):
         
     def insert(self, version, state, tranid, receiver, detail = ""):
         try:
-            self._logger.info(f"start insert(version={version}, state={state.name}, tranid={tranid}, receiver = {receiver}, detail={detail}") 
-
             data = self.info(version=version,state=state.value, tranid=tranid, receiver = receiver, detail=detail)
             self.__session.add(data)
 
@@ -121,7 +119,6 @@ class dbv2l(baseobject):
 
     def commit(self):
         try:
-            self._logger.debug("start commit")
             self.__session.flush()
             self.__session.commit()
 
@@ -133,7 +130,6 @@ class dbv2l(baseobject):
     def query(self, tranid):
         proofs = []
         try:
-            self._logger.debug(f"start query(tranid={tranid})")
             filter_tranid = (self.info.tranid==tranid)
             proofs = self.__session.query(self.info).filter(filter_tranid).all()
             ret = result(error.SUCCEED, datas = proofs)
@@ -143,7 +139,6 @@ class dbv2l(baseobject):
 
     def has_info(self, tranid):
         try:
-            self._logger.debug(f"start has_info(tranid={tranid})")
             filter_tranid = (self.info.tranid==tranid)
             state = (self.__session.query(self.info).filter(filter_tranid).count() > 0)
             ret = result(error.SUCCEED, datas = state) 
@@ -155,23 +150,19 @@ class dbv2l(baseobject):
     def __query_state(self, state, maxtimes=999999999):
         proofs = []
         try:
-            self._logger.debug(f"start __query_state(state={state}, maxtimes={maxtimes})")
             filter_state = (self.info.state==state.value)
             filter_times = (self.info.times<=maxtimes)
             proofs = self.__session.query(self.info).filter(filter_state).filter(filter_times).all()
             ret = result(error.SUCCEED, datas = proofs)
-            self._logger.debug(f"result: {len(ret.datas)}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def query_state_count(self, state):
         try:
-            self._logger.debug(f"start __query_state(state={state})")
             filter_state = (self.info.state==state.value)
             proofs = self.__session.query(self.info).filter(filter_state).count()
             ret = result(error.SUCCEED, datas = proofs)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -199,7 +190,6 @@ class dbv2l(baseobject):
 
     def __update(self, tranid, state, detail = ""):
         try:
-            self._logger.info(f"start update(tranid={tranid}, state={state}, detail = {detail})")
             filter_tranid = (self.info.tranid==tranid)
             datas = self.__session.query(self.info).filter(filter_tranid)\
                     .update({self.info.state:state.value, self.info.times:self.info.times + 1, self.info.detail : detail})
@@ -212,7 +202,6 @@ class dbv2l(baseobject):
         try:
             ret = self.__update(tranid, state, detail)
             if ret.state != error.SUCCEED:
-                self._logger.error("update_info_commit failed")
                 return ret
 
             ret = self.commit()

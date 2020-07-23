@@ -269,6 +269,7 @@ class vlbase(baseobject):
             return ret
         else:
             self.update_localdb_state_with_check(tran_id, localdb.state.SSUCCEED)
+        return result(error.SUCCEED)
 
     def reexchange_data_from_failed(self, states):
         try:
@@ -332,11 +333,15 @@ class vlbase(baseobject):
                         #   case 1: failed times check(metadata: times > 0 (0 = always))  
                         #   case 2: pre exec_refund is failed
                         if (retry != 0 and retry >= times) or state == localdb.state.SFAILED:
-                            self.exec_refund(data, from_sender)
+                            ret = self.exec_refund(data, from_sender)
+                            if ret.state != error.SUCCEED:
+                                self._logger.error(ret.message)
                             continue
 
                         ret = self.exec_exchange(data, from_sender, map_sender, \
                                 combine_account, receiver, state = state, detail = detail)
+                        if ret.state != error.SUCCEED:
+                            self._logger.error(ret.message)
 
             ret = result(error.SUCCEED)
         except Exception as e:
@@ -387,7 +392,9 @@ class vlbase(baseobject):
                     for data in ret.datas:
                         if not self.work() :
                             break
-                        self.exec_exchange(data, from_sender, map_sender, combine_account, receiver)
+                        ret = self.exec_exchange(data, from_sender, map_sender, combine_account, receiver)
+                        if ret.state != error.SUCCEED:
+                            self._logger.error(ret.message)
 
                 #get cancel transaction, this version not support
                 ret = self.pserver.get_transactions_for_cancel(receiver, self.dtype, latest_version)
@@ -396,7 +403,9 @@ class vlbase(baseobject):
                     for data in ret.datas:
                         if not self.work() :
                             break
-                        self.exec_refund(data, from_sender)
+                        ret = self.exec_refund(data, from_sender)
+                        if ret.state != error.SUCCEED:
+                            self._logger.error(ret.message)
     
             ret = result(error.SUCCEED) 
     

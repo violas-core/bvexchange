@@ -49,7 +49,6 @@ class violaswallet(baseobject):
 
     def __load_wallet(self, wallet_name, chain="violas"):
         try:
-            self._logger.debug("start load_wallet({})".format(wallet_name))
             self.__wallet_name = wallet_name
 
             if chain in ("violas"):
@@ -65,7 +64,6 @@ class violaswallet(baseobject):
             else:
                 ret = result(error.SUCCEED, "not found wallet file", "")
                 self.__wallet = walletproxy.new()
-                self._logger.warning(f"new wallet created.walletname:{self.__wallet_name}")
 
         except Exception as e:
             ret = parse_except(e)
@@ -84,7 +82,6 @@ class violaswallet(baseobject):
 
     def new_account(self):
         try:
-            self._logger.info("start new_account")
             account = self.__wallet.new_account();
             ret = result(error.SUCCEED, "", account)
         except Exception as e:
@@ -100,7 +97,6 @@ class violaswallet(baseobject):
             if isinstance(addressorid, str) and len(addressorid) >= min(VIOLAS_ADDRESS_LEN):
                 auth, addr = self.split_full_address(addressorid).datas
                 address = addr
-                print(f"auth_key_prefix: {auth} ,address: {addr}")
 
             account = self.__wallet.get_account_by_address_or_refid(address)
             if account is None:
@@ -261,14 +257,12 @@ class violasclient(baseobject):
         try:
             datas = split_full_address(address, auth_key_prefix)
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"split full address: address ={datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def mint_coin(self, address, amount, token_id, module = None, auth_key_prefix = None, is_blocking=True):
         try:
-            self._logger.info(f"start mint_coin(address={address}, amount={amount}, token_id={token_id}, module={module}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
             (auth, addr) = self.split_full_address(address, auth_key_prefix).datas
             (_, mod) = self.split_full_address(module).datas
 
@@ -283,8 +277,6 @@ class violasclient(baseobject):
 
     def send_coin(self, from_account, to_address, amount, token_id, module_address = None, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000):
         try:
-            self._logger.info(f"start send_coin(from_account={from_account.address.hex()}, to_address={to_address}, amount={amount}, token_id = {token_id}, module_address={module_address}, data={data}, auth_key_prefix={auth_key_prefix}, is_blocking={is_blocking})")
-
             if (len(to_address) not in VIOLAS_ADDRESS_LEN) or (amount < 1) or ((module_address is not None) and (len(module_address) not in VIOLAS_ADDRESS_LEN)):
                 return result(error.ARG_INVALID)
 
@@ -307,32 +299,27 @@ class violasclient(baseobject):
 
     def get_balance(self, account_address, token_id = None, module_address = None):
         try:
-            self._logger.debug(f"get_balance(address={account_address}, token_id={token_id}), module={module_address}")
             (_, addr) = self.split_full_address(account_address).datas
             (_, module_addr) = self.split_full_address(module_address).datas
 
             balance = self.__client.get_balance(account_address = addr, currency_code = token_id, currency_module_address = module_addr)
             ret = result(error.SUCCEED, "", balance)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def get_balances(self, account_address):
         try:
-            self._logger.debug(f"get_balances(address={account_address})")
             (_, addr) = self.split_full_address(account_address).datas
 
             balance = self.__client.get_balances(account_address = addr)
             ret = result(error.SUCCEED, "", balance)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def get_account_state(self, address, module = None):
         try:
-            self._logger.debug(f"start get_account_state(address={address}, modlue = {module})")
             (_, addr) = self.split_full_address(address).datas
             (_, mod) = self.split_full_address(module).datas
             state =  self.__client.get_account_state(addr)
@@ -343,28 +330,23 @@ class violasclient(baseobject):
 
     def get_address_sequence(self, address):
         try:
-            self._logger.debug("start get_address_sequence(address={})".format(address))
             (_, addr) = self.split_full_address(address).datas
             num = self.__client.get_sequence_number(addr)
             ret = result(error.SUCCEED, "", num - 1)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def get_transaction_version(self, address, sequence):
         try:
-            self._logger.debug(f"start get_transaction_version(address={address}, sequence={sequence})")
             (_, addr) = self.split_full_address(address).datas
             num = self.__client.get_account_transaction(addr, sequence).get_version()
             ret = result(error.SUCCEED, "", num)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
     def get_address_version(self, address):
         try:
-            self._logger.debug(f"start get_address_version(address={address})")
             (_, addr) = self.split_full_address(address).datas
             ret = self.get_address_sequence(addr)
             if ret.state != error.SUCCEED:
@@ -375,39 +357,32 @@ class violasclient(baseobject):
                 return ret
 
             ret = result(error.SUCCEED, "", ret.datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def get_latest_transaction_version(self):
         try:
-            self._logger.debug("start get_latest_transaction_version")
             datas = self.__client.get_latest_version()
             ret = result(error.SUCCEED, "", datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def get_transactions(self, start_version, limit = 1, fetch_event=True):
         try:
-            self._logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
             datas = self.__client.get_transactions(start_version, limit, fetch_event)
             ret = result(error.SUCCEED, "", datas)
-            self._logger.debug(f"result: {len(ret.datas)}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap(self, sender_account, token_in, token_out, amount_in, amount_out_min=0, receiver = None, is_blocking=True, **kwargs):
         try:
-            self._logger.debug(f"start swap({sender_account.address.hex()}, {token_in}, {token_out}, {amount_in}, {amount_out_min}, {receiver}, {is_blocking})")
             (_, addr) = self.split_full_address(receiver).datas
             datas = self.__client.swap(sender_account = sender_account, currency_in = token_in, currency_out = token_out, \
                     amount_in = amount_in, amount_out_min = amount_out_min, receiver_address = addr, is_blocking = is_blocking, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -415,89 +390,71 @@ class violasclient(baseobject):
 
     def swap_set_module_address(self, address, **kwargs):
         try:
-            self._logger.debug(f"start swap_set_module_address({address}, {kwargs})")
             (_, addr) = self.split_full_address(address).datas
-            print(self.__client.clientname())
             datas = self.__client.set_exchange_module_address(addr)
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap_publish_contract(self, account, **kwargs):
         try:
-            self._logger.debug(f"start swap_publish_contract({account.address.hex()}, {kwargs})")
             datas = self.__client.swap_publish_contract(account, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap_initialize(self, account, **kwargs):
         try:
-            self._logger.debug(f"start swap_initialize({account.address.hex()}, {kwargs})")
             datas = self.__client.swap_initialize(account, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap_add_currency(self, account, token_id, **kwargs):
         try:
-            self._logger.debug(f"start swap_add_currency({account.address.hex()}, {token_id}, {kwargs})")
             datas = self.__client.swap_add_currency(account, token_id, gas_currency_code = token_id)
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap_add_liquidity(self, account, token_a, token_b, amount_desired_a, amount_desired_b, amount_min_a = 0, amount_min_b = 0, is_blocking = True, **kwargs):
         try:
-            self._logger.debug(f"start swap_add_liquidity({account.address.hex()}, {token_a}, {token_b}, {amount_desired_b}, {amount_min_a}, {amount_min_b} {kwargs})")
             datas = self.__client.swap_add_liquidity(account, token_a, token_b, amount_desired_a, amount_desired_b, amount_min_a, amount_min_b, is_blocking = is_blocking, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap_get_output_amount(self, token_in, token_out, amount_in, **kwargs):
         try:
-            self._logger.debug(f"start swap_get_output_amount({token_in}, {token_out}, {amount_in}, {kwargs})")
             datas = self.__client.swap_get_swap_output_amount(token_in, token_out, amount_in, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap_get_input_amount(self, token_in, token_out, amount_in, **kwargs):
         try:
-            self._logger.debug(f"start swap_get_input_amount({token_in}, {token_out}, {amount_in}, {kwargs})")
             datas = self.__client.swap_get_swap_in_amount(token_in, token_out, amount_in, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap_remove_liquidity(self, account, token_a, token_b, liquidity, amount_min_a = 0, amount_min_b = 0, is_blocking = True, **kwargs):
         try:
-            self._logger.debug(f"start swap_remove_liquidity({amount.address.hex()}, {token_a}, {token_b}, {liquidity}, {amount_min_a}, {amount_min_b}, {kwargs})")
             datas = self.__client.swap_remove_liquidity(account, token_a, token_b, liquidity, amount_min_a, amount_min_b, is_blocking = is_blocking, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap_get_reserves_resource(self, address):
         try:
-            self._logger.debug(f"start swap_get_reserves_resource({address})")
             dates = None
             ret = self.get_account_state(address)
             if ret.state != error.SUCCEED:
@@ -507,39 +464,32 @@ class violasclient(baseobject):
             if account_state is not None:
                 datas = account_state.swap_get_reserves_resource()
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap_is_swap_address(self, address):
         try:
-            self._logger.debug(f"start swap_is_swap_address({address})")
             (_, addr) = self.split_full_address(address).datas
             ret = self.swap_get_reserves_resource(addr)
             print(ret.datas)
             ret = result(ret.state, datas = ret.datas is not None)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap_get_registered_tokens(self):
         try:
-            self._logger.debug(f"start swap_get_registered_tokens()")
             datas = self.__client.swap_update_registered_currencies()
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def swap_set_owner_address(self, address):
         try:
-            self._logger.debug(f"start swap_set_owner_address({address})")
             datas = self.__client.set_exchange_owner_address(address)
             ret = result(error.SUCCEED, datas = datas)
-            self._logger.debug(f"result: {ret.datas}")
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -566,7 +516,6 @@ class violasserver(baseobject):
 
     def conn_node(self, nodes):
         try:
-            self._logger.debug("conn_server")
             if nodes is None or len(nodes) == 0:
                 return result(error.ARG_INVALID, repr(nodes), "")
             
@@ -574,8 +523,8 @@ class violasserver(baseobject):
                 try:
                     server = ""
                     #server = Client.new(node["host"], node["port"], node["user"], node["password"])
-                    self._logger.debug("connect violas server: host= {} port = {} user={} password={}".format( \
-                            node["host"], node["port"], node["user"], node["password"]))
+                    self._logger.debug("connect violas server: host= {} port = {} user={} password=******".format( \
+                            node["host"], node["port"], node["user"]))
                     self.__node = node
                 except Exception as e:
                     parse_except(e)
@@ -607,7 +556,6 @@ class violasserver(baseobject):
    
     def get_transactions(self, address, module, start):
         try:
-            self._logger.debug("start get_transactions(address={}, module={}, start={})".format(address, module, start))
             datas = []
             url = "http://{}:{}/1.0/violas/vbtc/transaction?receiver_address={}&module_address={}&start_version={}"\
                     .format(self.__node["host"], self.__node["port"], address, module, start)
@@ -633,14 +581,10 @@ class violasserver(baseobject):
                 ret = result(error.SUCCEED, message, datas)
         except Exception as e:
             ret = parse_except(e)
-        finally:
-            self._logger.debug("end get_transactions.")
         return ret
 
     def has_transaction(self, address, module, baddress, sequence, amount, version, receiver):
         try:
-            self._logger.debug("start has_transaction(address={}, module={}, baddress={}, sequence={}, amount={}, version={}, receiver={})"\
-                    .format(address, module, baddress, sequence, amount, version, receiver))
             ret = result(error.FAILED, "", "")
             data = {
                     "version":version,
@@ -662,8 +606,6 @@ class violasserver(baseobject):
                     ret = result(error.SUCCEED, jret["message"], False)
         except Exception as e:
             ret = parse_except(e)
-        finally:
-            self._logger.debug("end has_transaction.")
         return ret
 
 

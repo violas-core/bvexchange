@@ -138,9 +138,9 @@ class v2l(vlbase):
             if out_amount <= 0:
                 out_amount = out_amount_chian
             elif out_amount > out_amount_chian: #don't execute swap, Reduce the cost of the budget
-                self._logger.warning(f"don't execute swap(out_amount({out_amount}) > cur_outamount({out_amount_chian})), Reduce the cost of the budget")
                 self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, receiver)
-                return ret
+                return result(error.FAILED, \
+                            f"don't execute swap(out_amount({out_amount}) > cur_outamount({out_amount_chian})), Reduce the cost of the budget")
             detail.update({"gas": gas})
 
             #swap LBRXXX -> VLSYYY
@@ -165,7 +165,7 @@ class v2l(vlbase):
                 #but combine token(map_token_id) is change, this time swap token_id should be burn
                 self.update_localdb_state_with_check(tran_id, localdb.state.QBFAILED, \
                         json.dumps(detail)) #should get swap to_token balance from version
-                return ret
+                return result(error.FAILED, "get_balance failed.")
             after_amount = ret.datas
 
             #clac diff balance

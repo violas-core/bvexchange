@@ -22,6 +22,21 @@ from enum import Enum
 name="btcwallet"
 
 class btcwallet(baseobject):
+    class Account:
+        class Address:
+            def __init__(self, value):
+                self.value = value
+
+            def hex(self):
+                return self.value
+
+        def __init__(self, address):
+            self.__address = self.Address(address)
+
+        @property
+        def address(self):
+            return self.__address
+
     def __init__(self, name, walletname = "bwallet"):
         baseobject.__init__(self, name)
         self.__wallet_info = {}
@@ -37,7 +52,7 @@ class btcwallet(baseobject):
                 info = info.strip("\r")
                 items = info.split(",")
                 if len(items) != 3:
-                    self._logger.warning("key info invalid:{info}")
+                    continue
                 self.__wallet_info[items[0]]  = {"address":items[0], "publickey":items[1], "privkey":items[2]}
 
     @property 
