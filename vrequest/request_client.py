@@ -61,8 +61,6 @@ class requestclient(baseobject):
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)
-        finally:
-            self._logger.debug("end get_transactions_for_start.")
         return ret
 
     def get_transactions_for_start(self, address, mtype, start, limit = 10, excluded = None):

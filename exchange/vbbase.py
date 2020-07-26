@@ -40,6 +40,7 @@ class vbbase(baseobject):
         class amounttype(Enum):
             VIOLAS = 1
             BTC    = 2
+            SATOSHI = 3
 
         def __init__(self, value, atype = amounttype.VIOLAS):
             
@@ -47,6 +48,8 @@ class vbbase(baseobject):
                 self.violas_amount = value
             elif atype == self.amounttype.BTC:
                 self.btc_amount = value
+            elif atype == self.amounttype.SATOSHI:
+                self.satoshi_amount = value
             else:
                 raise Exception(f"amount type{atype} is invalid.")
             
@@ -55,6 +58,10 @@ class vbbase(baseobject):
         @property
         def rate(self):
             return 100
+
+        @property
+        def satoshi(self):
+            return 100000000
 
         @property
         def violas_amount(self):
@@ -66,10 +73,18 @@ class vbbase(baseobject):
 
         @property
         def btc_amount(self):
-            return self.violas_amount * self.rate
+            return float(self.satoshi_amount) / self.satoshi
 
         @btc_amount.setter
         def btc_amount(self, value):
+            self.violas_amount = value * self.satoshi / self.rate
+
+        @property
+        def satoshi_amount(self):
+            return self.violas_amount * self.rate
+
+        @satoshi_amount.setter
+        def satoshi_amount(self, value):
             self.violas_amount = int(value / self.rate)
 
     def __init__(self, name, dtype, \
