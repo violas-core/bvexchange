@@ -29,8 +29,8 @@ class works:
     __work_obj = {}
     __record_db = "record"
 
-    __libra_min_valid_version   = 400_89736
-    __violas_min_valid_version  = 8849006
+    __libra_min_valid_version   = 0
+    __violas_min_valid_version  = 884_9006
     __btc_min_valid_version     = 0
     def __init__(self):
         logger.debug("works __init__")

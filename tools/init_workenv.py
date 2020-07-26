@@ -60,9 +60,8 @@ def reg_run():
         if combine:
             addresses.extend(combine)
         for token_id in violas_token_id_list:
-        
-            comm_funs.init_address_list(vclient, wclient, addresses, token_id, minamount = 100_000000)
-
+            if len(addresses) > 0:
+                comm_funs.init_address_list(vclient, wclient, addresses, token_id, minamount = 100_000000)
     #vlibra sender bind token_id
     #logger.debug("***************************************init vlibra sender*****************************")
     #for opt_type in l2v_opt_list:
@@ -88,7 +87,7 @@ def init_address(address):
     wclient = comm_funs.walletreg(name, wallet_name)
     violas_token_id_list = stmanage.get_support_token_id("violas")
     libra_token_id_list = stmanage.get_support_token_id("libra")
-    btc_token_id = "BTCBTC"
+    btc_token_id = "BTC"
 
     for token_id in violas_token_id_list:
         comm_funs.init_address_list(vclient, wclient, [address], token_id, minamount = 100_000000)

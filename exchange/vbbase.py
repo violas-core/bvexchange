@@ -461,7 +461,7 @@ class vbbase(baseobject):
                 latest_version = self.latest_version.get(receiver, -1) + 1
 
                 #get new transaction from server
-                self._logger.debug("start exchange(data type: start), datas from violas server.receiver={receiver}")
+                self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver}")
                 ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version, excluded = self.excluded)
                 self._logger.debug(f"will execute transaction(start) count: {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
@@ -473,7 +473,7 @@ class vbbase(baseobject):
                             self._logger.error(ret.message)
 
                 #get cancel transaction, this version not support
-                self._logger.debug("start exchange(data type: cancel), datas from violas server.receiver={receiver}")
+                self._logger.debug(f"start exchange(data type: cancel), datas from violas server.receiver={receiver}")
                 ret = self.pserver.get_transactions_for_cancel(receiver, self.dtype, latest_version, excluded = self.excluded)
                 self._logger.debug(f"will execute transaction(cancel) count: {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:

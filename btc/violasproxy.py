@@ -41,8 +41,9 @@ class violasproxy(baseobject):
 
     class opttype(autoname):
         BTCMARK = auto() # btc mark
-        V2BMARK = auto() # mark
+        MARK    = auto() # mark
         B2V     = auto() 
+        V2B     = auto()
         B2VUSD  = auto() 
         B2VEUR  = auto() 
         B2VSGD  = auto() 
@@ -261,7 +262,7 @@ class violasproxy(baseobject):
    
     def violas_sendexproofmark(self, fromaddress, toaddress, toamount, vaddress, sequence, version, fromprivkeys = None):
         fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
-        url = self.create_opt_url(self.opt.SET, self.opttype.V2BMARK, state="v2bmark", \
+        url = self.create_opt_url(self.opt.SET, self.opttype.MARK, state="mark", \
                 fromaddress=fromaddress, toaddress=toaddress, toamount=toamount, \
                 vreceiver=vaddress, sequence=sequence, version=version, fromprivkeys=json.dumps(fromprivkeys))
         return self.run_request(url)

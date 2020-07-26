@@ -81,7 +81,8 @@ class v2b(vbbase):
             [state for state in localdb.state \
                     if state not in [localdb.state.COMPLETE, \
                         localdb.state.VSUCCEED, \
-                        localdb.state.SSUCCEED]])
+                        localdb.state.SSUCCEED, \
+                        localdb.state.PSUCCEED]])
 
     def fill_address_token(self, address, token_id, amount, gas=40_000):
         try:
@@ -124,6 +125,7 @@ class v2b(vbbase):
         map_token_id = stmanage.get_token_map(to_token_id) #stable token -> LBRXXX token
         assert map_token_id is not None, f"get token({to_token_id}) failed, check config token_map"
 
+        ret = result(error.FAILED)
         self._logger.info(f"exec_exchange-start. start exec_exchange . tran_id={tran_id}, state = {state}.")
 
         #only violas and violas use this , btc can't use version
@@ -205,7 +207,7 @@ class v2b(vbbase):
 
             self._logger.debug("exec_exchange-3. start fill_address_token...")
             btc_amount = self.amountswap(detail["diff_balance"]).btc_amount
-            ret = self.fill_address_token(map_sender.address.hex(), to_token_id, \
+            ret = self.fill_address_token(map_sender, to_token_id, \
                     btc_amount)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
@@ -214,10 +216,10 @@ class v2b(vbbase):
                 return ret
 
         #send btc token to payee address. P = payee
-            markdata = self.btc_client.create_data_for_mark(self.btc_chain, self.dtype, \
-                    tran_id, version)
+            markdata = self.btc_client.create_data_for_mark(self.violas_chain, self.dtype, \
+                    sender, version)
 
-            self._logger.debug("exec_exchange-4. start send btc to {toaddress} amount = {btc_amount}...")
+            self._logger.debug(f"exec_exchange-4. start send btc to {toaddress} amount = {btc_amount}...")
             ret = self.btc_client.send_coin(map_sender, toaddress, \
                     btc_amount, to_token_id, data=markdata)
             if ret.state != error.SUCCEED:
@@ -231,10 +233,11 @@ class v2b(vbbase):
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state
         if self.use_module(state, localdb.state.VSUCCEED):
-            self._logger.debug("exec_exchange-5. start send_coin_for_update_state_to_end({receiver}, {tran_id})...")
-            self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, \
+            self._logger.debug(f"exec_exchange-5. start send_coin_for_update_state_to_end({receiver}, {tran_id})...")
+            ret = self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, \
                     from_token_id, version = version)
         self._logger.debug("exec_exchange-end.")
+        return ret
 
 def main():
        print("start main")
