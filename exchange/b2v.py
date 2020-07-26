@@ -131,7 +131,7 @@ class b2v(vbbase):
         map_token_id = stmanage.get_token_map(stable_token_id) #stable token -> LBRXXX token
         to_token_id    = self.to_token_id #token_id is map 
 
-        swap_amount = self.amountswap(amount, self.amountswap.amounttype.BTC)
+        swap_amount = self.amountswap(amount, self.amountswap.amounttype.SATOSHI)
         amount = swap_amount.violas_amount
 
         defret = result(error.FAILED)
