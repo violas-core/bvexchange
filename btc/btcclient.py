@@ -260,9 +260,8 @@ class btcclient(baseobject):
                 "sequence":address_seq[1]}
 
     def create_data_for_mark(self, flag, dtype, id, version, **kwargs):
-        address_seq = tranid.split("_")
-        return {"type": "stop", "flag": flag, "opttype":opttype, "address":address_seq[0], \
-                "sequence":address_seq[1], "version":version }
+        return {"type": "mark", "flag": flag, "address":id, \
+                "sequence":0, "version":version }
 
     def send_coin(self, fromaddress, toaddress, amount, token_id, data):
         if data["type"] == "end":
