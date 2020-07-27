@@ -21,9 +21,7 @@ from comm.values import dbindexbase as dbindex
 from comm.functions import json_print
 from comm.result import result, parse_except
 from comm.error import error
-from db.dbb2v import dbb2v
-from db.dbv2b import dbv2b
-from db.dbl2v import dbl2v
+from db.dblocal import dblocal as localdb
 from db.dbvfilter import dbvfilter
 from db.dbvproof import dbvproof
 from db.dbvbase import dbvbase
@@ -140,31 +138,23 @@ def __get_local_state_info(db, states):
         info[state.name] = db.query_state_count(state).datas
     return info
 
-def get_local_v2b_info(name, chain):
+def get_local_info(name, chain):
     filename = __create_local_db_name(name, chain)
-    db = dbv2b(name, filename)
-    return __get_local_state_info(db, db.state)
-
-def get_local_b2v_info(name, chain):
-    filename = __create_local_db_name(name, chain)
-    db = dbb2v(name, filename)
-    return __get_local_state_info(db, db.state)
-
-def get_local_exlv_info(name, chain):
-    filename = __create_local_db_name(name, chain)
-    db = dbl2v(name, filename)
+    db = localdb(name, filename)
     return __get_local_state_info(db, db.state)
 
 def show_local_db():
-    confs = [('violas', 'v2b'), ('violas', 'v2l'), ('btc', 'b2v'), ('libra', 'l2v')]
+    confs = []
+    for key in stmanage.get_token_map():
+        if key.startswith("v"):
+            confs.append(("violas", key))
+        elif key.startswith("l"):
+            confs.append(("libra", key))
+        elif key.startswith("b"):
+            confs.append(("btc", key))
     infos = {}
     for conf in confs:
-        if conf[1] == "v2b":
             infos[conf[1]] = get_local_v2b_info(conf[1], conf[0])
-        elif conf[1] in ['v2l', 'l2v']:
-            infos[conf[1]] = get_local_exlv_info(conf[1], conf[0])
-        elif conf[1] == "b2v":
-            infos[conf[1]] = get_local_b2v_info(conf[1], conf[0])
     json_print(infos)
     return infos
 

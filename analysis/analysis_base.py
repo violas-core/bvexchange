@@ -16,7 +16,6 @@ import comm.values
 from comm.values import trantypebase, datatypebase
 from comm.result import result, parse_except
 from comm.error import error
-from db.dbv2b import dbv2b
 from vlsopt.violasclient import violasclient, violaswallet, violasserver
 from btc.btcclient import btcclient
 from enum import Enum
@@ -44,6 +43,7 @@ class abase(baseobject):
         self._rdbclient = None
         self._connect_db(name, dbconf)
         self._token_id = None
+        self._vclient = None
         if chain == "btc":
             self._connect_btc(name, vnodes, chain)
         else:
@@ -87,10 +87,8 @@ class abase(baseobject):
 
     def set_min_valid_version(self, version):
         self._min_valid_version = version
-        self._logger.debug(f"set min valid version {self.get_min_valid_version()}")
 
     def get_min_valid_version(self):
-        self._logger.debug(f"get min valid version {self._min_valid_version}")
         return self._min_valid_version
 
     def get_start_version(self, version):

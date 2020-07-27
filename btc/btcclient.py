@@ -17,7 +17,6 @@ import comm.values
 from comm.result import result, parse_except
 from comm.error import error
 from comm.functions import split_full_address
-from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 #from .models import BtcRpc
 from baseobject import baseobject
