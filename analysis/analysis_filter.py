@@ -91,7 +91,8 @@ class afilter(abase):
     
             latest_saved_ver = self._dbclient.get_latest_saved_ver().datas
             
-            self._logger.debug(f"latest_saved_ver={latest_saved_ver} start version = {start_version}  step = {self.get_step()} chain_latest_ver = {chain_latest_ver} ")
+            self._logger.debug(f"start version = {start_version}  step = {self.get_step()} latest_saved_ver={latest_saved_ver} " +
+                    f"chain_latest_ver = {chain_latest_ver} diff_count={chain_latest_ver - start_version}")
             if start_version > chain_latest_ver:
                return result(error.SUCCEED)
     

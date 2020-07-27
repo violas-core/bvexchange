@@ -27,17 +27,17 @@ from baseobject import baseobject
 from enum import Enum
 
 #module name
-name="dbv2l"
+name="dblocal"
 
-class dbv2l(baseobject):
+class dblocal(baseobject):
     __base = declarative_base()
     __engine = ""
     __session = ""
     __engine = ""
 
-    def __init__(self, name, dbfile):
+    def __init__(self, name, dbfile, path = "./datas/localdbs"):
         baseobject.__init__(self, name)
-        self.__init_db(dbfile)
+        self.__init_db(dbfile, path)
 
     def __del__(self):
         self.__uninit_db()
@@ -69,7 +69,7 @@ class dbv2l(baseobject):
     
     #exc_traceback_objle : info
     class info(__base):
-        __tablename__='v2linfo'
+        __tablename__='info'
         version     = Column(Integer, index=True, nullable=False)
         state       = Column(Integer, index=True, nullable=False)
         created     = Column(DateTime, default=datetime.datetime.now)
@@ -81,10 +81,15 @@ class dbv2l(baseobject):
         def __repr__(self):
             return f"<info(version={self.version}, state={self.state}, created={self.created}, times={self.times}, tranid={self.tranid}, receiver = {self.receiver}, detail={detail})>"
 
-    def __init_db(self, dbfile):
-        self._logger.debug("start init_db(dbfile={})".format(dbfile))
+    def __init_db(self, dbfile, path = None):
         db_echo = False
 
+        if path is not None:
+            if not os.path.exists(path):
+                os.makedirs(path)
+            dbfile = os.path.join(path, dbfile)
+
+        self._logger.debug("start init_db(dbfile={dbfile})")
         if stmanage.get_db_echo():
             db_echo = stmanage.get_db_echo()
 
@@ -213,7 +218,7 @@ class dbv2l(baseobject):
         return self.__update_commit(tranid, state, detail)
 
     def flushinfo(self):
-        self.__session.execute("delete from v2linfo")
+        self.__session.execute("delete from info")
 
 def show_state_count(db, logger):
     ret = db.query_is_start()
@@ -241,15 +246,15 @@ def show_state_count(db, logger):
     logger.debug(f"query_is_vsucceed:{ret.datas}")
 
 
-def test_dbv2l():
+def test_dblocal():
     pass
-    logger = log.logger.getLogger("test_dbv2l")
-    db = dbv2l("test_dbv2l", "test_dbv2l.db")
+    logger = log.logger.getLogger("test_dblocal")
+    db = dblocal("test_dblocal", "test_dblocal.db")
     db.flushinfo()
     tran_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     ret = db.insert_commit(
             9, \
-            dbv2l.state.START, \
+            dblocal.state.START, \
             tran_id,            
             "receiver000000000000000000000000"
             )
@@ -257,7 +262,7 @@ def test_dbv2l():
 
     db.insert_commit(
             10, \
-            dbv2l.state.START, \
+            dblocal.state.START, \
             "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
             "receiver111111111111111111111111111111111111111111111"
             )
@@ -272,24 +277,24 @@ def test_dbv2l():
     
     show_state_count(db, logger)
 
-    ret = db.update_state_commit(tran_id, dbv2l.state.FAILED)
+    ret = db.update_state_commit(tran_id, dblocal.state.FAILED)
     show_state_count(db, logger)
 
-    ret = db.update_state_commit(tran_id, dbv2l.state.SUCCEED)
+    ret = db.update_state_commit(tran_id, dblocal.state.SUCCEED)
     show_state_count(db, logger)
 
-    ret = db.update_commit(tran_id, dbv2l.state.START)
+    ret = db.update_commit(tran_id, dblocal.state.START)
     show_state_count(db, logger)
 
-    ret = db.update_commit(tran_id, dbv2l.state.VFAILED)
+    ret = db.update_commit(tran_id, dblocal.state.VFAILED)
     show_state_count(db, logger)
 
-    ret = db.update_state_commit(tran_id, dbv2l.state.VSUCCEED)
+    ret = db.update_state_commit(tran_id, dblocal.state.VSUCCEED)
     show_state_count(db, logger)
 
-    ret = db.update_state_commit(tran_id, dbv2l.state.COMPLETE)
+    ret = db.update_state_commit(tran_id, dblocal.state.COMPLETE)
     show_state_count(db, logger)
 
 if __name__ == "__main__":
     stmanage.set_conf_env("../bvexchange.toml")
-    test_dbv2l()
+    test_dblocal()

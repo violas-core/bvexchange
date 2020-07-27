@@ -17,7 +17,7 @@ import comm.result
 import comm.values
 from comm.result import result, parse_except
 from comm.error import error
-from db.dbl2v import dbl2v as localdb
+from db.dblocal import dblocal as localdb
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient

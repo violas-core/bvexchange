@@ -12,7 +12,6 @@ def getLogger(name):
     if not os.path.exists(log_path):
         os.makedirs(log_path)
 
-    #log.config.config["handlers"]["file"]["filename"]=f"{name}.log"
     hfile = dict(log.config.config["handlers"]["file"])
     hfile["filename"]=f"{log_path}/{name}.log"
     log.config.config["handlers"].update({name:hfile})

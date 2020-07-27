@@ -17,7 +17,7 @@ import comm.result
 import comm.values
 from comm.result import result, parse_except
 from comm.error import error
-from db.dbv2l import dbv2l as localdb
+from db.dblocal import dblocal as localdb
 import vlsopt.violasclient
 from vlsopt.violasclient import violasclient, violaswallet, violasserver
 from btc.btcclient import btcclient
