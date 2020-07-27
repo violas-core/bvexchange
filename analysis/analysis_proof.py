@@ -300,13 +300,15 @@ class aproof(abase):
 
             #not found new transaction to change state
             if start_version > max_version:
-                self._logger.debug(f"start version:{start_version}  > max saved version:{max_version} :chain : self.chain, dtype:{self.name()}")
+                self._logger.debug(f"dtype:{self.name()} not found new transaction. " + 
+                        f"start version:{start_version} " + 
+                        f"max saved version:{max_version} :chain : {self.from_chain}")
                 return result(error.SUCCEED)
 
             version  = start_version
             count = 0
-            self._logger.debug(f"proof latest_saved_ver={self._dbclient.get_latest_saved_ver().datas} start version = {start_version}  \
-                    step = {self.get_step()} valid transaction latest_saved_ver = {latest_saved_ver} ")
+            self._logger.debug(f"proof({self.name()}) start version = {start_version} " +
+                f"step = {self.get_step()} valid transaction latest_saved_ver = {latest_saved_ver} ")
 
             keys = self._fdbclient.list_version_keys(start_version)
             latest_filter_ver = start_version

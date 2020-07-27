@@ -47,22 +47,6 @@ class baseobject(object):
         for name, value in ppts.items:
             self.append_property(name, value)
 
-    #@property
-    #def from_chain(self):
-    #    return self._from_chain
-
-    #@from_chain.setter
-    #def from_chain(self, name):
-    #    self._from_chain = name
-
-    #@property
-    #def map_chain(self):
-    #    return self._map_chain
-
-    #@map_chain.setter
-    #def map_chain(self, name):
-    #    self._map_chain = name
-
     def check_state_raise(self, result, message):
         if result.state != error.SUCCEED:
             raise Exception(message)

@@ -219,7 +219,7 @@ class v2b(vbbase):
             markdata = self.btc_client.create_data_for_mark(self.violas_chain, self.dtype, \
                     sender, version)
 
-            self._logger.debug(f"exec_exchange-4. start send btc to {toaddress} amount = {btc_amount}...")
+            self._logger.debug(f"exec_exchange-4. start send btc to {toaddress} amount = {btc_amount:.8f}...")
             ret = self.btc_client.send_coin(map_sender, toaddress, \
                     btc_amount, to_token_id, data=markdata)
             if ret.state != error.SUCCEED:
