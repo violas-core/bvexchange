@@ -32,6 +32,13 @@ name="initworkenv"
 wallet_name="vwallet"
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 logger = log.logger.getLogger(name)
+def get_amount_out(token_a, token_b, amount_in):
+    if token_b.upper() == "BTC":
+        return amount_in / 10000
+    if token_a.upper() == "BTC":
+        return amount_in * 10000
+    return amount_in
+
 def reg_run():
     logger.debug("***************************************init workenv start*****************************")
     vclient = comm_funs.violasreg(name, stmanage.get_violas_nodes())
@@ -103,7 +110,7 @@ def reg_run():
             if token_a == token_b:
                 continue
             logger.debug(f"append swap liquidity({token_a} - {token_b})")
-            ret = vclient.swap_add_liquidity(account_l, token_a, token_b, 1000_000000, 1000_000000, gas_currency_code = gas_token_id)
+            ret = vclient.swap_add_liquidity(account_l, token_a, token_b, 1000_000000, get_amount_out(token_a, token_b, 1000_000000), gas_currency_code = gas_token_id)
             assert ret.state == error.SUCCEED
 
 

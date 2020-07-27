@@ -123,7 +123,7 @@ class aproof(abase):
         if new_state in (self.proofstate.END, self.proofstate.CANCEL, self.proofstate.STOP) and old_state == self.proofstate.START:
             return True
 
-        if new_state in (self.proofstate.STOP) and old_state == self.proofstate.CANCEL:
+        if new_state in [self.proofstate.STOP] and old_state == self.proofstate.CANCEL:
             return True
 
         return False
