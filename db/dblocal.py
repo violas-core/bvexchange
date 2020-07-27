@@ -35,9 +35,9 @@ class dblocal(baseobject):
     __session = ""
     __engine = ""
 
-    def __init__(self, name, dbfile, path = "./datas/localdbs"):
+    def __init__(self, name, dbfile, create = True, path = "./datas/localdbs"):
         baseobject.__init__(self, name)
-        self.__init_db(dbfile, path)
+        self.__init_db(dbfile, create, path)
 
     def __del__(self):
         self.__uninit_db()
@@ -81,7 +81,15 @@ class dblocal(baseobject):
         def __repr__(self):
             return f"<info(version={self.version}, state={self.state}, created={self.created}, times={self.times}, tranid={self.tranid}, receiver = {self.receiver}, detail={detail})>"
 
-    def __init_db(self, dbfile, path = None):
+    @property
+    def init_state(self):
+        return self._inited
+
+    @init_state.setter
+    def init_state(self, value):
+        self._inited = value
+
+    def __init_db(self, dbfile, create = True, path = None):
         db_echo = False
 
         if path is not None:
@@ -89,7 +97,12 @@ class dblocal(baseobject):
                 os.makedirs(path)
             dbfile = os.path.join(path, dbfile)
 
-        self._logger.debug("start init_db(dbfile={dbfile})")
+        if not create and not os.path.exists(dbfile):
+            self._logger.debug(f"not found db({dbfile})")
+            self.init_state = False
+            return
+
+        self._logger.debug(f"start init_db(dbfile={dbfile})")
         if stmanage.get_db_echo():
             db_echo = stmanage.get_db_echo()
 
@@ -98,6 +111,7 @@ class dblocal(baseobject):
         self.__base.metadata.create_all(self.__engine)
         Session = sessionmaker(bind=self.__engine)
         self.__session = Session()
+        self.init_state = True
     
     def __uninit_db(self):
         pass

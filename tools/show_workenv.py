@@ -134,18 +134,24 @@ def __create_local_db_name(name, from_chain):
 
 def __get_local_state_info(db, states):
     info = {}
+    if not db.init_state:
+        return info
+
     for state in db.state:
-        info[state.name] = db.query_state_count(state).datas
+        count = db.query_state_count(state).datas
+        if count > 0:
+            info[state.name] = count
     return info
 
 def get_local_info(name, chain):
     filename = __create_local_db_name(name, chain)
-    db = localdb(name, filename)
+
+    db = localdb(name, filename, False)
     return __get_local_state_info(db, db.state)
 
 def show_local_db():
     confs = []
-    for key in stmanage.get_token_map():
+    for key in stmanage.get_dtypes():
         if key.startswith("v"):
             confs.append(("violas", key))
         elif key.startswith("l"):
@@ -154,7 +160,7 @@ def show_local_db():
             confs.append(("btc", key))
     infos = {}
     for conf in confs:
-            infos[conf[1]] = get_local_v2b_info(conf[1], conf[0])
+        infos[conf[1]] = get_local_info(conf[1], conf[0])
     json_print(infos)
     return infos
 
