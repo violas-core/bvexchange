@@ -86,7 +86,7 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: b2v")
+            logger.critical(f"stop: {mod}")
 
     def work_v2b(self, **kargs):
         try:
@@ -115,7 +115,7 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: v2b")
+            logger.critical(f"stop: {mod}")
 
     def work_vfilter(self, **kargs):
         try:
@@ -139,7 +139,7 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: vfilter")
+            logger.critical(f"stop: {mod}")
 
     def work_v2bproof(self, **kargs):
         try:
@@ -170,7 +170,7 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: v2bproof")
+            logger.critical(f"stop: {mod}")
 
     def work_lfilter(self, **kargs):
         try:
@@ -195,7 +195,7 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: lfilter")
+            logger.critical(f"stop: {mod}")
 
     def work_l2vproof(self, **kargs):
         try:
@@ -225,7 +225,7 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: l2vproof")
+            logger.critical(f"stop: {mod}")
 
     def work_v2lproof(self, **kargs):
         try:
@@ -255,7 +255,7 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: v2lproof")
+            logger.critical(f"stop: {mod}")
 
     def work_l2v(self, **kargs):
         try:
@@ -286,7 +286,7 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: l2v")
+            logger.critical(f"stop: {mod}")
 
     def work_v2l(self, **kargs):
         try:
@@ -319,7 +319,7 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: v2l")
+            logger.critical(f"stop: {mod}")
 
     def work_bfilter(self, **kargs):
         try:
@@ -377,7 +377,133 @@ class works:
         except Exception as e:
             parse_except(e)
         finally:
-            logger.critical("stop: v2lproof")
+            logger.critical(f"stop: {mod}")
+
+    def work_b2lproof(self, **kargs):
+        try:
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+            logger.critical(f"start: btc {mod} proof")
+
+            #libra transaction's data types 
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    basedata = "bfilter"
+                    ttype = "btc"
+                    obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+                    #set can receive token of btc transaction
+                    obj.append_token_id(stmanage.get_support_token_id(ttype))
+                    obj.set_record(stmanage.get_db(self.record_db_name()))
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    obj.set_min_valid_version(self.__btc_min_valid_version - 1)
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
+
+    def work_b2l(self, **kargs):
+        try:
+            logger.critical("start: b2lxxx")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    obj = b2l.b2l(mod,
+                            dtype,
+                            stmanage.get_btc_nodes(), 
+                            stmanage.get_violas_nodes(),
+                            stmanage.get_libra_nodes(),
+                            stmanage.get_db(dtype), 
+                            list(set(stmanage.get_receiver_address_list(dtype, "btc", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
+                            stmanage.get_combine_address(dtype, "violas", True),
+                            stmanage.get_swap_module(),
+                            stmanage.get_swap_owner()
+                            )
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
+
+    def work_l2bproof(self, **kargs):
+        try:
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+            logger.critical(f"start: btc {mod} proof")
+
+            #libra transaction's data types 
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    basedata = "lfilter"
+                    ttype = "libra"
+                    obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+                    #set can receive token of btc transaction
+                    obj.append_token_id(stmanage.get_support_token_id(ttype))
+                    obj.set_record(stmanage.get_db(self.record_db_name()))
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    obj.set_min_valid_version(self.__libra_min_valid_version - 1)
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
+
+    def work_l2b(self, **kargs):
+        try:
+            logger.critical("start: l2b")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    obj = l2b.l2b(mod,
+                            dtype,
+                            stmanage.get_btc_nodes(), 
+                            stmanage.get_violas_nodes(),
+                            stmanage.get_libra_nodes(),
+                            stmanage.get_db(dtype), 
+                            list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "btc", False))),
+                            stmanage.get_combine_address(dtype, "violas", True),
+                            stmanage.get_swap_module(),
+                            stmanage.get_swap_owner()
+                            )
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
 
     def work_comm(self, **kargs):
         try:
@@ -459,6 +585,10 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_b2vproof))
             elif name.startswith("V2B") and name.endswith("PROOF"):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2bproof))
+            elif name.startswith("L2B") and name.endswith("PROOF"):
+                self.funcs_map.update(self.create_func_dict(item, self.work_l2bproof))
+            elif name.startswith("B2L") and name.endswith("PROOF"):
+                self.funcs_map.update(self.create_func_dict(item, self.work_b2lproof))
             elif name.startswith("L2V") and name.endswith("EX"):
                 self.funcs_map.update(self.create_func_dict(item, self.work_l2v))
             elif name.startswith("V2L") and name.endswith("EX"):
@@ -467,6 +597,10 @@ class works:
                 self.__funcs_map.update(self.create_func_dict(item, self.work_b2v))
             elif name.startswith("V2B") and name.endswith("EX"):
                 self.__funcs_map.update(self.create_func_dict(item, self.work_v2b))
+            elif name.startswith("L2B") and name.endswith("EX"):
+                self.__funcs_map.update(self.create_func_dict(item, self.work_l2b))
+            elif name.startswith("B2l") and name.endswith("EX"):
+                self.__funcs_map.update(self.create_func_dict(item, self.work_b2l))
             elif name == "COMM":
                 self.__funcs_map.update(self.create_func_dict(item, self.work_comm))
             else:

@@ -48,6 +48,9 @@ class datatypebase(autoname):
     B2VEUR  = auto()
     B2VSGD  = auto()
     B2VGBP  = auto()
+    L2B     = auto()
+    B2LUSD  = auto()
+    B2LEUR  = auto()
     UNKOWN  = auto()
 
 ##db index(redis)
@@ -73,6 +76,9 @@ class dbindexbase(enumbase):
     B2VEUR  = 37
     B2VSGD  = 38
     B2VGBP  = 39
+    L2B     = 50
+    B2LUSD  = 51
+    B2lEUR  = 52
 
 #work mod 
 #workmod item(PROOF/EX) must be eq dbindexbase 
@@ -115,6 +121,12 @@ class workmod(enumbase):
     B2VEUREX     = auto()
     B2VSGDEX     = auto()
     B2VGBPEX     = auto()
+    L2BPROOF     = auto()
+    B2LUSDPROOF  = auto()
+    B2LEURPROOF  = auto()
+    L2BEX        = auto()
+    B2LUSDEX     = auto()
+    B2LEUREX     = auto()
 
 if __name__ == "__main__":
     print(dbindexbase.UNKOWN.info)
