@@ -51,5 +51,6 @@ class baseobject(object):
         if result.state != error.SUCCEED:
             raise Exception(message)
 
-    def append_property(self, name, value):
-        setattr(self, name.strip(), value)
+    def append_property(self, name, value, new = True):
+        if new:
+            setattr(self, name.strip(), value)
