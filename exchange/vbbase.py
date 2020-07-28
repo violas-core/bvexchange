@@ -17,6 +17,7 @@ import comm.result
 import comm.values
 from comm.result import result, parse_except
 from comm.error import error
+from comm.amountconver import amountconver
 from db.dblocal import dblocal as localdb
 import vlsopt.violasclient
 from vlsopt.violasclient import violasclient, violaswallet, violasserver
@@ -29,63 +30,15 @@ from enum import Enum
 from vrequest.request_client import requestclient
 
 #module self.name
-#name="exlv"
+#name="vbbase"
 wallet_name = "vwallet"
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 class vbbase(baseobject):    
 
-    class amountswap():
-        class amounttype(Enum):
-            VIOLAS = 1
-            BTC    = 2
-            SATOSHI = 3
-
-        def __init__(self, value, atype = amounttype.VIOLAS):
-            
-            if atype == self.amounttype.VIOLAS:
-                self.violas_amount = value
-            elif atype == self.amounttype.BTC:
-                self.btc_amount = value
-            elif atype == self.amounttype.SATOSHI:
-                self.satoshi_amount = value
-            else:
-                raise Exception(f"amount type{atype} is invalid.")
-            
-
-        #btc -> violas
-        @property
-        def rate(self):
-            return 100
-
-        @property
-        def satoshi(self):
-            return 100000000
-
-        @property
-        def violas_amount(self):
-            return self.__amount
-
-        @violas_amount.setter
-        def violas_amount(self, value):
-            self.__amount = value
-
-        @property
-        def btc_amount(self):
-            return float(self.satoshi_amount) / self.satoshi
-
-        @btc_amount.setter
-        def btc_amount(self, value):
-            self.violas_amount = value * self.satoshi / self.rate
-
-        @property
-        def satoshi_amount(self):
-            return self.violas_amount * self.rate
-
-        @satoshi_amount.setter
-        def satoshi_amount(self, value):
-            self.violas_amount = int(value / self.rate)
+    class amountswap(amountconver):
+        pass
 
     def __init__(self, name, dtype, \
             btcnodes, violasnodes, \
@@ -159,7 +112,6 @@ class vbbase(baseobject):
             self.append_property("map_wallet", btcwallet(self.name(), None))
         else:
             self.append_property("map_wallet", violaswallet(self.name(), wallet_name, self.map_chain))
-
 
     def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):
         ret = self.db.insert_commit(version, state, tran_id, receiver, detail)
@@ -307,19 +259,11 @@ class vbbase(baseobject):
 
     def __checks(self):
         return True
-        #assert (len(self.senders) > 0), f"{self.map_chain} senders is invalid"
-        #for sender in self.senders:
-        #    assert len(sender) in VIOLAS_ADDRESS_LEN, f"address({sender}) is invalied"
-
-        #assert (len(self.receivers) > 0), f"{self.from_chain} receivers is invalid."
-        #for receiver in self.receivers:
-        #    assert len(receiver) in VIOLAS_ADDRESS_LEN, f"receiver({receiver}) is invalid"
     
     def db_data_is_valid(self, data):
         try:
             toaddress   = data["receiver"]
             self._logger.debug(f"check address{toaddress}. len({toaddress}) in {VIOLAS_ADDRESS_LEN}?")
-            return len(toaddress) in VIOLAS_ADDRESS_LEN
         except Exception as e:
             pass
         return False

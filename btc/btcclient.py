@@ -263,6 +263,9 @@ class btcclient(baseobject):
                 "sequence":0, "version":version }
 
     def send_coin(self, fromaddress, toaddress, amount, token_id, data):
+        '''send btc 
+           @amount : btc amount. ex. 1.5 == 150000000satoshi
+        '''
         if data["type"] == "end":
             ret = self.sendexproofend(data["opttype"], fromaddress, toaddress, data["address"], \
                     data["sequence"], amount, data["version"])
