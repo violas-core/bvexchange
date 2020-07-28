@@ -19,7 +19,6 @@ from comm.result import result
 from comm.error import error
 from comm.parseargs import parseargs
 from comm.functions import json_print
-from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
@@ -106,7 +105,7 @@ def send_coin(from_address, to_address, amount, token_id, module = None, data = 
 
     client = get_violasclient()
     client.send_coin(account, to_address, amount, token_id, module, data)
-    print(client.get_balance(account.address, token_id, module).datas)
+    print(f"cur balance :{client.get_balance(account.address, token_id, module).datas}")
 
 def get_balance(address, token_id, module):
     logger.debug("start get_balance address= {address} module = {module} token_id= {token_id}")
