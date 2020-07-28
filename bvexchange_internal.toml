@@ -172,6 +172,30 @@ v2b_maxtimes = 99
     db = "b2vgbp"
     password = "violas"
     step = 500
+
+#l2b proof db
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "l2b"
+    password = "violas"
+    step = 500
+
+#b2lxxx proof db
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "b2lusd"
+    password = "violas"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "b2leur"
+    password = "violas"
+    step = 500
+
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
@@ -215,26 +239,20 @@ v2b_maxtimes = 99
         stoken = "VLSGBP"
     [type_token.b2lusd]
         stoken = "Coin1"
+        mtoken = "USD"
     [type_token.b2leur]
         stoken = "Coin2"
+        mtoken = "EUR"
     [type_token.l2b]
         mtoken = "BTC"
     [type_token.v2b]
         stoken = "BTC"
         mtoken = "BTC"
-#[type_token.l2b]
-#        mtoken = "BTC"
-#    [type_token.b2lusd]
-#        stoken = "Coin1"
-#        mtoken = "USD"
-#    [type_token.b2leur]
-#        stoken = "Coin2"
-#        mtoken = "EUR"
 
 [swap_module]
     #AssocRoot: 0000000000000000000000000a550c18
     #TreasuryCompliance: 0000000000000000000000000b1e55ed
-#address = "10dfbe77f8a09e9dfcb77bb3d44a14fc"
+    #address = "10dfbe77f8a09e9dfcb77bb3d44a14fc"
     address = "00000000000000000000000000000001"
 
 [swap_owner]
@@ -429,6 +447,14 @@ v2b_maxtimes = 99
     [[address_list.combine]]
         address = "785bc36d0cc97aa3fef3c583625578717701909c5685e581533295bc590c7190"
         type = "l2b"
+        chain = "violas"
+    [[address_list.combine]]
+        address = "ef616009536a480e2c99cae448f76fad611f77b0370184e4399e270a71691da5"
+        type = "b2lusd"
+        chain = "violas"
+    [[address_list.combine]]
+        address = "ae7bb57a3a90ef6d60043c4ef39724027c76503930423b76098cf75a22941e5a"
+        type = "b2leur"
         chain = "violas"
 #    #token info moudule <-> token_id: check token_is is valid.
 #    [[address_list.token]]
