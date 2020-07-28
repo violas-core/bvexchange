@@ -244,6 +244,7 @@ v2b_maxtimes = 99
         stoken = "Coin2"
         mtoken = "EUR"
     [type_token.l2b]
+        stoken = "BTC"
         mtoken = "BTC"
     [type_token.v2b]
         stoken = "BTC"
