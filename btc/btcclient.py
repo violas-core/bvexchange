@@ -103,9 +103,9 @@ class btcclient(baseobject):
     def stop(self):
         self.work_stop()
 
-    def __listexproof(self, extype, cursor = 0, limit = 10):
+    def __listexproof(self, cursor = 0, limit = 10):
         try:
-            datas = self.__rpc_connection.violas_listexproof(extype, cursor, limit)
+            datas = self.__rpc_connection.violas_listexproof(cursor, limit)
 
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
@@ -176,7 +176,7 @@ class btcclient(baseobject):
         return self.__listexproofforstate(opttype, self.proofstate.MARK.value, comm.values.EX_TYPE_MARK, receiver, excluded)
 
     def listexproofforb2v(self, cursor, limit):
-        return self.__listexproof(comm.values.EX_TYPE_PROOF, cursor, limit)
+        return self.__listexproof(cursor, limit)
 
     def __map_tran(self, data):
         tran_data = json.dumps({"flag":"btc", \

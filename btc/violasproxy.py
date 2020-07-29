@@ -56,8 +56,9 @@ class violasproxy(baseobject):
         FILTER  = auto()
         BALANCE = auto()
         LISTUNSPENT = auto()
-        PROOF   = auto()
-        FIXTRAN = auto()
+        PROOF       = auto()
+        PROOFBASE   = auto()
+        FIXTRAN     = auto()
 
     def __init__(self, name, host, port = None, user = None, password = None, domain="violaslayer", walletname="bwallet"):
         baseobject.__init__(self, name)
@@ -192,15 +193,9 @@ class violasproxy(baseobject):
     def stop(self):
         self.work_stop()
 
-    def violas_listexproof(self, extype, cursor = 0, limit = 10):
+    def violas_listexproof(self, cursor = 0, limit = 10):
         url = None
-        if extype in self.valid_swap_type:
-            url = self.create_opt_url(self.opt.GET, self.opttype.PROOF, cursor=cursor, limit=limit)
-        elif extype == comm.values.EX_TYPE_MARK:
-            url = self.create_opt_url(self.opt.GET, self.opttype.MARK, cursor=cursor, limit=limit)
-        else:
-            raise Exception(f"extype is not found.(extype={extype})")
-
+        url = self.create_opt_url(self.opt.GET, self.opttype.PROOFBASE, cursor=cursor, limit=limit)
         return self.run_request(url)
 
     def violas_gettransaction(self, tranid):
@@ -313,6 +308,9 @@ def main():
        ret = client.listunspent(addresses = ["2MxBZG7295wfsXaUj69quf8vucFzwG35UWh"])
        json_print(ret)
 
+       print("*"*30 + "get proof base info")
+       ret = client.violas_listexproof(0, 11)
+       json_print(ret)
     except Exception as e:
         parse_except(e)
     finally:
