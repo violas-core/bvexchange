@@ -123,4 +123,5 @@ class dbvproof(dbvbase):
             "expiration_time":tran_info.get("expiration_time"),\
             "state":tran_info["state"], \
             "to_address":tran_info["to_address"], \
+            "tran_id":tran_info["tran_id"], \
             "amount":tran_info["amount"]})

@@ -128,8 +128,8 @@ class aproof(abase):
         return False
 
     def get_tran_id(self, tran_info):
-        if tran_info["flag"] == self.trantype.BTC.name.lower():
-            tran_id = tran_info["txid"]
+        if tran_info["flag"] == self.trantype.BTC:
+            tran_id = tran_info["tran_id"]
         else:
             tran_id = self.create_tran_id(tran_info["flag"], tran_info["type"], tran_info['sender'], \
                     tran_info['receiver'], tran_info['module'], tran_info['version'])
@@ -204,7 +204,7 @@ class aproof(abase):
                     #btc transaction is end , 
                     #diff libra and violas(maybe state is changed to end before scan bitcoin chain. so proof db can't found.)
                     if self.is_btc_data(tran_info):
-                        return self.update_proof_info_for_btc(version, tran_info)
+                        return self.update_proof_info_for_btc(version, tran_id, tran_info)
 
                     self._logger.debug(f"get_proof_by_hash({tran_id}) failed.")
                     return ret

@@ -37,6 +37,7 @@ logger = log.logger.getLogger(mod_name)
 
 @app.route('/')
 def main():
+    stmanage.set_conf_env_default()
     args    = request.args
     opt     = args.get("opt")
     chain   = args.get("chain")
@@ -57,7 +58,7 @@ def main():
     elif opt == "workstate":
         return workstate()
     else:
-        raise Exception("opt not found.")
+        raise Exception(f"opt{opt} is invalid.")
 
 
 @app.route('/trandetail/<string:dtype>/<string:version>/', methods=['GET'])

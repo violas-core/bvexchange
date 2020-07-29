@@ -115,8 +115,8 @@ class requestclient(baseobject):
         return self._rclient.select(name)
 
     def get_transaction_record(self, sender, flag, cursor = 0, match=None, limit = 10):
-        return self._rclient.get_transaction_record(sender, flag.upper(), cursor, match, limit)
+        return self._rclient.get_transaction_record(sender, flag.lower(), cursor, match, limit)
 
     def list_record_address_for_chain(self, chain, cursor = 0, limit = 10):
-        return self._rclient.scan(cursor, f"*_{chain.upper()}", limit)
+        return self._rclient.scan(cursor, f"*_{chain.lower()}", limit)
 
