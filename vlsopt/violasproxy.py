@@ -6,7 +6,6 @@ import os
 sys.path.append(os.getcwd())
 sys.path.append("..")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../lbviolasclient"))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../lbviolasclient/violas_client"))
 
 import log
 import log.logger
