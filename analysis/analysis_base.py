@@ -55,8 +55,6 @@ class abase(baseobject):
         pass
 
     def __del__(self):
-        if self._vclient is not None:
-            self._vclient.disconn_node()
         if self._dbclient is not None:
             self._dbclient.save()
 

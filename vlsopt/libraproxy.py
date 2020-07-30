@@ -5,7 +5,7 @@ import json
 import os
 sys.path.append("..")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../lblibraclient"))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../lblibraclient/libra_client"))
+#sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../lblibraclient/libra_client"))
 import log
 import log.logger
 import traceback
@@ -27,7 +27,7 @@ VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
 #from violas.client import Client
 from lblibraclient.libra_client import Wallet
-from lblibraclient.libra_client import Client
+from lblibraclient.libra_client import Client as LBRClient
 #module name
 name="libraproxy"
 
@@ -49,7 +49,7 @@ class walletproxy(Wallet):
         return (-1, None)
 
 
-class libraproxy(Client):
+class libraproxy(LBRClient):
     def clientname(self):
         return name
 

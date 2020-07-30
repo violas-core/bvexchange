@@ -2,6 +2,9 @@ import logging
 import logging.config
 import log.config
 import os
+import threading
+
+lock = threading.Lock()
 
 log_path = "./datas/logs"
 def __init__():
@@ -9,6 +12,7 @@ def __init__():
 
 def getLogger(name):
 
+    lock.acquire()
     if not os.path.exists(log_path):
         os.makedirs(log_path)
 
@@ -23,6 +27,7 @@ def getLogger(name):
 
     logging.config.dictConfig(log.config.config)
     logger = logging.getLogger(name)
+    lock.release()
 
     return logger
 

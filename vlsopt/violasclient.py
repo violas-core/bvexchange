@@ -197,13 +197,6 @@ class violasclient(baseobject):
 
     def disconn_node(self):
         try:
-            if self.__node is not None:
-                del self.__node
-                self.__node = None
-
-            if self.__client is not None:
-                del self.__client 
-                self.__client = None
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
