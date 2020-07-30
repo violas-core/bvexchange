@@ -19,7 +19,6 @@ import comm.result
 import comm.values
 from comm.result import result, parse_except
 from comm.error import error
-from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 from baseobject import baseobject
@@ -33,11 +32,15 @@ wallet_name="vwallet"
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 logger = log.logger.getLogger(name)
 def get_amount_out(token_a, token_b, amount_in):
-    if token_b.upper() == "BTC":
-        return amount_in / 10000
-    if token_a.upper() == "BTC":
-        return amount_in * 10000
-    return amount_in
+    swap_rate = {"VLSUSD":1.0, "USD":1.0, "VLSGBP":1.2988, "EUR":1.1754, "VLSEUR":1.1754, "VLSSGD": 0.7271, "BTC":10000.0}
+    token_a_rate = swap_rate.get(token_a)
+    assert token_a_rate is not None, f"not found token({token_a})"
+
+    token_b_rate = swap_rate.get(token_b)
+    assert token_b_rate is not None, f"not found token({token_b})"
+
+    print(f"token_a_rate:{token_a_rate} token_b_rate:{token_b_rate}")
+    return int(amount_in * (token_a_rate/token_b_rate))
 
 def reg_run():
     logger.debug("***************************************init workenv start*****************************")
@@ -109,8 +112,10 @@ def reg_run():
         for token_b in violas_token_id_list:
             if token_a == token_b:
                 continue
-            logger.debug(f"append swap liquidity({token_a} - {token_b})")
-            ret = vclient.swap_add_liquidity(account_l, token_a, token_b, 1000_000000, get_amount_out(token_a, token_b, 1000_000000), gas_currency_code = gas_token_id)
+            in_amount = 1000_000000
+            out_amount = get_amount_out(token_a, token_b, 1000_000000)
+            logger.debug(f"append swap liquidity({token_a} - {token_b}, 1000_000000 {out_amount}")
+            ret = vclient.swap_add_liquidity(account_l, token_a, token_b, in_amount, out_amount, gas_currency_code = gas_token_id)
             assert ret.state == error.SUCCEED
 
 
@@ -126,6 +131,8 @@ def init_address(vclient, wclient, address):
 
 if __name__ == "__main__":
     stmanage.set_conf_env("../bvexchange.toml")
+    print(get_amount_out("BTC", "VLSUSD", 100))
+    print(get_amount_out("BTC", "VLSEUR", 100))
     if len(sys.argv) == 1:
         reg_run()
     elif len(sys.argv) == 2:
