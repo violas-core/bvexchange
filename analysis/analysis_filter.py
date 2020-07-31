@@ -137,7 +137,7 @@ def works():
         obj = afilter(name="vfilter", ttype="violas", \
                 dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
         obj.set_step(1)
-        obj.set_min_valid_version(11205310)
+        obj.set_min_valid_version(13822217)
         ret = obj.start()
         if ret.state != error.SUCCEED:
             print(ret.message)

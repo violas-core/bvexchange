@@ -76,7 +76,7 @@ class blbase(baseobject):
         self.append_property("payer", payer)
         self.append_property("combine", vlscombine)
         self.append_property("dtype", dtype)
-        self.append_property("payer_token_id ", stmanage.get_type_stable_token(dtype))
+        self.append_property("payer_token_id ", stmanage.get_type_stable_token(dtype)) #will send stable token to to_address
         self.append_property("payer_map_token_id ", stmanage.get_token_map(self.payer_token_id))
         self.append_property("swap_module", swap_module)
         self.append_property("swap_owner", swap_owner)
@@ -137,7 +137,7 @@ class blbase(baseobject):
         else:
             raise Exception(f"from chain({self.from_chain}) is invalid.")
 
-        if "violas" not in (self.from_chain, self.map_chain) and not self.combine:
+        if "violas" not in (self.from_chain, self.map_chain) and self.combine:
             self.append_property("violas_wallet", violaswallet(self.name(), wallet_name, self.from_chain))
             ret = self.violas_wallet.get_account(self.combine)
             self.check_state_raise(ret, f"get combine({self.combine})'s account failed.")
@@ -155,7 +155,7 @@ class blbase(baseobject):
     def get_payer_account(self):
         try:
             sender_account = None
-            for sender in self.senders:
+            for sender in self.payer:
                 sender_account = self.payer_wallet.get_account(sender)
                 ret = result(error.SUCCEED, "", sender_account.datas)
                 return ret
@@ -347,7 +347,7 @@ class blbase(baseobject):
             rpcparams = ret.datas
             self.show_load_record_info(rpcparams)
 
-            receivers = self.receivers
+            receivers = self.payee
 
             #get map sender from payer 
             ret = self.get_payer_account()
@@ -415,7 +415,7 @@ class blbase(baseobject):
         try:
             self._logger.debug("start works")
             gas = 1000
-            receivers = self.receivers
+            receivers = self.payee
 
             #requirement checks
             self.__checks()
@@ -450,7 +450,7 @@ class blbase(baseobject):
                 latest_version = self.latest_version.get(receiver, -1) + 1
 
                 #get new transaction from server
-                self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver}")
+                self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver}, dtype = {self.dtype}, start version = {latest_version}")
                 ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version, excluded = self.excluded)
                 self._logger.debug(f"will execute transaction(start) count: {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
@@ -462,7 +462,7 @@ class blbase(baseobject):
                             self._logger.error(ret.message)
 
                 #get cancel transaction, this version not support
-                self._logger.debug(f"start exchange(data type: cancel), datas from violas server.receiver={receiver}")
+                self._logger.debug(f"start exchange(data type: cancel), datas from violas server.receiver={receiver}, dtype = {self.dtype}, start version = {latest_version}")
                 ret = self.pserver.get_transactions_for_cancel(receiver, self.dtype, latest_version, excluded = self.excluded)
                 self._logger.debug(f"will execute transaction(cancel) count: {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:

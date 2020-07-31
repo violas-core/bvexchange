@@ -154,8 +154,8 @@ class l2b(blbase):
         out_amount  = data["out_amount"]
         times       = data["times"]
         opttype     = data["opttype"]
-        from_token_id = data["token_id"] #LBRXXX  : Coin1, Coin2  BTC
-        payer_map_token_id = stmanage.get_token_map(from_token_id) #USD EUR BTC
+        payee_token_id = data["token_id"] #LBRXXX  : Coin1, Coin2  BTC
+        payee_map_token_id = stmanage.get_token_map(payee_token_id) #USD EUR BTC
 
         ret = result(error.FAILED)
         self._logger.info(f"exec_exchange-start. start exec_exchange . tran_id={tran_id}, state = {state}.")
@@ -174,7 +174,7 @@ class l2b(blbase):
 
         if self.use_module(state, localdb.state.START):
             self.insert_to_localdb_with_check(version, localdb.state.START, tran_id, receiver)
-        #get swap before amount(payer_map_token_id)
+        #get swap before amount(payee_map_token_id)
 
         if self.use_module(state, localdb.state.ESUCCEED):
             ret = self.violas_client.get_balance(combine_account.address.hex(), self.payer_map_token_id)
@@ -185,8 +185,8 @@ class l2b(blbase):
             detail.update({"before_amount": before_amount})
 
             #get gas for swap
-            self._logger.debug(f"exec_exchange-1. start swap_get_output_amount({payer_map_token_id}, {self.payee_map_token_id} {amount})...")
-            ret = self.violas_client.swap_get_output_amount(payer_map_token_id, self.payee_map_token_id, amount)
+            self._logger.debug(f"exec_exchange-1. start swap_get_output_amount({payee_map_token_id}, {self.payer_map_token_id} {amount})...")
+            ret = self.violas_client.swap_get_output_amount(payee_map_token_id, self.payer_map_token_id, amount)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
                 return ret 
@@ -204,7 +204,7 @@ class l2b(blbase):
 
             #fill violas map token for swap
             self._logger.debug("exec_exchange-2. start fill_address_token_vls...")
-            ret = self.fill_address_token_vls(self.combine_account.address.hex(), payer_map_token_id, amount)
+            ret = self.fill_address_token_vls(self.combine_account.address.hex(), payee_map_token_id, amount)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
                 self._logger.debug("exec_exchange-2.result: failed.")
@@ -212,9 +212,9 @@ class l2b(blbase):
 
             #swap LBRXXX -> VLSYYY
             self._logger.debug("exec_exchange-3. start swap...")
-            ret = self.violas_client.swap(combine_account, payer_map_token_id, self.payee_map_token_id, amount, \
+            ret = self.violas_client.swap(combine_account, payee_map_token_id, self.payer_map_token_id, amount, \
                     out_amount, receiver = combine_account.address.hex(), \
-                    gas_currency_code = payer_map_token_id)
+                    gas_currency_code = payee_map_token_id)
 
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
@@ -224,14 +224,14 @@ class l2b(blbase):
                 self.update_localdb_state_with_check(tran_id, localdb.state.SUCCEED)
 
             #get swap after amount(payee_map_token_id)
-            ret = self.violas_client.get_balance(combine_account.address.hex(), self.payee_map_token_id)
+            ret = self.violas_client.get_balance(combine_account.address.hex(), self.payer_map_token_id)
             if ret.state != error.SUCCEED:
                 ret = self.violas_client.get_address_version(combine_account.address.hex())
                 self.check_state_raise(ret, f"get_address_version({combine_account.address.hex})")
                 detail.update({"swap_version": ret.datas})
 
                 #if get balance, next execute, balance will change , so re swap, 
-                #but combine token(self.payee_map_token_id) is change, this time swap token_id should be burn
+                #but combine token(self.payer_map_token_id) is change, this time swap token_id should be burn
                 self.update_localdb_state_with_check(tran_id, localdb.state.QBFAILED, \
                         json.dumps(detail)) #should get swap to_token balance from version
                 return ret
@@ -245,22 +245,22 @@ class l2b(blbase):
         if self.use_module(state, localdb.state.FILLSUCCEED) or \
                 self.use_module(state, localdb.state.PSUCCEED):
 
-            self._logger.debug("exec_exchange-4. start fill_address_token_btc...")
+            self._logger.debug("exec_exchange-4. start fill_address_token_btc/libra...")
             amount = self.amountswap(detail["diff_balance"]).amount(self.map_chain)
-            dret = self.fill_address_token[self.map_chain](map_sender, self.payee_token_id, amount)
+            dret = self.fill_address_token[self.map_chain](payer_account, self.payer_token_id, amount)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
                         json.dumps(detail))
                 self._logger.debug("exec_exchange-4.result: failed.")
                 return ret
 
-        #send token to payee address. P = payee
-            markdata = self.payee_client.create_data_for_mark(self.violas_chain, self.dtype, \
+        #send swap token(btc/Coin1/Coin2) to payee address. P = payee
+            markdata = self.payer_client.create_data_for_mark(self.map_chain, self.dtype, \
                     sender, version)
 
             self._logger.debug(f"exec_exchange-4. start send to {toaddress} amount = {amount:.8f}...")
-            ret = self.payee_client.send_coin(map_sender, toaddress, \
-                    amount, self.payee_token_id, data=markdata)
+            ret = self.payer_client.send_coin(payer_account, toaddress, \
+                    amount, self.payer_token_id, data=markdata)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.PFAILED, \
                         json.dumps(detail))
@@ -274,7 +274,7 @@ class l2b(blbase):
         if self.use_module(state, localdb.state.VSUCCEED):
             self._logger.debug(f"exec_exchange-5. start send_coin_for_update_state_to_end({receiver}, {tran_id})...")
             ret = self.send_coin_for_update_state_to_end(payee_account, receiver, tran_id, \
-                    from_token_id, version = version)
+                    payee_token_id, version = version)
         self._logger.debug("exec_exchange-end.")
         return ret
 
