@@ -208,7 +208,7 @@ class violasproxy(baseobject):
         return self.run_request(url)
 
     def violas_getexprooflatestindex(self, extype = comm.values.EX_TYPE_PROOF):
-        url = self.create_opt_url(self.opt.GET, self.opttype.FILTER, datatype="version")
+        url = self.create_opt_url(self.opt.GET, self.opttype.PROOFBASE, datatype="version")
         ret = requests.get(url).json()
         return self.run_request(url)
 

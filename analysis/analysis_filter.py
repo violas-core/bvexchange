@@ -55,7 +55,7 @@ class afilter(abase):
                 parse_except(e)
 
         #remove no-use key
-        no_use = ["currency_code"]
+        no_use = ["currency_code", "major_status"]
         for key in no_use:
             if key in tran_data:
                 tran_data.pop(key)
