@@ -108,19 +108,19 @@ def send_coin(from_address, to_address, amount, token_id, module = None, data = 
     print(f"cur balance :{client.get_balance(account.address, token_id, module).datas}")
 
 def get_balance(address, token_id, module):
-    logger.debug("start get_balance address= {address} module = {module} token_id= {token_id}")
+    logger.debug(f"start get_balance address= {address} module = {module} token_id= {token_id}")
     client = get_violasclient()
-    ret = cliet.get_balance(address, token_id, module)
+    ret = client.get_balance(address, token_id, module)
     logger.debug("balance: {0}".format(ret.datas))
 
 def get_balances(address):
-    logger.debug("start get_balances address= {address}")
+    logger.debug(f"start get_balances address= {address}")
     client = get_violasclient()
     ret = client.get_balances(address)
     logger.debug("balance: {0}".format(ret.datas))
 
 def get_latest_transaction_version():
-    logger.debug("start get_latest_transaction_version")
+    logger.debug(f"start get_latest_transaction_version")
     client = get_violasclient()
     ret = client.get_latest_transaction_version()
     logger.debug("latest version: {0}".format(ret.datas))
@@ -137,6 +137,8 @@ def get_transactions(start_version, limit = 1, fetch_event = True, raw = False):
     print(f"count: {len(ret.datas)}")
 
     for data in ret.datas:
+        print(data.to_json())
+        print("******")
         if raw:
             print(data)
         else:
