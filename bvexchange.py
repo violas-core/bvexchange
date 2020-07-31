@@ -97,16 +97,18 @@ class works:
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}")
-                chain = "violas"
                 try:
-                    obj = v2b.exv2b(mod, 
+                    obj = v2b.v2b(mod, 
+                            dtype,
                             stmanage.get_violas_nodes(), 
-                            stmanage.get_btc_conn(), 
+                            stmanage.get_btc_nodes(),
                             stmanage.get_db(dtype), 
-                            stmanage.get_module_address(dtype, chain), 
-                            stmanage.get_token_id(dtype, chain), 
-                            list(set(stmanage.get_receiver_address_list(dtype, chain))),
-                            chain=chain)
+                            list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "btc", False))),
+                            stmanage.get_combine_address(dtype, "violas"),
+                            stmanage.get_swap_module(),
+                            stmanage.get_swap_owner()
+                            )
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:

@@ -202,6 +202,8 @@ class b2v(vbbase):
                     from_token_id, amount = 0, version = version)
 
         self._logger.debug("exec_exchange-end.")
+        return result(error.SUCCEED)
+
 def main():
        print("start main")
        stmanage.set_conf_env("../bvexchange.toml")
