@@ -237,7 +237,7 @@ class v2b(vbbase):
             ret = self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, \
                     from_token_id, version = version)
         self._logger.debug("exec_exchange-end.")
-        return ret
+        return result(error.SUCCEED)
 
 def main():
        print("start main")

@@ -79,7 +79,7 @@ class dbindexbase(enumbase):
     B2VGBP  = 39
     L2B     = 50
     B2LUSD  = 51
-    B2lEUR  = 52
+    B2LEUR  = 52
 
 #work mod 
 #workmod item(PROOF/EX) must be eq dbindexbase 
