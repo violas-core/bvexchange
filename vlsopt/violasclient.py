@@ -269,6 +269,7 @@ class violasclient(baseobject):
 
     def send_coin(self, from_account, to_address, amount, token_id, module_address = None, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000):
         try:
+            print(data)
             if (len(to_address) not in VIOLAS_ADDRESS_LEN) or (amount < 1) or ((module_address is not None) and (len(module_address) not in VIOLAS_ADDRESS_LEN)):
                 return result(error.ARG_INVALID)
 
