@@ -19,7 +19,6 @@ import comm.result
 import comm.values
 from comm.result import result, parse_except
 from comm.error import error
-from db.dbb2v import dbb2v
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 from baseobject import baseobject
@@ -61,7 +60,7 @@ def reg_run():
             addresses.extend(combine)
         for token_id in violas_token_id_list:
             if len(addresses) > 0:
-                comm_funs.init_address_list(vclient, wclient, addresses, token_id, minamount = 100_000000)
+                comm_funs.init_address_list(vclient, wclient, addresses, token_id, minamount = 1000_000000)
     #vlibra sender bind token_id
     #logger.debug("***************************************init vlibra sender*****************************")
     #for opt_type in l2v_opt_list:

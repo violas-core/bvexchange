@@ -28,6 +28,7 @@ VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #from violas.client import Client
 from lblibraclient.libra_client import Wallet
 from lblibraclient.libra_client import Client as LBRClient
+from lblibraclient.libra_client.lbrtypes.chain_id import NamedChain
 #module name
 name="libraproxy"
 
@@ -61,7 +62,7 @@ class libraproxy(LBRClient):
         if port is not None:
             url += f":{port}"
 
-        return self.new(url)
+        return self.new(url, NamedChain.TESTNET)
 
     def send_coin(self, sender_account, receiver_address, micro_coins, token_id=None, module_address=None, \
             data=None, auth_key_prefix=None, is_blocking=False, max_gas_amount=400_000, unit_price=0, txn_expiration=13):
