@@ -207,7 +207,7 @@ class l2b(blbase):
             ret = self.fill_address_token_vls(self.combine_account.address.hex(), payee_map_token_id, amount)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
-                self._logger.debug("exec_exchange-2.result: failed.")
+                self._logger.debug(f"exec_exchange-2.result: failed. message : {ret.message}")
                 return ret
 
             #swap LBRXXX -> VLSYYY
@@ -222,6 +222,7 @@ class l2b(blbase):
                 return ret
             else:
                 self.update_localdb_state_with_check(tran_id, localdb.state.SUCCEED)
+                self._logger.debug("exec_exchange-3.result: succeed.")
 
             #get swap after amount(payee_map_token_id)
             ret = self.violas_client.get_balance(combine_account.address.hex(), self.payer_map_token_id)
@@ -247,27 +248,33 @@ class l2b(blbase):
 
             self._logger.debug("exec_exchange-4. start fill_address_token_btc/libra...")
             amount = self.amountswap(detail["diff_balance"]).amount(self.map_chain)
-            dret = self.fill_address_token[self.map_chain](payer_account, self.payer_token_id, amount)
+            ret = self.fill_address_token[self.map_chain](payer_account, self.payer_token_id, amount)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
                         json.dumps(detail))
-                self._logger.debug("exec_exchange-4.result: failed.")
+                self._logger.debug(f"exec_exchange-4.result: failed. {ret.message}")
                 return ret
+            else:
+                self.update_localdb_state_with_check(tran_id, localdb.state.FILLSUCCEED, \
+                        json.dumps(detail))
+                self._logger.debug("exec_exchange-4.result: succeed.")
+
 
         #send swap token(btc/Coin1/Coin2) to payee address. P = payee
             markdata = self.payer_client.create_data_for_mark(self.map_chain, self.dtype, \
                     sender, version)
 
-            self._logger.debug(f"exec_exchange-4. start send to {toaddress} amount = {amount:.8f}...")
+            self._logger.debug(f"exec_exchange-5. start send to {toaddress} amount = {amount:.8f}...")
             ret = self.payer_client.send_coin(payer_account, toaddress, \
                     amount, self.payer_token_id, data=markdata)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.PFAILED, \
                         json.dumps(detail))
-                self._logger.debug("exec_exchange-4.result: failed.")
+                self._logger.debug("exec_exchange-5.result: failed.")
                 return ret
             else:
                 self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED)
+                self._logger.debug("exec_exchange-5.result: succeed.")
 
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state
