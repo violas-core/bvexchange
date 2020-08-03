@@ -117,7 +117,7 @@ class b2v(vbbase):
             detail: when state is not None , get some info from detail
         '''
         fromaddress = data["address"]
-        amount      = int(data["amount"]) #here is violas amount
+        amount      = int(data["amount"]) #here is btc amount
         sequence    = data["sequence"] 
         version     = data["version"]
         toaddress   = data["to_address"] #map token to
@@ -131,7 +131,7 @@ class b2v(vbbase):
         map_token_id = stmanage.get_token_map(stable_token_id) #stable token -> LBRXXX token
         to_token_id    = self.to_token_id #token_id is map 
 
-        swap_amount = self.amountswap(amount, self.amountswap.amounttype.VIOLAS)
+        swap_amount = self.amountswap(amount, self.amountswap.amounttype.VIOLAS) #btcclient has / 100
         amount = swap_amount.violas_amount
 
         self._logger.info(f"exec_exchange-start. start exec_exchange . tran_id={tran_id}, state = {state}.")

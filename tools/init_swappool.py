@@ -131,8 +131,9 @@ def init_address(vclient, wclient, address):
 
 if __name__ == "__main__":
     stmanage.set_conf_env("../bvexchange.toml")
-    print(get_amount_out("BTC", "VLSUSD", 100))
-    print(get_amount_out("BTC", "VLSEUR", 100))
+    print(get_amount_out("BTC", "VLSUSD", 1000000))
+    print(get_amount_out("BTC", "VLSEUR", 1000000))
+    print(get_amount_out("VLSUSD", "BTC", 1000000))
     if len(sys.argv) == 1:
         reg_run()
     elif len(sys.argv) == 2:

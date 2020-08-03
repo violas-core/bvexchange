@@ -132,7 +132,6 @@ class vlbase(baseobject):
 
     def merge_db_to_rpcparams(self, rpcparams, dbinfos):
         try:
-            self._logger.debug("start merge_db_to_rpcparams")
             for info in dbinfos:
                 new_data = {
                         "version":info.version, 
