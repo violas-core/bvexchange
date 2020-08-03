@@ -291,11 +291,11 @@ class vbbase(baseobject):
         amount          = int(data["amount"]) 
         tran_id         = data["tran_id"]
         stable_token_id = data["token_id"]
-        payee           = data["sender"]
+        payee           = data["address"]
 
         ##convert to BTC satoshi(100000000satoshi == 1000000vBTC)
-        if self.from_chain == "BTC":
-            amount = amount * 100
+        ##libra or violas not convert
+        amount = self.amountswap(amount).amount(self.from_chain)
 
         self._logger.debug(f"execute refund({tran_id}, {amount}, {state_token_id})")
         data = self.from_client.create_data_for_stop(self.from_chain, self.dtype, tran_id, 0) 

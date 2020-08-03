@@ -281,7 +281,7 @@ class aproof(abase):
 
     def start(self):
         try:
-            self._logger.debug(f"start vproof work")
+            self._logger.debug(f"start proof work")
 
             new_state = "start"
             ret = self._dbclient.get_latest_filter_ver()
