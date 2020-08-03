@@ -282,6 +282,9 @@ class l2b(blbase):
             self._logger.debug(f"exec_exchange-5. start send_coin_for_update_state_to_end({receiver}, {tran_id})...")
             ret = self.send_coin_for_update_state_to_end(payee_account, receiver, tran_id, \
                     payee_token_id, version = version)
+            if ret.state != error.SUCCEED:
+                return ret
+
         self._logger.debug("exec_exchange-end.")
         return ret
 

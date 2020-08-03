@@ -153,9 +153,7 @@ class violasproxy(baseobject):
         datas = requests.get(url).json()
         state = datas.get("state")
         if state.upper() != "SUCCEED":
-            print("*************************")
             raise Exception(state.get("message"))
-        print(f"run_request state: {datas.get('state')}")
         return datas.get("datas")
 
     def is_excluded(self, proof, excludeds):

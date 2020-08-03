@@ -134,7 +134,6 @@ class b2v(vbbase):
         swap_amount = self.amountswap(amount, self.amountswap.amounttype.VIOLAS)
         amount = swap_amount.violas_amount
 
-        defret = result(error.FAILED)
         self._logger.info(f"exec_exchange-start. start exec_exchange . tran_id={tran_id}, state = {state}.")
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
@@ -198,8 +197,10 @@ class b2v(vbbase):
         #sendexproofmark succeed , send violas coin with data for change tran state
         if self.use_module(state, localdb.state.VSUCCEED):
             self._logger.debug("exec_exchange-5. start send_coin_for_update_state_to_end...")
-            self.send_coin_for_update_state_to_end(from_sender, self.combine_account, tran_id, \
+            ret = self.send_coin_for_update_state_to_end(from_sender, self.combine_account, tran_id, \
                     from_token_id, amount = 0, version = version)
+            if ret.state != error.SUCCEED:
+                return ret
 
         self._logger.debug("exec_exchange-end.")
         return result(error.SUCCEED)
