@@ -124,4 +124,9 @@ class dbvproof(dbvbase):
             "state":tran_info["state"], \
             "to_address":tran_info["to_address"], \
             "tran_id":tran_info["tran_id"], \
-            "amount":tran_info["amount"]})
+            "in_amount":tran_info["amount"], \
+            "out_amount": tran_info["out_amount"], \
+            "in_token" : tran_info.get("token_id"), \
+            "out_token": stmanage.get_type_stable_token(tran_info["opttype"]), \
+            "times" : tran_info.get("times", 0)
+            })

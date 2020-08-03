@@ -156,6 +156,19 @@ def get_transaction_version(address, sequence):
     client = get_violasclient()
     ret = client.get_transaction_version(address, sequence)
     logger.debug("version: {0}".format(ret.datas))
+
+def swap_set_module_ower(client):
+    logger.debug(f"owner:{stmanage.get_swap_owner()}, module:{stmanage.get_swap_module()}")
+    client.swap_set_owner_address(stmanage.get_swap_owner())
+    client.swap_set_module_address(stmanage.get_swap_module())
+
+def swap_get_output_amount(token_in, token_out, amount_in):
+    logger.debug(f"start swap_get_output_amount({token_in}, {token_out}, {amount_in})")
+    client = get_violasclient()
+    swap_set_module_ower(client)
+    ret = client.swap_get_output_amount(token_in, token_out, amount_in)
+    logger.debug(f"out_amount: {ret.datas}")
+
 '''
 *************************************************violaswallet oper*******************************************************
 '''
@@ -293,6 +306,7 @@ def init_args(pargs):
     pargs.append("account_has_token_id", "check account is published token_id.", True, ["address", "token_id"])
     pargs.append("swap", "swap violas chain token.", True, ["address", "token_in", "token_out", "amount_in", "amount_out_min", "module_address"])
     pargs.append("check_is_swap_address", "check address is swap address.", True, ["address"])
+    pargs.append("swap_get_output_amount", "get swap out amount .", True, ["token_in", "token_out", "amount_in"])
 
 
     #swap opt
@@ -473,6 +487,10 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             check_is_swap_address(arg_list[0])
+        elif pargs.is_matched(opt, ["swap_get_output_amount"]):
+            if len(arg_list) != 3:
+                pargs.exit_error_opt(opt)
+            swap_get_output_amount(arg_list[0], arg_list[1], arg_list[2])
         else:
             raise Exception(f"not found matched opt{opt}")
     logger.debug("end manage.main")

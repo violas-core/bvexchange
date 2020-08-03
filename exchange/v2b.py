@@ -161,6 +161,8 @@ class v2b(vbbase):
             out_amount_chian, gas = ret.datas
             self._logger.debug(f"exec_exchange-1.result : out_amount = {out_amount_chian} gas = {gas}")
 
+            #btc -> vbtc(1000000), violas swap vbtc
+            out_amount = self.amountswap(out_amount, self.amountswap.amounttype.SATOSHI).violas_amount
             #temp value(test)
             if out_amount <= 0:
                 out_amount = out_amount_chian
