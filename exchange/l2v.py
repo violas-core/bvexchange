@@ -92,7 +92,7 @@ class l2v(vlbase):
         version     = data["version"]
         toaddress   = data["to_address"] #map token to
         tran_id     = data["tran_id"]
-        out_amount  = data["out_amount"]
+        out_amount  = int(data["out_amount"])
         times       = data["times"]
         opttype     = data["opttype"]
         stable_token_id = data["token_id"]
@@ -107,7 +107,7 @@ class l2v(vlbase):
             f"map_token_id = {map_token_id}, state = {state}, detail = {detail} datas from server.")
 
         if state is not None:
-            self._latest_version[receiver] = max(version, self._latest_version.get(receiver, -1))
+            self.latest_version[receiver] = max(version, self.latest_version.get(receiver, -1))
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
         if state is None and self.has_info(tran_id):
@@ -117,7 +117,7 @@ class l2v(vlbase):
            return 
 
         if self.use_module(state, localdb.state.START):
-            self.insert_to_localdb_with_check(version, localdb.state.START, tran_id, receiver)
+            self.insert_to_localdb_with_check(version, localdb.state.START, tran_id)
 
         if self.use_module(state, localdb.state.PSUCCEED) or \
                 self.use_module(state, localdb.state.ESUCCEED) or \
@@ -179,7 +179,8 @@ def main():
                stmanage.get_db(dtype), 
                list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
                list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
-               stmanage.get_swap_module()
+               stmanage.get_swap_module(),
+               stmanage.get_swap_owner(),
                )
        ret = obj.start()
        if ret.state != error.SUCCEED:

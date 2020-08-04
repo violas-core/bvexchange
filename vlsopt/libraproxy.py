@@ -68,6 +68,7 @@ class libraproxy(LBRClient):
             data=None, auth_key_prefix=None, is_blocking=False, max_gas_amount=400_000, unit_price=0, txn_expiration=13):
         if data is not None:
             data = data.encode("utf-8")
+
         return self.transfer_coin(sender_account = sender_account, micro_coins = micro_coins, receiver_address=receiver_address, currency_code = token_id,\
                 is_blocking = is_blocking, data = data, \
                 max_gas_amount=max_gas_amount, gas_unit_price=unit_price)

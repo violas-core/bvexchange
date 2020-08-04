@@ -120,10 +120,13 @@ class v2l(vlbase):
 
         #get swap before amount(map_token_id)
         
+        if self.use_module(state, localdb.state.START):
+            self.insert_to_localdb_with_check(version, localdb.state.START, tran_id, receiver)
+
         if self.use_module(state, localdb.state.ESUCCEED):
             ret = self.violas_client.get_balance(combine_account.address.hex(), map_token_id)
             if ret.state != error.SUCCEED:
-                self.insert_to_localdb_with_check(version, localdb.state.FAILED, tran_id, receiver)
+                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
                 return ret
             before_amount = ret.datas
             detail.update({"before_amount": before_amount})
@@ -131,14 +134,14 @@ class v2l(vlbase):
             #get gas for swap
             ret = self.violas_client.swap_get_output_amount(from_token_id, map_token_id, amount)
             if ret.state != error.SUCCEED:
-                self.insert_to_localdb_with_check(version, localdb.state.FAILED, tran_id, receiver)
+                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
             out_amount_chian, gas = ret.datas
 
             #temp value(test)
             if out_amount <= 0:
                 out_amount = out_amount_chian
             elif out_amount > out_amount_chian: #don't execute swap, Reduce the cost of the budget
-                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, receiver)
+                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
                 return result(error.FAILED, \
                             f"don't execute swap(out_amount({out_amount}) > cur_outamount({out_amount_chian})), Reduce the cost of the budget")
             detail.update({"gas": gas})
@@ -149,10 +152,10 @@ class v2l(vlbase):
                     gas_currency_code = from_token_id)
 
             if ret.state != error.SUCCEED:
-                self.insert_to_localdb_with_check(version, localdb.state.FAILED, tran_id, receiver)
+                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
                 return ret
             else:
-                self.insert_to_localdb_with_check(version, localdb.state.SUCCEED, tran_id, receiver)
+                self.update_localdb_state_with_check(tran_id, localdb.state.SUCCEED)
 
             #get swap after amount(map_token_id)
             ret = self.violas_client.get_balance(combine_account.address.hex(), map_token_id)
