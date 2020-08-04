@@ -131,7 +131,7 @@ class b2v(vbbase):
         map_token_id = stmanage.get_token_map(stable_token_id) #stable token -> LBRXXX token
         to_token_id    = self.to_token_id #token_id is map 
 
-        swap_amount = self.amountswap(amount, self.amountswap.amounttype.VIOLAS) #btcclient has / 100
+        swap_amount = self.amountswap(amount, self.amountswap.amounttype.BTC) #btcclient has / 100
         amount = swap_amount.violas_amount
 
         self._logger.info(f"exec_exchange-start. start exec_exchange . tran_id={tran_id}, state = {state}.")
@@ -165,6 +165,7 @@ class b2v(vbbase):
                 return result(error.FAILED, \
                             f"don't execute swap(out_amount({out_amount}) > cur_outamount({out_amount_chian})), Reduce the cost of the budget")
             detail.update({"gas": gas})
+            detail.update({"diff_balance": out_amount_chian})
 
             #fill BTCXXX to sender(type = LBRXXX), or check sender's token amount is enough
             self._logger.debug("exec_exchange-2. start fill_address_token...")
@@ -198,7 +199,7 @@ class b2v(vbbase):
         if self.use_module(state, localdb.state.VSUCCEED):
             self._logger.debug("exec_exchange-5. start send_coin_for_update_state_to_end...")
             ret = self.send_coin_for_update_state_to_end(from_sender, self.combine_account, tran_id, \
-                    from_token_id, amount = 0, version = version)
+                    from_token_id, amount = 0, version = version, out_amount_real=detail.get("diff_balance", 0))
             if ret.state != error.SUCCEED:
                 return ret
 
