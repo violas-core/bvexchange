@@ -209,10 +209,10 @@ class vlbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def send_coin_for_update_state_to_end(self, sender, receiver, tran_id, token_id, amount = 1):
+    def send_coin_for_update_state_to_end(self, sender, receiver, tran_id, token_id, amount = 1, **kwargs):
             self._logger.debug(f"start send_coin_for_update_state_to_end(sender={sender.address.hex()},"\
                     f"recever={receiver}, tran_id={tran_id}, amount={amount})")
-            tran_data = self.from_client.create_data_for_end(self.from_chain, self.dtype, tran_id, "")
+            tran_data = self.from_client.create_data_for_end(self.from_chain, self.dtype, tran_id, "", **kwargs)
             ret = self.from_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.VFAILED)
@@ -259,7 +259,7 @@ class vlbase(baseobject):
         amount      = int(data["amount"]) 
         tran_id     = data["tran_id"]
         stable_token_id = data["token_id"]
-        payee = data["sender"]
+        payee       = data["address"]
 
         data = self.from_client.create_data_for_stop(self.from_chain, self.dtype, tran_id, 0) 
         ret = self.from_client.send_coin(from_sender, payee, amount, stable_token_id, data=data)

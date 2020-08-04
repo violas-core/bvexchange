@@ -117,7 +117,7 @@ class l2v(vlbase):
            return 
 
         if self.use_module(state, localdb.state.START):
-            self.insert_to_localdb_with_check(version, localdb.state.START, tran_id)
+            self.insert_to_localdb_with_check(version, localdb.state.START, tran_id, receiver)
 
         if self.use_module(state, localdb.state.PSUCCEED) or \
                 self.use_module(state, localdb.state.ESUCCEED) or \
@@ -150,6 +150,7 @@ class l2v(vlbase):
                       json.dumps(detail))
 
             #swap LBRXXX -> VLSYYY and send VLSXXX to toaddress(client payee address)
+            detail.update({"diff_balance": out_amount_chian})
             ret = self.violas_client.swap(map_sender, map_token_id, to_token_id, amount, \
                     out_amount, receiver = toaddress, gas_currency_code = map_token_id)
             if ret.state != error.SUCCEED:
@@ -161,7 +162,7 @@ class l2v(vlbase):
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state
         if self.use_module(state, localdb.state.VSUCCEED):
-            ret =  self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, from_token_id)
+            ret =  self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, from_token_id, out_amount=detail.get("diff_balance", 0))
             if ret.state != error.SUCCEED:
                 return ret
 
