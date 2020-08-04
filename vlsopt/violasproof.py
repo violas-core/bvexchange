@@ -37,7 +37,7 @@ class violasproof(violasclient):
         return json.dumps({"flag": flag, "type":dtype, "to_address":to_address, "state": "start"})
 
     def create_data_for_end(self, flag, dtype, tranid, txid="", **kwargs):
-        return json.dumps({"flag": flag, "type":dtype, "tran_id":tranid, "state": "end", "txid":txid, "out_amount": kwargs.get("out_amount", 0)})
+        return json.dumps({"flag": flag, "type":dtype, "tran_id":tranid, "state": "end", "txid":txid, "out_amount_real": kwargs.get("out_amount_real", 0)})
 
     def create_data_for_stop(self, flag, dtype, tranid, txid="", **kwargs):
         return json.dumps({"flag": flag, "type":dtype, "tran_id":tranid, "state": "stop", "txid":txid})
