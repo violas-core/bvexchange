@@ -235,6 +235,7 @@ def main():
     print(f"get type_stable_token: ")
     json_print(get_type_stable_token())
     print(f"get type_stable_token(l2vusd)->VLSUSD: {get_type_stable_token('l2vusd')}")
+    print(f"get type_stable_token(l2vgbp)->VLSGBP: {get_type_stable_token('l2vgbp')}")
     print(f"get type_stable_token(v2lusd)-Coin1: {get_type_stable_token('v2lusd')}")
     print(f"get type_stable_token(l2b)->BTC: {get_type_stable_token('l2b')}")
     print(f"get type_stable_token(b2lusd)->Coin1: {get_type_stable_token('b2lusd')}")
