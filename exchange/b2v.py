@@ -149,7 +149,7 @@ class b2v(vbbase):
             self._logger.debug(f"exec_exchange-1. start swap_get_output_amount({map_token_id} {to_token_id} {amount})...")
             ret = self.violas_client.swap_get_output_amount(map_token_id, to_token_id, amount)
             if ret.state != error.SUCCEED:
-                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
+                self.update_localdb_state_with_check(tran_id, localdb.state.EFAILED)
                 return ret
             else:
                 self.update_localdb_state_with_check(tran_id, localdb.state.ESUCCEED)
@@ -160,7 +160,7 @@ class b2v(vbbase):
             if out_amount <= 0:
                 out_amount = out_amount_chian
             elif out_amount > out_amount_chian: #don't execute swap, Reduce the cost of the budget
-                self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
+                self.update_localdb_state_with_check(tran_id, localdb.state.PFAILED)
                 return result(error.FAILED, \
                             f"don't execute swap(out_amount({out_amount}) > cur_outamount({out_amount_chian})), Reduce the cost of the budget")
             detail.update({"gas": gas})

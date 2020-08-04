@@ -52,8 +52,8 @@ class dblocal(baseobject):
     ##FAILED->SUCCEED->VFAILED->SUCCEED->COMPLETE
     class state(Enum):
         START       = 0     #no use
-        SUCCEED     = 1     #send token ok 
-        FAILED      = 2     #execute before swap failed, this time can re-execute 
+        FAILED      = 1     #execute before swap failed, this time can re-execute 
+        EFAILED     = 2     #get out amount failed
         ESUCCEED    = 3
         QBFAILED    = 4     #get <to_token_id> blance(swap end) with localdb version, calc diff balance 
         QBSUCCEED   = 5
