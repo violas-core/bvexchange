@@ -272,6 +272,7 @@ class works:
                 logger.debug(f"looping: {mod}")
                 try:
                     obj = l2v.l2v(mod, 
+                            dtype,
                             stmanage.get_violas_nodes(), 
                             stmanage.get_libra_nodes(),
                             stmanage.get_db(dtype), 

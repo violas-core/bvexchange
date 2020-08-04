@@ -274,12 +274,12 @@ class violasclient(baseobject):
                 return result(error.ARG_INVALID)
 
             (_, mod) = self.split_full_address(module_address).datas
-            if mod in ("0000000000000000000000000000000000000000000000000000000000000000", "00000000000000000000000000000000"):
-                module_address = None
+            module_address = None
 
             (auth, addr) = self.split_full_address(to_address, auth_key_prefix).datas
             (_, module_addr) = self.split_full_address(module_address).datas
 
+            self._logger.debug(f"send_coin(from_account={from_account.address.hex()} to_address={to_address} amount = {amount} token_id = {token_id} module_address={module_address} data = {data} auth_key_prefix = {auth_key_prefix} max_gas_amount = {max_gas_amount})")
             self.__client.send_coin(sender_account=from_account, receiver_address=addr, \
                     micro_coins=amount, token_id = token_id, module_address=module_addr, data=data, auth_key_prefix = auth_key_prefix, is_blocking=is_blocking, max_gas_amount = max_gas_amount)
             ret = result(error.SUCCEED) 

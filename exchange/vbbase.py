@@ -422,7 +422,7 @@ class vbbase(baseobject):
                 #get new transaction from server
                 self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver}")
                 ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version, excluded = self.excluded)
-                self._logger.debug(f"will execute transaction(start) count: {len(ret.datas)}")
+                self._logger.debug(f"will execute transaction(start) ")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     for data in ret.datas:
                         if not self.work() :
