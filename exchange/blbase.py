@@ -324,8 +324,8 @@ class blbase(baseobject):
         cltpayee           = data["sender"]
 
         ##convert to BTC satoshi(100000000satoshi == 1000000vBTC)
-        if self.from_chain == "BTC":
-            amount = amount * 100
+        amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).amount(self.from_chain)
+            
 
         self._logger.debug(f"execute refund({tran_id}, {amount}, {state_token_id})")
         data = self.payee_client.create_data_for_stop(self.from_chain, self.dtype, tran_id, 0) 

@@ -131,8 +131,7 @@ class b2v(vbbase):
         map_token_id = stmanage.get_token_map(stable_token_id) #stable token -> LBRXXX token
         to_token_id    = self.to_token_id #token_id is map 
 
-        swap_amount = self.amountswap(amount, self.amountswap.amounttype.BTC) #btcclient has / 100
-        amount = swap_amount.violas_amount
+        amount = self.amountswap(amount, self.amountswap.amounttype.BTC).violas_amount 
 
         self._logger.info(f"exec_exchange-start. start exec_exchange . tran_id={tran_id}, state = {state}.")
 

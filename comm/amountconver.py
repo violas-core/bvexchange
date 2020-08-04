@@ -15,12 +15,23 @@ class amountconver():
         if atype == self.amounttype.VIOLAS:
             self.violas_amount = value
         elif atype == self.amounttype.BTC:
-            self.btc_amount = value
+            if isinstance(value, int):
+                self.satoshi_amount = value
+            else:
+                self.btc_amount = value
         elif atype == self.amounttype.SATOSHI:
             self.satoshi_amount = value
         else:
             raise Exception(f"amount type{atype} is invalid.")
         
+
+    @property 
+    def amount_type(self):
+        return self.__amounttype
+
+    @amount_type.setter
+    def amount_type(self, value):
+        self.__amounttype = value
 
     #btc -> violas
     @property
@@ -33,34 +44,35 @@ class amountconver():
 
     @property
     def violas_amount(self):
-        return self.__amount
-
-    @violas_amount.setter
-    def libra_amount(self, value):
-        self.__amount = value
-
-    @property
-    def libra_amount(self):
-        return self.__amount
+        return int(self.__amount / self.rate)
 
     @violas_amount.setter
     def violas_amount(self, value):
-        self.__amount = value
+        self.__amount = value * self.rate
+
+    @property
+    def libra_amount(self):
+        return int(self.__amount / self.rate)
+
+    @libra_amount.setter
+    def libra_amount(self, value):
+        self.__amount = value * self.rate
+
     @property
     def btc_amount(self):
         return float(self.satoshi_amount) / self.satoshi
 
     @btc_amount.setter
     def btc_amount(self, value):
-        self.violas_amount = value * self.satoshi / self.rate
+        self.__amount = int(value * self.satoshi)
 
     @property
     def satoshi_amount(self):
-        return self.violas_amount * self.rate
+        return self.__amount
 
     @satoshi_amount.setter
     def satoshi_amount(self, value):
-        self.violas_amount = int(value / self.rate)
+        self.__amount = value
 
     def amount(self, chain):
         if chain == "violas":

@@ -29,7 +29,7 @@ name="bclient"
 
 #btc_url = "http://%s:%s@%s:%i"
 
-COINS = comm.values.COINS
+COINS = 1_0000_0000
 class btcclient(baseobject):
 
     class transaction(object):
@@ -189,7 +189,7 @@ class btcclient(baseobject):
                 "success":True,\
                 "events":[{"event":tran_data}],\
                 "data":tran_data.encode("utf-8").hex(),\
-                "amount":int(data.get("amount") * comm.values.COINS),\
+                "amount":int(data.get("amount", 0) * COINS),\
                 "sequence_number":data.get("height"),\
                 "txid":data.get("txid"),\
                 "tran_id":data.get("tran_id"),\
