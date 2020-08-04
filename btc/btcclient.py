@@ -29,7 +29,7 @@ name="bclient"
 
 #btc_url = "http://%s:%s@%s:%i"
 
-COINS = int(comm.values.COINS * (100000000/comm.values.COINS))
+COINS = comm.values.COINS
 class btcclient(baseobject):
 
     class transaction(object):
@@ -181,7 +181,7 @@ class btcclient(baseobject):
     def __map_tran(self, data):
         tran_data = json.dumps({"flag":"btc", \
             "type":data.get("type"), "state":data.get("state"), "to_address":data.get("address"), "to_module":data.get("vtoken"), \
-            "out_amount":data.get("out_amount"), "times":data.get("times"), "tran_id":data.get("tran_id"), \
+            "out_amount":data.get("out_amount"), "out_amount_real":data.get("out_amount_real", data.get("out_amount")), "times":data.get("times"), "tran_id":data.get("tran_id"), \
             "sequence":data.get("sequence")})
         _, module = split_full_address(data.get("vtoken"))
         return {
@@ -189,7 +189,7 @@ class btcclient(baseobject):
                 "success":True,\
                 "events":[{"event":tran_data}],\
                 "data":tran_data.encode("utf-8").hex(),\
-                "amount":int(data.get("amount") * COINS),\
+                "amount":int(data.get("amount") * comm.values.COINS),\
                 "sequence_number":data.get("height"),\
                 "txid":data.get("txid"),\
                 "tran_id":data.get("tran_id"),\
@@ -251,7 +251,7 @@ class btcclient(baseobject):
     def create_data_for_end(self, flag, opttype, tranid, **kwargs):
         address_seq = tranid.split("_")
         return {"type": "end", "flag": flag, "opttype":opttype, "address":address_seq[0], \
-                "sequence":address_seq[1], "version":kwargs.get("version", 0)}
+                "sequence":address_seq[1], "version":kwargs.get("version", 0), "out_amount_real": kwargs.get("out_amount_real", 0)}
 
     def create_data_for_stop(self, flag, opttype, tranid, **kwargs):
         address_seq = tranid.split("_")
@@ -268,7 +268,7 @@ class btcclient(baseobject):
         '''
         if data["type"] == "end":
             ret = self.sendexproofend(data["opttype"], fromaddress, toaddress, data["address"], \
-                    data["sequence"], amount, data["version"])
+                    data["sequence"], data["out_amount_real"], data["version"])
         elif data["type"] == "stop":
             ret = self.sendexproofstop(data["opttype"], fromaddress, toaddress, amount, data["address"], \
                     data["sequence"])
@@ -283,7 +283,7 @@ class btcclient(baseobject):
     def sendexproofend(self, opttype, fromaddress, toaddress, vaddress, sequence, amount, version):
         try:
             datas = self.__rpc_connection.violas_sendexproofend(opttype, \
-                    fromaddress, toaddress, vaddress, sequence, f"{amount:.8f}", version)
+                    fromaddress, toaddress, vaddress, sequence, amount, version)
 
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
@@ -379,7 +379,7 @@ class btcclient(baseobject):
                 return ret
     
             #change bitcoin unit to satoshi and check amount is sufficient
-            wbalance = int(ret.datas * comm.values.COINS)
+            wbalance = int(ret.datas * COINS)
             if wbalance <= (vamount + gas): #need some gas, so wbalance > vamount
                 ret = result(error.SUCCEED, "", False)
             else:
