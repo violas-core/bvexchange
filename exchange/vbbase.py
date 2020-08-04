@@ -295,7 +295,7 @@ class vbbase(baseobject):
 
         ##convert to BTC satoshi(100000000satoshi == 1000000vBTC)
         ##libra or violas not convert
-        amount = self.amountswap(amount).amount(self.from_chain)
+        amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).amount(self.from_chain)
 
         self._logger.debug(f"execute refund({tran_id}, {amount}, {state_token_id})")
         data = self.from_client.create_data_for_stop(self.from_chain, self.dtype, tran_id, 0) 
