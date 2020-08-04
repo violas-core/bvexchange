@@ -162,7 +162,7 @@ class l2v(vlbase):
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state
         if self.use_module(state, localdb.state.VSUCCEED):
-            ret =  self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, from_token_id, out_amount=detail.get("diff_balance", 0))
+            ret =  self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, from_token_id, 1, out_amount_real=detail.get("diff_balance", 0))
             if ret.state != error.SUCCEED:
                 return ret
 
@@ -171,8 +171,8 @@ class l2v(vlbase):
 def main():
        print("start main")
        stmanage.set_conf_env("../bvexchange.toml")
-       mod = "l2v"
-       dtype = "l2vusd"
+       mod = "l2vgbp"
+       dtype = "l2vgbp"
        obj = l2v(mod, 
                dtype,
                stmanage.get_violas_nodes(), 

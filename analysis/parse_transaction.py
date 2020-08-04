@@ -89,6 +89,7 @@ def parse_tran(transaction):
         datas["to_address"]     = data_dict.get("to_address")
         datas["times"]          = data_dict.get("times", 0)
         datas["out_amount"]     = data_dict.get("out_amount", 0)
+        datas["out_amount_real"]= data_dict.get("out_amount_real", datas["out_amount"])
         datas["nettype"]        = data_dict.get("nettype")
         datas["state"]          = data_dict.get("state")
         datas["opttype"]        = data_dict.get("opttype", "swap")

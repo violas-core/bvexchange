@@ -229,6 +229,7 @@ class aproof(abase):
                     return result(error.TRAN_INFO_INVALID, f"change state error. check transaction's sender is valid.") 
 
                 db_tran_info["state"] = tran_info["state"]
+                db_tran_info["out_amount_real"] = tran_info.get("out_amount_real", 0)
                 self._dbclient.set_proof(db_tran_info.get("version"), json.dumps(db_tran_info))
                 self._logger.info(f"change state succeed. version = {db_tran_info.get('version')} tran_id = {db_tran_id} state={db_tran_info['state']}")
 
