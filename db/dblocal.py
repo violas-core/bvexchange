@@ -67,6 +67,22 @@ class dblocal(baseobject):
         SSUCCEED    = 13    #stop swap succeed
         COMPLETE    = 128   #change state is confirmed
     
+    class statev2b(Enum):
+        START       = 0     #no use
+        FAILED      = 1     #execute before swap failed, this time can re-execute 
+        EFAILED     = 2     #get out amount failed
+        ESUCCEED    = 3
+        QBFAILED    = 4     #get <to_token_id> blance(swap end) with localdb version, calc diff balance 
+        QBSUCCEED   = 5
+        FILLFAILED  = 6     #fill map sender failed
+        FILLSUCCEED = 7
+        PFAILED     = 8     #payment(libra token) failed
+        PSUCCEED    = 9     #payment(libra token) succeed
+        VFAILED     = 10    #send change state transaction failed
+        VSUCCEED    = 11    #send change state transaction succeed
+        SFAILED     = 12    #stop swap failed
+        SSUCCEED    = 13    #stop swap succeed
+        COMPLETE    = 128   #change state is confirmed
     #exc_traceback_objle : info
     class info(__base):
         __tablename__='info'

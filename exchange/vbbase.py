@@ -297,7 +297,7 @@ class vbbase(baseobject):
         ##libra or violas not convert
         amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).amount(self.from_chain)
 
-        self._logger.debug(f"execute refund({tran_id}, {amount}, {state_token_id})")
+        self._logger.debug(f"execute refund({tran_id}, {amount}, {stable_token_id})")
         data = self.from_client.create_data_for_stop(self.from_chain, self.dtype, tran_id, 0) 
         ret = self.from_client.send_coin(from_sender, payee, amount, stable_token_id, data=data)
         if ret.state != error.SUCCEED:
@@ -345,9 +345,9 @@ class vbbase(baseobject):
                             break
 
                         tran_id = failed["tran_id"]
-                        times = failed["times"]
-                        state = localdb.state(failed["state"])
-                        detail = failed["detail"]
+                        times   = failed["times"]
+                        state   = localdb.state(failed["state"])
+                        detail  = failed["detail"]
                         if detail is None or len(detail) == 0:
                             detail = {}
                         else:

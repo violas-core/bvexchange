@@ -150,10 +150,14 @@ class violasproxy(baseobject):
         pass
 
     def run_request(self, url):
-        datas = requests.get(url).json()
+        ret = requests.get(url)
+        if ret is None:
+            raise Exception(f"execute request failed. {ret.text}")
+
+        datas = ret.json()
         state = datas.get("state")
         if state.upper() != "SUCCEED":
-            raise Exception(state.get("message"))
+            raise Exception(datas.get("message"))
         return datas.get("datas")
 
     def is_excluded(self, proof, excludeds):
