@@ -133,7 +133,7 @@ class b2v(vbbase):
 
         amount = self.amountswap(amount, self.amountswap.amounttype.BTC).violas_amount 
 
-        self._logger.info(f"exec_exchange-start. start exec_exchange . tran_id={tran_id}, state = {state}.")
+        self._logger.info(f"exec_exchange-start. start exec_exchange .type = {self.dtype} tran_id={tran_id}, state = {state}.")
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
         if state is None and self.has_info(tran_id):

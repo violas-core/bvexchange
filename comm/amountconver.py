@@ -48,7 +48,7 @@ class amountconver():
 
     @violas_amount.setter
     def violas_amount(self, value):
-        self.__amount = value * self.rate
+        self.__amount = int(value * self.rate)
 
     @property
     def libra_amount(self):
@@ -56,7 +56,7 @@ class amountconver():
 
     @libra_amount.setter
     def libra_amount(self, value):
-        self.__amount = value * self.rate
+        self.__amount = int(value * self.rate)
 
     @property
     def btc_amount(self):
@@ -72,7 +72,7 @@ class amountconver():
 
     @satoshi_amount.setter
     def satoshi_amount(self, value):
-        self.__amount = value
+        self.__amount = int(value)
 
     def amount(self, chain):
         if chain == "violas":

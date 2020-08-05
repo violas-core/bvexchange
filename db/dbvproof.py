@@ -3,7 +3,7 @@
 btc exchange vtoken db
 '''
 import operator
-import sys,os
+import sys, os, time
 sys.path.append(os.getcwd())
 import traceback
 import datetime
@@ -128,5 +128,6 @@ class dbvproof(dbvbase):
             "out_amount": tran_info["out_amount_real"], \
             "in_token" : tran_info.get("token_id"), \
             "out_token": stmanage.get_type_stable_token(tran_info["type"]), \
-            "times" : tran_info.get("times", 0)
+            "timestamps": int(time.time() * 1000000), \
+            "times" : tran_info.get("times", 0), \
             })

@@ -103,10 +103,7 @@ class v2l(vlbase):
         map_token_id = stmanage.get_token_map(to_token_id) #stable token -> LBRXXX token
 
         ret = result(error.FAILED)
-        self._logger.info(f"start exchange sender={sender},  receiver={receiver}, " + \
-            f"sequence={sequence} version={version}, toaddress={toaddress}, amount={amount}, " + \
-            f"tran_id={tran_id}, from_token_id = {from_token_id} to_token_id={self.to_token_id} " + \
-            f"map_token_id = {map_token_id}, state(None: new swap) = {state}, detail = {detail} datas from server.")
+        self._logger.info(f"start exchange {self.dtype}, version={version}, state(None: new swap) = {state}, detail = {detail} datas from server.")
 
         if state is not None:
             self.latest_version[receiver] = max(version, self.latest_version.get(receiver, -1))

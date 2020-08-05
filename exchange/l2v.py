@@ -101,10 +101,7 @@ class l2v(vlbase):
         to_token_id    = self.to_token_id #token_id is map 
 
         ret = result(error.FAILED)
-        self._logger.info(f"start exchange l2v.sender={fromaddress},  receiver={receiver}, " + \
-            f"sequence={sequence}, version={version}, toaddress={toaddress}, amount={amount}, " + \
-            f"tran_id={tran_id}, from_token_id = {from_token_id}, to_token_id={to_token_id} " + \
-            f"map_token_id = {map_token_id}, state = {state}, detail = {detail} datas from server.")
+        self._logger.info(f"start exchange {self.dtype}. version={version}, state = {state}, detail = {detail} datas from server.")
 
         if state is not None:
             self.latest_version[receiver] = max(version, self.latest_version.get(receiver, -1))
