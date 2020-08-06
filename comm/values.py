@@ -57,6 +57,7 @@ class datatypebase(autoname):
 ##db index(redis)
 #dbindexbase item must be eq datatypebase item(B2Vxxx B2Lxxx L2Vxxx V2Lxxx)
 class dbindexbase(enumbase):
+    TEST    = 0
     RECORD  = 1
     #scan chain
     VFILTER = 2
