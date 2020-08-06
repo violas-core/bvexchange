@@ -225,7 +225,6 @@ class l2b(blbase):
                 self._logger.debug("exec_exchange-3.result: failed.")
                 return ret
             else:
-                self.update_localdb_state_with_check(tran_id, localdb.state.SUCCEED)
                 self._logger.debug("exec_exchange-3.result: succeed.")
 
             #get swap after amount(payee_map_token_id)

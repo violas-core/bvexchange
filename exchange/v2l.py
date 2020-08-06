@@ -151,8 +151,6 @@ class v2l(vlbase):
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
                 return ret
-            else:
-                self.update_localdb_state_with_check(tran_id, localdb.state.SUCCEED)
 
             #get swap after amount(map_token_id)
             ret = self.violas_client.get_balance(combine_account.address.hex(), map_token_id)
