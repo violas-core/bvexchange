@@ -53,6 +53,13 @@ v2b_maxtimes = 99
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
+    db = "test"
+    password = "violas"
+    step = 100
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
     db = "lfilter"
     password = "violas"
     step = 100

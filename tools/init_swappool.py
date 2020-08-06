@@ -112,9 +112,9 @@ def reg_run():
         for token_b in violas_token_id_list:
             if token_a == token_b:
                 continue
-            in_amount = 1000_000000
-            out_amount = get_amount_out(token_a, token_b, 1000_000000)
-            logger.debug(f"append swap liquidity({token_a} - {token_b}, 1000_000000 {out_amount}")
+            in_amount = 1000000_000000
+            out_amount = get_amount_out(token_a, token_b, in_amount)
+            logger.debug(f"append swap liquidity({token_a} - {token_b}, {in_amount} {out_amount}")
             ret = vclient.swap_add_liquidity(account_l, token_a, token_b, in_amount, out_amount, gas_currency_code = gas_token_id)
             assert ret.state == error.SUCCEED
 
@@ -126,7 +126,7 @@ def init_address(vclient, wclient, address):
     btc_token_id = "BTC"
 
     for token_id in violas_token_id_list:
-        comm_funs.init_address_list(vclient, wclient, [address], token_id, minamount = 10000000_000000)
+        comm_funs.init_address_list(vclient, wclient, [address], token_id, minamount = 100000000_000000)
 
 
 if __name__ == "__main__":

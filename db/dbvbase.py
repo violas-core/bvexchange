@@ -3,7 +3,7 @@
 btc exchange vtoken db
 '''
 import operator
-import sys,os
+import sys,os,time,json
 sys.path.append(os.getcwd())
 sys.path.append("..")
 import log
@@ -240,6 +240,113 @@ class dbvbase(baseobject):
             ret = parse_except(e)
         return ret
 
+    #**************sorted set********************************
+    def zadd(self, name, mapping, nx=False, xx=False, ch=False, incr=False):
+        try:
+            datas = self._client.zadd(name, mapping, nx, xx, ch, incr)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def zadd_one(self, name, key, value, nx=False, xx=False, ch=False, incr=False):
+        try:
+            datas = self._client.zadd(name, {value:key}, nx, xx, ch, incr)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+    def zcard(self, name):
+        try:
+            datas = self._client.zcard(name)
+            ret = result(error.SUCCEED, "", int(datas))
+        except exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def zcount(self, name, min, max):
+        try:
+            datas = self._client.zcount(name)
+            ret = result(error.SUCCEED, "", int(datas))
+        except exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def zincrby(self, name, value, amount):
+        try:
+            datas = self._client.zincrby(name, value, amount)
+            ret = result(error.SUCCEED, "", datas)
+        except exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def zrange(self, name, start, end, desc = False, withscores = False, score_cast_func=int):
+        '''
+            @start  : index , not score
+            @end    : index , not score
+            @desc   : desc spec, default 0 -> n
+        '''
+        try:
+            datas = self._client.zrange(name, start, end, desc, withscores, score_cast_func)
+            ret = result(error.SUCCEED, "", datas)
+        except exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def zrank(self, name, value):
+        try:
+            datas = self._client.zrank(name, value)
+            ret = result(error.SUCCEED, "", datas)
+        except exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def zrem(self, name, values):
+        try:
+            datas = self._client.zrem(name, values)
+            ret = result(error.SUCCEED, "", datas)
+        except exception as e:
+            ret = parse_except(e)
+        return ret
+
+    ##other remove api not support, use it ???
+
+    def zscore(self, name, value):
+        try:
+            datas = self._client.zscore(name, value)
+            ret = result(error.SUCCEED, "", datas)
+        except exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def zscan(self, cursor = 0, match = None, count = None, \
+            score_cast_func = int):
+        try:
+            datas = self._client.zscan(cursor = cursor, match = match, \
+                    count = count, score_cast_func = score_cast_func)
+            ret = result(error.SUCCEED, "", datas)
+        except exception as e:
+            ret = parse_except(e)
+        return ret
+
+
+    def zrevrange(self, name, start, end, withscores=False, \
+                  score_cast_func=int):
+        try:
+            datas = self._client.zrevrange(name, start, end, withscores, score_cast_func)
+            ret = result(error.SUCCEED, "", datas)
+        except exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def zrevrangebyscore(self, name, max, min, start=None, num=None,
+                         withscores=False, score_cast_func=int):
+        try:
+            datas = self._client.zrevrangebyscore(name, max, min, start, num, withscores, score_cast_func)
+            ret = result(error.SUCCEED, "", datas)
+        except exception as e:
+            ret = parse_except(e)
+        return ret
     def save(self):
         try:
             self._client.save()
@@ -314,3 +421,39 @@ class dbvbase(baseobject):
             ret = parse_except(e)
         return ret
 
+
+def test_new(client, name="client_test"):
+    rname = name
+    key1 = int(time.time() * 1000000)
+    version = int(time.time() * 1000)
+    address_chain = "00000000000000000000000000000000_BTC"
+    #ret = client.zadd_one(rname, key1, json.dumps({"version":version, "address_chain":address_chain}))
+    #assert ret.state == error.SUCCEED, f""
+
+    #ret = client.hset(address_chain, version, json.dumps({"version":version, "timestamps": key1, "tran_id":address_chain}))
+    #assert ret.state == error.SUCCEED, f""
+
+    ret = client.zrevrangebyscore(name, max = 2596705822202818,  min = 1596707095497829, start = 0, num = 3, withscores = False)
+    #ret = client.zrevrange(name, 14, -1)
+    assert ret.state == error.SUCCEED, f""
+    
+    zvalues = ret.datas
+    hkeys = []
+    for  zvalue in zvalues:
+        zvd = json.loads(zvalue)
+        if not isinstance(zvd, dict):
+            continue
+
+        version = zvd.get("version")
+        name = zvd.get("address_chain")
+        ret = client.hget(name, version)
+        assert ret.state == error.SUCCEED, f""
+        print(ret.datas)
+
+def test():
+    client = dbvbase("test", "127.0.0.1", 6378, "test", "violas")
+    test_new(client)
+    
+
+if __name__ == "__main__":
+    test()
