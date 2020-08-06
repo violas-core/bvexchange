@@ -209,7 +209,8 @@ class dblocal(baseobject):
         return self.__query_state(self.state.START, maxtimes)
 
     def query_is_succeed(self, maxtimes = 999999999):
-        return self.__query_state(self.state.SUCCEED, maxtimes)
+        raise "not support"
+        #return self.__query_state(self.state.SUCCEED, maxtimes)
 
     def query_is_failed(self, maxtimes=999999999):
         return self.__query_state(self.state.FAILED, maxtimes)
@@ -308,9 +309,6 @@ def test_dblocal():
     show_state_count(db, logger)
 
     ret = db.update_state_commit(tran_id, dblocal.state.FAILED)
-    show_state_count(db, logger)
-
-    ret = db.update_state_commit(tran_id, dblocal.state.SUCCEED)
     show_state_count(db, logger)
 
     ret = db.update_commit(tran_id, dblocal.state.START)
