@@ -240,8 +240,8 @@ class vlbase(baseobject):
 
 
     def chain_data_is_valid(self, data):
-        if len(data["to_address"]) not in VIOLAS_ADDRESS_LEN:
-            self._logger.warning(f"transaction(tran_id = {data['tran_id']})) is invalid. ignore it and process next.")
+        #check
+        if data.get("to_address") is None:
             return False
         return True
 
@@ -255,16 +255,26 @@ class vlbase(baseobject):
     def use_module(self, state, module_state):
         return state is None or state.value < module_state.value
 
+    def is_target_state(self, tranid, state):
+        ret = self.db.is_target_state(tranid, state)
+        assert ret.state == error.SUCCEED, f"is_target_state({tranid}, {state}) failed."
+        return ret.datas
+
+
     def exec_refund(self, data, from_sender):
         amount      = int(data["amount"]) 
         tran_id     = data["tran_id"]
         stable_token_id = data["token_id"]
         payee       = data["address"]
 
+        if self.is_target_state(tran_id, localdb.state.SSUCCEED.value):
+            self._logger.warning(f"found transaction is stopped. (tran_id = {tran_id})) in db({self.dtype}). not exec_refund, ignore it and process next.")
+            return result(error.SUCCEED)
+
         data = self.from_client.create_data_for_stop(self.from_chain, self.dtype, tran_id, 0) 
         ret = self.from_client.send_coin(from_sender, payee, amount, stable_token_id, data=data)
         if ret.state != error.SUCCEED:
-            self.update_localdb_state_with_check(tran_id, localdb.state.SFAILED, "")
+            self.update_localdb_state_with_check(tran_id, localdb.state.SFAILED)
             return ret
         else:
             self.update_localdb_state_with_check(tran_id, localdb.state.SSUCCEED)
@@ -385,9 +395,10 @@ class vlbase(baseobject):
                 latest_version = self.latest_version.get(receiver, -1) + 1
 
                 #get new transaction from server
+                self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver}")
                 ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version)
+                self._logger.debug(f"will execute transaction(start) : {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
-                    self._logger.debug(f"start exchange datas from violas server.receiver={receiver}")
                     for data in ret.datas:
                         if not self.work() :
                             break
@@ -396,9 +407,10 @@ class vlbase(baseobject):
                             self._logger.error(ret.message)
 
                 #get cancel transaction, this version not support
-                ret = self.pserver.get_transactions_for_cancel(receiver, self.dtype, latest_version)
+                self._logger.debug(f"start exchange(data type: cancel), datas from violas server.receiver={receiver}")
+                ret = self.pserver.get_transactions_for_cancel(receiver, self.dtype, 0)
+                self._logger.debug(f"will execute transaction(cancel) count: {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
-                    self._logger.debug("start exchange datas from violas server.receiver={receiver}")
                     for data in ret.datas:
                         if not self.work() :
                             break

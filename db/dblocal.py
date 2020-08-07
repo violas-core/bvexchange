@@ -181,6 +181,15 @@ class dblocal(baseobject):
             ret = parse_except(e)
         return ret
 
+    def is_target_state(self, tranid, state):
+        try:
+            filter_tranid = (self.info.tranid==tranid)
+            filter_state = (self.info.state==state)
+            state = (self.__session.query(self.info).filter(filter_tranid).filter(filter_state).count() > 0)
+            ret = result(error.SUCCEED, datas = state) 
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
 
     def __query_state(self, state, maxtimes=999999999):
         proofs = []
