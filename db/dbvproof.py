@@ -14,12 +14,14 @@ import redis
 import json
 from comm.error import error
 from comm.result import result, parse_except
+from comm.values import trantypebase
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime, UniqueConstraint, Index, String
 from db.dbvbase import dbvbase
+
 
 from enum import Enum
 
@@ -32,6 +34,17 @@ class dbvproof(dbvbase):
     __KEY_MIN_VERSION_ = "min_version_"
     def __init__(self, name, host, port, db, passwd = None):
         dbvbase.__init__(self, name, host, port, db, passwd)
+        self.__init_map_chain_name()
+
+    def __init_map_chain_name(self):
+        self._map_chain_name = {}
+        for ttb in trantypebase:
+            name = ttb.name.lower()
+            self._map_chain_name.update({name[:1]:name})
+
+    @property
+    def map_chain_name(self):
+        return self._map_chain_name
 
     def __del__(self):
         dbvbase.__del__(self)
@@ -116,7 +129,20 @@ class dbvproof(dbvbase):
     def create_haddress_key(self, tran_info):
         return f"{tran_info['version']}"
 
+
+    def get_chain_name(self, dtype):
+        from_chain = "violas"
+        to_chain = "violas"
+
+
+        if dtype is None:
+            return (form_chain, to_chain)
+        if dtype[0] == "v":
+            from_chain = "violas"
+            
+
     def create_haddress_value(self, tran_info):
+        dtype = tran_info.get("type", "v2v")
         return json.dumps({"version":tran_info["version"], \
             "type":tran_info["type"], \
             "opttype":tran_info["opttype"], \
@@ -129,5 +155,7 @@ class dbvproof(dbvbase):
             "in_token" : tran_info.get("token_id"), \
             "out_token": stmanage.get_type_stable_token(tran_info["type"]), \
             "timestamps": int(time.time() * 1000000), \
+            "from_chain": self.map_chain_name[dtype[:1]], \
+            "to_chain": self.map_chain_name[dtype[2:3]], \
             "times" : tran_info.get("times", 0), \
             })

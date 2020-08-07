@@ -55,6 +55,7 @@ def run(mods):
     valid_mods = list_valid_mods()
     for mod in mods:
         if mod is None or mod not in valid_mods:
+            print(mod)
             raise Exception(f"mod({mod}) is invalid {valid_mods}.")
 
     work_mods = {}

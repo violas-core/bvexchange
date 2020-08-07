@@ -173,7 +173,7 @@ class v2b(vbbase):
             elif out_amount > out_amount_chian: #don't execute swap, Reduce the cost of the budget
                 self.update_localdb_state_with_check(tran_id, localdb.state.EFAILED)
                 return result(error.FAILED, \
-                            f"don't execute swap(out_amount({out_amount}) > cur_outamount({out_amount_chian})), Reduce the cost of the budget")
+                            f"don't execute swap(out_amount({out_amount}) > cur_outamount({out_amount_chian})), Reduce the cost of the budget. tran_id = {tran_id}")
 
             detail.update({"gas": gas})
             self.update_localdb_state_with_check(tran_id, localdb.state.ESUCCEED, json.dumps(detail))
