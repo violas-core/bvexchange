@@ -66,6 +66,18 @@ class requestproof(requestbase):
             ret = parse_except(e)
         return ret
 
+    def get_transaction_record(self, sender, flag, cursor = 0, match = None, limit = 10):
+        try:
+            tran_info = {"flag":flag,"sender":sender}
+            
+            name = self.create_haddress_name(tran_info)
+            ret = self.hscan(name, cursor, match, limit)
+            if ret.state != error.SUCCEED:
+                return ret
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def list_keys_for_substr(self, substr, cursor = 0, limit = 10):
         try:
             ret = self.scan(cursor, sbustr, limit)

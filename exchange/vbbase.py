@@ -364,7 +364,7 @@ class vbbase(baseobject):
                         #refund case: 
                         #   case 1: failed times check(metadata: times > 0 (0 = always))  
                         #   case 2: pre exec_refund is failed
-                        if (retry != 0 and retry >= times) or state == localdb.state.SFAILED:
+                        if (retry != 0 and retry <= times) or state == localdb.state.SFAILED:
                             ret = self.exec_refund(data, from_sender)
                             if ret.state != error.SUCCEED:
                                 self._logger.error(ret.message)

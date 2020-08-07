@@ -433,7 +433,7 @@ def test_new(client, name="client_test"):
     #ret = client.hset(address_chain, version, json.dumps({"version":version, "timestamps": key1, "tran_id":address_chain}))
     #assert ret.state == error.SUCCEED, f""
 
-    ret = client.zrevrangebyscore(name, max = 2596705822202818,  min = 1596707095497829, start = 0, num = 3, withscores = False)
+    ret = client.zrevrangebyscore(name, max = 2596705822202818,  min = 1596707095497829, start = 0, num = 6, withscores = False)
     #ret = client.zrevrange(name, 14, -1)
     assert ret.state == error.SUCCEED, f""
     
