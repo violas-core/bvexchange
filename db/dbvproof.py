@@ -151,7 +151,7 @@ class dbvproof(dbvbase):
             "to_address":tran_info["to_address"], \
             "tran_id":tran_info["tran_id"], \
             "in_amount":tran_info["amount"], \
-            "out_amount": tran_info["out_amount_real"], \
+            "out_amount": int(tran_info["out_amount_real"]), \
             "in_token" : tran_info.get("token_id"), \
             "out_token": stmanage.get_type_stable_token(tran_info["type"]), \
             "timestamps": int(time.time() * 1000000), \

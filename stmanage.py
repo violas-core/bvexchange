@@ -190,6 +190,16 @@ def get_swap_module():
 def get_swap_owner():
     return setting.swap_owner.get("address")
 
+def get_mods():
+    mods = []
+    for typename, opts in setting.type_token.items():
+        run_state = opts.get("run", "false")
+        if run_state.lower() == "true":
+            mods.append(typename)
+    return mods
+
+
+    
 def get_conf():
     infos = {}
     mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
@@ -252,6 +262,7 @@ def main():
     print(f"get swap owner(violas): {get_swap_owner()}")
     print(f"combin address(b2vusd, btc): {get_combine_address('b2vusd', 'btc')}")
     print(f"combin address(l2b, violas): {get_combine_address('l2b', 'violas')}")
+    print(f"run mods: {get_mods()}")
 
     #json_print(get_conf())
 
