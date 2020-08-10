@@ -108,9 +108,19 @@ def tranrecord(chain, sender, cursor = 0, limit = 99999999):
         ret = rclient.get_transaction_record(sender, chain, cursor = cursor, limit=limit)
         if ret.state != error.SUCCEED:
             raise f"get transaction record failed.chain = {chain}, sender = {sender}, cursor={cursor}, limit={limit}"
+        records = [json.loads(ret.datas[1][key]) for key in sorted(ret.datas[1].keys(), reverse = True)] 
+        sorted_state = {"start":[], "cancel":[], "stop":[], "end":[]}
+
+        for record in records:
+            sorted_state[record.get("state")].append(record)
+        records_ret = []
+        records_ret.extend(sorted_state["start"])
+        records_ret.extend(sorted_state["cancel"])
+        records_ret.extend(sorted_state["stop"])
+        records_ret.extend(sorted_state["end"])
         datas = {"cursor": ret.datas[0],\
                 "count": len(ret.datas[1]), \
-                "datas":[json.loads(ret.datas[1][key]) for key in sorted(ret.datas[1].keys())] \
+                "datas": records_ret\
                 }
         ret = result(error.SUCCEED, "", datas)
     except Exception as e:

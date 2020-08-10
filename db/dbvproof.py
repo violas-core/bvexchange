@@ -146,7 +146,7 @@ class dbvproof(dbvbase):
         return json.dumps({"version":tran_info["version"], \
             "type":tran_info["type"], \
             "opttype":tran_info["opttype"], \
-            "expiration_time":tran_info.get("expiration_time"),\
+            "expiration_time":int(tran_info.get("expiration_time")),\
             "state":tran_info["state"], \
             "to_address":tran_info["to_address"], \
             "tran_id":tran_info["tran_id"], \
