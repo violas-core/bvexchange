@@ -52,7 +52,7 @@ class dbvbase(baseobject):
 
     def __connect(self, host, port, db, password = None):
         try:
-            self._logger.debug(f"connect db(host={host}, port={port}, db={db}({self.db_name_to_value(db)}), passwd={password})")
+            self._logger.debug(f"connect db(host={host}, port={port}, db={db}({self.db_name_to_value(db)}), passwd={password[:4]})")
             self._client = redis.Redis(host=host, port=port, db=self.db_name_to_value(db), password=password, decode_responses=True)
             self.set_mod_name(db)
             ret = result(error.SUCCEED)

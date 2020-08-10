@@ -36,28 +36,28 @@ v2b_maxtimes = 99
     host = "127.0.0.1"
     port = 6378
     db = "test"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 100
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "lfilter"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 100
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "vfilter"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 300
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "bfilter"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 #b2v/v2b proof db
@@ -65,14 +65,14 @@ v2b_maxtimes = 99
     host = "127.0.0.1"
     port = 6378
     db = "v2b"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "b2v"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 #l2vxxx proof db
@@ -80,28 +80,28 @@ v2b_maxtimes = 99
     host = "127.0.0.1"
     port = 6378
     db = "l2vusd"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "l2veur"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "l2vsgd"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "l2vgbp"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 #v2lxxx proof db
@@ -109,28 +109,28 @@ v2b_maxtimes = 99
     host = "127.0.0.1"
     port = 6378
     db = "v2lusd"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "v2leur"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "v2lsgd"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "v2lgbp"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 #b2vxxx proof db
@@ -138,28 +138,28 @@ v2b_maxtimes = 99
     host = "127.0.0.1"
     port = 6378
     db = "b2vusd"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "b2veur"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "b2vsgd"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "b2vgbp"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 #l2b proof db
@@ -167,7 +167,7 @@ v2b_maxtimes = 99
     host = "127.0.0.1"
     port = 6378
     db = "l2b"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 #b2lxxx proof db
@@ -175,21 +175,21 @@ v2b_maxtimes = 99
     host = "127.0.0.1"
     port = 6378
     db = "b2lusd"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "b2leur"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
     db = "record"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
 #violas <-> libra token map
