@@ -58,6 +58,15 @@ def main(argc, argv):
                 pargs.exit_error_opt(opt)
             logger.debug(f"arg_list:{arg_list}")
             show_workenv.run(arg_list)
+        else: #from config get mod
+            dtypes = stmanage.get_mods()
+            run_mods = []
+            for dtype in dtypes:
+                for mod in bvexchange.list_valid_mods():
+                    if mod.startswith(dtype):
+                        run_mods.append(mod)
+            if run_mods:
+                bvexchange.run(run_mods)
 
     logger.debug("end manage.main")
 

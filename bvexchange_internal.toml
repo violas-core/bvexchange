@@ -221,39 +221,44 @@ v2b_maxtimes = 99
 #stoken : target chain stable token
 #mtoken : violas chain map token only from violas chain swap use this field
 #mtoken : stoken = 1:1
-[type_token]
-    [type_token.v2lusd]
-        stoken= "Coin1"
-        mtoken = "USD"
-    [type_token.v2leur]
-        stoken = "Coin2"
-        mtoken = "EUR"
-    [type_token.l2vusd]
-        stoken = "VLSUSD"
-    [type_token.l2veur]
-        stoken = "VLSEUR"
-    [type_token.l2vsgd]
-        stoken = "VLSSGD"
-    [type_token.l2vgbp]
-        stoken = "VLSGBP"
-    [type_token.b2vusd]
-        stoken = "VLSUSD"
-    [type_token.b2veur]
-        stoken = "VLSEUR"
-    [type_token.b2vsgd]
-        stoken = "VLSSGD"
-    [type_token.b2vgbp]
-        stoken = "VLSGBP"
-    [type_token.b2lusd]
+#support   : type is support #default = true
+#run    : execute analysis proof and exchange, default false
+[type_opts]
+    [type_opts.v2lusd]
         stoken = "Coin1"
         mtoken = "USD"
-    [type_token.b2leur]
+        support= "true"  
+        run    = "true"
+    [type_opts.v2leur]
         stoken = "Coin2"
         mtoken = "EUR"
-    [type_token.l2b]
+        run    = "true"
+    [type_opts.l2vusd]
+        stoken = "VLSUSD"
+    [type_opts.l2veur]
+        stoken = "VLSEUR"
+    [type_opts.l2vsgd]
+        stoken = "VLSSGD"
+    [type_opts.l2vgbp]
+        stoken = "VLSGBP"
+    [type_opts.b2vusd]
+        stoken = "VLSUSD"
+    [type_opts.b2veur]
+        stoken = "VLSEUR"
+    [type_opts.b2vsgd]
+        stoken = "VLSSGD"
+    [type_opts.b2vgbp]
+        stoken = "VLSGBP"
+    [type_opts.b2lusd]
+        stoken = "Coin1"
+        mtoken = "USD"
+    [type_opts.b2leur]
+        stoken = "Coin2"
+        mtoken = "EUR"
+    [type_opts.l2b]
         stoken = "BTC"
         mtoken = "BTC"
-    [type_token.v2b]
+    [type_opts.v2b]
         stoken = "BTC"
         mtoken = "BTC"
 
