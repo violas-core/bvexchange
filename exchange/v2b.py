@@ -190,8 +190,6 @@ class v2b(vbbase):
                 self.update_localdb_state_with_check(tran_id, localdb.state.PFAILED, json.dumps(detail))
                 self._logger.error("exec_exchange-2.result: failed.")
                 return ret
-            else:
-                self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED, json.dumps(detail))
 
             #get swap after amount(map_token_id)
             ret = self.violas_client.get_balance(combine_account.address.hex(), map_token_id)

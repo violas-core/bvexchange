@@ -198,7 +198,8 @@ class btcclient(baseobject):
                 "sender":data.get("issuer"), \
                 "receiver":data.get("receiver"),\
                 "module_address":module, \
-                "token_id":"BTC"
+                "token_id":"BTC", \
+                "expiration_time": data.get("expiration_time", 0)
                 }
 
     #parse tran datas to local proof format

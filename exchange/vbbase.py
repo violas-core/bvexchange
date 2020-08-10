@@ -298,8 +298,10 @@ class vbbase(baseobject):
         stable_token_id = data["token_id"]
         payee           = data["address"]
 
-        if self.is_target_state(tran_id, localdb.state.SSUCCEED.value):
-            self._logger.warning(f"found transaction is stopped. (tran_id = {tran_id})) in db({self.dtype}). not exec_refund, ignore it and process next.")
+        if self.is_target_state(tran_id, localdb.state.SSUCCEED.value) or \
+               self.is_target_state(tran_id, localdb.state.VSUCCEED.value) or \
+               self.is_target_state(tran_id, localdb.state.PSUCCEED.value):
+            self._logger.warning(f"found transaction is stopped/paymented. (tran_id = {tran_id})) in db({self.dtype}). not exec_refund, ignore it and process next.")
             return result(error.SUCCEED)
         ##convert to BTC satoshi(100000000satoshi == 1000000vBTC)
         ##libra or violas not convert
