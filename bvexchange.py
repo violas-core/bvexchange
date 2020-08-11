@@ -664,7 +664,6 @@ def signal_stop(signal, frame):
 def list_valid_mods():
     valid_mods = ["all"]
     #support_mods = stmanage.get_dtypes()
-    #print(support_mods)
     for mod in work_mod:
     #    print(mod)
     #    if mod.endswith("EX"):
