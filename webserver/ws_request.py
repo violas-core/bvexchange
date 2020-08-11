@@ -37,28 +37,33 @@ logger = log.logger.getLogger(mod_name)
 
 @app.route('/')
 def main():
-    stmanage.set_conf_env_default()
-    args    = request.args
-    opt     = args.get("opt")
-    chain   = args.get("chain")
-    cursor  = int(args.get("cursor", 0))
-    limit   = int(args.get("limit", 10))
-    dtype   = args.get("dtype")
-    sender  = args.get("sender")
-    version = args.get("version")
+    try:
+        stmanage.set_conf_env_default()
+        args    = request.args
+        opt     = args.get("opt")
+        chain   = args.get("chain")
+        cursor  = int(args.get("cursor", 0))
+        limit   = int(args.get("limit", 10))
+        dtype   = args.get("dtype")
+        sender  = args.get("sender")
+        version = args.get("version")
 
-    if opt is None:
-        raise Exception("opt not found.")
-    if opt == "address":
-        return tranaddress(chain, cursor, limit)
-    elif opt == "record":
-        return tranrecord(chain, sender, cursor, limit)
-    elif opt == "detail":
-        return trandetail(dtype, version)
-    elif opt == "workstate":
-        return workstate()
-    else:
-        raise Exception(f"opt{opt} is invalid.")
+        if opt is None:
+            raise Exception("opt not found.")
+        if opt == "address":
+            return tranaddress(chain, cursor, limit)
+        elif opt == "record":
+            return tranrecord(chain, sender, cursor, limit)
+        elif opt == "detail":
+            return trandetail(dtype, version)
+        elif opt == "workstate":
+            return workstate()
+        else:
+            raise Exception(f"opt{opt} is invalid.")
+    except Exception as e:
+        ret = parse_except(e)
+    return ret.to_json()
+
 
 
 @app.route('/trandetail/<string:dtype>/<string:version>/', methods=['GET'])
