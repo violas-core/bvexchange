@@ -59,7 +59,7 @@ def main(argc, argv):
             logger.debug(f"arg_list:{arg_list}")
             show_workenv.run(arg_list)
         else: #from config get mod
-            dtypes = stmanage.get_mods()
+            dtypes = stmanage.get_run_mods()
             run_mods = []
             for dtype in dtypes:
                 for mod in bvexchange.list_valid_mods():

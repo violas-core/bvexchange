@@ -190,7 +190,7 @@ def get_swap_module():
 def get_swap_owner():
     return setting.swap_owner.get("address")
 
-def get_mods():
+def get_run_mods():
     mods = []
     for typename, opts in setting.type_token.items():
         run_state = opts.get("run", "false")
