@@ -194,7 +194,7 @@ class v2l(vlbase):
                         json.dumps(detail))
                 return ret
 
-        #send libra token to payee address. P = payee
+            #send libra token to payee address. P = payee
             markdata = self.libra_client.create_data_for_mark(self.libra_chain, self.dtype, \
                     tran_id, version)
 

@@ -35,6 +35,8 @@ class trantypebase(autoname):
 #datatype for transaction's data type
 #parse metadata
 class datatypebase(autoname):
+    V2L     = auto()
+    L2V     = auto()
     V2LUSD  = auto()
     V2LEUR  = auto()
     V2LSGD  = auto()
@@ -64,6 +66,8 @@ class dbindexbase(enumbase):
     LFILTER = 3
     BFILTER = 4
     #proof datas
+    V2L     = 8
+    L2V     = 9
     V2LUSD  = 10
     V2LEUR  = 11
     V2LSGD  = 12
@@ -89,28 +93,27 @@ class workmod(enumbase):
     VFILTER      = auto()    #scan violas chain
     LFILTER      = auto()
     #chain : libra ;  data source: lfilter ; result : transaction proof ; format : L2V + token_id + PROOF
+    L2VPROOF     = auto()
     L2VUSDPROOF  = auto()
     L2VEURPROOF  = auto()
     L2VGBPPROOF  = auto()
     L2VSGDPROOF  = auto()
     #chain : violas ; data source: vfilter ; result : transaction proof : fromat : V2L + token_id + PROOF
+    V2LPROOF     = auto()
     V2LUSDPROOF  = auto()
     V2LEURPROOF  = auto()
-    #V2LGBPPROOF  = auto()
-    #V2LSGDPROOF  = auto()
     #exchange : libra token id -> violas token id; format : L2V + token id + EX
+    L2VEX        = auto()
     L2VUSDEX     = auto()
     L2VEUREX     = auto()
     L2VGBPEX     = auto()
     L2VSGDEX     = auto()
     #exchange : violas token id -> libra token id; format : V2L + token id + EX
+    V2LEX        = auto()
     V2LUSDEX     = auto()
     V2LEUREX     = auto()
-    #V2LGBPEX     = auto()
-    #V2LSGDEX     = auto()
-
     V2BPROOF     = auto()
-
+    #btc
     BFILTER      = auto() #scan bitcoin chain
     B2VPROOF     = auto()
     B2VEX        = auto()
@@ -123,6 +126,7 @@ class workmod(enumbase):
     B2VEUREX     = auto()
     B2VSGDEX     = auto()
     B2VGBPEX     = auto()
+    #libran <-> btc
     L2BPROOF     = auto()
     B2LUSDPROOF  = auto()
     B2LEURPROOF  = auto()

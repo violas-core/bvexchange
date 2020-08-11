@@ -242,22 +242,22 @@ transaction type code
  </tr>
  <tr>
   <td><strong>0x3000</strong></td>
-  <td>b2v-start</td>
+  <td>b2vm-start</td>
   <td>violas token mapping btc mark</td>
  </tr>
  <tr>
   <td><strong>0x3001</strong></td>
-  <td>b2v-cancel</td>
+  <td>b2vm-cancel</td>
   <td>violas token mapping btc mark</td>
  </tr>
  <tr>
   <td><strong>0x3002</strong></td>
-  <td>b2v-end</td>
+  <td>b2vm-end</td>
   <td>violas token mapping btc mark</td>
  </tr>
  <tr>
   <td><strong>0x3003</strong></td>
-  <td>b2v-stop</td>
+  <td>b2vm-stop</td>
   <td>violas token mapping btc mark</td>
  </tr>
  <tr>
