@@ -96,8 +96,8 @@ class workmod(enumbase):
     #chain : violas ; data source: vfilter ; result : transaction proof : fromat : V2L + token_id + PROOF
     V2LUSDPROOF  = auto()
     V2LEURPROOF  = auto()
-    V2LGBPPROOF  = auto()
-    V2LSGDPROOF  = auto()
+    #V2LGBPPROOF  = auto()
+    #V2LSGDPROOF  = auto()
     #exchange : libra token id -> violas token id; format : L2V + token id + EX
     L2VUSDEX     = auto()
     L2VEUREX     = auto()
@@ -106,8 +106,8 @@ class workmod(enumbase):
     #exchange : violas token id -> libra token id; format : V2L + token id + EX
     V2LUSDEX     = auto()
     V2LEUREX     = auto()
-    V2LGBPEX     = auto()
-    V2LSGDEX     = auto()
+    #V2LGBPEX     = auto()
+    #V2LSGDEX     = auto()
 
     V2BPROOF     = auto()
 
