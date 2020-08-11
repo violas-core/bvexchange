@@ -214,35 +214,60 @@ v2b_maxtimes = 99
     [type_opts.v2leur]
         stoken = "Coin2"
         mtoken = "EUR"
+        support= "true"  
         run    = "true"
     [type_opts.l2vusd]
         stoken = "VLSUSD"
+        support= "true"  
+        run    = "true"
     [type_opts.l2veur]
         stoken = "VLSEUR"
+        support= "true"  
+        run    = "true"
     [type_opts.l2vsgd]
         stoken = "VLSSGD"
+        support= "true"  
+        run    = "true"
     [type_opts.l2vgbp]
         stoken = "VLSGBP"
+        support= "true"  
+        run    = "true"
     [type_opts.b2vusd]
         stoken = "VLSUSD"
+        support= "true"  
+        run    = "true"
     [type_opts.b2veur]
         stoken = "VLSEUR"
+        support= "true"  
+        run    = "true"
     [type_opts.b2vsgd]
         stoken = "VLSSGD"
+        support= "true"  
+        run    = "true"
     [type_opts.b2vgbp]
         stoken = "VLSGBP"
+        support= "true"  
+        run    = "true"
     [type_opts.b2lusd]
         stoken = "Coin1"
         mtoken = "USD"
+        support= "false"  
+        run    = "false"
     [type_opts.b2leur]
         stoken = "Coin2"
         mtoken = "EUR"
+        support= "false"  
+        run    = "false"
     [type_opts.l2b]
         stoken = "BTC"
         mtoken = "BTC"
+        support= "false"  
+        run    = "false"
     [type_opts.v2b]
         stoken = "BTC"
         mtoken = "BTC"
+        support= "false"  
+        run    = "false"
     [type_opts.bfilter]
         support= "true"  
         run    = "true"
