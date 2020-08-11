@@ -261,6 +261,18 @@ v2b_maxtimes = 99
     [type_opts.v2b]
         stoken = "BTC"
         mtoken = "BTC"
+    [type_opts.v2bm]
+        stoken = "BTC"
+        mtoken = "BTC"
+    [type_opts.v2lm]
+        support= "true"  
+        run    = "false"
+    [type_opts.l2vm]
+        support= "true"  
+        run    = "false"
+    [type_opts.b2vm]
+        support= "true"  
+        run    = "false"
 
 [swap_module]
     #AssocRoot: 0000000000000000000000000a550c18
@@ -370,8 +382,22 @@ v2b_maxtimes = 99
 
     [[address_list.receiver]]
         address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        type = "l2b"
+        type = "l2vm"
         chain = "libra"
+
+    [[address_list.receiver]]
+        address = "81d0e3818e6ffda1336b7b2aff9496b7148cea4f3ea38d2b602dc8997592fe79"
+        type = "v2lm"
+        chain = "violas"
+
+    [[address_list.receiver]]
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        type = "b2vm"
+        chain = "btc"
+    [[address_list.receiver]]
+        address = "eda54651162270ccc0ff81cbcfffcded8ee2a1a52bd868c0baadb0d226731832"
+        type = "v2bm"
+        chain = "violas"
 
     #sender address
     ##send btc
@@ -489,49 +515,8 @@ v2b_maxtimes = 99
         address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
         type = "b2vgbp"
         chain = "btc"
-#    #token info moudule <-> token_id: check token_is is valid.
-#    [[address_list.token]]
-#        address = "0000000000000000000000000000000000000000000000000000000000000000"
-#        tokenid = "BTCBTC"
-#        tokenname = "BTCBTC"
-#        type = "v2b"
-#        chain = "violas"
-#
-#    [[address_list.token]]
-#        address = "0000000000000000000000000000000000000000000000000000000000000000"
-#        tokenid = "LBRUSD"
-#        tokenname = "LBRUSD"
-#        type = "v2lusd"
-#        chain = "violas"
-#
-#    [[address_list.token]]
-#        address = "0000000000000000000000000000000000000000000000000000000000000000"
-#        tokenid = "LBREUR"
-#        tokenname = "LBREUR"
-#        type = "v2leur"
-#        chain = "violas"
-#
-#    [[address_list.token]]
-#        address = "0000000000000000000000000000000000000000000000000000000000000000"
-#        tokenid = "LBRSGD"
-#        tokenname = "LBRSGD"
-#        type = "v2lSGD"
-#        chain = "violas"
-#
-#    [[address_list.token]]
-#        address = "0000000000000000000000000000000000000000000000000000000000000000"
-#        tokenid = "LBRGBP"
-#        tokenname = "LBRGBP"
-#        type = "v2lgbp"
-#        chain = "violas"
-#
 [looping_sleep]
-    v2b = 1
-    b2v = 1
-    v2l = 1
-    l2v = 1
     vfilter = 1
     lfilter = 1
-    v2bproof = 1
-    v2lproof 1
+    bfilter = 1
     comm = 8

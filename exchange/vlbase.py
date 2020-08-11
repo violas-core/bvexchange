@@ -93,8 +93,10 @@ class vlbase(baseobject):
         self.append_property(f"{self.map_chain}_chain", self.map_chain)
         self.append_property(f"{self.from_chain}_wallet", self.from_wallet)
         self.append_property(f"{self.map_chain}_wallet", self.map_wallet)
-        self.violas_client.swap_set_module_address(self.swap_module)
-        self.violas_client.swap_set_owner_address(self.swap_owner)
+        if self.swap_module:
+            self.violas_client.swap_set_module_address(self.swap_module)
+        if self.swap_owner:
+            self.violas_client.swap_set_owner_address(self.swap_owner)
 
 
     def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):

@@ -122,6 +122,21 @@ The type of transaction mapping, l2vxxx is to map stablecoins from violas chain 
    <td>string</td>
    <td>libra stable token(any token) swap to btc</td>
   </tr>
+  <tr>
+   <td><strong>v2bm</strong></td>
+   <td>string</td>
+   <td>violas btc token reflection to bitcoin btc. ratio: 1:1</td>
+  </tr>
+  <tr>
+   <td><strong>v2lm</strong></td>
+   <td>string</td>
+   <td>violas map token(any token) reflection to libra stable token. ratio: 1:1</td>
+  </tr>
+  <tr>
+   <td><strong>l2vm</strong></td>
+   <td>string</td>
+   <td>libra stable token(any token) swap to violas mapping token. ratio : 1:1</td>
+  </tr>
 </table>
 
 
@@ -1394,7 +1409,7 @@ BTC swap end/cancel/stop
  <tr>
   <td><strong>tran_id</strong></td>
   <td>string</td>
-  <td>hex-str(btc address)</td>
+  <td>hex-str</td>
   <td>The tran_id corresponding to the transaction to be modified</td>
  </tr>
  <tr>
@@ -1417,7 +1432,6 @@ libra token map to btc
 
 
 #### Attributes
-
 
 <table>
  <tr>
@@ -1501,7 +1515,7 @@ swap end/cancel/stop
  <tr>
   <td><strong>tran_id</strong></td>
   <td>string</td>
-  <td>hex-str(btc address)</td>
+  <td>hex-str</td>
   <td>The tran_id corresponding to the transaction to be modified</td>
  </tr>
  <tr>
@@ -1517,6 +1531,311 @@ swap end/cancel/stop
 ```
 
 
+
+### v2bm - start
+
+**Description**
+
+violas btc mapping to bitcoin btc
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>violas</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>v2bm</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>to_address</strong></td>
+  <td>string</td>
+  <td>hex-str(btc address)</td>
+  <td>Payee Address</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>start</td>
+  <td>Mapping</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times: 1</td>
+ </tr>
+</table>
+
+```
+'{"flag":"violas", "type":"v2bm", "times": 1, "to_address":"2MxBZG7295wfsXaUj69quf8vucFzwG35UWh", "state":"start"}'
+```
+
+
+### v2bm - end/cancel/stop
+
+**Description**
+
+BTC mapping end/cancel/stop
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>violas</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>v2bm</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>tran_id</strong></td>
+  <td>string</td>
+  <td>hex-str</td>
+  <td>The tran_id corresponding to the transaction to be modified</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>end/cancel/stop</td>
+  <td>Mapping completed</td>
+ </tr>
+</table>
+
+```
+'{"flag":"violas", "type":"v2bm", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
+```
+
+
+### v2lm - start
+
+**Description**
+
+violas mapping-token to mapping libra stable token
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>violas</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>v2lm</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>to_address</strong></td>
+  <td>string</td>
+  <td>hex-str(libra address)</td>
+  <td>Payee Address</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>start</td>
+  <td>Mapping</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times: 1</td>
+ </tr>
+</table>
+
+```
+'{"flag":"violas", "type":"v2lm", "times": 1, "to_address":"50645a7cbc3e03ae70871de0a447c532", "state":"start"}'
+```
+
+
+### v2lm - end/cancel/stop
+
+**Description**
+
+violas mapping-token mapping libra stable token end/cancel/stop
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>violas</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>v2lm</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>tran_id</strong></td>
+  <td>string</td>
+  <td>hex-str</td>
+  <td>The tran_id corresponding to the transaction to be modified</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>end/cancel/stop</td>
+  <td>Mapping completed</td>
+ </tr>
+</table>
+
+```
+'{"flag":"violas", "type":"v2lm", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
+```
+
+
+### l2vm - start
+
+**Description**
+
+libra stable token mappint violas mapping-token
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>libra</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>l2vm</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>to_address</strong></td>
+  <td>string</td>
+  <td>hex-str(violas address)</td>
+  <td>Payee Address</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>start</td>
+  <td>Mapping</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times: 1</td>
+ </tr>
+</table>
+
+```
+'{"flag":"libra", "type":"l2vm", "times": 1, "to_address":"50645a7cbc3e03ae70871de0a447c532", "state":"start"}'
+```
+
+
+### l2vm - end/cancel/stop
+
+**Description**
+
+libra stable token mapping violas mapping-token end/cancel/stop
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>libra</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>l2vm</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>tran_id</strong></td>
+  <td>string</td>
+  <td>hex-str</td>
+  <td>The tran_id corresponding to the transaction to be modified</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>end/cancel/stop</td>
+  <td>Mapping completed</td>
+ </tr>
+</table>
+
+```
+'{"flag":"libra", "type":"l2vm", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
+```
 
 ---
 
