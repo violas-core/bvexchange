@@ -42,8 +42,9 @@ class violasproxy(baseobject):
     class opttype(autoname):
         BTCMARK = auto() # btc mark
         MARK    = auto() # mark
-        B2V     = auto() 
+        B2VM    = auto() 
         V2B     = auto()
+        V2BM    = auto()
         B2VUSD  = auto() 
         B2VEUR  = auto() 
         B2VSGD  = auto() 

@@ -132,8 +132,9 @@ def get_dtypes():
 def get_token_map(token = None):
     token_map = {}
     for typename, tokens in setting.type_token.items():
-        if typename.startswith("v2"): #v2b v2l
+        if typename.startswith("v2") and tokens.get("stoken") and tokens.get("mtoken"): #v2b v2l
             token_map.update({tokens.get("stoken") : tokens.get("mtoken")})
+            token_map.update({tokens.get("mtoken") : tokens.get("stoken")})
     if token:
         return token_map.get(token)
     return token_map
@@ -150,17 +151,17 @@ def get_type_stable_token(mtype = None):
         return type_stable_token.get(mtype)
     return type_stable_token
 
-def get_type_lbr_token(mtype = None):
-    type_lbr_token = {}
+def get_type_map_token(mtype = None):
+    type_map_token = {}
     for typename, tokens in setting.type_token.items():
         if mtype is None or typename == mtype:
-            type_lbr_token.update({mtype : tokens.get("mtoken")})
+            type_map_token.update({mtype : tokens.get("mtoken")})
 
     if mtype:
-        return type_lbr_token.get(mtype)
-    return type_lbr_token
+        return type_map_token.get(mtype)
+    return type_map_token
 
-def get_support_token_id(chain):
+def get_support_map_token_id(chain):
     assert chain is not None, "chain is violas/libra/btc"
     mtoken_list = []
     opthead = [] 
@@ -168,10 +169,18 @@ def get_support_token_id(chain):
         #get map tokens only violas use
         for opthead in ["v2l", "v2b"]:
             mtokens = [tokens.get("mtoken") for typename, tokens in setting.type_token.items() \
-                if typename.startswith(opthead)]
+                if typename.startswith(opthead) and tokens.get("mtoken")]
             mtoken_list.extend(mtokens)
-        optheads = ["l2v", "b2v"]
+    
+    return list(set(mtoken_list))
 
+def get_support_stable_token_id(chain):
+    assert chain is not None, "chain is violas/libra/btc"
+    stoken_list = []
+    opthead = [] 
+    if chain == "violas":
+        #get map tokens only violas use
+        optheads = ["l2v", "b2v"]
     elif chain == "libra":
         optheads = ["v2l"]
     elif chain == "btc":
@@ -179,10 +188,16 @@ def get_support_token_id(chain):
 
     #get target chain stable token
     for opthead in optheads:
-        stoken_list = [tokens.get("stoken") for typename, tokens in setting.type_token.items() \
-            if typename.startswith(opthead)]
+        stoken_list += [tokens.get("stoken") for typename, tokens in setting.type_token.items() \
+            if typename.startswith(opthead) and tokens.get("stoken")]
     
-    return list(set(stoken_list + mtoken_list))
+    return list(set(stoken_list))
+
+def get_support_token_id(chain):
+    assert chain is not None, "chain is violas/libra/btc"
+    mtokens = get_support_map_token_id(chain)
+    stokens = get_support_stable_token_id(chain)
+    return list(set(mtokens + stokens))
 
 def get_swap_module():
     return setting.swap_module.get("address")
@@ -254,7 +269,13 @@ def main():
     print(f"get type_stable_token(b2lusd)->Coin1: {get_type_stable_token('b2lusd')}")
     print(f"get token_map(Coin1)->USD: {get_token_map('Coin1')}")
     print(f"get token_map(Coin2)->EUR: {get_token_map('Coin2')}")
-    print(f"get token_map(btc)->BTC: {get_token_map('btc')}")
+    print(f"get token_map(BTC)->BTC: {get_token_map('BTC')}")
+    print(f"get token_map(USD)->Coin1: {get_token_map('USD')}")
+    print(f"get token_map(EUR)->Coin2: {get_token_map('EUR')}")
+    print(f"get support_stable_token_id(libra)->Coin1 Coin2: {get_support_stable_token_id('libra')}")
+    print(f"get support_stable_token_id(violas)->VLSUSD VLSEUR VLSSGD VLSGBP: {get_support_stable_token_id('violas')}")
+    print(f"get support_map_token_id(libra)->[]: {get_support_map_token_id('libra')}")
+    print(f"get support_map_token_id(violas)->BTC EUR USD: {get_support_map_token_id('violas')}")
     print(f"get support_token_id(libra)->Coin1 Coin2: {get_support_token_id('libra')}")
     print(f"get support_token_id(violas)->VLSUSD VLSEUR VLSSGD VLSGBP BTC USD EUR: {get_support_token_id('violas')}")
     print(f"get support_token_id(btc)->BTC: {get_support_token_id('btc')}")
@@ -262,7 +283,7 @@ def main():
     print(f"get swap owner(violas): {get_swap_owner()}")
     print(f"combin address(b2vusd, btc): {get_combine_address('b2vusd', 'btc')}")
     print(f"combin address(l2b, violas): {get_combine_address('l2b', 'violas')}")
-    print(f"run mods: {get_mods()}")
+    print(f"run mods: {get_run_mods()}")
 
     #json_print(get_conf())
 

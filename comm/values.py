@@ -35,8 +35,8 @@ class trantypebase(autoname):
 #datatype for transaction's data type
 #parse metadata
 class datatypebase(autoname):
-    V2L     = auto()
-    L2V     = auto()
+    V2LM     = auto()
+    L2VM     = auto()
     V2LUSD  = auto()
     V2LEUR  = auto()
     V2LSGD  = auto()
@@ -46,7 +46,8 @@ class datatypebase(autoname):
     L2VSGD  = auto()
     L2VGBP  = auto()
     V2B     = auto()
-    B2V     = auto()
+    V2BM    = auto()
+    B2VM    = auto()
     B2VUSD  = auto()
     B2VEUR  = auto()
     B2VSGD  = auto()
@@ -66,8 +67,8 @@ class dbindexbase(enumbase):
     LFILTER = 3
     BFILTER = 4
     #proof datas
-    V2L     = 8
-    L2V     = 9
+    V2LM    = 8
+    L2VM    = 9
     V2LUSD  = 10
     V2LEUR  = 11
     V2LSGD  = 12
@@ -77,7 +78,8 @@ class dbindexbase(enumbase):
     L2VSGD  = 22
     L2VGBP  = 23
     V2B     = 30
-    B2V     = 35
+    V2BM    = 31
+    B2VM    = 32
     B2VUSD  = 36
     B2VEUR  = 37
     B2VSGD  = 38
@@ -92,47 +94,50 @@ class workmod(enumbase):
     COMM         = auto()   
     VFILTER      = auto()    #scan violas chain
     LFILTER      = auto()
-    #chain : libra ;  data source: lfilter ; result : transaction proof ; format : L2V + token_id + PROOF
-    L2VPROOF     = auto()
-    L2VUSDPROOF  = auto()
-    L2VEURPROOF  = auto()
-    L2VGBPPROOF  = auto()
-    L2VSGDPROOF  = auto()
-    #chain : violas ; data source: vfilter ; result : transaction proof : fromat : V2L + token_id + PROOF
-    V2LPROOF     = auto()
-    V2LUSDPROOF  = auto()
-    V2LEURPROOF  = auto()
-    #exchange : libra token id -> violas token id; format : L2V + token id + EX
-    L2VEX        = auto()
-    L2VUSDEX     = auto()
-    L2VEUREX     = auto()
-    L2VGBPEX     = auto()
-    L2VSGDEX     = auto()
-    #exchange : violas token id -> libra token id; format : V2L + token id + EX
-    V2LEX        = auto()
-    V2LUSDEX     = auto()
-    V2LEUREX     = auto()
-    V2BPROOF     = auto()
-    #btc
     BFILTER      = auto() #scan bitcoin chain
-    B2VPROOF     = auto()
-    B2VEX        = auto()
+    #chain : libra ;  data source: lfilter ; result : transaction proof ; format : L2V + token_id + PROOF
+    L2VMPROOF    = auto()
+    L2VMEX       = auto()
+    L2VUSDPROOF  = auto()
+    L2VUSDEX     = auto()
+    L2VEURPROOF  = auto()
+    L2VEUREX     = auto()
+    L2VGBPPROOF  = auto()
+    L2VGBPEX     = auto()
+    L2VSGDPROOF  = auto()
+    L2VSGDEX     = auto()
+    #chain : violas ; data source: vfilter ; result : transaction proof : fromat : V2L + token_id + PROOF
+    V2LMPROOF    = auto()
+    V2LMEX        = auto()
+    V2LUSDPROOF  = auto()
+    V2LUSDEX     = auto()
+    V2LEURPROOF  = auto()
+    V2LEUREX     = auto()
+    #exchange : libra token id -> violas token id; format : L2V + token id + EX
+    #exchange : violas token id -> libra token id; format : V2L + token id + EX
+    #
+    V2BPROOF     = auto()
     V2BEX        = auto()
+    V2BMPROOF     = auto()
+    V2BMEX        = auto()
+    #
+    B2VMPROOF     = auto()
+    B2VMEX        = auto()
     B2VUSDPROOF  = auto()
-    B2VEURPROOF  = auto()
-    B2VSGDPROOF  = auto()
-    B2VGBPPROOF  = auto()
     B2VUSDEX     = auto()
+    B2VEURPROOF  = auto()
     B2VEUREX     = auto()
+    B2VSGDPROOF  = auto()
     B2VSGDEX     = auto()
+    B2VGBPPROOF  = auto()
     B2VGBPEX     = auto()
     #libran <-> btc
-    L2BPROOF     = auto()
-    B2LUSDPROOF  = auto()
-    B2LEURPROOF  = auto()
-    L2BEX        = auto()
-    B2LUSDEX     = auto()
-    B2LEUREX     = auto()
+    #L2BPROOF     = auto()
+    #L2BEX        = auto()
+    #B2LUSDPROOF  = auto()
+    #B2LUSDEX     = auto()
+    #B2LEURPROOF  = auto()
+    #B2LEUREX     = auto()
 
 if __name__ == "__main__":
     print(dbindexbase.UNKOWN.info)
