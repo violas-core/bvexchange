@@ -95,8 +95,10 @@ class vbbase(baseobject):
         setattr(self, "excluded", [])
         self.append_property(f"{self.from_chain}_chain", self.from_chain)
         self.append_property(f"{self.map_chain}_chain", self.map_chain)
-        self.violas_client.swap_set_module_address(self.swap_module)
-        self.violas_client.swap_set_owner_address(self.swap_owner)
+        if self.swap_module:
+            self.violas_client.swap_set_module_address(self.swap_module)
+        if self.swap_owner:
+            self.violas_client.swap_set_owner_address(self.swap_owner)
         if self.from_chain == "btc":
             self.append_property("pserver", self.btc_client)
             self.append_property("from_wallet", btcwallet(self.name(), None))
@@ -110,8 +112,10 @@ class vbbase(baseobject):
 
         if self.map_chain == "btc":
             self.append_property("map_wallet", btcwallet(self.name(), None))
+            self.append_property("map_client", self.btc_client)
         else:
             self.append_property("map_wallet", violaswallet(self.name(), wallet_name, self.map_chain))
+            self.append_property("map_client", self.violas_client)
 
     def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):
         ret = self.db.insert_commit(version, state, tran_id, receiver, detail)

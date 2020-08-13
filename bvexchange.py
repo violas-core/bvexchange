@@ -15,7 +15,7 @@ from time import sleep, ctime
 import stmanage
 import subprocess
 import comm.functions as fn
-from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm
+from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm
 from comm.result import parse_except
 from analysis import analysis_base, analysis_filter, analysis_proof
 from enum import Enum
@@ -29,8 +29,8 @@ class works:
     __work_obj = {}
     __record_db = "record"
 
-    __libra_min_valid_version   = 190_4203
-    __violas_min_valid_version  = 1909_6944
+    __libra_min_valid_version   = 0
+    __violas_min_valid_version  = 1971_1311
     __btc_min_valid_version     = 0
     def __init__(self):
         logger.debug("works __init__")
@@ -157,7 +157,7 @@ class works:
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}")
                 try:
-                    obj = v2b.v2b(mod, 
+                    obj = v2bm.v2bm(mod, 
                             dtype,
                             stmanage.get_violas_nodes(), 
                             stmanage.get_btc_nodes(),
@@ -216,7 +216,7 @@ class works:
                     obj = analysis_proof.aproof(name=mod, ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
-                    if dtype == "v2lm":
+                    if dtype == "v2bm":
                         obj.append_token_id(stmanage.get_support_map_token_id(ttype))
                     else:
                         obj.append_token_id(stmanage.get_support_stable_token_id(ttype))

@@ -532,7 +532,7 @@ v2b_maxtimes = 99
         type = "b2leur"
         chain = "violas"
     [[address_list.combine]]
-        address = "2N9fQcit5KB8vJHmBF5Z4DkUUTCgJA8GKb3"
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
         type = "b2vm"
         chain = "btc"
     [[address_list.combine]]
