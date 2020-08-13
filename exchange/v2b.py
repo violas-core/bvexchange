@@ -190,9 +190,9 @@ class v2b(vbbase):
             out_amount = self.amountswap(out_amount, self.amountswap.amounttype.SATOSHI).violas_amount
             self._logger.debug(f"exec_exchange-1.result : can swap amount: = {out_amount_chian} gas = {gas}, want = {out_amount}vBTC")
 
-            if out_amount <= 0:
+            if out_amount <= 0 and out_amount_chian >= 1000:
                 out_amount = out_amount_chian
-            elif out_amount > out_amount_chian: #don't execute swap, Reduce the cost of the budget
+            elif out_amount > out_amount_chian or out_amount_chian < 1000: #don't execute swap, Reduce the cost of the budget
                 self.update_localdb_state_with_check(tran_id, localdb.state.EFAILED)
                 return result(error.FAILED, \
                             f"don't execute swap(out_amount({out_amount}) > cur_outamount({out_amount_chian})), Reduce the cost of the budget. tran_id = {tran_id}")

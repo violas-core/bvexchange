@@ -102,6 +102,9 @@ class requestclient(baseobject):
             if ret.state != error.SUCCEED:
                 return ret
             
+            if ret.datas is None:
+                return result(error.ARG_INVALID)
+
             ret = self.get_tran(ret.datas)
             if ret.state != error.SUCCEED:
                 return ret
