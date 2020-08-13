@@ -306,7 +306,6 @@ class vlbase(baseobject):
             self.check_state_raise(ret, f"not found map sender" + 
                     f"check address and amount")
             map_sender = ret.datas
-            self._logger.debug(f"map_sender({type(map_sender)}): {map_sender.address.hex()}")
 
             combine_account = getattr(self, "combine_account", None)
 
@@ -385,7 +384,6 @@ class vlbase(baseobject):
             ret = self.get_map_sender_address()
             self.check_state_raise(ret, f"not found map sender. check address")
             map_sender = ret.datas
-            self._logger.debug(f"map_sender({type(map_sender)}): {map_sender.address.hex()}")
 
             combine_account = self.combine_account
 
