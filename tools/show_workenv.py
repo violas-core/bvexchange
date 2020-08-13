@@ -151,7 +151,7 @@ def get_local_info(name, chain):
 
 def show_local_db():
     confs = []
-    for key in stmanage.get_dtypes():
+    for key in stmanage.get_support_mods():
         if key.startswith("v"):
             confs.append(("violas", key))
         elif key.startswith("l"):

@@ -15,7 +15,7 @@ from time import sleep, ctime
 import stmanage
 import subprocess
 import comm.functions as fn
-from exchange import b2v, v2b, v2l, l2v
+from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm
 from comm.result import parse_except
 from analysis import analysis_base, analysis_filter, analysis_proof
 from enum import Enum
@@ -29,8 +29,8 @@ class works:
     __work_obj = {}
     __record_db = "record"
 
-    __libra_min_valid_version   = 0
-    __violas_min_valid_version  = 0
+    __libra_min_valid_version   = 190_4203
+    __violas_min_valid_version  = 1909_6944
     __btc_min_valid_version     = 0
     def __init__(self):
         logger.debug("works __init__")
@@ -88,6 +88,34 @@ class works:
         finally:
             logger.critical(f"stop: {mod}")
 
+    def work_b2vm(self, **kargs):
+        try:
+            logger.critical("start: b2vm")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    obj = b2vm.b2vm(mod,
+                            dtype,
+                            stmanage.get_btc_nodes(), 
+                            stmanage.get_violas_nodes(),
+                            stmanage.get_db(dtype), 
+                            list(set(stmanage.get_receiver_address_list(dtype, "btc", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+                            stmanage.get_combine_address(dtype, "btc", True)
+                            )
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
     def work_v2b(self, **kargs):
         try:
             logger.critical("start: v2b")
@@ -108,6 +136,34 @@ class works:
                             stmanage.get_combine_address(dtype, "violas"),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner()
+                            )
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
+
+    def work_v2bm(self, **kargs):
+        try:
+            logger.critical("start: v2bm")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    obj = v2b.v2b(mod, 
+                            dtype,
+                            stmanage.get_violas_nodes(), 
+                            stmanage.get_btc_nodes(),
+                            stmanage.get_db(dtype), 
+                            list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "btc", False))),
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -160,7 +216,10 @@ class works:
                     obj = analysis_proof.aproof(name=mod, ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
-                    obj.append_token_id(stmanage.get_support_token_id(ttype))
+                    if dtype == "v2lm":
+                        obj.append_token_id(stmanage.get_support_map_token_id(ttype))
+                    else:
+                        obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
@@ -215,7 +274,7 @@ class works:
                     obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of libra transaction
-                    obj.append_token_id(stmanage.get_support_token_id(ttype))
+                    obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
@@ -245,7 +304,10 @@ class works:
                     obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
-                    obj.append_token_id(stmanage.get_support_token_id(ttype))
+                    if dtype == "v2lm":
+                        obj.append_token_id(stmanage.get_support_map_token_id(ttype))
+                    else:
+                        obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
@@ -291,6 +353,36 @@ class works:
         finally:
             logger.critical(f"stop: {mod}")
 
+    def work_l2vm(self, **kargs):
+        try:
+            logger.critical("start: l2vm")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            #libra transaction's data types 
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    obj = l2vm.l2vm(mod, 
+                            dtype,
+                            stmanage.get_libra_nodes(),
+                            stmanage.get_violas_nodes(), 
+                            stmanage.get_db(dtype), 
+                            list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "violas", False)))
+                            )
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
+
     def work_v2l(self, **kargs):
         try:
             logger.critical("start: v2l")
@@ -324,6 +416,35 @@ class works:
         finally:
             logger.critical(f"stop: {mod}")
 
+    def work_v2lm(self, **kargs):
+        try:
+            logger.critical("start: v2lm")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            #libra transaction's data types 
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    obj = v2lm.v2lm(mod, 
+                            dtype,
+                            stmanage.get_violas_nodes(), 
+                            stmanage.get_libra_nodes(),
+                            stmanage.get_db(dtype), 
+                            list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
+                            )
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
     def work_bfilter(self, **kargs):
         try:
             logger.critical("start: btc filter")
@@ -368,7 +489,7 @@ class works:
                     obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of btc transaction
-                    obj.append_token_id(stmanage.get_support_token_id(ttype))
+                    obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__btc_min_valid_version - 1)
@@ -399,7 +520,7 @@ class works:
                     obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of btc transaction
-                    obj.append_token_id(stmanage.get_support_token_id(ttype))
+                    obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__btc_min_valid_version - 1)
@@ -462,7 +583,7 @@ class works:
                     obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of btc transaction
-                    obj.append_token_id(stmanage.get_support_token_id(ttype))
+                    obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
@@ -567,6 +688,17 @@ class works:
     def funcs_map(self):
         return self.__funcs_map
 
+    def is_match(self, name, startswith, endswith, fixlen):
+        #print(f"name = {name}, startswith = {startswith} endswith = {endswith} fixlen = {fixlen}")
+        lens = []
+        if isinstance(fixlen, list):
+            lens = fixlen
+        elif isinstance(fixlen, int):
+            lens.append(fixlen)
+        else:
+            raise Exception(f"fixlen type{type(fixlen)} is invalid.")
+        return name.startswith(startswith) and len(name) in lens and name.endswith(endswith)
+
     def init_func_map(self):
         self.__funcs_map = {}
         #append proof
@@ -578,32 +710,38 @@ class works:
                 self.__funcs_map.update(self.create_func_dict(item, self.work_lfilter))
             elif name == "BFILTER":
                 self.__funcs_map.update(self.create_func_dict(item, self.work_bfilter))
-            elif name == "V2BPROOF":
-                self.funcs_map.update(self.create_func_dict(item, self.work_v2bproof))
-            elif name.startswith("V2L") and len(name) == 11 and name.endswith("PROOF"):
+            elif self.is_match(name, "V2L", "PROOF", [11, 9]): #V2LXXXPROOF   V2LMPROOF
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2lproof))
-            elif name.startswith("L2V") and len(name) == 11 and name.endswith("PROOF"):
-                self.funcs_map.update(self.create_func_dict(item, self.work_l2vproof))
-            elif name.startswith("B2V") and name.endswith("PROOF"):
-                self.funcs_map.update(self.create_func_dict(item, self.work_b2vproof))
-            elif name.startswith("V2B") and name.endswith("PROOF"):
+            elif self.is_match(name, "V2B", "PROOF", [8, 9]):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2bproof))
-            elif name.startswith("L2B") and name.endswith("PROOF"):
+            elif self.is_match(name, "L2V", "PROOF", [11, 9]):
+                self.funcs_map.update(self.create_func_dict(item, self.work_l2vproof))
+            elif self.is_match(name, "L2B", "PROOF", 8):
                 self.funcs_map.update(self.create_func_dict(item, self.work_l2bproof))
-            elif name.startswith("B2L") and name.endswith("PROOF"):
+            elif self.is_match(name, "B2V", "PROOF", [11, 9]):
+                self.funcs_map.update(self.create_func_dict(item, self.work_b2vproof))
+            elif self.is_match(name, "B2L", "PROOF", 11):
                 self.funcs_map.update(self.create_func_dict(item, self.work_b2lproof))
-            elif name.startswith("L2V") and name.endswith("EX"):
-                self.funcs_map.update(self.create_func_dict(item, self.work_l2v))
-            elif name.startswith("V2L") and name.endswith("EX"):
+            elif self.is_match(name, "V2L", "EX", 8):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2l))
-            elif name.startswith("B2V") and name.endswith("EX"):
-                self.__funcs_map.update(self.create_func_dict(item, self.work_b2v))
-            elif name.startswith("V2B") and name.endswith("EX"):
+            elif self.is_match(name, "V2B", "EX", 5):
                 self.__funcs_map.update(self.create_func_dict(item, self.work_v2b))
-            elif name.startswith("L2B") and name.endswith("EX"):
+            elif self.is_match(name, "L2V", "EX", 8): #L2VXXXEX
+                self.funcs_map.update(self.create_func_dict(item, self.work_l2v))
+            elif self.is_match(name, "L2B", "EX", 5):
                 self.__funcs_map.update(self.create_func_dict(item, self.work_l2b))
-            elif name.startswith("B2l") and name.endswith("EX"):
+            elif self.is_match(name, "B2V", "EX", 8):
+                self.__funcs_map.update(self.create_func_dict(item, self.work_b2v))
+            elif self.is_match(name, "B2L", "EX", 8):
                 self.__funcs_map.update(self.create_func_dict(item, self.work_b2l))
+            elif self.is_match(name, "V2LM", "EX", 6):
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2lm))
+            elif self.is_match(name, "V2BM", "EX", 6):
+                self.__funcs_map.update(self.create_func_dict(item, self.work_v2bm))
+            elif self.is_match(name, "L2VM", "EX", 6): #L2VMEX
+                self.funcs_map.update(self.create_func_dict(item, self.work_l2vm))
+            elif self.is_match(name, "B2VM", "EX", 6):
+                self.__funcs_map.update(self.create_func_dict(item, self.work_b2vm))
             elif name == "COMM":
                 self.__funcs_map.update(self.create_func_dict(item, self.work_comm))
             else:
@@ -663,7 +801,7 @@ def signal_stop(signal, frame):
 
 def list_valid_mods():
     valid_mods = ["all"]
-    #support_mods = stmanage.get_dtypes()
+    #support_mods = stmanage.get_support_mods()
     for mod in work_mod:
     #    print(mod)
     #    if mod.endswith("EX"):

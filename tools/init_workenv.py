@@ -40,12 +40,9 @@ def reg_run():
     libra_token_id_list = stmanage.get_support_token_id("libra")
 
     #get support opt-type list id for chain
-    opt_list = stmanage.get_type_stable_token()
-    #l2v_opt_list = [opt for opt in opt_list.keys() if opt.startswith("l2v")]
-    #v2l_opt_list = [opt for opt in opt_list.keys() if opt.startswith("v2l")]
-    #v2b_opt_list = [opt for opt in opt_list.keys() if opt.startswith("v2b")]
-    #b2v_opt_list = [opt for opt in opt_list.keys() if opt.startswith("b2v")]
+    opt_list = stmanage.get_support_mods()
 
+    print(f"all token id: {violas_token_id_list}")
     for opt_type in opt_list:
         logger.debug("start bind dtype = {opt_type} chain = violas receiver")
         senders = stmanage.get_sender_address_list(opt_type, "violas")
