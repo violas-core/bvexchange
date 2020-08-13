@@ -19,19 +19,19 @@ from exchange.vlmap import vlmap
 
 
 #load logging
-class l2vm(vlmap):    
+class v2lm(vlmap):    
     def __init__(self, name, 
             dtype, 
-            lbrnodes, 
             vlsnodes, 
+            lbrnodes, 
             proofdb, 
             receivers, 
             senders 
             ):
 
-        vlmap.__init__(self, name, dtype, lbrnodes, vlsnodes, \
+        vlmap.__init__(self, name, dtype, vlsnodes, lbrnodes, \
                 proofdb, receivers, senders,\
-                "libra", "violas")
+                "violas", "libra")
 
     def __del__(self):
         pass
@@ -40,15 +40,15 @@ class l2vm(vlmap):
 def main():
        print("start main")
        stmanage.set_conf_env("../bvexchange.toml")
-       mod = "l2vm"
-       dtype = "l2vm"
-       obj = l2vm(mod, 
+       mod = "v2lm"
+       dtype = "v2lm"
+       obj = v2lm(mod, 
                dtype,
-               stmanage.get_libra_nodes(),
                stmanage.get_violas_nodes(), 
+               stmanage.get_libra_nodes(),
                stmanage.get_db(dtype), 
-               list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
-               list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+               list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
+               list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
                )
        ret = obj.start()
        if ret.state != error.SUCCEED:

@@ -23,6 +23,12 @@ v2b_maxtimes = 99
     faucet = "mint_test.key"
 
 [[violas_nodes]]
+    host = "18.220.66.235"
+    port = 50001
+    name = "violas 4"
+    faucet = "mint_test.key"
+
+[[violas_nodes]]
     host = "13.68.141.242"
     port = 50001
     name = "violas 2"
@@ -32,12 +38,6 @@ v2b_maxtimes = 99
     host = "47.52.195.50"
     port = 50001
     name = "violas 3"
-    faucet = "mint_test.key"
-
-[[violas_nodes]]
-    host = "18.220.66.235"
-    port = 50001
-    name = "violas 4"
     faucet = "mint_test.key"
 
 [[libra_nodes]]
@@ -89,11 +89,18 @@ v2b_maxtimes = 99
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
-    db = "b2v"
+    db = "v2bm"
     password = "violas"
     step = 500
 
 #l2vxxx proof db
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "l2vm"
+    password = "violas"
+    step = 500
+
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
@@ -126,6 +133,13 @@ v2b_maxtimes = 99
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
+    db = "v2lm"
+    password = "violas"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
     db = "v2lusd"
     password = "violas"
     step = 500
@@ -152,6 +166,13 @@ v2b_maxtimes = 99
     step = 500
 
 #b2vxxx proof db
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "b2vm"
+    password = "violas"
+    step = 500
+
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
@@ -403,7 +424,7 @@ v2b_maxtimes = 99
     ##send btc
     [[address_list.sender]]
         address = "7d572ec38dd124ad4faec3fc077217efab88cc9dd86f72d8816b3cabf155eb86"
-        type = "b2v"
+        type = "b2vm"
         chain = "violas"
 
     ##send btc
@@ -414,9 +435,19 @@ v2b_maxtimes = 99
 
     [[address_list.sender]]
         address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        type = "v2bm"
+        chain = "btc"
+
+    [[address_list.sender]]
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
         type = "l2b"
         chain = "btc"
     ##send violas tokens
+    [[address_list.sender]]
+        address = "a6c512b59c7e2501ebe2556259e345444036899620db1efcbe2a8301ed00a842"
+        type = "l2vm"
+        chain = "violas"
+
     [[address_list.sender]]
         address = "ea6649bcbe1377106201f3829902748278a69a80e181f0c4eefff64a589883aa"
         type = "l2vusd"
@@ -436,6 +467,11 @@ v2b_maxtimes = 99
         address = "4a73cfd0365c641341a7a3bc376423480a82179351b8ecb6c5e68ab7b08622de"
         type = "l2vsgd"
         chain = "violas"
+
+    [[address_list.sender]]
+        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+        type = "v2lm"
+        chain = "libra"
 
     [[address_list.sender]]
         address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
@@ -497,7 +533,7 @@ v2b_maxtimes = 99
         chain = "violas"
     [[address_list.combine]]
         address = "2N9fQcit5KB8vJHmBF5Z4DkUUTCgJA8GKb3"
-        type = "b2v"
+        type = "b2vm"
         chain = "btc"
     [[address_list.combine]]
         address = "2N9fQcit5KB8vJHmBF5Z4DkUUTCgJA8GKb3"

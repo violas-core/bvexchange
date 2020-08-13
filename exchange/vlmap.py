@@ -44,19 +44,16 @@ class vlmap(vlbase):
                 fromchain, mapchain)
         self.init_extend_property()
         self.init_exec_states()
-        self.init_fill_address_token_violas()
+        self.init_fill_address_token()
 
     def __del__(self):
         pass
     
-    @property
-    def fill_address_token(self):
-        return self._fill_address_token
 
-    def init_fill_address_token_violas(self):
-        self.fill_address_token = {}
-        self.fill_address_token.update({"violas": self.init_fill_address_token_violas})
-        self.fill_address_token.update({"libra": self.init_fill_address_token_libra})
+    def init_fill_address_token(self):
+        setattr(self, "fill_address_token", {})
+        self.fill_address_token.update({"violas": self.fill_address_token_violas})
+        self.fill_address_token.update({"libra": self.fill_address_token_libra})
 
 
     def init_extend_property(self):
@@ -96,7 +93,7 @@ class vlmap(vlbase):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
-                return result(error.FAILED)
+                return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)
         except Exception as e:
@@ -114,7 +111,7 @@ class vlmap(vlbase):
         times       = data["times"]
         opttype     = data["opttype"]
         from_token_id = data["token_id"]
-        map_token_id = stmanage.get_token_map(from_token_id) #stable token -> LBRXXX token
+        map_token_id = stmanage.get_token_map(from_token_id) 
 
         ret = result(error.FAILED)
         self._logger.info(f"start exchange {self.dtype}. version={version}, state = {state}, detail = {detail} datas from server.")
@@ -143,7 +140,7 @@ class vlmap(vlbase):
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
                       json.dumps(detail))
-                self._logger.error("exec_exchange-1.result: failed.")
+                self._logger.error(f"exec_exchange-1.result: failed. {ret.message}")
                 return ret
             else:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLSUCCEED, \
@@ -158,7 +155,7 @@ class vlmap(vlbase):
                     amount, map_token_id, data=markdata)
 
             if ret.state != error.SUCCEED:
-                self._logger.error("exec_exchange-2.result: failed.")
+                self._logger.error(f"exec_exchange-2.result: failed.")
                 self.update_localdb_state_with_check(tran_id, localdb.state.PFAILED, \
                         json.dumps(detail))
                 return ret

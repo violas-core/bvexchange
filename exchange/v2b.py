@@ -99,6 +99,21 @@ class v2b(vbbase):
             ret = parse_except(e)
         return ret
 
+    def is_enough_amount(self, address, amount, gas = 0.00001):
+        try:
+            ret = self.btc_client.get_balance(address)
+            assert ret.state == error.SUCCEED, f"get balance failed"
+            
+            cur_amount = ret.datas
+            if cur_amount < amount + gas:
+                #get some coin for address
+                return result(error.FAILED, f"not enuogh btc amount.cur_amount({cur_amount}), use amount({amount + gas})", False)
+
+            ret = result(error.SUCCEED, datas = True)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
             state = None, detail = {}):
         ''' execute exchange 
@@ -163,6 +178,13 @@ class v2b(vbbase):
 
             out_amount_chian, gas = ret.datas
 
+            btc_amount = self.amountswap(out_amount_chian).btc_amount
+            ret = self.is_enough_amount(map_sender, btc_amount)
+            if ret.state != error.SUCCEED or not ret.datas:
+                self.update_localdb_state_with_check(tran_id, localdb.state.EFAILED)
+                return ret
+
+            
             #temp value(test)
             #btc -> vbtc(1000000), violas swap vbtc
             out_amount = self.amountswap(out_amount, self.amountswap.amounttype.SATOSHI).violas_amount
