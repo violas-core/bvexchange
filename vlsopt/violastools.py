@@ -104,7 +104,8 @@ def send_coin(from_address, to_address, amount, token_id, module = None, data = 
         module = None
 
     client = get_violasclient()
-    client.send_coin(account, to_address, amount, token_id, module, data)
+    ret = client.send_coin(account, to_address, amount, token_id, module, data)
+    assert ret.state == error.SUCCEED, ret.message
     print(f"cur balance :{client.get_balance(account.address, token_id, module).datas}")
 
 def get_balance(address, token_id, module):
