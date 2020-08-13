@@ -15,7 +15,7 @@ from time import sleep, ctime
 import stmanage
 import subprocess
 import comm.functions as fn
-from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm
+from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm, b2vm
 from comm.result import parse_except
 from analysis import analysis_base, analysis_filter, analysis_proof
 from enum import Enum

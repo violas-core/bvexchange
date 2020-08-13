@@ -70,8 +70,17 @@ class vbmap(vbbase):
                         localdb.state.VSUCCEED, \
                         localdb.state.SSUCCEED]])
 
-    def fill_address_token_violas(self, address, token_id, amount, gas=40_000):
+    def get_address_from_account(self, account):
+        if not isinstance(account, str):
+            address = account.address.hex()
+        else:
+            address = account
+        return address
+
+    def fill_address_token_violas(self, account, token_id, amount, gas=40_000):
         try:
+
+            address = self.get_address_from_account(account)
             ret = self.violas_client.get_balance(address, token_id = token_id)
             assert ret.state == error.SUCCEED, f"get balance failed"
             
@@ -87,8 +96,9 @@ class vbmap(vbbase):
             ret = parse_except(e)
         return ret
 
-    def fill_address_token_libra(self, address, token_id, amount, gas=40_000):
+    def fill_address_token_libra(self, account, token_id, amount, gas=40_000):
         try:
+            address = self.get_address_from_account(account)
             ret = self.libra_client.get_balance(address, token_id = token_id)
             assert ret.state == error.SUCCEED, f"get balance failed"
             
@@ -101,8 +111,9 @@ class vbmap(vbbase):
             ret = parse_except(e)
         return ret
 
-    def fill_address_token_btc(self, address, token_id, amount, gas=0.0001):
+    def fill_address_token_btc(self, account, token_id, amount, gas=0.0001):
         try:
+            address = self.get_address_from_account(account)
             ret = self.btc_client.get_balance(address)
             assert ret.state == error.SUCCEED, f"get balance failed"
             
