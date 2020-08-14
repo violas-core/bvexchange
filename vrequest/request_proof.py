@@ -54,9 +54,9 @@ class requestproof(requestbase):
         return ret
 
 
-    def get_transaction_record(self, sender, flag, cursor = 0, match = None, limit = 10):
+    def get_transaction_record(self, sender, flag, opttype = "swap", cursor = 0, match = None, limit = 10):
         try:
-            tran_info = {"flag":flag,"sender":sender}
+            tran_info = {"flag":flag,"sender":sender, "opttype":opttype}
             
             name = self.create_haddress_name(tran_info)
             ret = self.hscan(name, cursor, match, limit)
@@ -66,9 +66,9 @@ class requestproof(requestbase):
             ret = parse_except(e)
         return ret
 
-    def get_transaction_record(self, sender, flag, cursor = 0, match = None, limit = 10):
+    def get_transaction_record(self, sender, flag, opttype = "swap", cursor = 0, match = None, limit = 10):
         try:
-            tran_info = {"flag":flag,"sender":sender}
+            tran_info = {"flag":flag,"sender":sender, "opttype":opttype}
             
             name = self.create_haddress_name(tran_info)
             ret = self.hscan(name, cursor, match, limit)
