@@ -124,7 +124,7 @@ class dbvproof(dbvbase):
         return get_proof_min_version_for_state(state, "stop")
 
     def create_haddress_name(self, tran_info):
-        return f"{tran_info['sender']}_{tran_info['flag']}"
+        return f"{tran_info['sender']}_{tran_info['flag']}_{tran_info['opttype']}"
 
     def create_haddress_key(self, tran_info):
         return f"{tran_info['version']}"
