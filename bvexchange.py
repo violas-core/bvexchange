@@ -105,7 +105,6 @@ class works:
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, "btc", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
-                            stmanage.get_combine_address(dtype, "btc", True)
                             )
                     self.set_work_obj(obj)
                     obj.start()
