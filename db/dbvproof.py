@@ -134,12 +134,20 @@ class dbvproof(dbvbase):
         from_chain = "violas"
         to_chain = "violas"
 
-
         if dtype is None:
             return (form_chain, to_chain)
         if dtype[0] == "v":
             from_chain = "violas"
             
+
+    def get_out_token(self, tran_info):
+        opttype = tran_info["opttype"]
+        out_token = ""
+        if opttype == "map":
+            out_token = stmanage.get_token_map(tran_info["token_id"])
+        else :
+            out_token = stmanage.get_type_stable_token(tran_info["type"])
+        return out_token
 
     def create_haddress_value(self, tran_info):
         dtype = tran_info.get("type", "v2v")
@@ -153,7 +161,7 @@ class dbvproof(dbvbase):
             "in_amount":tran_info["amount"], \
             "out_amount": int(tran_info["out_amount_real"]), \
             "in_token" : tran_info.get("token_id"), \
-            "out_token": stmanage.get_type_stable_token(tran_info["type"]), \
+            "out_token": self.get_out_token(tran_info), \
             "timestamps": int(time.time() * 1000000), \
             "from_chain": self.map_chain_name[dtype[:1]], \
             "to_chain": self.map_chain_name[dtype[2:3]], \
