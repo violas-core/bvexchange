@@ -120,6 +120,9 @@ class requestclient(baseobject):
     def get_transaction_record(self, sender, flag, opttype = "swap", cursor = 0, match=None, limit = 10):
         return self._rclient.get_transaction_record(sender, flag.lower(), opttype.lower(), cursor, match, limit)
 
+    def get_transaction_records(self, senders, opttype = "swap", cursor = 0, match=None, limit = 10):
+        return self._rclient.get_transaction_records(senders, opttype.lower(), cursor, limit)
+
     def list_record_address_for_chain(self, chain, opttype = "swap", cursor = 0, limit = 10):
         return self._rclient.scan(cursor, f"*_{chain.lower()}_{opttype.lower()}", limit)
 

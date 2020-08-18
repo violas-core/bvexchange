@@ -46,6 +46,7 @@ def main():
         limit   = int(args.get("limit", 10))
         dtype   = args.get("dtype")
         sender  = args.get("sender")
+        senders  = args.get("senders")
         version = args.get("version")
         opttype = args.get("opttype", "swap")
 
@@ -55,6 +56,8 @@ def main():
             return tranaddress(chain, opttype, cursor, limit)
         elif opt == "record":
             return tranrecord(chain, sender, opttype, cursor, limit)
+        elif opt == "records":
+            return tranrecords(senders, opttype, cursor, limit)
         elif opt == "detail":
             return trandetail(dtype, version)
         elif opt == "workstate":
@@ -127,6 +130,27 @@ def tranrecord(chain, sender, opttype = "swap", cursor = 0, limit = 99999999):
         datas = {"cursor": ret.datas[0],\
                 "count": len(ret.datas[1]), \
                 "datas": records_ret\
+                }
+        ret = result(error.SUCCEED, "", datas)
+    except Exception as e:
+        ret = parse_except(e)
+    return ret.to_json()
+
+def tranrecords(senders, opttype = "swap", cursor = 0, limit = 99999999):
+    try:
+        logger.debug(f"get records(senders={senders}, opttype = {opttype}, cursor={cursor}, limit={limit})")
+
+        rclient = requestclient("l2vrecord", get_proofdb("record"))
+        ret = rclient.get_transaction_records(senders, opttype, cursor = cursor, limit=limit)
+        if ret.state != error.SUCCEED:
+            raise f"get transaction record failed.senders = {senders}, cursor={cursor}, limit={limit}"
+
+        next_cursor = cursor + len(ret.datas)
+        if next_cursor == cursor or len(ret.datas) < limit:
+            next_cursor = 0
+        datas = {"cursor": next_cursor, \
+                "count": len(ret.datas), \
+                "datas": [json.loads(record) for record in ret.datas] \
                 }
         ret = result(error.SUCCEED, "", datas)
     except Exception as e:

@@ -427,14 +427,14 @@ def test_new(client, name="client_test"):
     key1 = int(time.time() * 1000000)
     version = int(time.time() * 1000)
     address_chain = "00000000000000000000000000000000_BTC"
-    #ret = client.zadd_one(rname, key1, json.dumps({"version":version, "address_chain":address_chain}))
-    #assert ret.state == error.SUCCEED, f""
+    ret = client.zadd_one(rname, key1, json.dumps({"version":version, "address_chain":address_chain}))
+    assert ret.state == error.SUCCEED, f""
 
-    #ret = client.hset(address_chain, version, json.dumps({"version":version, "timestamps": key1, "tran_id":address_chain}))
-    #assert ret.state == error.SUCCEED, f""
+    ret = client.hset(address_chain, version, json.dumps({"version":version, "timestamps": key1, "tran_id":address_chain}))
+    assert ret.state == error.SUCCEED, f""
 
-    ret = client.zrevrangebyscore(name, max = 2596705822202818,  min = 1596707095497829, start = 0, num = 6, withscores = False)
-    #ret = client.zrevrange(name, 14, -1)
+    #ret = client.zrevrangebyscore(name, max = 2596705822202818,  min = 1596707095497829, start = 0, num = 6, withscores = False)
+    ret = client.zrevrange(name, 0, -1)
     assert ret.state == error.SUCCEED, f""
     
     zvalues = ret.datas
