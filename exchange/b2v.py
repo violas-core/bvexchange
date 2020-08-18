@@ -192,6 +192,7 @@ class b2v(vbbase):
             self._logger.debug("exec_exchange-4. start get_address_version...")
             version = self.violas_client.get_address_version(map_sender.address.hex()).datas
             self._logger.debug(f"exec_exchange-4.result: version = {version}")
+            detail.update({"swap_version":version})
         
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state

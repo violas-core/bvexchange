@@ -151,10 +151,16 @@ class dbvproof(dbvbase):
 
     def create_haddress_value(self, tran_info):
         dtype = tran_info.get("type", "v2v")
-        return json.dumps({"version":tran_info["version"], \
+        timestamps = int(time.time() * 1000000)
+        exp_time = int(tran_info.get("expiration_time")) * 1000000
+        if timestamps > exp_time:
+            timestamps = exp_time
+        else:
+            exp_time = timestamps
+        return {"version":tran_info["version"], \
             "type":tran_info["type"], \
             "opttype":tran_info["opttype"], \
-            "expiration_time":int(tran_info.get("expiration_time")),\
+            "expiration_time":int(exp_time/1000000),\
             "state":tran_info["state"], \
             "to_address":tran_info["to_address"], \
             "tran_id":tran_info["tran_id"], \
@@ -166,4 +172,70 @@ class dbvproof(dbvbase):
             "from_chain": self.map_chain_name[dtype[:1]], \
             "to_chain": self.map_chain_name[dtype[2:3]], \
             "times" : tran_info.get("times", 0), \
-            })
+            }
+
+    def record_index_name(self, opttype):
+        return f"{opttype}_record_index"
+
+    def create_zset_value(self, name, key, tran_info = None):
+        return json.dumps({"name":name, "key":key})
+
+        pass
+    def set_record(self, name, key, timestamps, tran_info):
+        '''save record to record db
+           @name: hhash name: address_<chain:btc/violas/libra>_<opttype:map/swap>
+           @key : hhash key: version
+           @tran_info: hhash value: should to dumps, here is dict type
+        '''
+        zname = self.record_index_name(tran_info["opttype"])
+        zkey = timestamps
+        zvalue = self.create_zset_value(name, key, tran_info)
+        #check
+
+        ret = self.zadd_one(zname, zkey, zvalue)
+        if ret.state != error.SUCCEED:
+            return ret
+
+        ret = self.hset(name, key, json.dumps(tran_info))
+        return ret
+
+    def update_record(self, name, key, tran_info):
+        ret = self.hset(name, key, json.dumps(tran_info))
+        return ret
+
+    def get_record(self, name, key):
+        ret = self.hget(name, key)
+        return ret
+
+    def get_records(self, opttype, names, start = 0, limit = 10):
+        '''save record to record db
+           @opttype: record type. swap or map
+           @name: hhash name: address_<chain:btc/violas/libra>_<opttype:map/swap>
+        '''
+        zname = self.record_index_name(opttype)
+        ret = self.zrevrange(zname, 0, -1)
+        if ret.state != error.SUCCEED:
+            return ret
+        datas = []
+        index = -1
+        zvals = ret.datas
+        for zval in zvals:
+            dict_zval = json.loads(zval)
+            hname = dict_zval.get("name")
+            key = dict_zval.get("key")
+            if hname in names:
+                index = index + 1
+
+            if index >= start:
+                ret = self.hget(hname, key)
+                if ret.state != error.SUCCEED:
+                    return ret
+                
+                datas.append(ret.datas)
+
+            if len(datas) >= limit and limit > 0:
+                break
+
+        ret = result(error.SUCCEED, datas = datas)
+        return ret
+
