@@ -8,6 +8,9 @@ db_echo=false
 #v2b max replay exchange count(state = faild)
 v2b_maxtimes = 99
 
+#syncing proof flag ; default true
+syncing_mod = true
+
 [btc_conn]
     user = "btc"
     password = "btc"

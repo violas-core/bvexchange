@@ -32,6 +32,8 @@ class dbvbase(baseobject):
     __key_latest_filter_ver     = "latest_filter_ver"
     __key_latest_saved_ver      = "latest_saved_ver"
     __key_min_valid_ver         = "min_valid_ver"
+    __key_latest_chain_ver      = "latest_chain_ver"
+    __key_finished_syncing_saved_ver      = "finished_syncing_saved_ver"
 
     dbindex = dbindexbase
 
@@ -399,9 +401,9 @@ class dbvbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def list_version_keys(self, start = 0):
+    def list_version_keys(self, start = 0, end = 99999999999):
         keys = self.keys().datas
-        return  sorted([int(key) for key in keys if key.isdigit() and int(key) >= start])
+        return  sorted([int(key) for key in keys if key.isdigit() and int(key) >= start and int(key) <= end])
 
     def get_min_valid_ver(self):
         try:
@@ -421,6 +423,41 @@ class dbvbase(baseobject):
             ret = parse_except(e)
         return ret
 
+    def set_latest_chain_ver(self, ver):
+        try:
+            self._client.set(self.__key_latest_chain_ver, ver)
+            ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_latest_chain_ver(self):
+        try:
+            datas = self._client.get(self.__key_latest_chain_ver)
+            if datas is None or len(datas) == 0:
+                datas = '-1'
+            ret = result(error.SUCCEED, "", int(datas))
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def set_finished_syncing_saved_ver(self, ver):
+        try:
+            self._client.set(self.__key_finished_syncing_saved_ver, ver)
+            ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_finished_syncing_saved_ver(self):
+        try:
+            datas = self._client.get(self.__key_finished_syncing_saved_ver)
+            if datas is None or len(datas) == 0:
+                datas = '-1'
+            ret = result(error.SUCCEED, "", int(datas))
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
 
 def test_new(client, name="client_test"):
     rname = name

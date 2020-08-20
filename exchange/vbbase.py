@@ -15,6 +15,7 @@ import comm
 import comm.error
 import comm.result
 import comm.values
+from time import sleep
 from comm.result import result, parse_except
 from comm.error import error
 from comm.amountconver import amountconver
@@ -394,6 +395,35 @@ class vbbase(baseobject):
             ret = parse_except(e)
         return ret 
 
+    def check_syncing(self):
+        if not stmanage.get_syncing_state():
+            self._logger.debug(f"syncing closed. ")
+            return True
+
+        ret = self.from_client.get_latest_transaction_version()
+        assert ret.state == error.SUCCEED, f"check syncing({self.dtype}) failed."
+        if ret.state != error.SUCCEED:
+            return False
+        chain_ver = ret.datas
+
+        while self.work():
+            ret = self.pserver.get_latest_chain_ver()
+            assert ret.state == error.SUCCEED, f"check syncing({self.dtype}) failed."
+            if ret.state != error.SUCCEED:
+                return False
+            proof_chain_ver = ret.datas
+            if proof_chain_ver < chain_ver:
+                self._logger.info(f"waitting {self.dtype} to syncing... . " + \
+                        f"current proof version: {proof_chain_ver}, chain ver: {chain_ver}, " + \
+                        f"diff ver: {chain_ver - proof_chain_ver}")
+                sleep(10)
+            else:
+                self._logger.debug(f"syncing ok, {self.dtype} to syncing . " + \
+                        f"current proof version: {proof_chain_ver}, chain ver: {chain_ver}, " + \
+                        f"diff ver: {chain_ver - proof_chain_ver}")
+                return True 
+        return False
+
     def start(self):
     
         try:
@@ -404,6 +434,10 @@ class vbbase(baseobject):
             #requirement checks
             self.__checks()
     
+            #syncing
+            if not self.check_syncing():
+                return result(error.SUCCEED)
+
             #db state: FAILED
             #if history datas is found state = failed, exchange it until succeed
             self._logger.debug(f"************************************************************ 1/4")

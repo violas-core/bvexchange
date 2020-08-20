@@ -233,6 +233,9 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_latest_chain_ver(self):
+        return self.get_latest_transaction_version()
+
     def get_latest_transaction_version(self):
         try:
             latest_index = self.__rpc_connection.violas_getexprooflatestindex(comm.values.EX_TYPE_PROOF)

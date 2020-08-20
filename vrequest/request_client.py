@@ -126,3 +126,5 @@ class requestclient(baseobject):
     def list_record_address_for_chain(self, chain, opttype = "swap", cursor = 0, limit = 10):
         return self._rclient.scan(cursor, f"*_{chain.lower()}_{opttype.lower()}", limit)
 
+    def get_latest_chain_ver(self):
+        return self._rclient.get_latest_chain_ver()

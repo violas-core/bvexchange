@@ -783,6 +783,7 @@ class works:
         for key in self.__work_obj:
             obj = self.__work_obj.get(key)
             if obj is not None:
+                logger.info(f"send stop cmd to {key}")
                 obj.stop()
 
 

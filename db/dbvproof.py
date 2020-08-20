@@ -155,12 +155,10 @@ class dbvproof(dbvbase):
         exp_time = int(tran_info.get("expiration_time")) * 1000000
         if timestamps > exp_time:
             timestamps = exp_time
-        else:
-            exp_time = timestamps
         return {"version":tran_info["version"], \
             "type":tran_info["type"], \
             "opttype":tran_info["opttype"], \
-            "expiration_time":int(exp_time/1000000),\
+            "expiration_time":int(timestamps/1000000),\
             "state":tran_info["state"], \
             "to_address":tran_info["to_address"], \
             "tran_id":tran_info["tran_id"], \
@@ -168,7 +166,7 @@ class dbvproof(dbvbase):
             "out_amount": int(tran_info["out_amount_real"]), \
             "in_token" : tran_info.get("token_id"), \
             "out_token": self.get_out_token(tran_info), \
-            "timestamps": int(time.time() * 1000000), \
+            "timestamps": timestamps, \
             "from_chain": self.map_chain_name[dtype[:1]], \
             "to_chain": self.map_chain_name[dtype[2:3]], \
             "times" : tran_info.get("times", 0), \
