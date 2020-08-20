@@ -29,6 +29,9 @@ def get_looping_sleep(mtype):
     sleep = int(setting.looping_sleep.get(mtype, 1))
     return sleep
 
+def get_syncing_state():
+    return setting.syncing_mod
+
 def __get_address_list(atype, mtype, chain = None, full = True):
     ''' 
        full: get address type 
@@ -284,6 +287,7 @@ def main():
     print(f"combin address(b2vusd, btc): {get_combine_address('b2vusd', 'btc')}")
     print(f"combin address(l2b, violas): {get_combine_address('l2b', 'violas')}")
     print(f"run mods: {get_run_mods()}")
+    print(f"syncing state:{get_syncing_state()}")
 
     #json_print(get_conf())
 

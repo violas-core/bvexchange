@@ -252,10 +252,10 @@ class aproof(abase):
                 return ret
             max_version = ret.datas
 
-            keys = self._dbclient.list_version_keys(start_version)
+            keys = self._dbclient.list_version_keys(start_version, max_version)
             new_version = start_version
             for version in keys:
-                if self.work() != True:
+                if not self.work():
                     break
                     
                 #self._logger.debug(f"check version {version}")
@@ -288,18 +288,30 @@ class aproof(abase):
             ret = self._dbclient.get_latest_filter_ver()
             if ret.state != error.SUCCEED:
                 return ret
+            pre_filter_ver = ret.datas
 
             start_version = self.get_start_version(ret.datas + 1)
+
+            #get filter scan chain version. 
+            #chain_latest_ver maybe < max_version(filter db), so
+            #max_version maybe > chain_latest_ver, but most of the time chain_latest_ver > max_version
+            #must be get chain_latest_ver before max_version, otherwise will lose some version
+            #update proof chain_latest_ver should check
+            ret = self._fdbclient.get_latest_filter_ver()
+            if ret.state != error.SUCCEED:
+                return ret
+            chain_latest_ver = ret.datas
 
             #can get max version 
             ret = self._fdbclient.get_latest_saved_ver()
             if ret.state != error.SUCCEED:
                 return ret
-            latest_saved_ver = ret.datas
-            max_version = latest_saved_ver
+            max_version = ret.datas
 
             #not found new transaction to change state
             if start_version > max_version:
+                #not found valid transaction, but update latest_chain_ver for exectue exchange 
+                self._dbclient.set_latest_chain_ver(chain_latest_ver)
                 self._logger.debug(f"dtype:{self.name()} not found new transaction. " + 
                         f"start version:{start_version} " + 
                         f"max saved version:{max_version} :chain : {self.from_chain}")
@@ -308,13 +320,13 @@ class aproof(abase):
             version  = start_version
             count = 0
             self._logger.debug(f"proof({self.name()}) start version = {start_version} " +
-                f"step = {self.get_step()} valid transaction latest_saved_ver = {latest_saved_ver} ")
+                f"step = {self.get_step()} valid transaction max_version = {max_version} ")
 
-            keys = self._fdbclient.list_version_keys(start_version)
-            latest_filter_ver = start_version
+            keys = self._fdbclient.list_version_keys(start_version, max_version)
+            latest_filter_ver = pre_filter_ver #pre_filter_ver is old filter. maybe stop work when first
             for version in keys:
                 try:
-                    if count >= self.get_step() and self.work() == False:
+                    if count >= self.get_step() or not self.work():
                         break
                     #record last version(parse), maybe version is not exists
                     self._logger.debug(f"parse transaction:{version}")
@@ -369,6 +381,14 @@ class aproof(abase):
 
             #here version is not analysis
             self._dbclient.set_latest_filter_ver(latest_filter_ver)
+
+            #update proof chain version
+            if latest_filter_ver <= chain_latest_ver:
+                self._dbclient.set_latest_chain_ver(chain_latest_ver)
+            elif latest_filter_ver > chain_latest_ver: # this case is Rarely appear(valid transaction very frequently)
+                self._dbclient.set_latest_chain_ver(latest_filter_ver)
+
+            #update min ver with state
             for state in ["start", "stop", "cancel"]:
                 self.update_min_version_for_state(state)
             ret = result(error.SUCCEED)
