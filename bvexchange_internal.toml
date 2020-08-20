@@ -9,7 +9,7 @@ db_echo=false
 v2b_maxtimes = 99
 
 #syncing proof flag ; default true
-syncing_mod = true
+syncing_mod = false
 
 [btc_conn]
     user = "btc"

@@ -4,22 +4,14 @@ import sys, os
 import json
 sys.path.append(os.getcwd())
 sys.path.append("..")
-import log
-import log.logger
-import datetime
 import stmanage
-import requests
-import comm
-import comm.values
 from comm.result import result, parse_except
 from comm.error import error
-import vlsopt.violasclient
-from enum import Enum
-from exchange.vlmap import vlmap
+from exchange.exmap import exmap
 
 
 #load logging
-class l2vm(vlmap):    
+class l2vm(exmap):    
     def __init__(self, name, 
             dtype, 
             lbrnodes, 
@@ -29,7 +21,8 @@ class l2vm(vlmap):
             senders 
             ):
 
-        vlmap.__init__(self, name, dtype, lbrnodes, vlsnodes, \
+        exmap.__init__(self, name, dtype, \
+                None, vlsnodes, lbrnodes, \
                 proofdb, receivers, senders,\
                 "libra", "violas")
 
