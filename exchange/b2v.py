@@ -21,7 +21,7 @@ from db.dblocal import dblocal as localdb
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
-from exchange.vbbase import vbbase
+from exchange.exbase import exbase
 
 #module self.name
 #name="exlv"
@@ -29,7 +29,7 @@ wallet_name = "vwallet"
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
-class b2v(vbbase):    
+class b2v(exbase):    
     def __init__(self, name, 
             dtype, 
             btcnodes, 
@@ -52,17 +52,15 @@ class b2v(vbbase):
             @swap_module: swap module address
             @swap_owner: swap owner address
         '''
-        vbbase.__init__(self, name, dtype, btcnodes, vlsnodes, \
-                proofdb, receivers, senders, swap_module, swap_owner,\
+        exbase.__init__(self, name, dtype, \
+                btcnodes, vlsnodes, None, \
+                proofdb, receivers, senders, \
+                swap_module, swap_owner,\
                 "btc", "violas")
         self.append_property("combine_account", combine)
-        self.init_extend_property()
         self.init_exec_states()
 
     def __del__(self):
-        pass
-
-    def init_extend_property(self):
         pass
 
     def init_exec_states(self):
@@ -87,22 +85,6 @@ class b2v(vbbase):
                 excluded.append({"address":address_seq[0], "sequence":address_seq[1]})
 
         setattr(self, "excluded", excluded)
-
-    def fill_address_token(self, address, token_id, amount, gas=40_000):
-        try:
-            ret = self.violas_client.get_balance(address, token_id = token_id)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                ret = self.violas_client.mint_coin(address, \
-                        amount = amount + gas - cur_amount, \
-                        token_id = token_id)
-                return ret
-
-            return result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
 
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
             state = None, detail = {}):
@@ -168,7 +150,7 @@ class b2v(vbbase):
 
             #fill BTCXXX to sender(type = LBRXXX), or check sender's token amount is enough
             self._logger.debug("exec_exchange-2. start fill_address_token...")
-            ret = self.fill_address_token(map_sender.address.hex(), map_token_id, amount, detail["gas"])
+            ret = self.fill_address_token[self.map_chain](map_sender.address.hex(), map_token_id, amount, detail["gas"])
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
                       json.dumps(detail))

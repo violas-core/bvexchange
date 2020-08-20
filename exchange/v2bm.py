@@ -4,22 +4,14 @@ import sys, os
 import json
 sys.path.append(os.getcwd())
 sys.path.append("..")
-import log
-import log.logger
-import datetime
 import stmanage
-import requests
-import comm
-import comm.values
 from comm.result import result, parse_except
 from comm.error import error
-import vlsopt.violasclient
-from enum import Enum
-from exchange.vbmap import vbmap
+from exchange.exmap import exmap
 
 
 #load logging
-class v2bm(vbmap):    
+class v2bm(exmap):    
     def __init__(self, name, 
             dtype, 
             vlsnodes, 
@@ -29,7 +21,8 @@ class v2bm(vbmap):
             senders 
             ):
 
-        vbmap.__init__(self, name, dtype, btcnodes, vlsnodes,  \
+        exmap.__init__(self, name, dtype, \
+                btcnodes, vlsnodes,  None,\
                 proofdb, receivers, senders,\
                 "violas", "btc")
 

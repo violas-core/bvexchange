@@ -25,7 +25,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
-from exchange.vlbase import vlbase
+from exchange.exbase import exbase
 
 #module self.name
 #name="exlv"
@@ -33,7 +33,7 @@ wallet_name = "vwallet"
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
-class v2l(vlbase):    
+class v2l(exbase):    
     def __init__(self, 
             name, 
             dtype, 
@@ -45,8 +45,10 @@ class v2l(vlbase):
             combine, 
             swap_module, 
             swap_owner):
-        vlbase.__init__(self, name, dtype, vlsnodes, lbrnodes, \
-                proofdb, receivers, senders, swap_module, swap_owner, \
+        exbase.__init__(self, name, dtype, \
+                None, vlsnodes, lbrnodes, \
+                proofdb, receivers, senders, \
+                swap_module, swap_owner, \
                 "violas", "libra")
         self.append_property("combine", combine)
 
@@ -71,21 +73,6 @@ class v2l(vlbase):
                     if state not in [localdb.state.COMPLETE, \
                         localdb.state.VSUCCEED, \
                         localdb.state.SSUCCEED]])
-
-    def fill_address_token(self, address, token_id, amount, gas=40_000):
-        try:
-            ret = self.libra_client.get_balance(address, token_id = token_id)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                #get some coin for address
-                pass
-
-            ret = result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
 
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
             state = None, detail = {}):
@@ -185,7 +172,7 @@ class v2l(vlbase):
                 self.use_module(state, localdb.state.PSUCCEED):
 
             self._logger.debug(f"exec_exchange-3. start fill_address_token...")
-            ret = self.fill_address_token(map_sender.address.hex(), to_token_id, \
+            ret = self.fill_address_token[self.map_chain](map_sender.address.hex(), to_token_id, \
                     detail["diff_balance"])
 
             if ret.state != error.SUCCEED:

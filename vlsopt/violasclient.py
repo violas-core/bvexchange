@@ -62,6 +62,7 @@ class violaswallet(baseobject):
                 ret = result(error.SUCCEED, "", "")
             else:
                 ret = result(error.SUCCEED, "not found wallet file", "")
+                raise Exception(f"not found {self.name()} wallet file({self.__wallet_name})")
                 self.__wallet = walletproxy.new()
 
         except Exception as e:

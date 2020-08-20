@@ -4,34 +4,26 @@ import sys, os
 import json
 sys.path.append(os.getcwd())
 sys.path.append("..")
-import log
-import log.logger
-import traceback
 import datetime
-import sqlalchemy
 import stmanage
-import requests
 import comm
 import comm.error
 import comm.result
-import comm.values
-from comm.result import result, parse_except
 from comm.error import error
 from db.dblocal import dblocal as localdb
-from enum import Enum
-from exchange.vbbase import vbbase
+from exchange.exbase import exbase
 
 #module self.name
 #name="exlv"
 wallet_name = "vwallet"
 
-VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
-class vbmap(vbbase):    
+class exmap(exbase):    
     def __init__(self, name, 
             dtype, 
             btcnodes, 
             vlsnodes, 
+            lbrnodes,
             proofdb, 
             receivers, 
             senders, 
@@ -39,26 +31,15 @@ class vbmap(vbbase):
             mapchain
             ):
 
-        vbbase.__init__(self, name, dtype, btcnodes, vlsnodes, \
-                proofdb, receivers, senders, None, None, \
+        exbase.__init__(self, name, dtype, \
+                btcnodes, vlsnodes, lbrnodes,\
+                proofdb, receivers, senders, \
+                None, None, \
                 fromchain, mapchain)
-        self.init_extend_property()
         self.init_exec_states()
-        self.init_fill_address_token()
 
     def __del__(self):
         pass
-    
-
-    def init_fill_address_token(self):
-        setattr(self, "fill_address_token", {})
-        self.fill_address_token.update({"violas": self.fill_address_token_violas})
-        self.fill_address_token.update({"libra": self.fill_address_token_libra})
-        self.fill_address_token.update({"btc": self.fill_address_token_btc})
-
-
-    def init_extend_property(self):
-        self.append_property("combine_account", None)
 
     def init_exec_states(self):
         self.append_property("use_exec_update_db_states", 
@@ -69,62 +50,6 @@ class vbmap(vbbase):
                     if state not in [localdb.state.COMPLETE, \
                         localdb.state.VSUCCEED, \
                         localdb.state.SSUCCEED]])
-
-    def get_address_from_account(self, account):
-        if not isinstance(account, str):
-            address = account.address.hex()
-        else:
-            address = account
-        return address
-
-    def fill_address_token_violas(self, account, token_id, amount, gas=40_000):
-        try:
-
-            address = self.get_address_from_account(account)
-            ret = self.violas_client.get_balance(address, token_id = token_id)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                ret = self.violas_client.mint_coin(address, \
-                        amount = amount + gas - cur_amount, \
-                        token_id = token_id)
-                return ret
-
-            return result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def fill_address_token_libra(self, account, token_id, amount, gas=40_000):
-        try:
-            address = self.get_address_from_account(account)
-            ret = self.libra_client.get_balance(address, token_id = token_id)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
-
-            return result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def fill_address_token_btc(self, account, token_id, amount, gas=0.0001):
-        try:
-            address = self.get_address_from_account(account)
-            ret = self.btc_client.get_balance(address)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                return result(error.FAILED, f"address {address} not enough amount {amount} , only have {cur_amount}.")
-
-            return result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
 
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
             state = None, detail = {}):
