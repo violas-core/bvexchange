@@ -5,6 +5,7 @@ __pycache__/
 
 exchange/code_bak/
 bv_optimized.toml
+bvexchange.toml
 libviolas/
 lbviolasclient/
 lblibraclient/
