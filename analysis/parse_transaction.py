@@ -44,6 +44,13 @@ def json_to_dict(data):
         ret = result(error.FAILED, "data is not json format.")
     return ret
 
+def get_opttype_from_dtype(dtype):
+    if dtype in [datatype.V2LM.value, datatype.L2VM.value, datatype.V2BM.value, datatype.B2VM.value]:
+        return "map"
+    else:
+        return "swap"
+
+
 def parse_tran(transaction):
     try:
         datas = {"flag"         : None, 
@@ -95,7 +102,10 @@ def parse_tran(transaction):
         datas["out_amount_real"]= int(data_dict.get("out_amount_real", datas["out_amount"]))
         datas["nettype"]        = data_dict.get("nettype")
         datas["state"]          = data_dict.get("state")
-        datas["opttype"]        = data_dict.get("opttype", "swap")
+        opttype = data_dict.get("opttype")
+        if opttype is None:
+            opttype = get_opttype_from_dtype(datas["type"])
+        datas["opttype"]        = opttype
         datas["amount"]         = transaction.get("amount", 0)
         datas["sender"]         = transaction.get("sender")
         datas["receiver"]       = transaction.get("receiver")

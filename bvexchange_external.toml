@@ -8,6 +8,9 @@ db_echo=false
 #v2b max replay exchange count(state = faild)
 v2b_maxtimes = 99
 
+#syncing proof flag ; default true
+syncing_mod = true
+
 [btc_conn]
     user = "btc"
     password = "btc"
@@ -79,6 +82,13 @@ v2b_maxtimes = 99
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
+    db = "l2vm"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
     db = "l2vusd"
     password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
@@ -108,6 +118,13 @@ v2b_maxtimes = 99
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
+    db = "v2lm"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
     db = "v2lusd"
     password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
@@ -134,6 +151,13 @@ v2b_maxtimes = 99
     step = 500
 
 #b2vxxx proof db
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "b2vm"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
+    step = 500
+
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
@@ -266,15 +290,16 @@ v2b_maxtimes = 99
     [type_opts.v2b]
         stoken = "BTC"
         mtoken = "BTC"
-        support= "false"  
+    [type_opts.v2bm]
+        stoken = "BTC"
+        mtoken = "BTC"
+    [type_opts.v2lm]
+        support= "true"  
         run    = "false"
-    [type_opts.bfilter]
+    [type_opts.l2vm]
         support= "true"  
-        run    = "true"
-    [type_opts.vfilter]
-        support= "true"  
-        run    = "true"
-    [type_opts.lfilter]
+        run    = "false"
+    [type_opts.b2vm]
         support= "true"  
         run    = "true"
 
@@ -386,8 +411,22 @@ v2b_maxtimes = 99
 
     [[address_list.receiver]]
         address = "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
-        type = "l2b"
+        type = "l2vm"
         chain = "libra"
+
+    [[address_list.receiver]]
+        address = "206b0fadc0ef84e7fdf0340a9d4f7cf1aee72ef73449197b1bc7daf94b5e47f3"
+        type = "v2lm"
+        chain = "violas"
+
+    [[address_list.receiver]]
+        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
+        type = "b2vm"
+        chain = "btc"
+    [[address_list.receiver]]
+        address = "055959c647573dd59e2b9a47dc89657b876928fc4c594f2d1e88affca1ee3add"
+        type = "v2bm"
+        chain = "violas"
 
     #sender address
     ##send btc
@@ -404,9 +443,19 @@ v2b_maxtimes = 99
 
     [[address_list.sender]]
         address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
+        type = "v2bm"
+        chain = "btc"
+
+    [[address_list.sender]]
+        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
         type = "l2b"
         chain = "btc"
     ##send violas tokens
+    [[address_list.sender]]
+        address = "8a6b13ef1589a09d25f0459f19825aeca6fc1064a4076e7e58c326621820195f"
+        type = "l2vm"
+        chain = "violas"
+
     [[address_list.sender]]
         address = "b7bba851dd080e9134178a4700595998be8f93db66d8f81dd2d84fccdef2118f"
         type = "l2vusd"
@@ -426,6 +475,11 @@ v2b_maxtimes = 99
         address = "17d653796c73e4ce2d452a3690000cd285f3171584cbf295b757912bb363dd67"
         type = "l2vsgd"
         chain = "violas"
+
+    [[address_list.sender]]
+        address = "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
+        type = "v2lm"
+        chain = "libra"
 
     [[address_list.sender]]
         address = "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
@@ -487,7 +541,7 @@ v2b_maxtimes = 99
         chain = "violas"
     [[address_list.combine]]
         address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
-        type = "b2v"
+        type = "b2vm"
         chain = "btc"
     [[address_list.combine]]
         address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"

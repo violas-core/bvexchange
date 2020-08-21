@@ -11,10 +11,10 @@ from exchange.exmap import exmap
 
 
 #load logging
-class l2vm(exmap):    
+class b2vm(exmap):    
     def __init__(self, name, 
             dtype, 
-            lbrnodes, 
+            btcnodes, 
             vlsnodes, 
             proofdb, 
             receivers, 
@@ -22,9 +22,9 @@ class l2vm(exmap):
             ):
 
         exmap.__init__(self, name, dtype, \
-                None, vlsnodes, lbrnodes, \
+                btcnodes, vlsnodes, None, \
                 proofdb, receivers, senders,\
-                "libra", "violas")
+                "btc", "violas")
 
     def __del__(self):
         pass
@@ -33,14 +33,14 @@ class l2vm(exmap):
 def main():
        print("start main")
        stmanage.set_conf_env("../bvexchange.toml")
-       mod = "l2vm"
-       dtype = "l2vm"
-       obj = l2vm(mod, 
+       mod = "b2vm"
+       dtype = "b2vm"
+       obj = v2bm(mod, 
                dtype,
-               stmanage.get_libra_nodes(),
+               stmanage.get_btc_nodes(),
                stmanage.get_violas_nodes(), 
                stmanage.get_db(dtype), 
-               list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
+               list(set(stmanage.get_receiver_address_list(dtype, "btc", False))),
                list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
                )
        ret = obj.start()

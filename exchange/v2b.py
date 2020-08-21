@@ -25,7 +25,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
-from exchange.vbbase import vbbase
+from exchange.exbase import exbase
 
 #module self.name
 #name="exlv"
@@ -33,7 +33,7 @@ wallet_name = "vwallet"
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
-class v2b(vbbase):    
+class v2b(exbase):    
     def __init__(self, 
             name, 
             dtype, 
@@ -56,8 +56,10 @@ class v2b(vbbase):
             @swap_module: swap module address
             @swap_owner: swap owner address
         '''
-        vbbase.__init__(self, name, dtype, btcnodes, vlsnodes, \
-                proofdb, receivers, senders, swap_module, swap_owner,\
+        exbase.__init__(self, name, dtype, \
+                btcnodes, vlsnodes, None, \
+                proofdb, receivers, senders, \
+                swap_module, swap_owner,\
                 "violas", "btc")
         self.append_property("combine", combine)
 
@@ -239,8 +241,7 @@ class v2b(vbbase):
 
             self._logger.debug(f"exec_exchange-3. start fill_address_token...")
             btc_amount = self.amountswap(detail["diff_balance"]).btc_amount
-            ret = self.fill_address_token(map_sender, to_token_id, \
-                    btc_amount)
+            ret = self.fill_address_token[self.map_chain](map_sender, to_token_id, btc_amount)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
                         json.dumps(detail))

@@ -83,3 +83,13 @@ class amountconver():
             return self.btc_amount
         else:
             raise Exception(f"chain({chain}) is invalid.")
+
+    def microamount(self, chain):
+        if chain == "violas":
+            return self.violas_amount
+        elif chain == "libra":
+            return self.libra_amount
+        elif chain == "btc":
+            return self.satoshi_amount
+        else:
+            raise Exception(f"chain({chain}) is invalid.")
