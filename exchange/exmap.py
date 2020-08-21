@@ -8,7 +8,7 @@ import datetime
 import stmanage
 import comm
 import comm.error
-import comm.result
+from comm.result import result, parse_except
 from comm.error import error
 from db.dblocal import dblocal as localdb
 from exchange.exbase import exbase
