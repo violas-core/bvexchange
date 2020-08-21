@@ -180,7 +180,7 @@ class b2v(exbase):
         #sendexproofmark succeed , send violas coin with data for change tran state
         if self.use_module(state, localdb.state.VSUCCEED):
             self._logger.debug("exec_exchange-5. start send_coin_for_update_state_to_end...")
-            ret = self.send_coin_for_update_state_to_end(from_sender, self.combine_account, tran_id, \
+            ret = self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, \
                     from_token_id, amount = 0, version = version, out_amount_real=detail.get("diff_balance", 0))
             if ret.state != error.SUCCEED:
                 return ret
