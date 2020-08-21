@@ -85,36 +85,31 @@ def listexproofforstart(opttype, receiver, excluded = None):
     client = getbtcclient()
     ret = client.listexproofforstart(opttype, receiver, excluded)
     assert ret.state == error.SUCCEED, " listexproofforstart failed"
-    for data in ret.datas:
-        print(data)
+    print(ret.datas)
 
 def listexproofforend(opttype, receiver, excluded = None):
     client = getbtcclient()
     ret = client.listexproofforend(opttype, receiver, excluded)
     assert ret.state == error.SUCCEED, " listexproofforend failed"
-    for data in ret.datas:
-        print(data)
+    print(ret.datas)
 
 def listexproofforstop(opttype, receiver, excluded = None):
     client = getbtcclient()
     ret = client.listexproofforstop(opttype, receiver, excluded)
     assert ret.state == error.SUCCEED, " listexproofforstop failed"
-    for data in ret.datas:
-        print(data)
+    print(ret.datas)
 
 def listexproofformark(receiver, excluded = None):
     client = getbtcclient()
     ret = client.listexproofformark(receiver, excluded)
     assert ret.state == error.SUCCEED, " listexproofformark failed"
-    for data in ret.datas:
-        print(data)
+    print(ret.datas)
 
 def listexproofforb2v(cursor, limit = 10):
     client = getbtcclient()
     ret = client.listexproofforb2v(cursor, limit)
     assert ret.state == error.SUCCEED, " listexproofforb2v failed"
-    for data in ret.datas:
-        print(data)
+    print(ret.datas)
 
 def btchelp():
     client = getbtcclient()
