@@ -74,6 +74,13 @@ syncing_mod = true
 [[db_list]]
     host = "127.0.0.1"
     port = 6378
+    db = "v2bm"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
+    step = 500
+
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
     db = "b2v"
     password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
@@ -432,7 +439,7 @@ syncing_mod = true
     ##send btc
     [[address_list.sender]]
         address = "c139e83b114e2a49be6fcc8b376f42fb602ea75ca90536bcec337e611b9b1838"
-        type = "b2v"
+        type = "b2vm"
         chain = "violas"
 
     ##send btc
