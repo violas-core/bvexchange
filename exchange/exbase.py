@@ -129,7 +129,7 @@ class exbase(baseobject):
             self.append_property("map_client", self.btc_client)
         elif self.map_chain in ("violas", "libra"):
             self.append_property("map_wallet", violaswallet(self.name(), wallet_name, self.map_chain))
-            self.append_property("map_client", self.violas_client if self.from_chain == "violas" else self.libra_client)
+            self.append_property("map_client", self.violas_client if self.map_chain == "violas" else self.libra_client)
         else:
             raise Exception(f"chain {self.from_chain} is invalid.")
 
