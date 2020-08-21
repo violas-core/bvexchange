@@ -46,14 +46,18 @@ def main():
         limit   = int(args.get("limit", 10))
         dtype   = args.get("dtype")
         sender  = args.get("sender")
+        senders  = args.get("senders")
         version = args.get("version")
+        opttype = args.get("opttype", "swap")
 
         if opt is None:
             raise Exception("opt not found.")
         if opt == "address":
-            return tranaddress(chain, cursor, limit)
+            return tranaddress(chain, opttype, cursor, limit)
         elif opt == "record":
-            return tranrecord(chain, sender, cursor, limit)
+            return tranrecord(chain, sender, opttype, cursor, limit)
+        elif opt == "records":
+            return tranrecords(senders, opttype, cursor, limit)
         elif opt == "detail":
             return trandetail(dtype, version)
         elif opt == "workstate":
@@ -84,33 +88,33 @@ def trandetail(dtype, version):
     return ret.to_json()
 
 @app.route('/tranaddress/<string:chain>/<int:cursor>/<int:limit>/', methods=['GET'])
-def tranaddress(chain, cursor = 0, limit = 99999999):
+def tranaddress(chain, opttype = "swap", cursor = 0, limit = 99999999):
     try:
-        logger.debug(f"get record address(chain = {chain}, cursor={cursor}, limit={limit})")
+        logger.debug(f"get record address(chain = {chain}, opttype = {opttype}, cursor={cursor}, limit={limit})")
 
         check_chain(chain)
 
         rclient = requestclient("l2vrecord", get_proofdb("record"))
-        ret = rclient.list_record_address_for_chain(chain, cursor = cursor, limit=limit)
+        ret = rclient.list_record_address_for_chain(chain, opttype, cursor = cursor, limit=limit)
         if ret.state != error.SUCCEED:
             raise f"get transaction record failed chain = {chain}"
         datas = {"cursor": ret.datas[0],\
                 "count": len(ret.datas[1]), \
-                "datas": [data[:0 - len(chain) -1] for data in ret.datas[1]]}
+                "datas": [data[:0 - len(chain) -1 -len(opttype) -1] for data in ret.datas[1]]}
         ret = result(error.SUCCEED, "", datas)
     except Exception as e:
         ret = parse_except(e)
     return ret.to_json()
 
 @app.route('/tranrecord/<string:chain>/<string:sender>/<int:cursor>/<int:limit>/', methods=['GET'])
-def tranrecord(chain, sender, cursor = 0, limit = 99999999):
+def tranrecord(chain, sender, opttype = "swap", cursor = 0, limit = 99999999):
     try:
-        logger.debug(f"get record(chain = {chain} sender={sender}, cursor={cursor}, limit={limit})")
+        logger.debug(f"get record(chain = {chain} sender={sender}, opttype = {opttype}, cursor={cursor}, limit={limit})")
 
         check_chain(chain)
 
         rclient = requestclient("l2vrecord", get_proofdb("record"))
-        ret = rclient.get_transaction_record(sender, chain, cursor = cursor, limit=limit)
+        ret = rclient.get_transaction_record(sender, chain, opttype, cursor = cursor, limit=limit)
         if ret.state != error.SUCCEED:
             raise f"get transaction record failed.chain = {chain}, sender = {sender}, cursor={cursor}, limit={limit}"
         records = [json.loads(ret.datas[1][key]) for key in sorted(ret.datas[1].keys(), reverse = True)] 
@@ -132,21 +136,31 @@ def tranrecord(chain, sender, cursor = 0, limit = 99999999):
         ret = parse_except(e)
     return ret.to_json()
 
+def tranrecords(senders, opttype = "swap", cursor = 0, limit = 99999999):
+    try:
+        logger.debug(f"get records(senders={senders}, opttype = {opttype}, cursor={cursor}, limit={limit})")
+
+        rclient = requestclient("l2vrecord", get_proofdb("record"))
+        ret = rclient.get_transaction_records(senders, opttype, cursor = cursor, limit=limit)
+        if ret.state != error.SUCCEED:
+            raise f"get transaction record failed.senders = {senders}, cursor={cursor}, limit={limit}"
+
+        next_cursor = cursor + len(ret.datas)
+        if next_cursor == cursor or len(ret.datas) < limit:
+            next_cursor = 0
+        datas = {"cursor": next_cursor, \
+                "count": len(ret.datas), \
+                "datas": [json.loads(record) for record in ret.datas] \
+                }
+        ret = result(error.SUCCEED, "", datas)
+    except Exception as e:
+        ret = parse_except(e)
+    return ret.to_json()
+
 def check_chain(chain):
     if chain is None or chain.upper() not in ("VIOLAS", "LIBRA", "BTC"):
         raise Exception(f"{chain} is invalid. must be [VIOLAS, LIBRA, BTC]")
 
-def get_chain_record(flag, sender, cursor, limit):
-    try:
-        flag = "LIBRA"
-        rclient = requestclient("l2vrecord", get_proofdb("record"))
-        ret = rclient.get_transaction_record(sender, flag, cursor = cursor, limit=limit)
-        if ret.state != error.SUCCEED:
-            raise Exception(f"get transaction record failed.chain = {flag}, sender = {sender}")
-
-    except Exception as e:
-        ret = parse_except(e)
-    return ret
 def get_proofdb(dtype):
     return stmanage.get_db(dtype)
 

@@ -38,7 +38,7 @@ OP_RETURN compact_size mark datas
  <tr>
   <td><strong>compact_size</strong></td>
   <td>uint8/(uint8 + uint8)</td>
-  <td>Compressed number, sizeof(compact_size) + sizeof(mark) + sizeof(datas)</td>
+  <td>Compressed number, sizeof(mark) + sizeof(datas)</td>
  </tr>
  <tr>
   <td><strong>mark</strong></td>

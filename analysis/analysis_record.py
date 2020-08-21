@@ -40,17 +40,54 @@ class record(baseobject):
     def can_record(self):
         return self._rdbclient is not None
 
+    #def update_address_info(self, tran_info):
+    #    try:
+    #        if self._rdbclient is None:
+    #            return result(error.SUCCEED, "db not set")
+
+    #        self._logger.debug(f"start update_address_info:{tran_info['version']}, state:{tran_info['state']}")
+    #        version = tran_info.get("version", None)
+
+    #        name = self._rdbclient.create_haddress_name(tran_info)
+    #        key = self._rdbclient.create_haddress_key(tran_info)
+    #        ret = self._rdbclient.hexists(name, key)
+    #        if ret.state != error.SUCCEED:
+    #            self._logger.error(f"check state info <name={name}> failed, check db is run. messge:{ret.message}")
+    #            return ret
+
+    #        if ret.datas == 1:
+    #            info = self._rdbclient.hget(name, key)
+    #            if info.state != error.SUCCEED or info.datas is None:
+    #                self._logger.error(f"get state info <name={name}, key={key}> failed, check db is run. messge:{info.message}")
+    #                return info
+    #            data = json.loads(info.datas)
+    #            data["state"] = tran_info["state"]
+    #            data["out_amount"] = int(tran_info.get("out_amount_real", 0))
+    #            ret = self._rdbclient.hset(name, key, json.dumps(data))
+    #            if ret.state != error.SUCCEED:
+    #                self._logger.error(f"update state info <name={name}, key={key}, data={json.dumps(data)}> failed, check db is run. messge:{ret.message}")
+    #                return ret
+    #        else:
+    #            data = self._rdbclient.create_haddress_value(tran_info)
+    #            ret = self._rdbclient.hset(name, key, data)
+    #            if ret.state != error.SUCCEED:
+    #                self._logger.error(f"set state info <name={name}, key={key}, data={data}> failed, check db is run. messge:{ret.message}")
+    #                return ret
+
+    #    except Exception as e:
+    #        ret = parse_except(e)
+    #    return ret
+
+
     def update_address_info(self, tran_info):
         try:
             if self._rdbclient is None:
                 return result(error.SUCCEED, "db not set")
 
-            self._logger.debug(f"start update_address_info:{tran_info['version']}, state:{tran_info['state']}")
-            version = tran_info.get("version", None)
-
             name = self._rdbclient.create_haddress_name(tran_info)
             key = self._rdbclient.create_haddress_key(tran_info)
             ret = self._rdbclient.hexists(name, key)
+            self._logger.debug(f"start update_address_info:{name} {key}, state:{tran_info['state']}")
             if ret.state != error.SUCCEED:
                 self._logger.error(f"check state info <name={name}> failed, check db is run. messge:{ret.message}")
                 return ret
@@ -69,7 +106,7 @@ class record(baseobject):
                     return ret
             else:
                 data = self._rdbclient.create_haddress_value(tran_info)
-                ret = self._rdbclient.hset(name, key, data)
+                ret = self._rdbclient.set_record(name, key, data["timestamps"], data)
                 if ret.state != error.SUCCEED:
                     self._logger.error(f"set state info <name={name}, key={key}, data={data}> failed, check db is run. messge:{ret.message}")
                     return ret

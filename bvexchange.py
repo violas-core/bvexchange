@@ -15,7 +15,7 @@ from time import sleep, ctime
 import stmanage
 import subprocess
 import comm.functions as fn
-from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm
+from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm, b2vm
 from comm.result import parse_except
 from analysis import analysis_base, analysis_filter, analysis_proof
 from enum import Enum
@@ -29,7 +29,7 @@ class works:
     __work_obj = {}
     __record_db = "record"
 
-    __libra_min_valid_version   = 190_4203
+    __libra_min_valid_version   = 0
     __violas_min_valid_version  = 1909_6944
     __btc_min_valid_version     = 0
     def __init__(self):
@@ -105,7 +105,6 @@ class works:
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, "btc", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
-                            stmanage.get_combine_address(dtype, "btc", True)
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -157,7 +156,7 @@ class works:
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}")
                 try:
-                    obj = v2b.v2b(mod, 
+                    obj = v2bm.v2bm(mod, 
                             dtype,
                             stmanage.get_violas_nodes(), 
                             stmanage.get_btc_nodes(),
@@ -216,7 +215,7 @@ class works:
                     obj = analysis_proof.aproof(name=mod, ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
-                    if dtype == "v2lm":
+                    if dtype == "v2bm":
                         obj.append_token_id(stmanage.get_support_map_token_id(ttype))
                     else:
                         obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
@@ -784,6 +783,7 @@ class works:
         for key in self.__work_obj:
             obj = self.__work_obj.get(key)
             if obj is not None:
+                logger.info(f"send stop cmd to {key}")
                 obj.stop()
 
 

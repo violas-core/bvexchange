@@ -62,6 +62,7 @@ class violaswallet(baseobject):
                 ret = result(error.SUCCEED, "", "")
             else:
                 ret = result(error.SUCCEED, "not found wallet file", "")
+                raise Exception(f"not found {self.name()} wallet file({self.__wallet_name})")
                 self.__wallet = walletproxy.new()
 
         except Exception as e:
@@ -285,13 +286,13 @@ class violasclient(baseobject):
                 return ret
 
             if not ret.datas:
-                return result(error.ARG_INVALID, f"account {from_account.address.hex()}) not bind token({token_id})")
+                return result(error.ARG_INVALID, f"account ({from_account.address.hex()}) not bind token({token_id})")
 
             ret = self.has_token_id(to_address, token_id)
             if ret.state != error.SUCCEED:
                 return ret
             if not ret.datas:
-                return result(error.ARG_INVALID, f"account {from_account.address.hex()}) not bind token({token_id})")
+                return result(error.ARG_INVALID, f"account ({from_account.address.hex()}) not bind token({token_id})")
 
 
             self.__client.send_coin(sender_account=from_account, receiver_address=addr, \

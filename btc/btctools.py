@@ -152,7 +152,7 @@ def init_args(pargs):
     pargs.append("getwalletbalance", "returns wallet balance.")
     pargs.append("getwalletaddressbalance", "returns wallet target address's balance.", True, ["address"])
     pargs.append("getb2vtransaction", "returns array of proof list.[map to violas format]", True, ["cursor", "limit"])
-    pargs.append("gettransaction", "returns proof info.", True, ["address"])
+    pargs.append("gettransaction", "returns proof info.", True, ["tranid"])
 
 def run(argc, argv):
     try:

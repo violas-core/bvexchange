@@ -25,7 +25,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
-from exchange.vlbase import vlbase
+from exchange.exbase import exbase
 
 #module self.name
 #name="exlv"
@@ -33,7 +33,7 @@ wallet_name = "vwallet"
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
-class l2v(vlbase):    
+class l2v(exbase):    
     def __init__(self, name, 
             dtype, 
             vlsnodes, 
@@ -44,17 +44,15 @@ class l2v(vlbase):
             swap_module,
             swap_owner):
 
-        vlbase.__init__(self, name, dtype, lbrnodes, vlsnodes, \
-                proofdb, receivers, senders, swap_module, swap_owner,\
+        exbase.__init__(self, name, dtype, \
+                None, vlsnodes, lbrnodes, \
+                proofdb, receivers, senders, \
+                swap_module, swap_owner,\
                 "libra", "violas")
-        self.init_extend_property()
         self.init_exec_states()
 
     def __del__(self):
         pass
-
-    def init_extend_property(self):
-        self.append_property("combine_account", None)
 
     def init_exec_states(self):
 
@@ -137,7 +135,7 @@ class l2v(vlbase):
             detail.update({"gas": gas})
 
             #mint LBRXXX to sender(type = LBRXXX), or check sender's token amount is enough
-            ret = self.fill_address_token(map_sender.address.hex(), map_token_id, amount, detail["gas"])
+            ret = self.fill_address_token[self.map_chain](map_sender.address.hex(), map_token_id, amount, detail["gas"])
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
                       json.dumps(detail))
