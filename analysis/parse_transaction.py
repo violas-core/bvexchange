@@ -115,6 +115,8 @@ def parse_tran(transaction):
         datas["tran_id"]        = data_dict.get("tran_id")
         datas["sequence"]       = transaction.get("sequence_number")
         datas["module"]         = transaction.get("module_address")
+        datas["confirm"]        = transaction.get("confirm", 1)
+        datas["txid"]           = transaction.get("txid", "")
 
         ret = result(error.SUCCEED, datas = datas)
     except Exception as e:

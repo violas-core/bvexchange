@@ -149,6 +149,11 @@ class dbvproof(dbvbase):
             out_token = stmanage.get_type_stable_token(tran_info["type"])
         return out_token
 
+    def map_state(self, state):
+        if state == "prestart":
+            state = "start"
+        return state
+
     def create_haddress_value(self, tran_info):
         dtype = tran_info.get("type", "v2v")
         timestamps = int(time.time() * 1000000)
@@ -159,7 +164,7 @@ class dbvproof(dbvbase):
             "type":tran_info["type"], \
             "opttype":tran_info["opttype"], \
             "expiration_time":int(timestamps/1000000),\
-            "state":tran_info["state"], \
+            "state":self.map_state(tran_info["state"]), \
             "to_address":tran_info["to_address"], \
             "tran_id":tran_info["tran_id"], \
             "in_amount":tran_info["amount"], \

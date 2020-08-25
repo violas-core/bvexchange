@@ -25,11 +25,11 @@ from db.dbvproof import dbvproof
 from analysis.analysis_base import abase
 
 #module name
-name="aproof"
+name="aproofbase"
 
-COINS = comm.values.COINS
-class aproof(abase):
+class aproofbase(abase):
     class proofstate(Enum):
+        PRESTART = 0
         START   = 1
         END     = 2
         CANCEL  = 3
@@ -127,26 +127,6 @@ class aproof(abase):
 
         return False
 
-    def get_tran_id(self, tran_info):
-        if tran_info["flag"] == self.trantype.BTC:
-            tran_id = tran_info["tran_id"]
-        else:
-            tran_id = self.create_tran_id(tran_info["flag"], tran_info["type"], tran_info['sender'], \
-                    tran_info['receiver'], tran_info['module'], tran_info['version'])
-        return tran_id
-
-    def is_btc_data(self, tran_info):
-        return tran_info["flag"] == self.trantype.BTC
-
-    def update_proof_info_for_btc(self, version, train_id, tran_info):
-        tran_info["flag"] = tran_info["flag"].value
-        tran_info["type"] = tran_info["type"].value
-        tran_id = tran_info["tran_id"]
-        ret = self._dbclient.set_proof(version, json.dumps(tran_info))
-        if ret.state != error.SUCCEED:
-            return ret
-        return result(error.SUCCEED, "", {"new_proof":True, "tran_id":tran_id})
-
     def has_update_state_authority(self, state, old_tran_info, new_tran_info):
         #only recevier can change state (start -> end/cancel)
 
@@ -161,82 +141,6 @@ class aproof(abase):
             return old_sender == new_sender
 
         return False
-
-    def update_proof_info(self, tran_info):
-        try:
-            self._logger.debug(f"start update_proof_info tran info: {tran_info}")
-            version = tran_info.get("version", None)
-
-            tran_id = None
-            new_proofstate = self.proofstate_name_to_value(tran_info.get("state", ""))
-            new_proof = new_proofstate == self.proofstate.START
-
-            self._logger.debug(f"new proof: {new_proof}")
-            if new_proof:
-                ret  = self._dbclient.key_is_exists(version)
-                if ret.state != error.SUCCEED:
-                    return ret
-
-                #found key = version info, db has old datas , must be flush db?
-                if ret.datas == True:
-                    return result(error.TRAN_INFO_INVALID, f"key{version} is exists, db datas is old, flushdb ?. violas tran info : {tran_info}")
-
-                #create tran id
-                tran_id = self.get_tran_id(tran_info)
-
-                tran_info["flag"] = tran_info["flag"].value
-                tran_info["type"] = tran_info["type"].value
-                tran_info["tran_id"] = tran_id
-                ret = self._dbclient.set_proof(version, json.dumps(tran_info))
-                if ret.state != error.SUCCEED:
-                    return ret
-                self._logger.info(f"saved new proof succeed. version = {tran_info.get('version')} tran_id = {tran_id} state={tran_info['state']}")
-
-            else:
-                tran_id = tran_info.get("tran_id", None)
-                if tran_id is None or len(tran_id) == 0:
-                    return result(error.TRAN_INFO_INVALID, f"new tran data info is invalid, tran info : {tran_info}")
-
-                #get tran info from db(tran_id -> version -> tran info)
-
-                ret = self._dbclient.get_proof_by_hash(tran_id)
-                if ret.state != error.SUCCEED:
-                    #btc transaction is end , 
-                    #diff libra and violas(maybe state is changed to end before scan bitcoin chain. so proof db can't found.)
-                    if self.is_btc_data(tran_info):
-                        return self.update_proof_info_for_btc(version, tran_id, tran_info)
-
-                    self._logger.debug(f"get_proof_by_hash({tran_id}) failed.")
-                    return ret
-
-                if ret.datas is None or len(ret.datas) == 0:
-                    return result(error.TRAN_INFO_INVALID, 
-                            f"tran_id {tran_id} not found value or key is not found.tran version : {tran_info.get('version')}")
-
-                db_tran_info = json.loads(ret.datas)
-
-                db_tran_id = db_tran_info.get("tran_id", None)
-                if db_tran_id is None or len(db_tran_id) == 0 or db_tran_id != tran_id:
-                    return result(error.TRAN_INFO_INVALID, f"new tran data info is invalid, tran version : {tran_info.get('version')}")
-
-                old_proofstate = self.proofstate_name_to_value(db_tran_info.get("state", ""))
-                if not self.is_valid_proofstate_change(new_proofstate, old_proofstate):
-                    return result(error.TRAN_INFO_INVALID, f"change state to {new_proofstate.name} is invalid. \
-                            old state is {old_proofstate.name}. tran version: {tran_info.get('version')}")
-
-                #only recevier can change state 
-                if not self.has_update_state_authority(new_proofstate, db_tran_info, tran_info):
-                    return result(error.TRAN_INFO_INVALID, f"change state error. check transaction's sender is valid.") 
-
-                db_tran_info["state"] = tran_info["state"]
-                db_tran_info["out_amount_real"] = tran_info.get("out_amount_real", 0)
-                self._dbclient.set_proof(db_tran_info.get("version"), json.dumps(db_tran_info))
-                self._logger.info(f"change state succeed. version = {db_tran_info.get('version')} tran_id = {db_tran_id} state={db_tran_info['state']}")
-
-            ret = result(error.SUCCEED, "", {"new_proof":new_proof, "tran_id":tran_id, "state": tran_info["state"]})
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
 
     def update_min_version_for_state(self, state):
         try:
@@ -376,7 +280,6 @@ class aproof(abase):
                 except Exception as e:
                     ret = parse_except(e)
                 finally:
-                    #version += 1
                     pass
 
             #here version is not analysis
