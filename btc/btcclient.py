@@ -197,6 +197,7 @@ class btcclient(baseobject):
                 "update_block":data.get("update_block"),\
                 "sender":data.get("issuer"), \
                 "receiver":data.get("receiver"),\
+                "confirm":int(data.get("confirm", 1)), \
                 "module_address":module, \
                 "token_id":"BTC", \
                 "expiration_time": data.get("expiration_time", 0)

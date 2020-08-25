@@ -17,7 +17,7 @@ import subprocess
 import comm.functions as fn
 from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm, b2vm
 from comm.result import parse_except
-from analysis import analysis_base, analysis_filter, analysis_proof
+from analysis import analysis_base, analysis_filter, analysis_proof_btc, analysis_proof_violas
 from enum import Enum
 from comm.values import workmod as work_mod
 
@@ -212,7 +212,7 @@ class works:
                 try:
                     basedata = "vfilter"
                     ttype = "violas"
-                    obj = analysis_proof.aproof(name=mod, ttype="violas", dtype=dtype, \
+                    obj = analysis_proof_violas.aproofvls(name=mod, ttype="violas", dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
                     if dtype == "v2bm":
@@ -270,7 +270,7 @@ class works:
                 try:
                     basedata = "lfilter"
                     ttype = "libra"
-                    obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
+                    obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of libra transaction
                     obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
@@ -300,7 +300,7 @@ class works:
                 try:
                     basedata = "vfilter"
                     ttype = "violas"
-                    obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
+                    obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
                     if dtype == "v2lm":
@@ -485,7 +485,7 @@ class works:
                 try:
                     basedata = "bfilter"
                     ttype = "btc"
-                    obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
+                    obj = analysis_proof_btc.aproofbtc(name=mod, ttype = ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of btc transaction
                     obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
@@ -516,7 +516,7 @@ class works:
                 try:
                     basedata = "bfilter"
                     ttype = "btc"
-                    obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
+                    obj = analysis_proof_btc.aproofbtc(name=mod, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of btc transaction
                     obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
@@ -579,7 +579,7 @@ class works:
                 try:
                     basedata = "lfilter"
                     ttype = "libra"
-                    obj = analysis_proof.aproof(name=mod, ttype=ttype, dtype=dtype, \
+                    obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of btc transaction
                     obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
