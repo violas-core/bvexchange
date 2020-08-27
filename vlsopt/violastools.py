@@ -228,6 +228,9 @@ def get_account_prefix(address):
     logger.debug(f"address: {account.address.hex()}, auth_key_prefix: {account.auth_key_prefix.hex()}")
 
 
+'''
+*************************************************violas swap oper*******************************************************
+'''
 def show_swap_registered_tokens(module):
     client = get_violasclient()
     client.swap_set_module_address(module)
@@ -238,12 +241,21 @@ def show_swap_registered_tokens(module):
     json_print(client.swap_get_registered_tokens().to_json())
 
 
-def swap(sender_account, token_in, token_out, amount_in, amount_out_min=0, module_address = None, is_blocking=True):
+def swap(sender, token_in, token_out, amount_in, amount_out_min=0, module_address = "00000000000000000000000000000001"):
     client = get_violasclient()
-    client.set_exchange_module_address(module_address)
+    client.swap_set_module_address(module_address)
+    if module_address == "00000000000000000000000000000001":
+        client.swap_set_owner_address("0000000000000000000000000a550c18")
+
+    global wallet_name
+    wallet = get_violaswallet()
+    ret = wallet.get_account(sender)
+    if ret.state != error.SUCCEED:
+        logger.debug("get account failed")
+    sender_account = ret.datas
+
     ret = client.swap(sender_account = sender_account,token_in = token_in, \
-            currency_out = token_out, amount_in = amount_in, amount_out_min = amount_out_min, \
-            is_blocking = is_blocking)
+            token_out = token_out, amount_in = amount_in, amount_out_min = amount_out_min)
 
 def check_is_swap_address(address):
     client = get_violasclient()
@@ -477,9 +489,13 @@ def run(argc, argv):
                 pargs.exit_error_opt(opt)
             get_account_prefix(arg_list[0])
         elif pargs.is_matched(opt, ["swap"]):
-            if len(arg_list) != 1:
+            if len(arg_list) not in (5, 6):
                 pargs.exit_error_opt(opt)
-            get_account_prefix(arg_list[0])
+            module = stmanage.get_swap_module()
+            if len(arg_list) == 6:
+                module = arg_list[5]
+            swap(arg_list[0], arg_list[1], arg_list[2], int(arg_list[3]), int(arg_list[4]))
+
         elif pargs.is_matched(opt, ["show_swap_registered_tokens"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)

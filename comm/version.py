@@ -11,6 +11,9 @@ BVEXCHANGE_VER = {
         "revision"  : 1
         }
 
+def version():
+    return f"{BVEXCHANGE_VER['major']}.{BVEXCHANGE_VER['minor']}.{BVEXCHANGE_VER['revision']}"
+
 '''
 BVEXCHANGE_VER > argument return 1
 BVEXCHANGE_VER = argument return 0
