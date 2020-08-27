@@ -6,6 +6,7 @@ import log.logger
 import bvexchange
 import stmanage
 from comm.parseargs import parseargs
+from comm.version import version
 from tools import show_workenv
 
 name = "bvexchange"
@@ -13,6 +14,7 @@ logger = log.logger.getLogger(name)
 
 def init_args(pargs):
     pargs.append("help", "show args info")
+    pargs.append("version", "show version info")
     pargs.append("mod", "run mod", True, bvexchange.list_valid_mods())
     pargs.append("info", "show info", True, show_workenv.list_valid_mods())
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file")
@@ -47,12 +49,13 @@ def main(argc, argv):
 
     for opt, arg in opts:
         count, arg_list = pargs.split_arg(arg)
-        if pargs.is_matched(opt, ["mod"]) :
+        if pargs.is_matched(opt, ["version"]) :
+            logger.debug(f"version:{version()}")
+        elif pargs.is_matched(opt, ["mod"]) :
             if count < 1:
                 pargs.exit_error_opt(opt)
             logger.debug(f"arg_list:{arg_list}")
             bvexchange.run(arg_list)
-
         elif pargs.is_matched(opt, ["info"]) :
             if count < 1:
                 pargs.exit_error_opt(opt)
