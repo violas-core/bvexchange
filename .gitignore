@@ -11,7 +11,6 @@ lbviolasclient/
 lblibraclient/
 *.wlt
 *.wlt.rotate
-*.key
 *.rdb
 *.pid
 *.log*
