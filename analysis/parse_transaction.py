@@ -111,6 +111,7 @@ def parse_tran(transaction):
         datas["receiver"]       = transaction.get("receiver")
         datas["token"]          = transaction.get("token_owner")
         datas["token_id"]       = transaction.get("token_id")
+        datas["out_token"]      = transaction.get("out_token")
         datas["expiration_time"]= transaction.get("expiration_time", 0)
         datas["tran_id"]        = data_dict.get("tran_id")
         datas["sequence"]       = transaction.get("sequence_number")

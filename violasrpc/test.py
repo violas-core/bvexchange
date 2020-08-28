@@ -6,10 +6,10 @@ from authproxy import AuthServiceProxy, JSONRPCException
 
 
 #libra
-url = 'http://client.testnet.libra.org'
+#url = 'http://client.testnet.libra.org'
 
 #violas external
-#url = 'http://ac.testnet.violas.io:50001'
+url = 'http://ac.testnet.violas.io:50001'
 
 #violas internal 
 #url = 'http://52.27.228.84:50001'
@@ -43,11 +43,11 @@ def json_reset(data):
 
 def main():
     ui = AuthServiceProxy(url)
-    ret = ui.get_transactions(200, 2, False)
+    ret = ui.get_transactions(23709089, 1, True)
     json_print(ret)
 
-    ret = ui.get_currencies()
-    json_print(ret)
+    #ret = ui.get_currencies()
+    #json_print(ret)
 
 if __name__ == "__main__":
     main()

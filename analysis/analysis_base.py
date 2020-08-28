@@ -77,6 +77,16 @@ class abase(baseobject):
             self._vclient = btcclient(name, node) 
         return self._vclient
 
+    def set_swap_owner(self, address):
+        self._swap_owner = address
+        if self.from_chain == "violas" and self._vclient:
+            self._vclient.swap_set_owner_address(address)
+
+    def set_swap_module(self, address):
+        self._swap_module = address
+        if self.from_chain == "violas" and self._vclient:
+            self._vclient.swap_set_module_address(address)
+
     def set_record(self, rdbconf):
         self._rdbclient = record(self.name(), rdbconf)
 
