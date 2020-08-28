@@ -71,7 +71,7 @@ class aproofvls(aproofbase):
                 tran_id = self.get_tran_id(tran_info)
 
                 #found key = version info, db has old datas , must be flush db?
-                if ret.datas == True: 
+                if found: 
                     return result(error.TRAN_INFO_INVALID, f"key{version} tran_id({tran_id})is exists, db datas is old, flushdb ?. violas tran info : {tran_info}")
 
                 tran_info["flag"] = tran_info["flag"].value

@@ -55,7 +55,25 @@ class aproofswap(aproofbase):
             self._logger.debug(f"start update_proof_info tran info: {tran_info}")
             version = tran_info.get("version", None)
 
-            tran_id = None
+            #create tran id
+            tran_id = self.get_tran_id(tran_info)
+
+            ret  = self._dbclient.key_is_exists(tran_id)
+            if ret.state != error.SUCCEED:
+                  return ret
+
+            #found key = version info, db has old datas , must be flush db?
+            if ret.datas: 
+                  return result(error.TRAN_INFO_INVALID, f"key{version} tran_id({tran_id})is exists, db datas is old, flushdb ?. violas tran info : {tran_info}")
+
+            tran_info["flag"] = tran_info["flag"].value
+            tran_info["type"] = tran_info["type"].value
+            tran_info["tran_id"] = tran_id
+
+            ret = self._dbclient.set_proof(version, json.dumps(tran_info))
+            if ret.state != error.SUCCEED:
+                return ret
+            self._logger.info(f"saved new proof succeed. version = {tran_info.get('version')} tran_id = {tran_id} state={tran_info['state']}")
 
             self._logger.debug(f"new proof: {new_proof}")
             ret = result(error.SUCCEED, "", {"new_proof":True, "tran_id":tran_id, "state": tran_info["state"]})
