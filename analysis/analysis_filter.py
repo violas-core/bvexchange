@@ -54,6 +54,21 @@ class afilter(abase):
             except Exception as e:
                 parse_except(e)
 
+        if "gas_token" not in tran_data and isviolas:
+            tran_data.update({"gas_token":data.get_gas_currency()})
+
+        if "tran_type" not in tran_data and isviolas:
+            tran_data.update({"tran_type":data.transaction.enum_name})
+
+        if "code_name" not in tran_data and isviolas:
+            tran_data.update({"code_name":data.get_code_type().name})
+
+        if isviolas:
+            tran_data.update({"event":data.get_swap_event().to_json() if data.get_swap_event() is not None else None})
+
+        if "gas_used" not in tran_data and isviolas:
+            tran_data.update({"gas_used":data.get_gas_used()})
+
         #remove no-use key
         no_use = ["currency_code", "major_status"]
         for key in no_use:
