@@ -56,6 +56,7 @@ def reg_run():
     l2v_opt_list = [opt for opt in opt_list.keys() if opt.startswith("l2v")]
     v2l_opt_list = [opt for opt in opt_list.keys() if opt.startswith("v2l")]
 
+    print(f"associate address : {vclient.get_associate_address()}")
     #get swap module
     swap_module_address = stmanage.get_swap_module()
     swap_owner_address = swap_module_address
@@ -63,7 +64,8 @@ def reg_run():
         swap_owner_address = "0000000000000000000000000a550c18"
     logger.debug(f"swap pool moudule address({swap_module_address}, owner address{swap_owner_address})")
 
-    init_address(vclient, wclient, swap_owner_address)
+    if vclient.get_associate_address() != swap_owner_address:
+        init_address(vclient, wclient, swap_owner_address)
     #init swap contract
     ##create swap 
     ret = vclient.swap_set_module_address(swap_module_address)
@@ -81,7 +83,8 @@ def reg_run():
         assert ret.state == error.SUCCEED, f"account({swap_owner_address}) is not found."
         module_account = ret.datas
 
-    init_address(vclient, wclient, swap_owner_address)
+    if vclient.get_associate_address() != swap_owner_address:
+        init_address(vclient, wclient, swap_owner_address)
 
     gas_token_id = violas_token_id_list[0]
 
