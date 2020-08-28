@@ -693,7 +693,7 @@ class works:
 
     def get_dtype_from_mod(self, modname):
         dtype = modname.lower()
-        if dtype[:3] in ["v2b", "b2v", "l2v", "v2l", "b2l", "l2b"]:
+        if dtype[:3] in ["v2b", "b2v", "l2v", "v2l", "b2l", "l2b", "swa"]:
             if dtype.endswith("ex"):
                 return dtype[:-2]
             elif dtype.endswith("proof"):
@@ -740,7 +740,7 @@ class works:
                 self.__funcs_map.update(self.create_func_dict(item, self.work_lfilter))
             elif name == "BFILTER":
                 self.__funcs_map.update(self.create_func_dict(item, self.work_bfilter))
-            elif name == "SWAP":
+            elif name == "SWAPPROOF":
                 self.__funcs_map.update(self.create_func_dict(item, self.work_swapproof))
             elif self.is_match(name, "V2L", "PROOF", [11, 9]): #V2LXXXPROOF   V2LMPROOF
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2lproof))
