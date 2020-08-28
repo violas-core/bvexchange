@@ -389,6 +389,9 @@ class violasclient(baseobject):
         try:
             self._logger.debug(f"swap({sender_account.address.hex()}, {token_in}, {token_out}, {amount_in}, {amount_out_min}, {receiver})")
             (_, addr) = self.split_full_address(receiver).datas
+            if "gas_currency_code" not in kwargs:
+                kwargs.update({"gas_currency_code":token_in})
+
             datas = self.__client.swap(sender_account = sender_account, currency_in = token_in, currency_out = token_out, \
                     amount_in = amount_in, amount_out_min = amount_out_min, receiver_address = addr, is_blocking = is_blocking, **kwargs)
             ret = result(error.SUCCEED, datas = datas)

@@ -145,6 +145,8 @@ class dbvproof(dbvbase):
         out_token = ""
         if opttype == "map":
             out_token = stmanage.get_token_map(tran_info["token_id"])
+        elif opttype == "swap":
+            out_token = tran_info.get("out_token")
         else :
             out_token = stmanage.get_type_stable_token(tran_info["type"])
         return out_token

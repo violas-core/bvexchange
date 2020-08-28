@@ -188,6 +188,8 @@ class works:
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
+                    obj.set_swap_owner(stmanage.get_swap_owner())
+                    obj.set_swap_module(stmanage.get_swap_module())
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
@@ -320,6 +322,35 @@ class works:
         finally:
             logger.critical(f"stop: {mod}")
 
+    def work_swapproof(self, **kargs):
+        try:
+            logger.critical("start: violas swap proof")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    basedata = "vfilter"
+                    ttype = "violas"
+                    obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+                    #set can receive token of violas transaction
+                    obj.append_token_id(stmanage.get_support_token_id(ttype))
+                    obj.set_record(stmanage.get_db(self.record_db_name()))
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    obj.set_min_valid_version(self.__violas_min_valid_version - 1)
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
     def work_l2v(self, **kargs):
         try:
             logger.critical("start: l2v")
@@ -709,6 +740,8 @@ class works:
                 self.__funcs_map.update(self.create_func_dict(item, self.work_lfilter))
             elif name == "BFILTER":
                 self.__funcs_map.update(self.create_func_dict(item, self.work_bfilter))
+            elif name == "SWAP":
+                self.__funcs_map.update(self.create_func_dict(item, self.work_swapproof))
             elif self.is_match(name, "V2L", "PROOF", [11, 9]): #V2LXXXPROOF   V2LMPROOF
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2lproof))
             elif self.is_match(name, "V2B", "PROOF", [8, 9]):

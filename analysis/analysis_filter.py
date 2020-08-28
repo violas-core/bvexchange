@@ -37,6 +37,18 @@ class afilter(abase):
         abase.__del__(self)
 
     @classmethod
+    def swap_data_map_std_data(self, data, to_address):
+        return json.dumps({
+                "flag": "violas",
+                "type": "swap",
+                "to_address": to_address,
+                "out_amount": data.get("output_amount", 0),
+                "times": 1,
+                "state":"end"
+                })
+
+
+    @classmethod
     def get_tran_data(self, data, isviolas = True):
         tran_data = data.to_json()
         if isinstance(tran_data, str):
@@ -60,11 +72,22 @@ class afilter(abase):
         if "tran_type" not in tran_data and isviolas:
             tran_data.update({"tran_type":data.transaction.enum_name})
 
+        code_name = data.get_code_type().name.lower()
         if "code_name" not in tran_data and isviolas:
-            tran_data.update({"code_name":data.get_code_type().name})
+            tran_data.update({"code_name":code_name})
 
-        if isviolas:
-            tran_data.update({"event":data.get_swap_event().to_json() if data.get_swap_event() is not None else None})
+        #violas swap transaction
+        if isviolas and code_name in ("swap", "remove_liquidity", "add_liquidity"):
+            swap_data = data.get_swap_event().to_json() if data.get_swap_event() is not None else None
+            if swap_data:
+                swap_data = json.loads(swap_data)
+                tran_data["data"] = self.swap_data_map_std_data(swap_data, tran_data.get("receiver"))
+                tran_data["token_id"] = swap_data.get("input_name")
+                tran_data["amount"] = swap_data.get("input_amount")
+                tran_data["out_token"] = swap_data.get("output_name")
+
+        if "gas_used_price" not in tran_data and isviolas:
+            tran_data.update({"gas_used_price":data.get_gas_used_price()})
 
         if "gas_used" not in tran_data and isviolas:
             tran_data.update({"gas_used":data.get_gas_used()})

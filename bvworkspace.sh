@@ -2,18 +2,18 @@
 
 
 rm_file(){
-    if [ ! -f "$1"]
+    if [ -f "$1" ]
     then
         rm $1
     fi
 }
 
 lns_file(){
-    if [ ! -f "$1"]
+    if [ -f "$1" ]
     then
         ln -s "$1" "$2"
     else
-        echo "not found " + "$2"
+        echo "not found $2"
     fi
 }
 

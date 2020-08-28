@@ -130,6 +130,8 @@ def get_transactions(start_version, limit = 1, fetch_event = True, raw = False):
     logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
 
     client = get_violasclient()
+    client.swap_set_owner_address(stmanage.get_swap_owner())
+    client.swap_set_module_address(stmanage.get_swap_module())
     ret = client.get_transactions(start_version, limit, fetch_event)
     if ret.state != error.SUCCEED:
         return
@@ -143,7 +145,7 @@ def get_transactions(start_version, limit = 1, fetch_event = True, raw = False):
         if raw:
             print(data)
         else:
-            info = afilter.get_tran_data(data, chain=="violas")
+            info = afilter.get_tran_data(data, chain =="violas")
             json_print(info)
 
 def get_address_version(address):
