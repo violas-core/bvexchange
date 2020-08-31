@@ -55,7 +55,7 @@ class datatypebase(autoname):
     L2B     = auto()
     B2LUSD  = auto()
     B2LEUR  = auto()
-    SWAP    = auto()
+    V2VSWAP = auto()
     UNKOWN  = auto()
 
 ##db index(redis)
@@ -88,7 +88,7 @@ class dbindexbase(enumbase):
     L2B     = 50
     B2LUSD  = 51
     B2LEUR  = 52
-    SWAP    = 60
+    V2VSWAP = 60
 
 #work mod 
 #workmod item(PROOF/EX) must be eq dbindexbase 
@@ -97,7 +97,7 @@ class workmod(enumbase):
     VFILTER      = auto()    #scan violas chain
     LFILTER      = auto()
     BFILTER      = auto() #scan bitcoin chain
-    SWAPPROOF    = auto() #scan violas chain swap
+    V2VSWAPPROOF = auto() #scan violas chain swap
     #chain : libra ;  data source: lfilter ; result : transaction proof ; format : L2V + token_id + PROOF
     L2VMPROOF    = auto()
     L2VMEX       = auto()

@@ -9,6 +9,8 @@ bvexchange.toml
 libviolas/
 lbviolasclient/
 lblibraclient/
+redis.conf
+redis_start
 *.wlt
 *.wlt.rotate
 *.rdb

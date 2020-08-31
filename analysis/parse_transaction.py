@@ -1,5 +1,5 @@
 import operator
-import sys, os
+import sys, os, time
 import json
 sys.path.append("..")
 sys.path.append(os.getcwd())
@@ -113,6 +113,7 @@ def parse_tran(transaction):
         datas["token_id"]       = transaction.get("token_id")
         datas["out_token"]      = transaction.get("out_token")
         datas["expiration_time"]= transaction.get("expiration_time", 0)
+        datas["timestamps"]     = transaction.get("timestamps", int(time.time() * 1000000))
         datas["tran_id"]        = data_dict.get("tran_id")
         datas["sequence"]       = transaction.get("sequence_number")
         datas["module"]         = transaction.get("module_address")

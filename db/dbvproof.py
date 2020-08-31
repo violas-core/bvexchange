@@ -158,7 +158,7 @@ class dbvproof(dbvbase):
 
     def create_haddress_value(self, tran_info):
         dtype = tran_info.get("type", "v2v")
-        timestamps = int(time.time() * 1000000)
+        timestamps = tran_info.get("timestamps", int(time.time() * 1000000))
         exp_time = int(tran_info.get("expiration_time")) * 1000000
         if timestamps > exp_time:
             timestamps = exp_time

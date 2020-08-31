@@ -27,6 +27,8 @@ use_internal(){
     update_ln_fils "datas/wallet/bwallet" "bwallet"
     update_ln_fils "datas/wallet/vwallet_internal" "vwallet"
     update_ln_fils "datas/keys/mint_internal.key" "mint_test.key"
+    update_ln_fils "datas/redis/redis_internal.conf" "redis.conf"
+    update_ln_fils "datas/redis/redis_internal_start.sh" "redis_start"
 }
 
 use_external(){
@@ -35,6 +37,8 @@ use_external(){
     update_ln_fils "datas/wallet/bwallet" "bwallet"
     update_ln_fils "datas/wallet/vwallet_external" "vwallet"
     update_ln_fils "datas/keys/mint_external.key" "mint_test.key"
+    update_ln_fils "datas/redis/redis_external.conf" "redis.conf"
+    update_ln_fils "datas/redis/redis_external_start.sh" "redis_start"
 }
 
 change_workspace(){

@@ -17,7 +17,7 @@ import subprocess
 import comm.functions as fn
 from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm, b2vm
 from comm.result import parse_except
-from analysis import analysis_base, analysis_filter, analysis_proof_btc, analysis_proof_violas
+from analysis import analysis_base, analysis_filter, analysis_proof_btc, analysis_proof_violas, analysis_proof_swap
 from enum import Enum
 from comm.values import workmod as work_mod
 
@@ -30,7 +30,7 @@ class works:
     __record_db = "record"
 
     __libra_min_valid_version   = 0
-    __violas_min_valid_version  = 0
+    __violas_min_valid_version  = 2760_7757
     __btc_min_valid_version     = 0
     def __init__(self):
         logger.debug("works __init__")
@@ -335,7 +335,7 @@ class works:
                 try:
                     basedata = "vfilter"
                     ttype = "violas"
-                    obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
+                    obj = analysis_proof_swap.aproofswap(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
                     obj.append_token_id(stmanage.get_support_token_id(ttype))
@@ -693,7 +693,7 @@ class works:
 
     def get_dtype_from_mod(self, modname):
         dtype = modname.lower()
-        if dtype[:3] in ["v2b", "b2v", "l2v", "v2l", "b2l", "l2b", "swa"]:
+        if dtype[:3] in ["v2b", "b2v", "l2v", "v2l", "b2l", "l2b", "v2v"]:
             if dtype.endswith("ex"):
                 return dtype[:-2]
             elif dtype.endswith("proof"):
@@ -735,13 +735,13 @@ class works:
         for item in work_mod:
             name = item.name
             if name == "VFILTER":
-                self.__funcs_map.update(self.create_func_dict(item, self.work_vfilter))
+                self.funcs_map.update(self.create_func_dict(item, self.work_vfilter))
             elif name == "LFILTER":
-                self.__funcs_map.update(self.create_func_dict(item, self.work_lfilter))
+                self.funcs_map.update(self.create_func_dict(item, self.work_lfilter))
             elif name == "BFILTER":
-                self.__funcs_map.update(self.create_func_dict(item, self.work_bfilter))
-            elif name == "SWAPPROOF":
-                self.__funcs_map.update(self.create_func_dict(item, self.work_swapproof))
+                self.funcs_map.update(self.create_func_dict(item, self.work_bfilter))
+            elif name == "V2VSWAPPROOF":
+                self.funcs_map.update(self.create_func_dict(item, self.work_swapproof))
             elif self.is_match(name, "V2L", "PROOF", [11, 9]): #V2LXXXPROOF   V2LMPROOF
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2lproof))
             elif self.is_match(name, "V2B", "PROOF", [8, 9]):
@@ -757,25 +757,25 @@ class works:
             elif self.is_match(name, "V2L", "EX", 8):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2l))
             elif self.is_match(name, "V2B", "EX", 5):
-                self.__funcs_map.update(self.create_func_dict(item, self.work_v2b))
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2b))
             elif self.is_match(name, "L2V", "EX", 8): #L2VXXXEX
                 self.funcs_map.update(self.create_func_dict(item, self.work_l2v))
             elif self.is_match(name, "L2B", "EX", 5):
-                self.__funcs_map.update(self.create_func_dict(item, self.work_l2b))
+                self.funcs_map.update(self.create_func_dict(item, self.work_l2b))
             elif self.is_match(name, "B2V", "EX", 8):
-                self.__funcs_map.update(self.create_func_dict(item, self.work_b2v))
+                self.funcs_map.update(self.create_func_dict(item, self.work_b2v))
             elif self.is_match(name, "B2L", "EX", 8):
-                self.__funcs_map.update(self.create_func_dict(item, self.work_b2l))
+                self.funcs_map.update(self.create_func_dict(item, self.work_b2l))
             elif self.is_match(name, "V2LM", "EX", 6):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2lm))
             elif self.is_match(name, "V2BM", "EX", 6):
-                self.__funcs_map.update(self.create_func_dict(item, self.work_v2bm))
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2bm))
             elif self.is_match(name, "L2VM", "EX", 6): #L2VMEX
                 self.funcs_map.update(self.create_func_dict(item, self.work_l2vm))
             elif self.is_match(name, "B2VM", "EX", 6):
-                self.__funcs_map.update(self.create_func_dict(item, self.work_b2vm))
+                self.funcs_map.update(self.create_func_dict(item, self.work_b2vm))
             elif name == "COMM":
-                self.__funcs_map.update(self.create_func_dict(item, self.work_comm))
+                self.funcs_map.update(self.create_func_dict(item, self.work_comm))
             else:
                 logger.warning(f"not matched function:{item}")
 

@@ -63,6 +63,13 @@ syncing_mod = true
     password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 500
 
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "v2vswap"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
+    step = 100
+
 #b2v/v2b proof db
 [[db_list]]
     host = "127.0.0.1"
