@@ -30,7 +30,7 @@ class aproofswap(aproofbase):
 
     def __init__(self, name = "vproof", 
             ttype = "violas",       #ttype violas/libra
-            dtype = "swap",         #metadata  type:swap
+            dtype = "v2vswap",         #metadata  type:swap
             dbconf = None,          #save analysis result db conf
             fdbconf = None,         #base data from lfilter/vfilter db conf
             rdbconf = None,         #save transaction record db conf 
@@ -75,7 +75,6 @@ class aproofswap(aproofbase):
                 return ret
             self._logger.info(f"saved new proof succeed. version = {tran_info.get('version')} tran_id = {tran_id} state={tran_info['state']}")
 
-            self._logger.debug(f"new proof: {new_proof}")
             ret = result(error.SUCCEED, "", {"new_proof":True, "tran_id":tran_id, "state": tran_info["state"]})
         except Exception as e:
             ret = parse_except(e)
