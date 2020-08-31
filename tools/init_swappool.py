@@ -115,7 +115,7 @@ def reg_run():
         for token_b in violas_token_id_list:
             if token_a == token_b:
                 continue
-            in_amount = 1000000_000000
+            in_amount = 100_000000
             out_amount = get_amount_out(token_a, token_b, in_amount)
             logger.debug(f"append swap liquidity({token_a} - {token_b}, {in_amount} {out_amount}")
             ret = vclient.swap_add_liquidity(account_l, token_a, token_b, in_amount, out_amount, gas_currency_code = gas_token_id)
