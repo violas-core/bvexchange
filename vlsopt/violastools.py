@@ -85,7 +85,7 @@ def bind_token_id(address, token_id, gas_token_id):
 
     ret = wallet.get_account(address)
     if ret.state != error.SUCCEED:
-        logger.debug("get account failed")
+        raise Exception("get account failed")
     account = ret.datas
 
     ret = client.bind_token_id(account, token_id, gas_token_id)
@@ -97,7 +97,7 @@ def send_coin(from_address, to_address, amount, token_id, module = None, data = 
     wallet = get_violaswallet()
     ret = wallet.get_account(from_address)
     if ret.state != error.SUCCEED:
-        logger.debug("get account failed")
+        raise Exception("get account failed")
     account = ret.datas
 
     if module is not None or len(module) == 0:
@@ -160,6 +160,40 @@ def get_transaction_version(address, sequence):
     ret = client.get_transaction_version(address, sequence)
     logger.debug("version: {0}".format(ret.datas))
 
+'''
+*************************************************violas swap oper*******************************************************
+'''
+def show_swap_registered_tokens(module):
+    client = get_violasclient()
+    client.swap_set_module_address(module)
+    if module == "00000000000000000000000000000001":
+        client.swap_set_owner_address("0000000000000000000000000a550c18")
+    else:
+        client.swap_set_owner_address(module)
+    json_print(client.swap_get_registered_tokens().to_json())
+
+
+def swap(sender, token_in, token_out, amount_in, amount_out_min=0, module_address = "00000000000000000000000000000001"):
+    client = get_violasclient()
+    client.swap_set_module_address(module_address)
+    if module_address == "00000000000000000000000000000001":
+        client.swap_set_owner_address("0000000000000000000000000a550c18")
+
+    global wallet_name
+    wallet = get_violaswallet()
+    ret = wallet.get_account(sender)
+    if ret.state != error.SUCCEED:
+        raise Exception("get account failed")
+    sender_account = ret.datas
+
+    ret = client.swap(sender_account = sender_account,token_in = token_in, \
+            token_out = token_out, amount_in = amount_in, amount_out_min = amount_out_min)
+
+def check_is_swap_address(address):
+    client = get_violasclient()
+    print(client.swap_is_swap_address(address))
+
+
 def swap_set_module_ower(client):
     logger.debug(f"owner:{stmanage.get_swap_owner()}, module:{stmanage.get_swap_module()}")
     client.swap_set_owner_address(stmanage.get_swap_owner())
@@ -170,6 +204,27 @@ def swap_get_output_amount(token_in, token_out, amount_in):
     client = get_violasclient()
     swap_set_module_ower(client)
     ret = client.swap_get_output_amount(token_in, token_out, amount_in)
+    logger.debug(f"out_amount: {ret.datas}")
+
+def swap_get_liquidity_balances(address):
+    logger.debug(f"start swap_get_liquidity_balances({address})")
+    client = get_violasclient()
+    swap_set_module_ower(client)
+    ret = client.swap_get_liquidity_balances(address)
+    logger.debug(f"out_amount: {ret.datas}")
+
+def swap_remove_liquidity(address, token_a, token_b, liquidity):
+    logger.debug(f"start swap_remove_liquidity({address}, {token_a}, {token_b}, {liquidity})")
+    client = get_violasclient()
+    global wallet_name
+    wallet = get_violaswallet()
+    ret = wallet.get_account(address)
+    if ret.state != error.SUCCEED:
+        raise Exception("get account failed")
+        
+    sender_account = ret.datas
+    swap_set_module_ower(client)
+    ret = client.swap_remove_liquidity(sender_account, token_a, token_b, liquidity)
     logger.debug(f"out_amount: {ret.datas}")
 
 '''
@@ -231,40 +286,6 @@ def get_account_prefix(address):
 
 
 '''
-*************************************************violas swap oper*******************************************************
-'''
-def show_swap_registered_tokens(module):
-    client = get_violasclient()
-    client.swap_set_module_address(module)
-    if module == "00000000000000000000000000000001":
-        client.swap_set_owner_address("0000000000000000000000000a550c18")
-    else:
-        client.swap_set_owner_address(module)
-    json_print(client.swap_get_registered_tokens().to_json())
-
-
-def swap(sender, token_in, token_out, amount_in, amount_out_min=0, module_address = "00000000000000000000000000000001"):
-    client = get_violasclient()
-    client.swap_set_module_address(module_address)
-    if module_address == "00000000000000000000000000000001":
-        client.swap_set_owner_address("0000000000000000000000000a550c18")
-
-    global wallet_name
-    wallet = get_violaswallet()
-    ret = wallet.get_account(sender)
-    if ret.state != error.SUCCEED:
-        logger.debug("get account failed")
-    sender_account = ret.datas
-
-    ret = client.swap(sender_account = sender_account,token_in = token_in, \
-            token_out = token_out, amount_in = amount_in, amount_out_min = amount_out_min)
-
-def check_is_swap_address(address):
-    client = get_violasclient()
-    print(client.swap_is_swap_address(address))
-
-
-'''
 *************************************************violasserver oper*******************************************************
 '''
 def get_violas_server():
@@ -319,13 +340,14 @@ def init_args(pargs):
     pargs.append("show_all_token_list", "show token list.")
     pargs.append("get_account_prefix", "get account prefix.", True, ["address"])
     pargs.append("account_has_token_id", "check account is published token_id.", True, ["address", "token_id"])
-    pargs.append("swap", "swap violas chain token.", True, ["address", "token_in", "token_out", "amount_in", "amount_out_min", "module_address"])
-    pargs.append("check_is_swap_address", "check address is swap address.", True, ["address"])
-    pargs.append("swap_get_output_amount", "get swap out amount .", True, ["token_in", "token_out", "amount_in"])
-
 
     #swap opt
     pargs.append("show_swap_registered_tokens", "show registered tokens for module.", True, ["address"])
+    pargs.append("swap", "swap violas chain token.", True, ["address", "token_in", "token_out", "amount_in", "amount_out_min", "module_address"])
+    pargs.append("check_is_swap_address", "check address is swap address.", True, ["address"])
+    pargs.append("swap_get_output_amount", "get swap out amount .", True, ["token_in", "token_out", "amount_in"])
+    pargs.append("swap_get_liquidity_balances", "get swap liquidity balances .", True, ["address"])
+    pargs.append("swap_remove_liquidity", "remover swap liquidity .", True, ["address", "token_a", "token_b", "liquidity"])
 
 
 def run(argc, argv):
@@ -510,6 +532,14 @@ def run(argc, argv):
             if len(arg_list) != 3:
                 pargs.exit_error_opt(opt)
             swap_get_output_amount(arg_list[0], arg_list[1], arg_list[2])
+        elif pargs.is_matched(opt, ["swap_get_liquidity_balances"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            swap_get_liquidity_balances(arg_list[0])
+        elif pargs.is_matched(opt, ["swap_remove_liquidity"]):
+            if len(arg_list) != 4:
+                pargs.exit_error_opt(opt)
+            swap_remove_liquidity(arg_list[0], arg_list[1], arg_list[2], arg_list[3])
         else:
             raise Exception(f"not found matched opt{opt}")
     logger.debug("end manage.main")

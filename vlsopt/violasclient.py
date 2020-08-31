@@ -457,6 +457,15 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def swap_get_liquidity_balances(self, address, **kwargs):
+        try:
+            (_, addr) = self.split_full_address(address).datas
+            datas = self.__client.swap_get_liquidity_balances(addr)
+            ret = result(error.SUCCEED, datas = datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def swap_remove_liquidity(self, account, token_a, token_b, liquidity, amount_min_a = 0, amount_min_b = 0, is_blocking = True, **kwargs):
         try:
             datas = self.__client.swap_remove_liquidity(account, token_a, token_b, liquidity, amount_min_a, amount_min_b, is_blocking = is_blocking, **kwargs)
