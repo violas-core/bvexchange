@@ -103,6 +103,14 @@ class libraproxy(LBRClient):
     def set_exchange_owner_address(self, exchange_owner_address):
         pass
 
+    def __getattr__(self, name):
+        if name.startswith('__') and name.endswith('__'):
+            # Python internal stuff
+            raise AttributeError
+        pass
+        
+
+
 def main():
     client = clientproxy.connect("https://client.testnet.libra.org")
     json_print(client.get_latest_version())

@@ -61,6 +61,9 @@ def __get_address_list(atype, mtype, chain = None, full = True):
 def get_receiver_address_list(mtype, chain = None, full = True):
     return __get_address_list("receiver", mtype, chain, full)
 
+def get_receiver_info(atype):
+    return setting.address_list.get(atype)
+
 def get_sender_address_list(mtype, chain = None, full = True):
     return __get_address_list("sender", mtype, chain, full)
 
@@ -288,6 +291,8 @@ def main():
     print(f"combin address(l2b, violas): {get_combine_address('l2b', 'violas')}")
     print(f"run mods: {get_run_mods()}")
     print(f"syncing state:{get_syncing_state()}")
+    print("receiver info:")
+    json_print(get_receiver_info('receiver'))
 
     #json_print(get_conf())
 

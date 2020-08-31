@@ -47,7 +47,6 @@ class afilter(abase):
                 "state":"end"
                 })
 
-
     @classmethod
     def get_token_id(self, code_name, data):
         if code_name == "swap":
@@ -66,6 +65,8 @@ class afilter(abase):
     def get_amount(self, code_name, data):
         if code_name == "swap":
             return data.get("input_amount")
+        elif code_name == "remove_liquidity":
+            return data.get("withdraw_amounta")
         else:
             return data.get("deposit_amounta")
 
@@ -73,6 +74,8 @@ class afilter(abase):
     def get_out_amount(self, code_name, data):
         if code_name == "swap":
             return data.get("output_amount")
+        elif code_name == "remove_liquidity":
+            return data.get("withdraw_amountb")
         else:
             return data.get("deposit_amountb")
 
