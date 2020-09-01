@@ -234,19 +234,19 @@ Describe the request swap records.
  </tr>
 <table>
 
-'''
+```
 'http://52.231.52.107/?opt=records&senders=4696c44b1b8f7920f98da4863d055fc3_violas&opttype=swap&cursor=0&limit=3'
 'result: 
 {
-    'state': SUCCEED,
-    'message': "",
-    'datas': {
-        'count' : int, 
-        'cursor' : int, //next record index
-        'datas' : [{}, ...]
+    "state": SUCCEED,
+    "message": "",
+    "datas": {
+        "count" : int, 
+        "cursor" : int, //next record index
+        "datas" : [{}, ...]
     }
 }'
-'''
+```
  
 ## Records - map
 
@@ -288,18 +288,18 @@ Describe the request mapping records .
  </tr>
 <table>
 
-'''
+```
 'http://52.231.52.107/?opt=records&senders=4696c44b1b8f7920f98da4863d055fc3_violas,2MxBZG7295wfsXaUj69quf8vucFzwG35UWh_btc&opttype=map&cursor=0&limit=5'
 
 'result: 
 {
-    'state': SUCCEED,
-    'message': "",
-    'datas': {
-        'count' : int, 
-        'cursor' : int, //next record index
-        'datas' : [{}, ...]
+    "state": SUCCEED,
+    "message': "",
+    "datas": {
+        "count" : int, 
+        "cursor" : int, //next record index
+        "datas" : [{}, ...]
     }
 }'
-'''
+```
  
