@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+mint_test.key
 exchange/code_bak/
 bv_optimized.toml
 bvexchange.toml
