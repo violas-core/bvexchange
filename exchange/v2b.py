@@ -86,21 +86,6 @@ class v2b(exbase):
                         localdb.state.SSUCCEED, \
                         localdb.state.PSUCCEED]])
 
-    def fill_address_token(self, address, token_id, amount, gas=0):
-        try:
-            ret = self.btc_client.get_balance(address)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                #get some coin for address
-                return result(error.FAILED, f"not enuogh btc amount.cur_amount({cur_amount}), use amount({amount + gas})")
-
-            ret = result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
     def is_enough_amount(self, address, amount, gas = 0.00001):
         try:
             ret = self.btc_client.get_balance(address)
