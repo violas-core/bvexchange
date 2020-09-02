@@ -50,8 +50,11 @@ class btcclient(baseobject):
             return "BTC"
         def get_currency_code(self):
             return "BTC"
-        def get_code_type():
+        def get_code_type(self):
             return self.codetype.EXCHANGE
+
+        def __getattr__(self, name):
+            print(f"call transaction {name}")
 
     class proofstate(Enum):
         START   = "start"
