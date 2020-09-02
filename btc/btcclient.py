@@ -33,6 +33,9 @@ COINS = 1_0000_0000
 class btcclient(baseobject):
 
     class transaction(object):
+        class codetype(Enum):
+            EXCHANGE = 1000
+
         def __init__(self, datas):
             self.__datas = dict(datas)
         def get_version(self):
@@ -47,6 +50,8 @@ class btcclient(baseobject):
             return "BTC"
         def get_currency_code(self):
             return "BTC"
+        def get_code_type():
+            return self.codetype.EXCHANGE
 
     class proofstate(Enum):
         START   = "start"
