@@ -81,6 +81,13 @@ syncing_mod = true
     password = "violas"
     step = 500
 
+[[db_list]]
+    host = "127.0.0.1"
+    port = 6378
+    db = "v2vswap"
+    password = "violas"
+    step = 500
+
 #b2v/v2b proof db
 [[db_list]]
     host = "127.0.0.1"
