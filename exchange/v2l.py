@@ -142,7 +142,6 @@ class v2l(exbase):
                     out_amount, receiver = combine_account.address.hex(), \
                     gas_currency_code = from_token_id)
 
-            print("swap ok")
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
                 self._logger.error("exec_exchange-2.result: failed.")

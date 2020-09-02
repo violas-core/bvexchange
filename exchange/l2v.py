@@ -65,23 +65,6 @@ class l2v(exbase):
                         localdb.state.VSUCCEED, \
                         localdb.state.SSUCCEED]])
 
-    def fill_address_token(self, address, token_id, amount, gas=40_000):
-        try:
-            ret = self.violas_client.get_balance(address, token_id = token_id)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                ret = self.violas_client.mint_coin(address, \
-                        amount = amount + gas - cur_amount, \
-                        token_id = token_id)
-                return ret
-
-            return result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
             state = None, detail = {}):
         fromaddress = data["address"]
