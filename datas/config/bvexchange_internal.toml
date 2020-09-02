@@ -304,6 +304,10 @@ syncing_mod = true
     [type_opts.b2vm]
         support= "true"  
         run    = "false"
+    [type_opts.v2vswap]
+        support= "true"  
+        run    = "false"
+
 
 [swap_module]
     #AssocRoot: 0000000000000000000000000a550c18
