@@ -69,10 +69,19 @@ class violaswallet(baseobject):
             ret = parse_except(e)
         return ret
 
+    def save(self):
+        try:
+            if self.__wallet is not None and self.__wallet_name:
+                self.__wallet.write_recovery(self.__wallet_name)
+            ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def dump_wallet(self):
         try:
             if self.__wallet is not None:
-                self.__wallet.write_recovery(self.__wallet_name)
+                self.save()
                 self.__wallet = None
                 pass
             ret = result(error.SUCCEED)
@@ -83,6 +92,7 @@ class violaswallet(baseobject):
     def new_account(self):
         try:
             account = self.__wallet.new_account();
+            self.save()
             ret = result(error.SUCCEED, "", account)
         except Exception as e:
             ret = parse_except(e)
@@ -107,10 +117,17 @@ class violaswallet(baseobject):
             ret = parse_except(e)
         return ret
 
+    def find_account_by_address_hex(self, address):
+        (auth, addr) = self.split_full_address(address).datas
+        for i in range(len(self.__wallet.accounts)):
+            if self.__wallet.accounts[i].address.hex == addr:
+                return (i, self.__wallet.accounts[i])
+
+        return (-1, None)
+
     def has_account_by_address(self, address):
         try:
-            (auth_key_prefix, addr) = self.split_full_address(address).datas
-            (index, account) = self.__wallet.find_account_by_address_hex(addr)
+            _, account = self.find_account_by_address_hex(address)
             if account is None:
                 ret = result(error.SUCCEED, "", False)
             else:

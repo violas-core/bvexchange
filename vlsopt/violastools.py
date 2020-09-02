@@ -165,19 +165,16 @@ def get_transaction_version(address, sequence):
 '''
 def show_swap_registered_tokens(module):
     client = get_violasclient()
-    client.swap_set_module_address(module)
-    if module == "00000000000000000000000000000001":
-        client.swap_set_owner_address("0000000000000000000000000a550c18")
-    else:
-        client.swap_set_owner_address(module)
-    json_print(client.swap_get_registered_tokens().to_json())
+    swap_set_module_ower(client, module = module)
+    ret = client.swap_get_registered_tokens()
+    print(ret.datas)
+    #json_print(ret.to_json())
 
 
-def swap(sender, token_in, token_out, amount_in, amount_out_min=0, module_address = "00000000000000000000000000000001"):
+def swap(sender, token_in, token_out, amount_in, amount_out_min=0, module_address = None):
     client = get_violasclient()
-    client.swap_set_module_address(module_address)
-    if module_address == "00000000000000000000000000000001":
-        client.swap_set_owner_address("0000000000000000000000000a550c18")
+
+    swap_set_module_ower(client, module = module_address)
 
     global wallet_name
     wallet = get_violaswallet()
@@ -194,10 +191,19 @@ def check_is_swap_address(address):
     print(client.swap_is_swap_address(address))
 
 
-def swap_set_module_ower(client):
+def swap_set_module_ower(client, module = None, owner = None):
     logger.debug(f"owner:{stmanage.get_swap_owner()}, module:{stmanage.get_swap_module()}")
-    client.swap_set_owner_address(stmanage.get_swap_owner())
-    client.swap_set_module_address(stmanage.get_swap_module())
+    
+    if module is None:
+        client.swap_set_module_address(stmanage.get_swap_module())
+        module = stmanage.get_swap_module()
+    else:
+        client.swap_set_module_address(module)
+
+    if owner is None or module in ("00000000000000000000000000000001"):
+        client.swap_set_owner_address(stmanage.get_swap_owner())
+    else:
+        client.swap_set_owner_address(owner)
 
 def swap_get_output_amount(token_in, token_out, amount_in):
     logger.debug(f"start swap_get_output_amount({token_in}, {token_out}, {amount_in})")

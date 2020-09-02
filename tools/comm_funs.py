@@ -88,7 +88,7 @@ def bind_token_id(vclient, wclient, address, token_id, gas_token_id = None):
     ret = vclient.bind_token_id(account, token_id = token_id, gas_token_id = gas_token_id)
     assert ret.state == error.SUCCEED, f"bind_token_id({address}, {token_id}, {gas_token_id}) failed."
 
-    vclient._logger.info(f"{address} bind token_id{token_id}")
+    vclient._logger.info(f"{address} bind token_id({token_id})")
 
 def has_token_id(vclient, address, token_id):
     vclient._logger.debug(f"start has_token_id({address}] ,{token_id})")

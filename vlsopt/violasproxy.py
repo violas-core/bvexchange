@@ -41,6 +41,10 @@ class walletproxy(Wallet):
     def load(self, filename):
         return self.recover(filename)
 
+    @property
+    def child_count(self):
+        return len(self.accounts)
+
 class violasproxy(Client):
     def __init__(self):
         pass

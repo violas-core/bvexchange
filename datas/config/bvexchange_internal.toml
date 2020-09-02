@@ -305,7 +305,7 @@ syncing_mod = true
     address = "00000000000000000000000000000001"
 
 [swap_owner]
-    address = "0000000000000000000000000a550c18"
+    address = "00000000000000000000000045584348"
 
 #swap rule:
 #  thd chain -> violas chain : x2v--- . ex l2vusd is libra token to swap violas token(usd)
