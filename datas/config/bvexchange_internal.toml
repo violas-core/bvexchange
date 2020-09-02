@@ -53,193 +53,26 @@ syncing_mod = true
     user = "violas"
     password = "violas"
 
-[[db_list]]
+[db_default]
     host = "127.0.0.1"
     port = 6378
-    db = "test"
     password = "violas"
     step = 100
 
 [[db_list]]
-    host = "127.0.0.1"
-    port = 6378
     db = "lfilter"
-    password = "violas"
     step = 300
 
 [[db_list]]
-    host = "127.0.0.1"
-    port = 6378
     db = "vfilter"
-    password = "violas"
-    step = 300
+    step = 200
 
 [[db_list]]
-    host = "127.0.0.1"
-    port = 6378
     db = "bfilter"
-    password = "violas"
-    step = 500
+    step = 30
 
 [[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "v2vswap"
-    password = "violas"
-    step = 500
-
-#b2v/v2b proof db
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "v2b"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "v2bm"
-    password = "violas"
-    step = 500
-
-#l2vxxx proof db
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "l2vm"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "l2vusd"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "l2veur"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "l2vsgd"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "l2vgbp"
-    password = "violas"
-    step = 500
-
-#v2lxxx proof db
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "v2lm"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "v2lusd"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "v2leur"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "v2lsgd"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "v2lgbp"
-    password = "violas"
-    step = 500
-
-#b2vxxx proof db
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "b2vm"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "b2vusd"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "b2veur"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "b2vsgd"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "b2vgbp"
-    password = "violas"
-    step = 500
-
-#l2b proof db
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "l2b"
-    password = "violas"
-    step = 500
-
-#b2lxxx proof db
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "b2lusd"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
-    db = "b2leur"
-    password = "violas"
-    step = 500
-
-[[db_list]]
-    host = "127.0.0.1"
-    port = 6378
     db = "record"
-    password = "violas"
-    step = 500
 
 #violas <-> libra token map
 #violas coin:VLSAAA map to libra coin:BBB:  VLSAAA(violas chain) -uniswap-> LBRBBB(violas chain) -map-> BBB(libra chain)

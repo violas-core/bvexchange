@@ -103,9 +103,17 @@ def get_combine_address(mtype, chain , full = True):
 #
 
 def get_db(mtype):
+    db_info = setting.db_default
     dbs = [dict for dict in setting.db_list if dict.get("db") == mtype and mtype is not None]
     if dbs is not None and len(dbs) > 0:
-        return dbs[0]
+        if db_info:
+            db_info.update(dbs[0])
+        else:
+            db_info= dbs[0]
+    if db_info:
+        db_info.update({"db":mtype})
+    assert db_info, f"not found db({mtype})info."
+    return db_info
 
 def get_libra_nodes():
     return setting.libra_nodes
@@ -245,7 +253,7 @@ def get_conf():
 
 def main():
     set_conf_env("bvexchange.toml")
-    mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
+    mtypes = ["v2bm", "v2lm", "l2vm", "b2vm", "vfilter", "lfilter"]
 
     for mtype in mtypes:
         print(f"receiver address({mtype}): {get_receiver_address_list(mtype)}")

@@ -6,6 +6,9 @@ class tomlopt(tomlbase):
     def __init__(self, tomlfile):
         super().__init__(tomlfile)
 
+    def __getattr__(self, name):
+        return None
+
     @property
     def type_token(self):
         supports = {}
