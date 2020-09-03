@@ -103,13 +103,13 @@ def get_combine_address(mtype, chain , full = True):
 #
 
 def get_db(mtype):
-    db_info = setting.db_default
-    dbs = [dict for dict in setting.db_list if dict.get("db") == mtype and mtype is not None]
+    db_info = dict(setting.db_default)
+    dbs = [db for db in setting.db_list if db.get("db") == mtype and mtype is not None]
     if dbs is not None and len(dbs) > 0:
         if db_info:
             db_info.update(dbs[0])
         else:
-            db_info= dbs[0]
+            db_info= dict(dbs[0])
     if db_info:
         db_info.update({"db":mtype})
     assert db_info, f"not found db({mtype})info."
