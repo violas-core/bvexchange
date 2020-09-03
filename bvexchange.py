@@ -30,7 +30,7 @@ class works:
     __record_db = "record"
 
     __libra_min_valid_version   = 0
-    __violas_min_valid_version  = 2760_7757
+    __violas_min_valid_version  = 300_0000
     __btc_min_valid_version     = 0
     def __init__(self):
         logger.debug("works __init__")
