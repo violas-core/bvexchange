@@ -261,17 +261,17 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def create_data_for_end(self, flag, opttype, tranid, **kwargs):
+    def create_data_for_end(self, flag, opttype, tranid, *args, **kwargs):
         address_seq = tranid.split("_")
         return {"type": "end", "flag": flag, "opttype":opttype, "address":address_seq[0], \
                 "sequence":address_seq[1], "version":kwargs.get("version", 0), "out_amount_real": kwargs.get("out_amount_real", 0)}
 
-    def create_data_for_stop(self, flag, opttype, tranid, **kwargs):
+    def create_data_for_stop(self, flag, opttype, tranid, *args, **kwargs):
         address_seq = tranid.split("_")
         return {"type": "stop", "flag": flag, "opttype":opttype, "address":address_seq[0], \
                 "sequence":address_seq[1]}
 
-    def create_data_for_mark(self, flag, dtype, id, version, **kwargs):
+    def create_data_for_mark(self, flag, dtype, id, version, *args, **kwargs):
         return {"type": "mark", "flag": flag, "address":id, \
                 "sequence":0, "version":version }
 
