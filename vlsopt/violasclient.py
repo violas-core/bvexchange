@@ -402,6 +402,14 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_transaction(self, version, fetch_event=True):
+        try:
+            datas = self.__client.get_transactions(version, 1 , fetch_event)
+            ret = result(error.SUCCEED, "", datas[0] if datas is not None else None)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def swap(self, sender_account, token_in, token_out, amount_in, amount_out_min=0, receiver = None, is_blocking=True, **kwargs):
         try:
             self._logger.debug(f"swap({sender_account.address.hex()}, {token_in}, {token_out}, {amount_in}, {amount_out_min}, {receiver})")

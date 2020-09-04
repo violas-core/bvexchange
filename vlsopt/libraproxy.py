@@ -76,39 +76,20 @@ class libraproxy(LBRClient):
     def get_account_sequence_number(self, address):
         return self.get_sequence_number(address)
 
-    def swap_publish_contract(self, sender_account, is_blocking=True, **kwargs):
-        pass
-
-    def swap_add_currency(self, exchange_account, currency_code, is_blocking=True, **kwargs):
-        pass
-
-    def swap_add_liquidity(self, sender_account, currencyA, currencyB, amounta_desired, amountb_desired, amounta_min=None, amountb_min=None, is_blocking=True, **kwargs):
-        pass
-
-    def swap_initialize(self, module_account, is_blocking=True, **kwargs):
-        pass
-
-    def swap_remove_liquidity(self, sender_account, currencyA, currencyB, liquidity, amounta_min=0, amountb_min=0, is_blocking=True, **kwargs):
-        pass
-
-    def swap(self, sender_account, currency_in, currency_out, amount_in, amount_out_min=0, receiver_address = None, is_blocking=True, **kwargs):
-        pass
-
-    def swap_get_swap_output_amount(self, *aargs, **kwargs):
-        pass
-
-    def set_exchange_module_address(self, exchange_module_address):
-        pass
-
-    def set_exchange_owner_address(self, exchange_owner_address):
-        pass
+    def call_default(self, *args, **kwargs):
+        print(f"no defined function(args = {args} kwargs = {kwargs})")
 
     def __getattr__(self, name):
         if name.startswith('__') and name.endswith('__'):
             # Python internal stuff
             raise AttributeError
-        pass
+        raise Exception(f"not defined function:{name}")
+        #return self.call_default
         
+    def __call__(self, *args, **kwargs):
+        pass
+
+
 
 
 def main():

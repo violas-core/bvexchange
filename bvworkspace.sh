@@ -31,6 +31,15 @@ use_internal(){
     update_ln_fils "datas/redis/redis_internal_start.sh" "redis_start"
 }
 
+use_test(){
+    echo "call use_test"
+    use_internal
+    update_ln_fils "datas/config/bvexchange_test.toml" "bvexchange.toml"
+    update_ln_fils "datas/wallet/vwallet_test" "vwallet"
+    update_ln_fils "datas/redis/redis_test.conf" "redis.conf"
+    update_ln_fils "datas/redis/redis_test_start.sh" "redis_start"
+}
+
 use_external(){
     echo "call use_external"
     update_ln_fils "datas/config/bvexchange_external.toml" "bvexchange.toml"
@@ -48,10 +57,14 @@ change_workspace(){
     elif [ $1 == 2 ]
     then
         use_external
+    elif [ $1 == 3 ]
+    then
+        use_test
     else
         echo "select index:"
         echo "  internal: 1"
         echo "  external: 2"
+        echo "  test: 3"
         return -1
     fi
     return 0
@@ -65,7 +78,8 @@ reselect(){
         echo "select index:"
         echo "  internal: 1"
         echo "  external: 2"
-        read -p "input 1 or 2: " sel_val
+        echo "  test: 3"
+        read -p "input 1 or 2 3: " sel_val
         echo $sel_val
         change_workspace $sel_val
         if [ $? == 0 ] ; then break; fi
@@ -85,11 +99,14 @@ then
     elif [$1 == "external" ]
     then
         use_external
+    elif [$1 == "test" ]
+    then
+        use_test
     else
-        echo "args is invalid. can use args: internal external"
+        echo "args is invalid. can use args: internal external test"
         return
     fi
 else
-    echo "args is invalid. can use args: internal external"
+    echo "args is invalid. can use args: internal external test"
 fi
 

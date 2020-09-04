@@ -154,6 +154,12 @@ def get_address_version(address):
     ret = client.get_address_version(address)
     logger.debug("version: {0}".format(ret.datas))
 
+def get_address_sequence(address):
+    logger.debug(f"start get_address_sequence({address})")
+    client = get_violasclient()
+    ret = client.get_address_sequence(address)
+    logger.debug("version: {0}".format(ret.datas))
+
 def get_transaction_version(address, sequence):
     logger.debug(f"start get_address_version({address}, {sequence})")
     client = get_violasclient()
@@ -341,6 +347,7 @@ def init_args(pargs):
     pargs.append("get_rawtransaction", "get transaction from violas nodes.", True, ["version", "fetch_event=True"])
     pargs.append("get_latest_transaction_version", "show latest transaction version.")
     pargs.append("get_address_version", "get address's latest version'.", True, ["address"])
+    pargs.append("get_address_sequence", "get address's latest sequence'.", True, ["address"])
     pargs.append("get_transaction_version", "get address's version'.", True, ["address", "sequence"])
     pargs.append("show_token_list", "show token list.", True, ["address"])
     pargs.append("show_all_token_list", "show token list.")
@@ -504,6 +511,10 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             get_address_version(arg_list[0])
+        elif pargs.is_matched(opt, ["get_address_sequence"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            get_address_sequence(arg_list[0])
         elif pargs.is_matched(opt, ["get_transaction_version"]):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
