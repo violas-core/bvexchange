@@ -129,8 +129,8 @@ def show_config():
     json_print(infos)
     return infos
 
-def __create_local_db_name(name, from_chain):
-    return f"{from_chain}_{name}.db"
+def __create_local_db_name(name, from_chain, path = ""):
+    return f"{path}{from_chain}_{name}.db"
 
 def __get_local_state_info(db, states):
     info = {}

@@ -29,6 +29,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
+from analysis.analysis_filter import afilter
 
 #module self.name
 #name="vbbase"
@@ -66,7 +67,7 @@ class exbase(baseobject):
         self.append_property("btc_client", btcclient(name, btcnodes) if btcnodes else None)
         self.append_property("violas_client", violasproof(name, vlsnodes, "violas") if vlsnodes else None)
         self.append_property("libra_client", violasproof(name, lbrnodes, "libra") if lbrnodes else None)
-        self.append_property("db", localdb(name, f"{self.from_chain}_{self.name()}.db"))
+        self.append_property("db", localdb(name, f"{self.from_chain}_{dtype}.db"))
     
         #violas/libra init
         self.append_property("receivers", receivers)
@@ -250,6 +251,20 @@ class exbase(baseobject):
 
     def is_stop(self, tran_id):
         return self.pserver.is_stop(tran_id)
+
+    def get_swap_balance(self, version):
+        try:
+            ret = self.violas_client.get_transaction(version)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            tran_data = afilter.get_tran_data(ret.datas[0])
+            data = json.loads(tran_data.get("data", {}))
+
+            ret = result(error.SUCCEED, datas = ret.get("out_amount"))
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
 
     # local db state is VSUCCEED , update state to COMPLETE
     def rechange_db_state(self, states):
