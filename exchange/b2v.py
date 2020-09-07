@@ -6,28 +6,17 @@ sys.path.append(os.getcwd())
 sys.path.append("..")
 import log
 import log.logger
-import traceback
 import datetime
-import sqlalchemy
 import stmanage
-import requests
-import comm
-import comm.error
-import comm.result
-import comm.values
 from comm.result import result, parse_except
 from comm.error import error
 from db.dblocal import dblocal as localdb
-from baseobject import baseobject
-from enum import Enum
-from vrequest.request_client import requestclient
 from exchange.exbase import exbase
 
 #module self.name
-#name="exlv"
+#name="b2v"
 wallet_name = "vwallet"
 
-VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 class b2v(exbase):    
     def __init__(self, name, 
@@ -104,22 +93,25 @@ class b2v(exbase):
         version     = data["version"]
         toaddress   = data["to_address"] #map token to
         tran_id     = data["tran_id"]
-        out_amount  = data["out_amount"]
+        out_amount  = int(data.get("out_amount", 0))
         times       = data["times"]
         opttype     = data["opttype"]
         stable_token_id = data["token_id"]
         from_token_id = stable_token_id
         assert from_token_id is not None, f"stable_token_id is None."
-        map_token_id = stmanage.get_token_map(stable_token_id) #stable token -> LBRXXX token
+        map_token_id = stmanage.get_token_map(stable_token_id) #stable token -> mapping token
         to_token_id    = self.to_token_id #token_id is map 
 
-        amount = self.amountswap(amount, self.amountswap.amounttype.BTC).violas_amount 
+        amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).microamount(self.map_chain)
 
         self._logger.info(f"exec_exchange-start. start exec_exchange .type = {self.dtype} tran_id={tran_id}, state = {state}.")
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
         if state is None and self.has_info(tran_id):
-            return result(error.SUCCEED)
+            return result(error.FAILED)
+
+        if not self.chain_data_is_valid(data):
+            return result(error.FAILED)
 
         if self.use_module(state, localdb.state.START):
             self.insert_to_localdb_with_check(version, localdb.state.START, tran_id, receiver)
@@ -169,12 +161,12 @@ class b2v(exbase):
                 self._logger.debug("exec_exchange-3.result: failed.")
                 return ret
             else:
+                #mark sure state changed 
                 self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED, json.dumps(detail))
-
-            self._logger.debug("exec_exchange-4. start get_address_version...")
-            version = self.violas_client.get_address_version(map_sender.address.hex()).datas
-            self._logger.debug(f"exec_exchange-4.result: version = {version}")
-            detail.update({"swap_version":version})
+                version = self.violas_client.get_address_version(map_sender.address.hex()).datas
+                detail.update({"swap_version":version})
+                #update for swap_version
+                self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED, json.dumps(detail))
         
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state

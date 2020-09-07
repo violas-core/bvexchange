@@ -94,10 +94,10 @@ class v2xswap(exbase):
         #if found transaction in history.db(state == None), 
         #then get_transactions's latest_version is error(too small or other case)' 
         if state is None and self.has_info(tran_id):
-            return ret
+            return result(error.FAILED)
 
         if not self.chain_data_is_valid(data):
-            return ret 
+            return result(error.FAILED)
 
         if self.use_module(state, localdb.state.START):
             self.insert_to_localdb_with_check(version, localdb.state.START, tran_id, receiver)
@@ -105,7 +105,7 @@ class v2xswap(exbase):
         if self.use_module(state, localdb.state.QBSUCCEED):
             if not detail.get("swap_version"):
                 #get gas for swap
-                self._logger.debug(f"exec_exchange-1. start swap_get_output_amount({from_token_id} {to_token_id} {amount})...")
+                self._logger.debug(f"exec_exchange-0. start swap_get_output_amount({from_token_id} {to_token_id} {amount})...")
                 ret = self.violas_client.swap_get_output_amount(from_token_id, map_token_id, amount)
                 if ret.state != error.SUCCEED:
                     self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
@@ -115,9 +115,9 @@ class v2xswap(exbase):
 
                 #temp value(test)
                 #btc -> vbtc(1000000), violas swap vbtc
-                out_amount = self.amountswap(out_amount, self.amountswap.amounttype[self.map_chain.upper()]).violas_amount
+                out_amount = self.amountswap(out_amount, self.amountswap.amounttype[self.map_chain.upper()]).microamount(self.from_chain)
 
-                self._logger.debug(f"exec_exchange-0.result : can swap amount: = {out_amount_chian} gas = {gas}, want = {out_amount}vBTC")
+                self._logger.debug(f"exec_exchange-0.result : can swap amount: = {out_amount_chian} gas = {gas}, want = {out_amount}{map_token_id}")
 
                 if out_amount <= 0:
                     out_amount = out_amount_chian
