@@ -258,10 +258,12 @@ class exbase(baseobject):
             if ret.state != error.SUCCEED:
                 return ret
 
-            tran_data = afilter.get_tran_data(ret.datas[0])
-            data = json.loads(tran_data.get("data", {}))
+            tran_data = afilter.get_tran_data(ret.datas)
+            print(tran_data)
+            swap_data = tran_data.get("data")
+            data = json.loads(swap_data)
 
-            ret = result(error.SUCCEED, datas = ret.get("out_amount"))
+            ret = result(error.SUCCEED, datas = data.get("out_amount"))
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -285,11 +287,11 @@ class exbase(baseobject):
                         continue
                     ret = self.is_end(tran_id)
                     if ret.state == error.SUCCEED and ret.datas == True:
-                       ret = self.update_localdb_state_with_check(tran_id, localdb.state.COMPLETE)
+                       ret = self.update_localdb_state_with_check(tran_id, localdb.state.COMPLETE, detail = None)
 
                     ret = self.is_stop(tran_id)
                     if ret.state == error.SUCCEED and ret.datas == True:
-                       ret = self.update_localdb_state_with_check(tran_id, localdb.state.COMPLETE)
+                       ret = self.update_localdb_state_with_check(tran_id, localdb.state.COMPLETE, detail = None)
 
         except Exception as e:
             ret = parse_except(e)
@@ -301,9 +303,9 @@ class exbase(baseobject):
             tran_data = self.from_client.create_data_for_end(self.from_chain, self.dtype, tran_id, **kwargs)
             ret = self.from_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
             if ret.state != error.SUCCEED:
-                self.update_localdb_state_with_check(tran_id, localdb.state.VFAILED)
+                self.update_localdb_state_with_check(tran_id, localdb.state.VFAILED, detail = None)
             else:
-                self.update_localdb_state_with_check(tran_id, localdb.state.VSUCCEED)
+                self.update_localdb_state_with_check(tran_id, localdb.state.VSUCCEED, detail = None)
             return ret
 
     def __checks(self):
@@ -416,10 +418,10 @@ class exbase(baseobject):
         data = self.from_client.create_data_for_stop(self.from_chain, self.dtype, tran_id, 0) 
         ret = self.from_client.send_coin(from_sender, payee, amount, stable_token_id, data=data)
         if ret.state != error.SUCCEED:
-            self.update_localdb_state_with_check(tran_id, localdb.state.SFAILED)
+            self.update_localdb_state_with_check(tran_id, localdb.state.SFAILED, detail = None)
             return ret
         else:
-            self.update_localdb_state_with_check(tran_id, localdb.state.SSUCCEED)
+            self.update_localdb_state_with_check(tran_id, localdb.state.SSUCCEED, detail = None)
         return result(error.SUCCEED)
 
     def reexchange_data_from_failed(self, states):

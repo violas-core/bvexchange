@@ -239,8 +239,12 @@ class dblocal(baseobject):
             if state in (self.state.FAILED, self.state.EFAILED, self.state.QBFAILED, self.state.FILLFAILED, self.state.PFAILED, self.state.VFAILED, self.state.SFAILED):
                 inc = 1
             filter_tranid = (self.info.tranid==tranid)
-            datas = self.__session.query(self.info).filter(filter_tranid)\
-                    .update({self.info.state:state.value, self.info.times:self.info.times + inc, self.info.detail : detail})
+            if detail:
+                datas = self.__session.query(self.info).filter(filter_tranid)\
+                        .update({self.info.state:state.value, self.info.times:self.info.times + inc, self.info.detail : detail})
+            else:
+                datas = self.__session.query(self.info).filter(filter_tranid)\
+                        .update({self.info.state:state.value, self.info.times:self.info.times + inc})
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)

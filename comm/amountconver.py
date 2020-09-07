@@ -6,13 +6,14 @@ from enum import Enum
 
 class amountconver():
     class amounttype(Enum):
+        LIBRA  = 0
         VIOLAS = 1
         BTC    = 2
         SATOSHI = 3
 
     def __init__(self, value, atype = amounttype.VIOLAS):
         
-        if atype == self.amounttype.VIOLAS:
+        if atype in (self.amounttype.VIOLAS, self.amounttype.LIBRA):
             self.violas_amount = value
         elif atype == self.amounttype.BTC:
             if isinstance(value, int):

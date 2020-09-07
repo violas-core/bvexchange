@@ -86,21 +86,6 @@ class v2b(exbase):
                         localdb.state.SSUCCEED, \
                         localdb.state.PSUCCEED]])
 
-    def is_enough_amount(self, address, amount, gas = 0.00001):
-        try:
-            ret = self.btc_client.get_balance(address)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                #get some coin for address
-                return result(error.FAILED, f"not enuogh btc amount.cur_amount({cur_amount}), use amount({amount + gas})", False)
-
-            ret = result(error.SUCCEED, datas = True)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
             state = None, detail = {}):
         ''' execute exchange 
@@ -159,34 +144,39 @@ class v2b(exbase):
                 #temp value(test)
                 #btc -> vbtc(1000000), violas swap vbtc
                 out_amount = self.amountswap(out_amount, self.amountswap.amounttype[self.map_chain.upper()]).violas_amount
-                self._logger.debug(f"exec_exchange-1.result : can swap amount: = {out_amount_chian} gas = {gas}, want = {out_amount}vBTC")
 
-                if out_amount <= 0 and out_amount_chian >= 1000:
+                self._logger.debug(f"exec_exchange-0.result : can swap amount: = {out_amount_chian} gas = {gas}, want = {out_amount}vBTC")
+
+                if out_amount <= 0:
                     out_amount = out_amount_chian
-                elif out_amount > out_amount_chian or out_amount_chian < 1000: #don't execute swap, Reduce the cost of the budget
-                    self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
+                elif out_amount > out_amount_chian or out_amount_chian < 0: #don't execute swap, Reduce the cost of the budget
+                    detail.update({"error" : f"out_amount({out_amount}) > out_amount_chain({out_amount_chian})"})
+                    self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, \
+                            json.dumps(detail))
                     return result(error.FAILED, \
                             f"don't execute swap(out_amount({out_amount}) > cur_outamount({out_amount_chian})), " 
                             + f"Reduce the cost of the budget. tran_id = {tran_id}")
 
                 detail.update({"gas": gas})
 
-                ret = self.violas_client.get_address_version(from_sender.address.hex())
-                if ret.state != error.SUCCEED:
-                    self._logger.error("exec_exchange-1.result: failed.")
-                    self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
-                    return ret
-                swap_version = ret.datas + 1
-
-                self._logger.debug("exec_exchange-2. start swap...")
+                self._logger.debug(f"exec_exchange-1. start swap({from_token_id}, {map_token_id}, {amount}...")
                 ret = self.violas_client.swap(from_sender, from_token_id, map_token_id, amount, \
                         out_amount, receiver = combine_account.address.hex(), \
                         gas_currency_code = from_token_id)
 
                 if ret.state != error.SUCCEED:
-                    self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, json.dumps(detail))
-                    self._logger.error("exec_exchange-2.result: failed.")
+                    self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, \
+                            json.dumps(detail))
+                    self._logger.error("exec_exchange-1.result: failed.")
                     return ret
+
+                self._logger.debug(f"exec_exchange-2. start get transaction version({from_sender.address.hex()})...")
+                ret = self.violas_client.get_address_version(from_sender.address.hex())
+                if ret.state != error.SUCCEED:
+                    self._logger.error("exec_exchange-2.result: failed.")
+                    self.update_localdb_state_with_check(tran_id, localdb.state.FAILED)
+                    return ret
+                swap_version = ret.datas 
 
                 detail.update({"swap_version": swap_version})
 
@@ -200,9 +190,9 @@ class v2b(exbase):
                         json.dumps(detail)) #should get swap to_token balance from version
                 return ret
             else:
-                
                 detail.update({"diff_balance": ret.datas})
-                self.update_localdb_state_with_check(tran_id, localdb.state.QBSUCCEED, json.dumps(detail))
+                self.update_localdb_state_with_check(tran_id, localdb.state.QBSUCCEED, \
+                        json.dumps(detail))
 
         #mint LBRXXX to sender(type = LBRXXX), or check sender's token amount is enough, re fill ????
         if self.use_module(state, localdb.state.FILLSUCCEED) or \
@@ -217,7 +207,8 @@ class v2b(exbase):
                 self._logger.error(f"exec_exchange-3. result: failed. {ret.message}")
                 return ret
             else:
-                self.update_localdb_state_with_check(tran_id, localdb.state.FILLSUCCEED)
+                self.update_localdb_state_with_check(tran_id, localdb.state.FILLSUCCEED, \
+                        json.dumps(detail))
 
 
         #send btc token to payee address. P = payee
@@ -233,7 +224,8 @@ class v2b(exbase):
                 self._logger.error("exec_exchange-4.result: failed.")
                 return ret
             else:
-                self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED)
+                self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED, \
+                        json.dumps(detail))
 
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state
