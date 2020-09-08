@@ -375,7 +375,6 @@ class exbase(baseobject):
             pass
         return False
 
-
     def chain_data_is_valid(self, data):
         if False: # btc and violas is diff ????????
             self._logger.warning(f"transaction(tran_id = {data['tran_id']})) is invalid. " + 
@@ -497,7 +496,7 @@ class exbase(baseobject):
             ret = parse_except(e)
         return ret 
 
-    def check_syncing(self):
+    def check_syncing(self, secs = 1):
         if not stmanage.get_syncing_state():
             self._logger.debug(f"syncing closed. ")
             return True
@@ -518,7 +517,7 @@ class exbase(baseobject):
                 self._logger.info(f"waitting {self.dtype} to syncing... . " + \
                         f"current proof version: {proof_chain_ver}, chain ver: {chain_ver}, " + \
                         f"diff ver: {chain_ver - proof_chain_ver}")
-                sleep(10)
+                sleep(secs)
             else:
                 self._logger.debug(f"syncing ok, {self.dtype} to syncing . " + \
                         f"current proof version: {proof_chain_ver}, chain ver: {chain_ver}, " + \
