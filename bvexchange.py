@@ -29,7 +29,7 @@ class works:
     __work_obj = {}
     __record_db = "record"
 
-    __libra_min_valid_version   = 209_7312
+    __libra_min_valid_version   = 0
     __violas_min_valid_version  = 610_8000
     __btc_min_valid_version     = 0
     def __init__(self):

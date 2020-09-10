@@ -250,8 +250,8 @@ def new_account():
     assert ret.state == error.SUCCEED, "new_account failed"
     logger.debug("account address : {}".format(ret.datas.address.hex()))
 
-def account_has_token_id(address, token_id):
-    logger.debug(f"start account_has_token_id address= {address} module = {token_id}")
+def address_has_token_id(address, token_id):
+    logger.debug(f"start address_has_token_id address= {address} module = {token_id}")
     client = get_violasclient()
     logger.debug(client.has_token_id(address, token_id).datas)
 
@@ -352,7 +352,7 @@ def init_args(pargs):
     pargs.append("show_token_list", "show token list.", True, ["address"])
     pargs.append("show_all_token_list", "show token list.")
     pargs.append("get_account_prefix", "get account prefix.", True, ["address"])
-    pargs.append("account_has_token_id", "check account is published token_id.", True, ["address", "token_id"])
+    pargs.append("address_has_token_id", "check account is published token_id.", True, ["address", "token_id"])
 
     #swap opt
     pargs.append("show_swap_registered_tokens", "show registered tokens for module.", True, ["address"])
@@ -501,10 +501,10 @@ def run(argc, argv):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
             has_transaction(arg_list[0], arg_list[1])
-        elif pargs.is_matched(opt, ["account_has_token_id"]):
+        elif pargs.is_matched(opt, ["address_has_token_id"]):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
-            account_has_token_id(arg_list[0], arg_list[1])
+            address_has_token_id(arg_list[0], arg_list[1])
         elif pargs.is_matched(opt, ["get_latest_transaction_version"]):
             get_latest_transaction_version()
         elif pargs.is_matched(opt, ["get_address_version"]):
