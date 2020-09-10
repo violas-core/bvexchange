@@ -41,6 +41,7 @@ class afilter(abase):
         return json.dumps({
                 "flag": "violas",
                 "type": "v2vswap",
+                "opttype": "v2vswap",
                 "to_address": to_address,
                 "out_amount": self.get_out_amount(code_name, data),
                 "times": 1,

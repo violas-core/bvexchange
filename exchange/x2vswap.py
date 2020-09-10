@@ -68,7 +68,6 @@ class x2vswap(exbase):
         version     = data["version"]
         toaddress   = data["to_address"] #map token to
         tran_id     = data["tran_id"]
-        out_amount  = int(data["out_amount"])
         out_amount  = int(data.get("out_amount", 0))
         times       = data["times"]
         opttype     = data["opttype"]
