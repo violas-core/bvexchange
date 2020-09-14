@@ -287,12 +287,12 @@ class violasclient(baseobject):
 
     def check_address_has_token_id(self, address, token_id):
         try:
-            ret = self.has_token_id(from_account.address.hex(), token_id)
+            ret = self.has_token_id(address, token_id)
             if ret.state != error.SUCCEED:
                 return ret
 
             if not ret.datas:
-                return result(error.ARG_INVALID, f"account ({from_account.address.hex()}) not bind token({token_id})")
+                return result(error.ARG_INVALID, f"account ({address}) not bind token({token_id})")
 
             ret = result(error.SUCCEED, datas = True)
         except Exception as e:
@@ -426,7 +426,7 @@ class violasclient(baseobject):
                 kwargs.update({"gas_currency_code":token_in})
 
 
-            ret = self.check_address_has_token_id(sender_account.address.hex(), token_id)
+            ret = self.check_address_has_token_id(sender_account.address.hex(), token_in)
             if ret.state != error.SUCCEED:
                 return ret
 

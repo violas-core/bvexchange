@@ -253,11 +253,11 @@ class violasproxy(baseobject):
                 vreceiver=vaddress, sequence=sequence, fromprivkeys=json.dumps(fromprivkeys))
         return self.run_request(url)
 
-    def violas_sendexproofstop(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, fromprivkeys = None, withgas=False):#BTC
+    def violas_sendexproofstop(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, withgas=False, fromprivkeys = None):#BTC
         fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
         url = self.create_opt_url(self.opt.SET, self.opttype[opttype.upper()], state="stop", \
                 fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
-                vreceiver=vaddress, sequence=sequence, fromprivkeys=json.dumps(fromprivkeys), withgas=withgas)
+                vreceiver=vaddress, sequence=sequence, withgas=withgas, fromprivkeys=json.dumps(fromprivkeys))
         return self.run_request(url)
 
     def sendtoaddress(self, address, amount):#BTC
