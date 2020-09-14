@@ -43,7 +43,7 @@ def json_reset(data):
 
 def main():
     ui = AuthServiceProxy(url)
-    ret = ui.get_transactions(6763092, 1, True)
+    ret = ui.get_transactions(10229864, 1, True)
     json_print(ret)
 
     #ret = ui.get_currencies()
