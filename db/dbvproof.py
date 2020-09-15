@@ -123,8 +123,14 @@ class dbvproof(dbvbase):
     def get_proof_min_version_for_stop(self):
         return get_proof_min_version_for_state(state, "stop")
 
+    def map_opttype(self, opttype):
+        if opttype in ("v2vswap"):
+            return "swap"
+        return opttype
+
     def create_haddress_name(self, tran_info):
-        return f"{tran_info['sender']}_{tran_info['flag']}_{tran_info['opttype']}"
+        opttype = self.map_opttype(tran_info['opttype'])
+        return f"{tran_info['sender']}_{tran_info['flag']}_{opttype}"
 
     def create_haddress_key(self, tran_info):
         return f"{tran_info['version']}"
@@ -180,6 +186,7 @@ class dbvproof(dbvbase):
             }
 
     def record_index_name(self, opttype):
+        opttype = self.map_opttype(opttype)
         return f"{opttype}_record_index"
 
     def create_zset_value(self, name, key, tran_info = None):
