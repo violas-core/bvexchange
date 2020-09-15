@@ -96,15 +96,13 @@ def parse_tran(transaction):
         datas["to_address"]     = data_dict.get("to_address")
         datas["times"]          = data_dict.get("times", 0)
         out_amount = data_dict.get("out_amount")
-        if out_amount is None:
-            out_amount = 0
-        datas["out_amount"]     = int(out_amount)
-        datas["out_amount_real"]= int(data_dict.get("out_amount_real", datas["out_amount"]))
+        datas["out_amount"]     = int(out_amount if out_amount else 0)
+        out_amount_real = data_dict.get("out_amount_real")
+        datas["out_amount_real"]= int(datas["out_amount"] if not out_amount_real else out_amount_real)
         datas["nettype"]        = data_dict.get("nettype")
         datas["state"]          = data_dict.get("state")
         opttype = data_dict.get("opttype")
-        if opttype is None:
-            opttype = get_opttype_from_dtype(datas["type"])
+        opttype = get_opttype_from_dtype(datas["type"]) if not opttype else opttype
         datas["opttype"]        = opttype
         datas["amount"]         = transaction.get("amount", 0)
         datas["sender"]         = transaction.get("sender")
