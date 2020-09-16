@@ -13,7 +13,7 @@ Nginx + gunicorn + flask
 
 ## Version
 
-v1.0.1
+v1.0.2
 
 
 
@@ -363,4 +363,19 @@ result:
     }
 }
 ```
- 
+
+
+
+
+---
+
+
+
+
+# version list
+## v1.0.2
+  - modified [Opttype - type](#Opttype---type): added fpswap for fund proof records
+
+## v1.0.1
+  - create request-api.md
+
