@@ -36,12 +36,22 @@ class afilter(abase):
     def __del__(self):
         abase.__del__(self)
 
+    @classmethod 
+    def swap_map_to_opttye(self, code_name):
+        if code_name == "swap":
+            return "v2vswap"
+        elif code_name in ("remove_liquidity", "add_liquidity"):
+            return "fpswap"
+        else:
+            raise Exception(f"code_name({code_name}) is invalid.")
+
     @classmethod
     def swap_data_map_std_data(self, code_name, data, to_address):
+        opttype = self.swap_map_to_opttye(code_name)
         return json.dumps({
                 "flag": "violas",
                 "type": "v2vswap",
-                "opttype": "v2vswap",
+                "opttype": opttype,
                 "to_address": to_address,
                 "out_amount": self.get_out_amount(code_name, data),
                 "times": 1,
