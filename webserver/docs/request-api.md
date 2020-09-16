@@ -114,6 +114,11 @@ Describe the sub operetion type.
   <td>query swap record info, default</td>
  </tr>
  <tr>
+  <td><strong>fpswap</strong></td>
+  <td>string</td>
+  <td>query swap fund proof record info</td>
+ </tr>
+ <tr>
   <td><strong>map</strong></td>
   <td>string</td>
   <td>query mapping record info</td>
@@ -236,6 +241,61 @@ Describe the request swap records.
 
 ```
 'http://52.231.52.107/?opt=records&senders=4696c44b1b8f7920f98da4863d055fc3_violas&opttype=swap&cursor=0&limit=3'
+
+result: 
+{
+    "state": SUCCEED,
+    "message": "",
+    "datas": {
+        "count" : int, 
+        "cursor" : int, //next record index
+        "datas" : [{}, ...]
+    }
+}
+```
+ 
+## Records - fpswap
+
+**Description**
+
+Describe the request swap records.
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong>opt</strong></td>
+  <td>records</td>
+  <td>fixed</td>
+ </tr>
+ <tr>
+  <td><strong>opttype</strong></td>
+  <td>fpswap</td>
+  <td>fixed fpswap</td>
+ </tr>
+ <tr>
+  <td><strong>senders</strong></td>
+  <td>address_chain</td>
+  <td>count: 1 ~ n; split symbol: ','</td>
+ </tr>
+ <tr>
+  <td><strong>cursor</strong></td>
+  <td>0~n</td>
+  <td>start index, default: 0</td>
+ </tr>
+ <tr>
+  <td><strong>limit</strong></td>
+  <td>1~n</td>
+  <td>max count, default: 10</td>
+ </tr>
+<table>
+
+```
+'http://52.231.52.107/?opt=records&senders=4696c44b1b8f7920f98da4863d055fc3_violas&opttype=fpswap&cursor=0&limit=3'
 
 result: 
 {
