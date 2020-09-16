@@ -123,9 +123,12 @@ class dbvproof(dbvbase):
     def get_proof_min_version_for_stop(self):
         return get_proof_min_version_for_state(state, "stop")
 
+    @classmethod
     def map_opttype(self, opttype):
         if opttype in ("v2vswap"):
             return "swap"
+        elif opttype in ("fpswap"): #fund proof swap
+            return "fpswap"
         return opttype
 
     def create_haddress_name(self, tran_info):
@@ -151,7 +154,7 @@ class dbvproof(dbvbase):
         out_token = ""
         if opttype == "map":
             out_token = stmanage.get_token_map(tran_info["token_id"])
-        elif opttype == "v2vswap":
+        elif opttype in ("v2vswap", "fpswap"):
             out_token = tran_info.get("out_token")
         else : #swap for diff chain
             out_token = stmanage.get_type_stable_token(tran_info["type"])
