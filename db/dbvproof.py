@@ -240,6 +240,8 @@ class dbvproof(dbvbase):
             key = dict_zval.get("key")
             if hname in names:
                 index = index + 1
+            else:
+                continue
 
             if index >= start:
                 ret = self.hget(hname, key)
