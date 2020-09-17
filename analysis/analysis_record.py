@@ -99,7 +99,8 @@ class record(baseobject):
                     return info
                 data = json.loads(info.datas)
                 data["state"] = tran_info["state"]
-                data["out_amount"] = int(tran_info.get("out_amount_real", 0))
+                if data["state"] in ("end"): #state is (stop cancel) , keep it 
+                    data["out_amount"] = int(tran_info.get("out_amount_real", 0))
                 ret = self._rdbclient.hset(name, key, json.dumps(data))
                 if ret.state != error.SUCCEED:
                     self._logger.error(f"update state info <name={name}, key={key}, data={json.dumps(data)}> failed, check db is run. messge:{ret.message}")
