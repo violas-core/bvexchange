@@ -70,6 +70,9 @@ def get_sender_address_list(mtype, chain = None, full = True):
 def get_combine_address_list(mtype, chain = None, full = True):
     return __get_address_list("combine", mtype, chain, full)
 
+def get_type_code(dtype, default = ""):
+    return setting.type_code.get(dtype, default)
+
 def get_support_address_info(etype = None):
     support_mods = get_support_mods(etype)
     assert support_mods is not None, f"support_mods is invalid"
@@ -77,6 +80,7 @@ def get_support_address_info(etype = None):
     receiver_infos = get_address_info("receiver")
     for info in receiver_infos:
         if info.get("type") in support_mods:
+            info.update({"code":get_type_code(info.get("type"))})
             addr_infos.append(info)
 
     return addr_infos

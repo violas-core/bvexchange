@@ -146,6 +146,13 @@ syncing_mod = false
         support= true  
         run    = false
 
+[type_code]
+    b2vm    = "0x3000"
+    b2vusd  = "0x4000"
+    b2veur  = "0x4010"
+    b2vsgd  = "0x4020"
+    b2vgbp  = "0x4030"
+
 [swap_module]
     #AssocRoot: 0000000000000000000000000a550c18
     #TreasuryCompliance: 0000000000000000000000000b1e55ed
