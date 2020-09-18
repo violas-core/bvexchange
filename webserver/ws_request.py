@@ -50,6 +50,7 @@ def main():
         version = args.get("version")
         opttype = args.get("opttype", "swap")
 
+        print(f"opt = {opt}")
         if opt is None:
             raise Exception("opt not found.")
         if opt == "address":
