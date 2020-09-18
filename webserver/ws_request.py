@@ -62,6 +62,8 @@ def main():
             return trandetail(dtype, version)
         elif opt == "workstate":
             return workstate()
+        elif opt == "receivers":
+            return receivers(opttype)
         else:
             raise Exception(f"opt{opt} is invalid.")
     except Exception as e:
@@ -167,6 +169,10 @@ def get_proofdb(dtype):
 @app.route('/workstate/', methods=['GET'])
 def workstate():
     return tools.show_workenv.show_all()
+
+def receivers(opttype):
+    ret = result(error.SUCCEED, "", stmanage.get_support_address_info(opttype))
+    return ret.to_json()
 
 '''
 with app.test_request_context():

@@ -61,7 +61,7 @@ def __get_address_list(atype, mtype, chain = None, full = True):
 def get_receiver_address_list(mtype, chain = None, full = True):
     return __get_address_list("receiver", mtype, chain, full)
 
-def get_receiver_info(atype):
+def get_address_info(atype):
     return setting.address_list.get(atype)
 
 def get_sender_address_list(mtype, chain = None, full = True):
@@ -69,6 +69,18 @@ def get_sender_address_list(mtype, chain = None, full = True):
 
 def get_combine_address_list(mtype, chain = None, full = True):
     return __get_address_list("combine", mtype, chain, full)
+
+def get_support_address_info(etype = None):
+    support_mods = get_support_mods(etype)
+    assert support_mods is not None, f"support_mods is invalid"
+    addr_infos = []
+    receiver_infos = get_address_info("receiver")
+    for info in receiver_infos:
+        if info.get("type") in support_mods:
+            addr_infos.append(info)
+
+    return addr_infos
+
 
 #maybe use. so keep it until libra support usd eur ...
 #def get_token_address(mtype, chain = None, full = True):
@@ -219,15 +231,14 @@ def get_swap_owner():
 def get_run_mods():
     mods = []
     for typename, opts in setting.type_token.items():
-        run_state = opts.get("run", "false")
-        if run_state.lower() == "true":
+        run_state = opts.get("run", False)
+        if run_state == True:
             mods.append(typename)
     return mods
 
 
-def get_support_mods():
-    return setting.type_token.keys()
-
+def get_support_mods(etype = None):
+    return setting.type_token_filter(etype)
     
 def get_conf():
     infos = {}
@@ -299,8 +310,10 @@ def main():
     print(f"combin address(l2b, violas): {get_combine_address('l2b', 'violas')}")
     print(f"run mods: {get_run_mods()}")
     print(f"syncing state:{get_syncing_state()}")
-    print("receiver info:")
-    json_print(get_receiver_info('receiver'))
+    print("receiver info(map):")
+    json_print(get_support_address_info("map"))
+    print("receiver info(swap):")
+    json_print(get_support_address_info("swap"))
 
     #json_print(get_conf())
 
