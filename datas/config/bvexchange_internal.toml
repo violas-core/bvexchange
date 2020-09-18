@@ -87,16 +87,17 @@ syncing_mod = false
 #mtoken : stoken = 1:1
 #support   : type is support #default = true
 #run    : execute analysis proof and exchange, default false
+#etype  : exchange transaction type: map  swap, default swap
 [type_opts]
     [type_opts.v2lusd]
         stoken = "Coin1"
         mtoken = "USD"
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
     [type_opts.v2leur]
         stoken = "Coin2"
         mtoken = "EUR"
-        run    = "true"
+        run    = true
     [type_opts.l2vusd]
         stoken = "VLSUSD"
     [type_opts.l2veur]
@@ -128,19 +129,22 @@ syncing_mod = false
     [type_opts.v2bm]
         stoken = "BTC"
         mtoken = "BTC"
+        etype  = "map"
     [type_opts.v2lm]
-        support= "true"  
-        run    = "false"
+        support= true  
+        run    = false
+        etype  = "map"
     [type_opts.l2vm]
-        support= "true"  
-        run    = "false"
+        support= true  
+        run    = false
+        etype  = "map"
     [type_opts.b2vm]
-        support= "true"  
-        run    = "false"
+        support= true  
+        run    = false
+        etype  = "map"
     [type_opts.v2vswap]
-        support= "true"  
-        run    = "false"
-
+        support= true  
+        run    = false
 
 [swap_module]
     #AssocRoot: 0000000000000000000000000a550c18

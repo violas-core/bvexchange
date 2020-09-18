@@ -66,79 +66,87 @@ syncing_mod = true
 #mtoken : stoken = 1:1
 #support   : type is support #default = true
 #run    : execute analysis proof and exchange, default false
+#etype  : exchange transaction type: map  swap, default swap
 [type_opts]
     [type_opts.v2lusd]
         stoken = "Coin1"
         mtoken = "USD"
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
     [type_opts.v2leur]
         stoken = "Coin2"
         mtoken = "EUR"
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
     [type_opts.l2vusd]
         stoken = "VLSUSD"
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
     [type_opts.l2veur]
         stoken = "VLSEUR"
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
     [type_opts.l2vsgd]
         stoken = "VLSSGD"
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
     [type_opts.l2vgbp]
         stoken = "VLSGBP"
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
     [type_opts.b2vusd]
         stoken = "VLSUSD"
-        support= "true"  
-        run    = "true"
+        support= true 
+        run    = true
     [type_opts.b2veur]
         stoken = "VLSEUR"
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
     [type_opts.b2vsgd]
         stoken = "VLSSGD"
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
     [type_opts.b2vgbp]
         stoken = "VLSGBP"
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
     [type_opts.b2lusd]
         stoken = "Coin1"
         mtoken = "USD"
-        support= "false"  
-        run    = "false"
+        support= false  
+        run    = false
     [type_opts.b2leur]
         stoken = "Coin2"
         mtoken = "EUR"
-        support= "false"  
-        run    = "false"
+        support= false  
+        run    = false
     [type_opts.l2b]
         stoken = "BTC"
         mtoken = "BTC"
-        support= "false"  
-        run    = "false"
+        support= false  
+        run    = false
     [type_opts.v2b]
         stoken = "BTC"
         mtoken = "BTC"
     [type_opts.v2bm]
         stoken = "BTC"
         mtoken = "BTC"
+        etype  = "map"
     [type_opts.v2lm]
-        support= "true"  
-        run    = "false"
+        support= true  
+        run    = false
+        etype  = "map"
     [type_opts.l2vm]
-        support= "true"  
-        run    = "false"
+        support= true  
+        run    = false
+        etype  = "map"
     [type_opts.b2vm]
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
+        etype  = "map"
+    [type_opts.v2vswap]
+        support= true  
+        run    = false
 
 [swap_module]
     #AssocRoot: 0000000000000000000000000a550c18

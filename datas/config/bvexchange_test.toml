@@ -91,12 +91,12 @@ syncing_mod = true
     [type_opts.v2lusd]
         stoken = "Coin1"
         mtoken = "USD"
-        support= "true"  
-        run    = "true"
+        support= true  
+        run    = true
     [type_opts.v2leur]
         stoken = "Coin2"
         mtoken = "EUR"
-        run    = "true"
+        run    = true
     [type_opts.l2vusd]
         stoken = "VLSUSD"
     [type_opts.l2veur]
@@ -120,6 +120,7 @@ syncing_mod = true
         stoken = "Coin2"
         mtoken = "EUR"
     [type_opts.l2b]
+        support = false
         stoken = "BTC"
         mtoken = "BTC"
     [type_opts.v2b]
@@ -128,18 +129,23 @@ syncing_mod = true
     [type_opts.v2bm]
         stoken = "BTC"
         mtoken = "BTC"
+        support = true  
+        etype  = "map"
     [type_opts.v2lm]
-        support= "true"  
-        run    = "false"
+        support= true  
+        run    = false
+        etype  = "map"
     [type_opts.l2vm]
-        support= "true"  
-        run    = "false"
+        support= true  
+        run    = false
+        etype  = "map"
     [type_opts.b2vm]
-        support= "true"  
-        run    = "false"
+        support= true
+        run    = false
+        etype  = "map"
     [type_opts.v2vswap]
-        support= "true"  
-        run    = "false"
+        support= true  
+        run    = false
 
 
 [swap_module]
