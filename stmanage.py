@@ -5,6 +5,7 @@ from comm import result
 from comm.result import parse_except
 from comm.functions import get_address_from_full_address 
 from comm.functions import json_print
+from comm.values import trantypebase
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
@@ -73,6 +74,42 @@ def get_combine_address_list(mtype, chain = None, full = True):
 def get_type_code(dtype, default = ""):
     return setting.type_code.get(dtype, default)
 
+def get_exchang_chains(mtype):
+    _map_chain_name = {}
+    for ttb in trantypebase:
+        name = ttb.name.lower()
+        _map_chain_name.update({name[:1]:name})
+    return (_map_chain_name[mtype[:1]], _map_chain_name[mtype[2:3]])
+
+def get_token_form_to_with_type(etype, mtype):
+    f_t_coins = {}
+    fchain, tchain = get_exchang_chains(mtype)
+    if etype == "map":
+        if fchain == "violas":
+            fcoins = get_support_map_token_id(fchain) 
+            tcoins = get_support_stable_token_id(tchain) 
+        else:
+            fcoins = get_support_stable_token_id(fchain) 
+            tcoins = get_support_map_token_id(tchain) 
+
+        for fcoin in fcoins:
+            tcoin = get_token_map(fcoin)
+            if tcoin in tcoins: #get_support_stable_token_id(tchain):
+                f_t_coins.update({fcoin:tcoin})
+
+        f_t_coins = [{"from_coin": fcoin, "to_coin": tcoin} for fcoin, tcoin in f_t_coins.items()]
+
+    elif etype == "swap":
+        fcoins = get_support_stable_token_id(fchain)
+        tcoin = get_type_stable_token(mtype)
+        f_t_coins = [{"from_coin": fcoin, "to_coin": tcoin} for fcoin in fcoins]
+
+    else:
+        raise Exception(f"etype({etype}) is invalid. make sure value(map swap)")
+
+    return f_t_coins # from to
+
+
 def get_support_address_info(etype = None):
     support_mods = get_support_mods(etype)
     assert support_mods is not None, f"support_mods is invalid"
@@ -80,7 +117,9 @@ def get_support_address_info(etype = None):
     receiver_infos = get_address_info("receiver")
     for info in receiver_infos:
         if info.get("type") in support_mods:
-            info.update({"code":get_type_code(info.get("type"))})
+            f_t_coins = get_token_form_to_with_type(etype, info.get("type"))
+            info.update({"code":get_type_code(info.get("type")), \
+                    "from_to_token": f_t_coins})
             addr_infos.append(info)
 
     return addr_infos
@@ -315,7 +354,7 @@ def main():
     print(f"run mods: {get_run_mods()}")
     print(f"syncing state:{get_syncing_state()}")
     print("receiver info(map):")
-    json_print(get_support_address_info("map"))
+    #json_print(get_support_address_info("map"))
     print("receiver info(swap):")
     json_print(get_support_address_info("swap"))
 
