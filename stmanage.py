@@ -176,6 +176,9 @@ def get_libra_nodes():
 def get_violas_servers():
     return setting.violas_servers
 
+def get_eth_nodes():
+    return setting.ethereum_nodes
+
 def get_violas_nodes():
     return setting.violas_nodes
 

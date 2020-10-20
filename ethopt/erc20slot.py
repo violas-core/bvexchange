@@ -60,7 +60,7 @@ def test():
             "vlsmproof": {"abi":VLSMPROOF_ABI, "bytecode": VLSMPROOF_BYTECODE, "token_type": "vlsmproof"}
             }
 
-    host = "http://127.0.0.1:8545"
+    host = "http://51.140.241.96:8545"
     w3 = Web3(Web3.HTTPProvider(host))
     if not w3.isConnected():
         raise Exception("not connect {host}")

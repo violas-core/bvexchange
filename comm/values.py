@@ -30,33 +30,36 @@ class trantypebase(autoname):
     VIOLAS = auto()
     LIBRA  = auto()
     BTC    = auto()
+    ETHEREUM    = auto()
     UNKOWN = auto()
 
 #datatype for transaction's data type
 #parse metadata
 class datatypebase(autoname):
-    V2LM     = auto()
-    L2VM     = auto()
-    V2LUSD  = auto()
-    V2LEUR  = auto()
-    V2LSGD  = auto()
-    V2LGBP  = auto()
-    L2VUSD  = auto()
-    L2VEUR  = auto()
-    L2VSGD  = auto()
-    L2VGBP  = auto()
-    V2B     = auto()
-    V2BM    = auto()
-    B2VM    = auto()
-    B2VUSD  = auto()
-    B2VEUR  = auto()
-    B2VSGD  = auto()
-    B2VGBP  = auto()
-    L2B     = auto()
-    B2LUSD  = auto()
-    B2LEUR  = auto()
-    V2VSWAP = auto()
-    UNKOWN  = auto()
+    V2LM        = auto()
+    L2VM        = auto()
+    V2LUSD      = auto()
+    V2LEUR      = auto()
+    V2LSGD      = auto()
+    V2LGBP      = auto()
+    L2VUSD      = auto()
+    L2VEUR      = auto()
+    L2VSGD      = auto()
+    L2VGBP      = auto()
+    V2B         = auto()
+    V2BM        = auto()
+    B2VM        = auto()
+    B2VUSD      = auto()
+    B2VEUR      = auto()
+    B2VSGD      = auto()
+    B2VGBP      = auto()
+    L2B         = auto()
+    B2LUSD      = auto()
+    B2LEUR      = auto()
+    V2VSWAP     = auto()
+    E2VM    = auto()
+    V2EM    = auto()
+    UNKOWN      = auto()
 
 ##db index(redis)
 #dbindexbase item must be eq datatypebase item(B2Vxxx B2Lxxx L2Vxxx V2Lxxx)
@@ -89,6 +92,9 @@ class dbindexbase(enumbase):
     B2LUSD  = 51
     B2LEUR  = 52
     V2VSWAP = 60
+    E2VM   = 62
+    V2EM   = 63
+
 
 #work mod 
 #workmod item(PROOF/EX) must be eq dbindexbase 
@@ -141,6 +147,10 @@ class workmod(enumbase):
     #B2LUSDEX     = auto()
     #B2LEURPROOF  = auto()
     #B2LEUREX     = auto()
+    E2VMPROOF  = auto()
+    E2VMEX     = auto()
+    V2EMPROOF  = auto()
+    V2EMEX     = auto()
 
 if __name__ == "__main__":
     print(dbindexbase.UNKOWN.info)
