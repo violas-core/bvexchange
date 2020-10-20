@@ -3,6 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
+ethopt/usdt_abi.py
+ethopt/vlsmproof_abi.py
+usdt_abi.py
+vlsmproof_abi.py
 mint_test.key
 exchange/code_bak/
 bv_optimized.toml

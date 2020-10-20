@@ -17,6 +17,7 @@ from comm.values import trantypebase, datatypebase
 from comm.result import result, parse_except
 from comm.error import error
 from vlsopt.violasclient import violasclient, violaswallet, violasserver
+from ethopt.ethclient import ethclient
 from btc.btcclient import btcclient
 from enum import Enum
 from db.dbvbase import dbvbase
@@ -46,6 +47,8 @@ class abase(baseobject):
         self._vclient = None
         if chain == "btc":
             self._connect_btc(name, vnodes, chain)
+        elif chain == "ethereum":
+            self._connect_ethereum(name, vnodes, chain)
         else:
             self._connect_violas(name, vnodes, chain)
         self.from_chain = chain
@@ -70,6 +73,11 @@ class abase(baseobject):
     def _connect_violas(self, name, vnodes, chain="violas"):
         if vnodes is not None:
             self._vclient = violasclient(name, vnodes, chain) 
+        return self._vclient
+
+    def _connect_violas(self, name, vnodes, chain="ethereum"):
+        if vnodes is not None:
+            self._vclient = ethclient(name, vnodes, chain) 
         return self._vclient
 
     def _connect_btc(self, name, node, chain="btc"):

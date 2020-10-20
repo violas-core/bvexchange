@@ -8,6 +8,16 @@ import web3
 from web3 import Web3
 
 class vlsmproofslot():
+    class transaction:
+        def __init__(self, data):
+            self._data = dict(data)
+
+        def to_json(self):
+            return self._data
+
+        def get_version(self):
+            return self._data["txid"]
+
     def __init__(self, contract, name = "vlsmproof"):
         self._contract = contract
         self._name = name
@@ -93,6 +103,72 @@ class vlsmproofslot():
 
     def token_name(self, address):
         return self._functions.tokenName(address).call()
+
+    def balance_of(self, token_name, address):
+        return self._functions.balanceOf(self.token_address(token_name), address)
+
+    def token_name_list(self):
+        return ["usdt"]
+
+    def proof_address_sequence(self, address):
+        raise Exception("not support proof_address_sequence")
+
+    def proof_address_version(self, address, sequence):
+        raise Exception("not support proof_address_sequence")
+
+    def proof_address_version(self, address):
+        raise Exception("not support proof_address_sequence")
+
+    def __getattr__(self, name):
+        print(f"calling {name}")
+
+    def state_name(self, value):
+        if value == 1:
+            return "start"
+        elif value == 2:
+            return "stop"
+        elif value == 3:
+            return "end"
+        else:
+            raise Exception("state value({value}) is invalid.")
+
+    def get_proof_data(self, version):
+        datas = self.proof_info_with_version(version)
+        return {
+                "flag": "ethereum",
+                "type": f"e2vm",
+                "from_address": datas[4],
+                "to_address" : datas[0],
+                "amount": datas[5],
+                "token_address": datas[3],
+                "state": self.state_name(datas[2]),
+                "out_amount":datas[5],
+                "sequence": datas[1],
+                "opttype":"map",
+                }
+
+    def get_transactions(self, start, limit = 10, *args, **kwargs):
+        next_version = self.next_version()
+        assert start >= 0 and start < next_version and limit >= 1, "arguments is invalid"
+        datas = []
+        end = start + limit
+        end = min(end - 1, next_version - 1)
+        while start <= end:
+            data = self.get_proof_data(start)
+            datas.append(self.transaction(
+                {
+                    "token_id": self.token_name(data["token_address"]),
+                    "sender": data["from_address"],
+                    "receiver":self.payee(),
+                    "amount": data["amount"],
+                    "token": data["token_address"],
+                    "sequence":data["sequence"],
+                    "txid":start
+                    }
+                ))
+            start += 1
+        return datas
+
 def test():
 
     from datas.abis.usdt_abi import (
@@ -124,12 +200,20 @@ def test():
     account1_privkey = '05849aa606c43ef46e1d71381573221538caef578973fb26f9b889b382d568bd'
     account2 = "0x9382690D0B835b69FD9C0bc23EB772a0Ddb3613F"
 
+    get_transactions(vmp)
+    #update_proof_state(w3, vmp, account, account1_privkey)
+
+def get_transactions(vmp):
+    datas = vmp.get_transactions(0, vmp.next_version())
+    for data in datas:
+        print(data.to_json())
+
+def update_proof_state(w3, vmp, account, account1_privkey):
     print(f'''
     block number: {w3.eth.blockNumber}
     syncing: {w3.eth.syncing}
     ''')
 
-    return
     print(f'''
 contract info:
     contract name: {vmp.slot_name()}
@@ -146,8 +230,6 @@ contract info:
     ''')
 
 
-    return
-    gasLimit = w3.eth.getBlock("latest").get("gasLimit")
     print(f"proof info: data   sequence  state  token   sender amount")
     nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(account))
     for i in range(vmp.next_version()):
@@ -159,6 +241,7 @@ contract info:
             continue
 
         print(f"start version: {i}")
+        gasLimit = w3.eth.getBlock("latest").get("gasLimit")
         txn = vmp.raw_transfer_proof_state_with_version(i, 3).buildTransaction({
             'chainId': 42, #kovan
             'gas':gasLimit,
@@ -172,7 +255,6 @@ contract info:
         print(f"tx rawtransaction:{w3.toHex(signed_txn.rawTransaction)}")
         txhash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
         print(f"ret tx hash:{w3.toHex(txhash)}")
-        break
 
         #w3.eth.waitForTransactionReceipt(txhash)
     

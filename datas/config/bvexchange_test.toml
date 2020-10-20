@@ -19,6 +19,11 @@ syncing_mod = true
     domain = "violaslayer"
     server = "violaslayer"
 
+[[ethereum_nodes]]
+    host = "51.140.241.96"
+    port = 8545
+    name = "ethereum 1"
+
 [[violas_nodes]]
     host = "52.27.228.84"
     port = 50001
