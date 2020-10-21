@@ -75,7 +75,7 @@ class abase(baseobject):
             self._vclient = violasclient(name, vnodes, chain) 
         return self._vclient
 
-    def _connect_violas(self, name, vnodes, chain="ethereum"):
+    def _connect_ethereum(self, name, vnodes, chain="ethereum"):
         if vnodes is not None:
             self._vclient = ethclient(name, vnodes, chain) 
         return self._vclient
@@ -158,6 +158,9 @@ class abase(baseobject):
             self._token_id.append(token_id) 
         else:
             self._token_id.extend(token_id)
+
+    def append_contract(self, name, address):
+        self._vclient.load_contract(name, address)
 
     def is_valid_token_id(self, token_id):
         assert isinstance(token_id, str), f"token_id({token_id}) is not str."
