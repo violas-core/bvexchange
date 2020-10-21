@@ -27,11 +27,11 @@ class autoname(enumbase):
 #transaction type for transaction's data flag
 #parse metadata
 class trantypebase(autoname):
-    VIOLAS = auto()
-    LIBRA  = auto()
-    BTC    = auto()
+    VIOLAS      = auto()
+    LIBRA       = auto()
+    BTC         = auto()
     ETHEREUM    = auto()
-    UNKOWN = auto()
+    UNKOWN      = auto()
 
 #datatype for transaction's data type
 #parse metadata
@@ -57,8 +57,8 @@ class datatypebase(autoname):
     B2LUSD      = auto()
     B2LEUR      = auto()
     V2VSWAP     = auto()
-    E2VM    = auto()
-    V2EM    = auto()
+    E2VM        = auto()
+    V2EM        = auto()
     UNKOWN      = auto()
 
 ##db index(redis)
@@ -70,6 +70,7 @@ class dbindexbase(enumbase):
     VFILTER = 2
     LFILTER = 3
     BFILTER = 4
+    EFILTER = 5
     #proof datas
     V2LM    = 8
     L2VM    = 9
@@ -103,6 +104,7 @@ class workmod(enumbase):
     VFILTER      = auto()    #scan violas chain
     LFILTER      = auto()
     BFILTER      = auto() #scan bitcoin chain
+    EFILTER      = auto() #scan bitcoin chain
     V2VSWAPPROOF = auto() #scan violas chain swap
     #chain : libra ;  data source: lfilter ; result : transaction proof ; format : L2V + token_id + PROOF
     L2VMPROOF    = auto()

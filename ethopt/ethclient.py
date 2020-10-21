@@ -282,7 +282,7 @@ class ethclient(baseobject):
     def get_latest_transaction_version(self):
         try:
             datas = self.__client.get_latest_version()
-            ret = result(error.SUCCEED, "", datas)
+            ret = result(error.SUCCEED, "", datas - 1)
         except Exception as e:
             ret = parse_except(e)
         return ret

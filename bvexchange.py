@@ -29,9 +29,10 @@ class works:
     __work_obj = {}
     __record_db = "record"
 
-    __libra_min_valid_version   = 0
-    __violas_min_valid_version  = 610_8000
-    __btc_min_valid_version     = 0
+    __libra_min_valid_version       = 0
+    __violas_min_valid_version      = 610_8000
+    __btc_min_valid_version         = 0
+    __ethereum_min_valid_version    = 0
     def __init__(self):
         logger.debug("works __init__")
         self.__funcs_map = {}
@@ -659,6 +660,35 @@ class works:
         finally:
             logger.critical(f"stop: {mod}")
 
+    def work_efilter(self, **kargs):
+        try:
+            logger.critical("start: ethereum filter")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    obj = analysis_filter.afilter(name=mod, ttype="ethereum", \
+                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_eth_nodes(), chain="ethereum")
+                    obj.set_step(stmanage.get_db(dtype).get("step", 1000))
+                    obj.set_min_valid_version(self.__ethereum_min_valid_version - 1)
+                    tokens = stmanage.get_eth_token()
+                    for token in tokens:
+                        obj.append_contract(token["name"], token["address"])
+
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
+
     def work_comm(self, **kargs):
         try:
             logger.critical("start: comm")
@@ -740,6 +770,8 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_lfilter))
             elif name == "BFILTER":
                 self.funcs_map.update(self.create_func_dict(item, self.work_bfilter))
+            elif name == "EFILTER":
+                self.funcs_map.update(self.create_func_dict(item, self.work_efilter))
             elif name == "V2VSWAPPROOF":
                 self.funcs_map.update(self.create_func_dict(item, self.work_swapproof))
             elif self.is_match(name, "V2L", "PROOF", [11, 9]): #V2LXXXPROOF   V2LMPROOF

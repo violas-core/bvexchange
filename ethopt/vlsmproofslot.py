@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import sys, os, time
+import json
 sys.path.append(os.getcwd())
 sys.path.append(f"..")
 
@@ -8,15 +9,6 @@ import web3
 from web3 import Web3
 
 class vlsmproofslot():
-    class transaction:
-        def __init__(self, data):
-            self._data = dict(data)
-
-        def to_json(self):
-            return self._data
-
-        def get_version(self):
-            return self._data["txid"]
 
     def __init__(self, contract, name = "vlsmproof"):
         self._contract = contract
@@ -132,42 +124,6 @@ class vlsmproofslot():
         else:
             raise Exception("state value({value}) is invalid.")
 
-    def get_proof_data(self, version):
-        datas = self.proof_info_with_version(version)
-        return {
-                "flag": "ethereum",
-                "type": f"e2vm",
-                "from_address": datas[4],
-                "to_address" : datas[0],
-                "amount": datas[5],
-                "token_address": datas[3],
-                "state": self.state_name(datas[2]),
-                "out_amount":datas[5],
-                "sequence": datas[1],
-                "opttype":"map",
-                }
-
-    def get_transactions(self, start, limit = 10, *args, **kwargs):
-        next_version = self.next_version()
-        assert start >= 0 and start < next_version and limit >= 1, "arguments is invalid"
-        datas = []
-        end = start + limit
-        end = min(end - 1, next_version - 1)
-        while start <= end:
-            data = self.get_proof_data(start)
-            datas.append(self.transaction(
-                {
-                    "token_id": self.token_name(data["token_address"]),
-                    "sender": data["from_address"],
-                    "receiver":self.payee(),
-                    "amount": data["amount"],
-                    "token": data["token_address"],
-                    "sequence":data["sequence"],
-                    "txid":start
-                    }
-                ))
-            start += 1
-        return datas
 
 def test():
 
@@ -200,7 +156,6 @@ def test():
     account1_privkey = '05849aa606c43ef46e1d71381573221538caef578973fb26f9b889b382d568bd'
     account2 = "0x9382690D0B835b69FD9C0bc23EB772a0Ddb3613F"
 
-    get_transactions(vmp)
     #update_proof_state(w3, vmp, account, account1_privkey)
 
 def get_transactions(vmp):

@@ -114,9 +114,10 @@ class afilter(abase):
         if "tran_type" not in tran_data and isviolas:
             tran_data.update({"tran_type":data.transaction.enum_name})
 
-        code_name = data.get_code_type().name.lower()
-        if "code_name" not in tran_data and isviolas:
-            tran_data.update({"code_name":code_name})
+        if isviolas:
+            code_name = data.get_code_type().name.lower()
+            if "code_name" not in tran_data:
+                tran_data.update({"code_name":code_name})
 
         if not tran_data.get("receiver"):
             tran_data.update({"receiver": tran_data.get("sender")})
@@ -153,7 +154,10 @@ class afilter(abase):
                 ret.datas.get("flag", None) not in self.get_tran_types() or \
                 ret.datas.get("type") == self.datatype.UNKOWN or \
                 not ret.datas.get("tran_state", False):
-                return False
+                    print(ret.datas)
+                    return False
+
+                
         return True
 
     def start(self):

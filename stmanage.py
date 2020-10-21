@@ -307,6 +307,16 @@ def get_conf():
     infos["libra nodes"] = get_libra_nodes()
     return infos
 
+def get_eth_token(name = None):
+    tokens = []
+    for key, token in setting.ethereum_tokens.items():
+        if token.get("support", True):
+            token["name"] = key
+            tokens.append(token)
+
+    if name:
+        return setting.ethereum_tokens[name]
+    return tokens
 
 def main():
     set_conf_env("bvexchange.toml")
@@ -360,6 +370,10 @@ def main():
     #json_print(get_support_address_info("map"))
     print("receiver info(swap):")
     json_print(get_support_address_info("swap"))
+    print("eth token info(None):")
+    json_print(get_eth_token())
+    print("eth token info(usdt):")
+    json_print(get_eth_token("usdt"))
 
     #json_print(get_conf())
 

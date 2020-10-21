@@ -20,7 +20,8 @@ from comm.result import result, parse_except
 from comm.error import error
 from enum import Enum
 from comm.functions import json_print
-from vlsmproof import vlsmproofslot as vlsmproof
+from ethopt.vlsmproofslot import vlsmproofslot
+from ethopt.erc20slot import erc20slot 
 
 import web3
 from web3 import Web3
@@ -63,6 +64,19 @@ class walletproxy():
 
 class ethproxy():
 
+    class transaction:
+        def __init__(self, data):
+            self._data = dict(data)
+
+        def to_json(self):
+            return self._data
+
+        def get_version(self):
+            return self._data["txid"]
+
+        def get_data(self):
+            return self._data["data"]
+
     tokens_address = {}
     def clientname(self):
         return name
@@ -88,11 +102,14 @@ class ethproxy():
             raise Exception(f"contract({name}) is invalid.")
 
         contract = contract_codes[name]
-        setattr(self, name, self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
-        tokens_address[name] = address
+        if name == "vlsmproof":
+            setattr(self, name, vlsmproofslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"])))
+        else:
+            setattr(self, name, erc20slot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"])))
+        self.tokens_address[name] = address
 
     def token_address(self, name):
-        return tokens_address[name]
+        return self.tokens_address[name]
 
     def is_connected(self):
         return self._w3.isConnected()
@@ -143,8 +160,45 @@ class ethproxy():
     def get_latest_version(self):
         return self.vlsmproof.next_version()
 
-    def get_transactions(self, start_version, limit, nouse = None):
-        return self.vlsmproof.get_transactions(start_version, limit)
+    def create_std_metadata(self, datas):
+        return {
+                "flag": "ethereum",
+                "type": f"e2vm",
+                "to_address" : datas[0],
+                "state": self.vlsmproof.state_name(datas[2]),
+                "out_amount":datas[5],
+                "opttype":"map",
+                "times" : 0,
+                }
+
+    def get_transactions(self, start, limit = 10, *args, **kwargs):
+        return self._get_transactions(start, limit)
+
+    def _get_transactions(self, start, limit = 10):
+        next_version = self.vlsmproof.next_version()
+        assert start >= 0 and start < next_version and limit >= 1, "arguments is invalid"
+        datas = []
+        end = start + limit
+        end = min(end - 1, next_version - 1)
+        payee = self.vlsmproof.payee()
+        while start <= end:
+            metadata = self.vlsmproof.proof_info_with_version(start)
+            data = self.create_std_metadata(metadata)
+            datas.append(self.transaction(
+                {
+                    "token_id": self.vlsmproof.token_name(metadata[3]),
+                    "sender": metadata[4],
+                    "receiver":payee,
+                    "amount": metadata[5],
+                    "token": metadata[3],
+                    "sequence":metadata[1],
+                    "txid":start,
+                    "data" : json.dumps(data).encode("utf-8").hex(),
+                    "success" : True,
+                    }
+                ))
+            start += 1
+        return datas
 
     def __getattr__(self, name):
         if name.startswith('__') and name.endswith('__'):

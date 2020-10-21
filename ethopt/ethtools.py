@@ -39,7 +39,12 @@ wallet_name = "ewallet"
 
 def get_ethclient():
 
-    return ethclient(name, stmanage.get_eth_nodes(), chain)
+    client = ethclient(name, stmanage.get_eth_nodes(), chain)
+    tokens = stmanage.get_eth_token()
+    for token in tokens:
+        client.load_contract(token["name"], token["address"])
+    return client
+    
 
 def get_ethwallet():
     return ethwallet(name, wallet_name, chain)
@@ -227,7 +232,6 @@ def init_args(pargs):
     pargs.append("get_transaction_version", "get address's version'.", True, ["address", "sequence"])
     pargs.append("show_token_list", "show token list.", True, ["address"])
     pargs.append("show_all_token_list", "show token list.")
-    pargs.append("get_account_prefix", "get account prefix.", True, ["address"])
 
 def run(argc, argv):
     try:
