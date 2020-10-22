@@ -163,6 +163,15 @@ syncing_mod = true
     [type_opts.v2vswap]
         support= true  
         run    = false
+    [type_opts.v2em]
+        stoken = "usdt"
+        mtoken = "USDT"
+        support = true  
+        etype  = "map"
+    [type_opts.e2vm]
+        support= true
+        run    = false
+        etype  = "map"
 
 [type_code]
     b2vm    = "0x3000"
@@ -294,6 +303,16 @@ syncing_mod = true
     [[address_list.receiver]]
         address = "25f494041501aea8e70f47b9745a497b2a86e053a46eef559546051563b0a5a9"
         type = "v2bm"
+        chain = "violas"
+
+    [[address_list.receiver]]
+        address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
+        type = "e2vm"
+        chain = "ethereum"
+
+    [[address_list.receiver]]
+        address = "25f494041501aea8e70f47b9745a497b2a86e053a46eef559546051563b0a5a9"
+        type = "v2em"
         chain = "violas"
 
     #sender address

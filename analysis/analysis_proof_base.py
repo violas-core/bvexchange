@@ -110,11 +110,6 @@ class aproofbase(abase):
 
         return True
 
-        #return tran_info.get("flag", None) in self.get_tran_types() and \
-        #       self.proofstate_name_to_value(tran_info.get("state", None)) != self.proofstate.UNKOWN and \
-        #       self.is_valid_datatype(tran_info.get("type")) and \
-        #       self.is_valid_token_id(tran_info.get("token_id")) 
-
     def is_valid_proofstate_change(self, new_state, old_state):
         if new_state == self.proofstate.START:
             return True
@@ -250,7 +245,7 @@ class aproofbase(abase):
                         continue
 
                     tran_filter = ret.datas
-                    if self.check_tran_is_valid(tran_filter) != True:
+                    if not self.check_tran_is_valid(tran_filter):
                         continue
 
                     self._logger.debug(f"transaction parse: {tran_filter}")
@@ -264,7 +259,7 @@ class aproofbase(abase):
 
                     #mark it, watch only, True: new False: update
                     # maybe btc not save when state == end, because start - > end some minue time
-                    if update_ret.get("new_proof") == True:  
+                    if update_ret.get("new_proof"):  
                         self._dbclient.set_latest_saved_ver(version)
 
                     tran_id = update_ret.get("tran_id")

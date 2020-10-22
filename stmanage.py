@@ -233,10 +233,9 @@ def get_type_map_token(mtype = None):
 def get_support_map_token_id(chain):
     assert chain is not None, "chain is violas/libra/btc"
     mtoken_list = []
-    opthead = [] 
     if chain == "violas":
         #get map tokens only violas use
-        for opthead in ["v2l", "v2b"]:
+        for opthead in ["v2l", "v2b", "v2e"]:
             mtokens = [tokens.get("mtoken") for typename, tokens in setting.type_token.items() \
                 if typename.startswith(opthead) and tokens.get("mtoken")]
             mtoken_list.extend(mtokens)
@@ -244,7 +243,7 @@ def get_support_map_token_id(chain):
     return list(set(mtoken_list))
 
 def get_support_stable_token_id(chain):
-    assert chain is not None, "chain is violas/libra/btc"
+    assert chain is not None, "chain is violas/libra/btc/ethereum"
     stoken_list = []
     opthead = [] 
     if chain == "violas":
@@ -254,6 +253,8 @@ def get_support_stable_token_id(chain):
         optheads = ["v2l"]
     elif chain == "btc":
         optheads = ["v2b"]
+    elif chain == "ethereum":
+        optheads = ["v2e"]
 
     #get target chain stable token
     for opthead in optheads:
@@ -263,7 +264,7 @@ def get_support_stable_token_id(chain):
     return list(set(stoken_list))
 
 def get_support_token_id(chain):
-    assert chain is not None, "chain is violas/libra/btc"
+    assert chain is not None, "chain is violas/libra/btc/ethereum"
     mtokens = get_support_map_token_id(chain)
     stokens = get_support_stable_token_id(chain)
     return list(set(mtokens + stokens))
@@ -353,13 +354,16 @@ def main():
     print(f"get token_map(BTC)->BTC: {get_token_map('BTC')}")
     print(f"get token_map(USD)->Coin1: {get_token_map('USD')}")
     print(f"get token_map(EUR)->Coin2: {get_token_map('EUR')}")
+    print(f"get token_map(USDT)->USDT: {get_token_map('USDT')}")
     print(f"get support_stable_token_id(libra)->Coin1 Coin2: {get_support_stable_token_id('libra')}")
     print(f"get support_stable_token_id(violas)->VLSUSD VLSEUR VLSSGD VLSGBP: {get_support_stable_token_id('violas')}")
     print(f"get support_map_token_id(libra)->[]: {get_support_map_token_id('libra')}")
-    print(f"get support_map_token_id(violas)->BTC EUR USD: {get_support_map_token_id('violas')}")
+    print(f"get support_map_token_id(violas)->BTC EUR USD USDT: {get_support_map_token_id('violas')}")
+    print(f"get support_map_token_id(ethereum)->[]: {get_support_map_token_id('ethereum')}")
     print(f"get support_token_id(libra)->Coin1 Coin2: {get_support_token_id('libra')}")
     print(f"get support_token_id(violas)->VLSUSD VLSEUR VLSSGD VLSGBP BTC USD EUR: {get_support_token_id('violas')}")
     print(f"get support_token_id(btc)->BTC: {get_support_token_id('btc')}")
+    print(f"get support_token_id(ethereum)->USDT: {get_support_token_id('ethereum')}")
     print(f"get swap module(violas): {get_swap_module()}")
     print(f"get swap owner(violas): {get_swap_owner()}")
     print(f"combin address(b2vusd, btc): {get_combine_address('b2vusd', 'btc')}")
@@ -367,7 +371,7 @@ def main():
     print(f"run mods: {get_run_mods()}")
     print(f"syncing state:{get_syncing_state()}")
     print("receiver info(map):")
-    #json_print(get_support_address_info("map"))
+    json_print(get_support_address_info("map"))
     print("receiver info(swap):")
     json_print(get_support_address_info("swap"))
     print("eth token info(None):")
