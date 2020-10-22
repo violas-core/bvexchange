@@ -49,6 +49,7 @@ class record(baseobject):
             name = self._rdbclient.create_haddress_name(tran_info)
             key = self._rdbclient.create_haddress_key(tran_info)
             ret = self._rdbclient.hexists(name, key)
+            awalys_storage = tran_info["flag"] == "ethereum" 
             self._logger.debug(f"start update_address_info:{name} {key}, state:{tran_info['state']}")
             if ret.state != error.SUCCEED:
                 self._logger.error(f"check state info <name={name}> failed, check db is run. messge:{ret.message}")

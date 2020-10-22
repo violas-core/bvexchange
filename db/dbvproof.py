@@ -138,17 +138,6 @@ class dbvproof(dbvbase):
     def create_haddress_key(self, tran_info):
         return f"{tran_info['version']}"
 
-
-    def get_chain_name(self, dtype):
-        from_chain = "violas"
-        to_chain = "violas"
-
-        if dtype is None:
-            return (form_chain, to_chain)
-        if dtype[0] == "v":
-            from_chain = "violas"
-            
-
     def get_out_token(self, tran_info):
         opttype = tran_info["opttype"]
         out_token = ""

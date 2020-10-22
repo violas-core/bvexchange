@@ -17,7 +17,14 @@ import subprocess
 import comm.functions as fn
 from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm, b2vm
 from comm.result import parse_except
-from analysis import analysis_base, analysis_filter, analysis_proof_btc, analysis_proof_violas, analysis_proof_swap
+from analysis import (
+        analysis_base, 
+        analysis_filter, 
+        analysis_proof_btc, 
+        analysis_proof_violas, 
+        analysis_proof_swap,
+        analysis_proof_eth
+        )
 from enum import Enum
 from comm.values import workmod as work_mod
 
@@ -689,6 +696,35 @@ class works:
         finally:
             logger.critical(f"stop: {mod}")
 
+    def work_e2vproof(self, **kargs):
+        try:
+            logger.critical("start: ethereum map proof")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    basedata = "efilter"
+                    ttype = "ethereum"
+                    obj = analysis_proof_eth.aproofeth(name=mod, ttype=ttype, dtype=dtype, \
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+                    #set can receive token of violas transaction
+                    obj.append_token_id(stmanage.get_support_token_id(ttype))
+                    obj.set_record(stmanage.get_db(self.record_db_name()))
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    obj.set_min_valid_version(self.__ethereum_min_valid_version - 1)
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
     def work_comm(self, **kargs):
         try:
             logger.critical("start: comm")
@@ -723,7 +759,8 @@ class works:
 
     def get_dtype_from_mod(self, modname):
         dtype = modname.lower()
-        if dtype[:3] in ["v2b", "b2v", "l2v", "v2l", "b2l", "l2b", "v2v"]:
+        #if dtype[:3] in ["v2b", "b2v", "l2v", "v2l", "b2l", "l2b", "v2v", "v2e", "e2v"]:
+        if dtype[1:2] in ["2"]:
             if dtype.endswith("ex"):
                 return dtype[:-2]
             elif dtype.endswith("proof"):
@@ -786,6 +823,8 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_b2vproof))
             elif self.is_match(name, "B2L", "PROOF", 11):
                 self.funcs_map.update(self.create_func_dict(item, self.work_b2lproof))
+            elif self.is_match(name, "E2V", "PROOF", [9]):
+                self.funcs_map.update(self.create_func_dict(item, self.work_e2vproof))
             elif self.is_match(name, "V2L", "EX", 8):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2l))
             elif self.is_match(name, "V2B", "EX", 5):
@@ -806,6 +845,10 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_l2vm))
             elif self.is_match(name, "B2VM", "EX", 6):
                 self.funcs_map.update(self.create_func_dict(item, self.work_b2vm))
+            #elif self.is_match(name, "E2VM", "EX", 6):
+            #    self.funcs_map.update(self.create_func_dict(item, self.work_e2vm))
+            #elif self.is_match(name, "V2EM", "EX", 6):
+            #    self.funcs_map.update(self.create_func_dict(item, self.work_v2em))
             elif name == "COMM":
                 self.funcs_map.update(self.create_func_dict(item, self.work_comm))
             else:

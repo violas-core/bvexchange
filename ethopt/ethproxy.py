@@ -72,7 +72,7 @@ class ethproxy():
             return self._data
 
         def get_version(self):
-            return self._data["txid"]
+            return self._data["version"]
 
         def get_data(self):
             return self._data["data"]
@@ -192,7 +192,7 @@ class ethproxy():
                     "amount": metadata[5],
                     "token": metadata[3],
                     "sequence":metadata[1],
-                    "txid":start,
+                    "version":start,
                     "data" : json.dumps(data).encode("utf-8").hex(),
                     "success" : True,
                     }
