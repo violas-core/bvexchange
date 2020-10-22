@@ -22,6 +22,7 @@ from comm.amountconver import amountconver
 from db.dblocal import dblocal as localdb
 import vlsopt.violasclient
 from vlsopt.violasclient import violasclient, violaswallet, violasserver
+from ethopt.ethclient import ethclient
 from btc.btcclient import btcclient
 from btc.btcwallet import btcwallet
 from vlsopt.violasproof import violasproof
@@ -43,7 +44,7 @@ class exbase(baseobject):
         pass
 
     def __init__(self, name, dtype, \
-            btcnodes, vlsnodes, lbrnodes,\
+            btcnodes, vlsnodes, lbrnodes, ethnodex\
             proofdb, receivers, senders, \
             swap_module, swap_owner, \
             fromchain, mapchain):
@@ -67,6 +68,7 @@ class exbase(baseobject):
         self.append_property("btc_client", btcclient(name, btcnodes) if btcnodes else None)
         self.append_property("violas_client", violasproof(name, vlsnodes, "violas") if vlsnodes else None)
         self.append_property("libra_client", violasproof(name, lbrnodes, "libra") if lbrnodes else None)
+        self.append_property("ethereum_client", ethclient(name, ethnodes, "ethereum") if lbrnodes else None)
         self.append_property("db", localdb(name, f"{self.from_chain}_{dtype}.db"))
     
         #violas/libra init
@@ -95,6 +97,9 @@ class exbase(baseobject):
             if self.libra_client:
                 self.libra_client.stop()
 
+            if self.ethereum_client:
+                self.ethereum_client.stop()
+
             self.work_stop()
         except Exception as e:
             parse_except(e)
@@ -122,6 +127,12 @@ class exbase(baseobject):
             self.append_property("from_wallet", violaswallet(self.name(), wallet_name, self.from_chain))
             self.append_property("from_client", self.violas_client if self.from_chain == "violas" else self.libra_client)
             self.append_property(f"{self.from_chain}_wallet", self.from_wallet)
+        elif self.from_chain == "ethereum":
+            self.append_property("pserver", self.ethereum_client)
+            self.append_property("from_wallet", ethwallet(self.name(), None))
+            self.append_property("from_client", self.ethereum_client)
+            self.append_property("ethereum_wallet", self.from_wallet)
+
         else:
             raise Exception(f"chain {self.from_chain} is invalid.")
 
@@ -131,6 +142,9 @@ class exbase(baseobject):
         elif self.map_chain in ("violas", "libra"):
             self.append_property("map_wallet", violaswallet(self.name(), wallet_name, self.map_chain))
             self.append_property("map_client", self.violas_client if self.map_chain == "violas" else self.libra_client)
+        elif self.map_chain == "ethereum":
+            self.append_property("map_wallet", ethwallet(self.name(), None))
+            self.append_property("map_client", self.ethereum_client)
         else:
             raise Exception(f"chain {self.from_chain} is invalid.")
 
@@ -147,6 +161,7 @@ class exbase(baseobject):
         self.fill_address_token.update({"violas": self.fill_address_token_violas})
         self.fill_address_token.update({"libra": self.fill_address_token_libra})
         self.fill_address_token.update({"btc": self.fill_address_token_btc})
+        self.fill_address_token.update({"ethereum": self.fill_address_token_ethereum})
 
     def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):
         ret = self.db.insert_commit(version, state, tran_id, receiver, detail)
@@ -367,6 +382,20 @@ class exbase(baseobject):
             ret = parse_except(e)
         return ret
 
+    def fill_address_token_ethereum(self, account, token_id, amount, gas=40_000):
+        try:
+            address = self.get_address_from_account(account)
+            ret = self.ethereum_client.get_balance(address, token_id = token_id)
+            assert ret.state == error.SUCCEED, f"get balance failed"
+            
+            cur_amount = ret.datas
+            if cur_amount < amount + gas:
+                return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
+
+            return result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
     def db_data_is_valid(self, data):
         try:
             toaddress   = data["receiver"]
