@@ -196,7 +196,7 @@ class l2b(blbase):
             #temp value(test)
             if self.map_chain.lower() == "btc":
                 #btc -> vbtc(1000000), violas swap vbtc
-                out_amount = self.amountswap(out_amount, self.amountswap.amounttype.SATOSHI).violas_amount
+                out_amount = self.amountswap(out_amount, self.amountswap.amounttype.BTC).amount("violas")
 
             if out_amount <= 0:
                 out_amount = out_amount_chian

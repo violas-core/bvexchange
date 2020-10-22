@@ -44,7 +44,7 @@ class exbase(baseobject):
         pass
 
     def __init__(self, name, dtype, \
-            btcnodes, vlsnodes, lbrnodes, ethnodex\
+            btcnodes, vlsnodes, lbrnodes, ethnodes, \
             proofdb, receivers, senders, \
             swap_module, swap_owner, \
             fromchain, mapchain):
@@ -68,7 +68,7 @@ class exbase(baseobject):
         self.append_property("btc_client", btcclient(name, btcnodes) if btcnodes else None)
         self.append_property("violas_client", violasproof(name, vlsnodes, "violas") if vlsnodes else None)
         self.append_property("libra_client", violasproof(name, lbrnodes, "libra") if lbrnodes else None)
-        self.append_property("ethereum_client", ethclient(name, ethnodes, "ethereum") if lbrnodes else None)
+        self.append_property("ethereum_client", ethclient(name, ethnodes, "ethereum") if ethnodes else None)
         self.append_property("db", localdb(name, f"{self.from_chain}_{dtype}.db"))
     
         #violas/libra init
