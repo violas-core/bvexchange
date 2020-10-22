@@ -45,7 +45,7 @@ class x2vswap(exbase):
             @swap_owner: swap owner address
         '''
         exbase.__init__(self, name, dtype, \
-                btcnodes, vlsnodes, lbrnodes, \
+                btcnodes, vlsnodes, lbrnodes, None,\
                 proofdb, receivers, senders, \
                 swap_module, swap_owner,\
                 from_chain, map_chain)

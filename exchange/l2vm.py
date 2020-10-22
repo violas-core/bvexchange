@@ -22,7 +22,7 @@ class l2vm(exmap):
             ):
 
         exmap.__init__(self, name, dtype, \
-                None, vlsnodes, lbrnodes, \
+                None, vlsnodes, lbrnodes, None,\
                 proofdb, receivers, senders,\
                 "libra", "violas")
 

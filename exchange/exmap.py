@@ -24,6 +24,7 @@ class exmap(exbase):
             btcnodes, 
             vlsnodes, 
             lbrnodes,
+            ethnodes,
             proofdb, 
             receivers, 
             senders, 
@@ -32,7 +33,7 @@ class exmap(exbase):
             ):
 
         exbase.__init__(self, name, dtype, \
-                btcnodes, vlsnodes, lbrnodes,\
+                btcnodes, vlsnodes, lbrnodes, ethnodes, \
                 proofdb, receivers, senders, \
                 None, None, \
                 fromchain, mapchain)

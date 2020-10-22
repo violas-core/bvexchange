@@ -22,7 +22,7 @@ class v2bm(exmap):
             ):
 
         exmap.__init__(self, name, dtype, \
-                btcnodes, vlsnodes,  None,\
+                btcnodes, vlsnodes,  None, None\
                 proofdb, receivers, senders,\
                 "violas", "btc")
 
