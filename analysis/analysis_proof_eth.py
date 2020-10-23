@@ -46,8 +46,7 @@ class aproofeth(aproofbase):
         super().stop()
 
     def get_tran_id(self, tran_info):
-        tran_id = self.create_tran_id(tran_info["flag"], tran_info["type"], tran_info['sender'], \
-                tran_info['receiver'], tran_info['module'], tran_info['version'])
+        tran_id = tran_info["tran_id"]
         return tran_id
 
     def update_proof_info(self, tran_info):

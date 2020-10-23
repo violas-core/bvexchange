@@ -78,8 +78,8 @@ class exmap(exbase):
         if not self.chain_data_is_valid(data):
            return 
 
-        map_amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).amount(self.map_chain)
-        micro_amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).microamount(self.map_chain)
+        map_amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).amount(self.map_chain, self.map_client.get_decimals(map_token_id))
+        micro_amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).microamount(self.map_chain, self.map_client.get_decimals(map_token_id))
 
         self._logger.debug(f"exec_exchange-start...")
         if self.use_module(state, localdb.state.START):
@@ -121,7 +121,7 @@ class exmap(exbase):
         if self.use_module(state, localdb.state.VSUCCEED):
             self._logger.debug(f"exec_exchange-3. start send_coin_for_update_state_to_end...")
             ret =  self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, \
-                    from_token_id, 1, out_amount_real=micro_amount)
+                    from_token_id, 1, out_amount_real=micro_amount, version=version)
             if ret.state != error.SUCCEED:
                 return ret
 

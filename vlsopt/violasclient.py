@@ -4,7 +4,6 @@ import sys
 import json
 import os
 sys.path.append(os.getcwd())
-sys.path.append("{}".format(os.getcwd()))
 sys.path.append("..")
 import log
 import log.logger
@@ -25,6 +24,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 from baseobject import baseobject
 from comm.functions import split_full_address
+from comm.values import DECIMAL_VIOLAS
 import redis
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
@@ -670,6 +670,14 @@ class violasserver(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def get_decimals(nouse = None):
+        try:
+            ret = result(error.SUCCEED, datas = DECIMAL_VIOLAS)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
 
 
 def main():

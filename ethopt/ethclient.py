@@ -171,8 +171,11 @@ class ethclient(baseobject):
     def clientname(self):
         return self.__client.clientname()
 
-    def load_contract(self, name, address):
-        self.__client.load_contract(name, address)
+    def load_vlsmproof(self, address):
+        self.__client.load_vlsmproof(address)
+
+    def load_contract(self, name):
+        self.__client.load_contract(name)
 
     def conn_node(self, name, nodes, chain = "ethereum"):
         try:
@@ -233,9 +236,9 @@ class ethclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def get_balance(self, account_address, token_id = None, module_address = None):
+    def get_balance(self, account_address, token_id, module_address = None):
         try:
-            balance = self.__client.get_balance(account_address = addr, currency_code = token_id)
+            balance = self.__client.get_balance(account_address, token_id)
             ret = result(error.SUCCEED, "", balance)
         except Exception as e:
             ret = parse_except(e)
@@ -302,6 +305,52 @@ class ethclient(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def get_transaction(self, version, fetch_event=True):
+        try:
+            datas = self.__client.get_transactions(version, 1 , fetch_event)
+            ret = result(error.SUCCEED, "", datas[0] if datas is not None else None)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_decimals(self, token_id):
+        try:
+            datas = self.__client.get_decimals(token_id)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def create_data_for_end(self, flag, opttype, tranid, *args, **kwargs):
+        return {"type": "end", "flag": flag, "opttype":opttype,  \
+                "version":kwargs.get("version", -1), "out_amount_real": kwargs.get("out_amount_real", 0)}
+
+    def create_data_for_stop(self, flag, opttype, tranid, *args, **kwargs):
+        return {"type": "stop", "flag": flag, "opttype":opttype, \
+                "version":kwargs.get("version", -1)}
+
+    def create_data_for_mark(self, flag, dtype, id, version, *args, **kwargs):
+        return {"type": "mark", "flag": flag, "version":version }
+
+    def send_coin(self, fromaddress, toaddress, amount, token_id, data):
+        '''change state 
+        '''
+        if data["type"] == ("end", "stop"):
+            self.update_proof_state(fromaddress, data["version"], data["type"])
+        elif data["type"] == "mark":
+            self.send_token(fromaddress, toaddress, amount, token_id)
+        else:
+            raise Exception(f"type{type} is invald.")
+
+        self._logger.debug(f"result: {ret.datas}")
+        return ret
+
+    def __getattr__(self, name):
+        if name.startswith('__') and name.endswith('__'):
+            # Python internal stuff
+            raise AttributeError
+        raise Exception(f"not defined function:{name}")
 
 def main():
     pass

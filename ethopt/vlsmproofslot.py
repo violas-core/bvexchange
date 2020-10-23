@@ -97,7 +97,7 @@ class vlsmproofslot():
         return self._functions.tokenName(address).call()
 
     def balance_of(self, token_name, address):
-        return self._functions.balanceOf(self.token_address(token_name), address)
+        return self._functions.balanceOf(self.token_address(token_name), address).call()
 
     def token_name_list(self):
         return ["usdt"]

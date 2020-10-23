@@ -683,8 +683,9 @@ class works:
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__ethereum_min_valid_version - 1)
                     tokens = stmanage.get_eth_token()
+                    obj.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
                     for token in tokens:
-                        obj.append_contract(token["name"], token["address"])
+                        obj.append_contract(token["name"])
 
                     self.set_work_obj(obj)
                     obj.start()

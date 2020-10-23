@@ -159,8 +159,11 @@ class abase(baseobject):
         else:
             self._token_id.extend(token_id)
 
-    def append_contract(self, name, address):
-        self._vclient.load_contract(name, address)
+    def load_vlsmproof(self, address):
+        self._vclient.load_vlsmproof(address)
+
+    def append_contract(self, name):
+        self._vclient.load_contract(name)
 
     def is_valid_token_id(self, token_id):
         assert isinstance(token_id, str), f"token_id({token_id}) is not str."

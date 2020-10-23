@@ -23,6 +23,7 @@ from baseobject import baseobject
 from enum import Enum
 from btc.violasproxy import violasproxy
 import analysis.parse_transaction as ptran
+from comm.values import DECIMAL_BTC
 
 #module name
 name="bclient"
@@ -421,6 +422,13 @@ class btcclient(baseobject):
                 return ret
 
             ret = result(error.SUCCEED, datas = ret.datas.get("state", "stop") == "true")
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_decimals(nouse = None):
+        try:
+            ret = result(error.SUCCEED, datas = DECIMAL_BTC)
         except Exception as e:
             ret = parse_except(e)
         return ret

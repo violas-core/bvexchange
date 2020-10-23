@@ -41,8 +41,10 @@ def get_ethclient():
 
     client = ethclient(name, stmanage.get_eth_nodes(), chain)
     tokens = stmanage.get_eth_token()
+    client.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
     for token in tokens:
-        client.load_contract(token["name"], token["address"])
+        print(f"token name: {token['name']}")
+        client.load_contract(token["name"])
     return client
     
 
@@ -95,6 +97,12 @@ def get_balance(address, token_id, module):
     client = get_ethclient()
     ret = client.get_balance(address, token_id, module)
     logger.debug("balance: {0}".format(ret.datas))
+
+def get_decimals(token_id):
+    logger.debug(f"start get_decimals token_id= {token_id}")
+    client = get_ethclient()
+    ret = client.get_decimals(token_id)
+    logger.debug("decimals: {0}".format(ret.datas))
 
 def get_balances(address):
     logger.debug(f"start get_balances address= {address}")
@@ -232,6 +240,7 @@ def init_args(pargs):
     pargs.append("get_transaction_version", "get address's version'.", True, ["address", "sequence"])
     pargs.append("show_token_list", "show token list.", True, ["address"])
     pargs.append("show_all_token_list", "show token list.")
+    pargs.append("get_decimals", "get address's token decimals.", True, ["token_id"])
 
 def run(argc, argv):
     try:
@@ -384,6 +393,10 @@ def run(argc, argv):
             show_token_list(arg_list[0])
         elif pargs.is_matched(opt, ["show_all_token_list"]):
             show_all_token_list()
+        elif pargs.is_matched(opt, ["get_decimals"]):
+            if len(arg_list) not in [1]:
+                pargs.exit_error_opt(opt)
+            get_decimals(arg_list[0])
         else:
             raise Exception(f"not found matched opt{opt}")
     logger.debug("end manage.main")
