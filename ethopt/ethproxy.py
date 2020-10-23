@@ -31,17 +31,19 @@ name="ethproxy"
 
 from usdt_abi import (
         USDT_ABI,
-        USDT_BYTECODE
+        USDT_BYTECODE,
+        USDT_ADDRESS
         )
 
 from vlsmproof_abi import (
         VLSMPROOF_ABI,
-        VLSMPROOF_BYTECODE
+        VLSMPROOF_BYTECODE,
+        VLSMPROOF_ADDRESS
         )
-
+VLSMPROOF_NAME = "vlsmproof"
 contract_codes = {
-        "usdt" : {"abi":USDT_ABI, "bytecode":USDT_BYTECODE, "token_type": "erc20"},
-        "vlsmproof": {"abi":VLSMPROOF_ABI, "bytecode": VLSMPROOF_BYTECODE, "token_type": "vlsmproof"}
+        "usdt" : {"abi":USDT_ABI, "bytecode":USDT_BYTECODE, "token_type": "erc20", "address": USDT_ADDRESS},
+        VLSMPROOF_NAME: {"abi":VLSMPROOF_ABI, "bytecode": VLSMPROOF_BYTECODE, "token_type": "vlsmproof", "address":VLSMPROOF_ADDRESS}
         }
 
 class walletproxy():
@@ -77,14 +79,18 @@ class ethproxy():
         def get_data(self):
             return self._data["data"]
 
-    tokens_address = {}
     def clientname(self):
         return name
     
     def __init__(self, host, port, chain_id = 42, *args, **kwargs):
         self._w3 = None
+        self.tokens_address = {}
+        self.tokens_decimals = {}
+        self.tokens = {}
+
         setattr(self, "chain_id", chain_id)
         self.connect(host, port, *args, **kwargs)
+        self.load_vlsmproof(contract_codes[VLSMPROOF_NAME]["address"]) #default, config will override
 
     def connect(self, host, port = None, *args, **kwargs):
         url = host
@@ -97,16 +103,26 @@ class ethproxy():
         assert self._w3.isConnected(), f"connect {url} is failed."
 
 
-    def load_contract(self, name, address):
+    def load_vlsmproof(self, address):
+        contract = contract_codes[VLSMPROOF_NAME]
+        setattr(self, VLSMPROOF_NAME, vlsmproofslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"])))
+        self.tokens_address[VLSMPROOF_NAME] = address
+
+    def load_contract(self, name):
         if name not in contract_codes:
             raise Exception(f"contract({name}) is invalid.")
 
+        if name in VLSMPROOF_NAME:
+            return
+
         contract = contract_codes[name]
-        if name == "vlsmproof":
-            setattr(self, name, vlsmproofslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"])))
-        else:
-            setattr(self, name, erc20slot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"])))
+        address = self.vlsmproof.token_address(name)
+        assert contract is not None, f"not support token({name})"
+        erc20_token = erc20slot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
+        setattr(self, name, erc20_token)
         self.tokens_address[name] = address
+        self.tokens_decimals[name] = pow(10, erc20_token.decimals())
+        self.tokens[name] = erc20_token
 
     def token_address(self, name):
         return self.tokens_address[name]
@@ -114,6 +130,19 @@ class ethproxy():
     def is_connected(self):
         return self._w3.isConnected()
     
+    def get_decimals(self, token):
+        return self.tokens_decimals[token]
+
+    def send_token(self, from_address, to_address, amount, token_id):
+        private_key = "" #from_address' private key
+        calldata = self.tokens[token_id].transfer(to_address, amount)
+        return self.send_transaction(from_address, private_key, callable) 
+
+    def update_proof_state(self, from_address, version, state):
+        private_key = "" #from_address' private key
+        calldata = self.vlsmproof.raw_transfer_proof_state_with_version(version, state)
+        return self.send_transaction(from_address, private_key, callable) 
+
     def send_transaction(self, sender, private_key, calldata, nonce = None, gas = None, gas_price = None):
         if not gas:
             gas = slef._w3.eth.getTransactionCount(Web3.toChecksumAddress(sender))
@@ -141,7 +170,7 @@ class ethproxy():
         return self._w3.eth.blockNumber
 
     def get_balance(self, address, token_id, *args, **kwargs):
-        return self.vlsmproof.balance(token_id, address)
+        return self.tokens[token_id].balanceOf(address)
 
     def get_balances(self, address, token_id, *args, **kwargs):
         token_name_list = self.vlsmproof.token_name_list()
@@ -180,7 +209,7 @@ class ethproxy():
         datas = []
         end = start + limit
         end = min(end - 1, next_version - 1)
-        payee = self.vlsmproof.payee()
+        payee = self.token_address[VLSMPROOF_NAME]
         while start <= end:
             metadata = self.vlsmproof.proof_info_with_version(start)
             data = self.create_std_metadata(metadata)

@@ -13,6 +13,10 @@ EX_TYPE_PROOF_BASE  = "proofbase"
 EX_TYPE_MARK        = "mark"
 EX_TYPE_FIXTRAN     = "fixtran"
 
+#token decimal btc and violas/libra is fixed  erc20 token ?
+DECIMAL_VIOLAS  = 1_00_0000
+DECIMAL_BTC     = 1_0000_0000
+
 VIOLAS_ADDRESS_LEN = [32, 64]
 
 class enumbase(Enum):

@@ -21,7 +21,7 @@ class erc20slot():
     def symbol(self):
         return self._contract.functions.symbol().call()
 
-    def decimas(self):
+    def decimals(self):
         return self._contract.functions.decimals().call()
 
     def totalSupply(self):

@@ -2,10 +2,11 @@
 import operator
 import sys, os
 import json
-from enum import Enum
+sys.path.append(os.getcwd())
+sys.path.append("..")
 
-DECIMAL_VIOLAS  = 1_00_0000
-DECIMAL_BTC     = 1_0000_0000
+from enum import Enum
+from comm.values import DECIMAL_VIOLAS, DECIMAL_BTC
 class amountconver():
     class amounttype(Enum):
         LIBRA       = 0

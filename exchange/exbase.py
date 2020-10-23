@@ -128,7 +128,8 @@ class exbase(baseobject):
             self.append_property("from_client", self.violas_client if self.from_chain == "violas" else self.libra_client)
             self.append_property(f"{self.from_chain}_wallet", self.from_wallet)
         elif self.from_chain == "ethereum":
-            self.append_property("pserver", self.ethereum_client)
+            #self.append_property("pserver", self.ethereum_client)
+            self.append_property("pserver", requestclient(self.name(), self.proofdb))
             self.append_property("from_wallet", ethwallet(self.name(), None))
             self.append_property("from_client", self.ethereum_client)
             self.append_property("ethereum_wallet", self.from_wallet)
@@ -432,6 +433,7 @@ class exbase(baseobject):
         tran_id         = data["tran_id"]
         stable_token_id = data["token_id"]
         payee           = data["address"]
+        version         = data["version"]
 
         if self.is_target_state(tran_id, localdb.state.SSUCCEED.value) or \
                self.is_target_state(tran_id, localdb.state.VSUCCEED.value) or \
@@ -440,10 +442,12 @@ class exbase(baseobject):
             return result(error.SUCCEED)
         ##convert to BTC satoshi(100000000satoshi == 1000000vBTC)
         ##libra or violas not convert
-        amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).amount(self.from_chain)
+        amount = self.amountswap(amount, \
+                self.amountswap.amounttype[self.from_chain.upper()], 
+                self.from_client.get_decimals(stable_token_id)).amount(self.from_chain, self.from_client.get_decimals(stable_token_id))
 
         self._logger.debug(f"execute refund({tran_id}, {amount}, {stable_token_id})")
-        data = self.from_client.create_data_for_stop(self.from_chain, self.dtype, tran_id, 0) 
+        data = self.from_client.create_data_for_stop(self.from_chain, self.dtype, tran_id, 0, version=version) 
         ret = self.from_client.send_coin(from_sender, payee, amount, stable_token_id, data=data)
         if ret.state != error.SUCCEED:
             self.update_localdb_state_with_check(tran_id, localdb.state.SFAILED, detail = None)

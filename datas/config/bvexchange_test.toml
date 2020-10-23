@@ -84,11 +84,11 @@ syncing_mod = true
     db = "record"
 
 [ethereum_tokens]
-    [ethereum_tokens.usdt]
-        address = "0x6f08730dA8e7de49a4064d2217c6B68d7E61E727"
-        support= true  
     [ethereum_tokens.vlsmproof]
         address = "0xE6C7f2DAB2E9B16ab124E45dE3516196457A1120"
+        support= true  
+    [ethereum_tokens.usdt]
+        #address = "0x6f08730dA8e7de49a4064d2217c6B68d7E61E727"
         support= true  
 
 #violas <-> libra token map
