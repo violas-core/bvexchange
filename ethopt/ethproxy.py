@@ -130,6 +130,9 @@ class ethproxy():
     def is_connected(self):
         return self._w3.isConnected()
     
+    def syncing_state(self):
+        return self._w3.eth.syncing
+
     def get_decimals(self, token):
         return self.tokens_decimals[token]
 

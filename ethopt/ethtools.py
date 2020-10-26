@@ -154,6 +154,12 @@ def get_transaction_version(address, sequence):
     ret = client.get_transaction_version(address, sequence)
     logger.debug("version: {0}".format(ret.datas))
 
+
+def get_syncing_state():
+    logger.debug(f"start get_syncing_state()")
+    client = get_ethclient()
+    ret = client.get_syncing_state()
+    logger.debug("version: {0}".format(ret.datas))
 '''
 *************************************************ethwallet oper*******************************************************
 '''
@@ -241,6 +247,7 @@ def init_args(pargs):
     pargs.append("show_token_list", "show token list.", True, ["address"])
     pargs.append("show_all_token_list", "show token list.")
     pargs.append("get_decimals", "get address's token decimals.", True, ["token_id"])
+    pargs.append("get_syncing_state", "get chain syncing state.")
 
 def run(argc, argv):
     try:
@@ -397,6 +404,8 @@ def run(argc, argv):
             if len(arg_list) not in [1]:
                 pargs.exit_error_opt(opt)
             get_decimals(arg_list[0])
+        elif pargs.is_matched(opt, ["get_syncing_state"]):
+            get_syncing_state()
         else:
             raise Exception(f"not found matched opt{opt}")
     logger.debug("end manage.main")

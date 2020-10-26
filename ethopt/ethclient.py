@@ -197,6 +197,7 @@ class ethclient(baseobject):
                     if not client.is_connected():
                         self._logger.info(f"connect {chain} node failed({e}). test next...")
                         continue
+                    print(f"syncing state: {client.syncing_state()}")
 
                     self._logger.debug(f"connect {chain} node succeed.") 
                 except Exception as e:
@@ -223,6 +224,12 @@ class ethclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_syncing_state(self): 
+        try:
+            ret = result(error.SUCCEED, datas = self.__client.syncing_state()) 
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
 
     def send_coin(self, from_account, to_address, amount, token_id, module_address = None, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000):
         try:
