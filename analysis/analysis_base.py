@@ -165,6 +165,9 @@ class abase(baseobject):
     def append_contract(self, name):
         self._vclient.load_contract(name)
 
+    def set_vlsmproof_manager(self, address):
+        self._vclient.set_vlsmproof_manager(address)
+
     def is_valid_token_id(self, token_id):
         assert isinstance(token_id, str), f"token_id({token_id}) is not str."
         return self._token_id is None or token_id in self._token_id

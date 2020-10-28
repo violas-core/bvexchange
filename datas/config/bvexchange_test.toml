@@ -20,10 +20,7 @@ syncing_mod = true
     server = "violaslayer"
 
 [[ethereum_nodes]]
-    host = "51.140.241.96"
-    port = 8646
-#host = "127.0.0.1"
-#port = 8545
+    host = "https://kovan.infura.io/v3/2645261bd8844d0c9ac042c84606502d"
     name = "ethereum 1"
 
 [[violas_nodes]]
@@ -398,6 +395,10 @@ syncing_mod = true
     [[address_list.sender]]
         address = "6c30d8e6c26ada91c04c55d39ebe365daf15977fa582faf220e97e5a7fc5a09d"
         type = "b2vgbp"
+        chain = "violas"
+    [[address_list.sender]]
+        address = "792e363d33959b97140f2c6101e400d384e1e4d773c777ad6842f9f3e95e5f77"
+        type = "e2vm"
         chain = "violas"
     #combine 
     [[address_list.combine]]
