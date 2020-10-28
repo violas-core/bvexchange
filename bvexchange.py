@@ -15,7 +15,7 @@ from time import sleep, ctime
 import stmanage
 import subprocess
 import comm.functions as fn
-from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm, b2vm
+from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm, b2vm, e2vm
 from comm.result import parse_except
 from analysis import (
         analysis_base, 
@@ -726,6 +726,35 @@ class works:
             parse_except(e)
         finally:
             logger.critical(f"stop: {mod}")
+
+    def work_e2vm(self, **kargs):
+        try:
+            logger.critical("start: b2vm")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    obj = e2vm.e2vm(mod,
+                            dtype,
+                            stmanage.get_eth_nodes(), 
+                            stmanage.get_violas_nodes(),
+                            stmanage.get_db(dtype), 
+                            list(set(stmanage.get_receiver_address_list(dtype, "ethereum", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+                            )
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
+
     def work_comm(self, **kargs):
         try:
             logger.critical("start: comm")
@@ -846,8 +875,8 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_l2vm))
             elif self.is_match(name, "B2VM", "EX", 6):
                 self.funcs_map.update(self.create_func_dict(item, self.work_b2vm))
-            #elif self.is_match(name, "E2VM", "EX", 6):
-            #    self.funcs_map.update(self.create_func_dict(item, self.work_e2vm))
+            elif self.is_match(name, "E2VM", "EX", 6):
+                self.funcs_map.update(self.create_func_dict(item, self.work_e2vm))
             #elif self.is_match(name, "V2EM", "EX", 6):
             #    self.funcs_map.update(self.create_func_dict(item, self.work_v2em))
             elif name == "COMM":

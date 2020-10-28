@@ -46,7 +46,7 @@ class aproofeth(aproofbase):
         super().stop()
 
     def get_tran_id(self, tran_info):
-        tran_id = tran_info["sender"] + "_" + tran_info["sequence"]
+        tran_id = f"{tran_info['sender']}_{tran_info['sequence']}"
         return tran_id
 
     def update_proof_info(self, tran_info):
@@ -55,19 +55,21 @@ class aproofeth(aproofbase):
             version = tran_info.get("version", None)
 
             #create tran id
-            tran_id = self.get_tran_id(tran_info)
-            new_proofstate = self.proofstate_name_to_value(tran_info.get("state", ""))
-
-            #state is not start
-            ret  = self._dbclient.key_is_exists(tran_id)
-            if ret.state != error.SUCCEED:
-                return ret
-            found = ret.datas
-
-            new_proof = (new_proofstate == self.proofstate.START) or not found)
+            new_proof = tran_info.get("tran_id") is None
 
             self._logger.debug(f"new proof: {new_proof}")
             if new_proof:
+                tran_id = self.get_tran_id(tran_info)
+                #state is not start
+                ret  = self._dbclient.key_is_exists(tran_id)
+                if ret.state != error.SUCCEED:
+                    return ret
+                found = ret.datas
+
+                #found key = version info, db has old datas , must be flush db?
+                if found: 
+                    return result(error.TRAN_INFO_INVALID, f"key{version} tran_id({tran_id})is exists, db datas is old, flushdb ?. violas tran info : {tran_info}")
+
                 tran_info["flag"] = tran_info["flag"].value
                 tran_info["type"] = tran_info["type"].value
                 tran_info["tran_id"] = tran_id
@@ -80,6 +82,7 @@ class aproofeth(aproofbase):
             else:
                 #get tran info from db(tran_id -> version -> tran info)
 
+                tran_id = tran_info["tran_id"]
                 ret = self._dbclient.get_proof_by_hash(tran_id)
                 if ret.state != error.SUCCEED:
                     self._logger.debug(f"get_proof_by_hash({tran_id}) failed.")

@@ -35,7 +35,7 @@ name="eclient"
 
 class ethwallet(baseobject):
     
-    def __init__(self, name, wallet_name, chain="violas"):
+    def __init__(self, name, wallet_name, chain="ethereum"):
         assert wallet_name is not None, "wallet_name is None"
         baseobject.__init__(self, name)
         self.__wallet = None
@@ -47,16 +47,11 @@ class ethwallet(baseobject):
     def __del__(self):
         pass
 
-    def __load_wallet(self, wallet_name, chain="violas"):
+    def __load_wallet(self, wallet_name, chain="ethereum"):
         try:
             self.__wallet_name = wallet_name
 
-            if chain in ("violas"):
-                from vlsopt.violasproxy import walletproxy
-            elif chain in ("libra"):
-                from vlsopt.libraproxy import walletproxy
-            else:
-                raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas wallet")
+            from ethopt.ethproxy import walletproxy
 
             if os.path.isfile(self.__wallet_name):
                 self.__wallet = walletproxy.load(self.__wallet_name)
@@ -149,8 +144,7 @@ class ethwallet(baseobject):
 
     def split_full_address(self, address, auth_key_prefix = None):
         try:
-            (auth, addr) = split_full_address(address, auth_key_prefix)
-            ret = result(error.SUCCEED, datas = (auth, addr))
+            ret = result(error.SUCCEED, datas = (None, address))
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -344,9 +338,9 @@ class ethclient(baseobject):
         '''change state 
         '''
         if data["type"] == ("end", "stop"):
-            self.update_proof_state(fromaddress, data["version"], data["type"])
+            self.__client.update_proof_state(fromaddress, data["version"], data["type"])
         elif data["type"] == "mark":
-            self.send_token(fromaddress, toaddress, amount, token_id)
+            self.__client.send_token(fromaddress, toaddress, amount, token_id)
         else:
             raise Exception(f"type{type} is invald.")
 

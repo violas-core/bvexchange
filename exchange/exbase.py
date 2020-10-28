@@ -22,7 +22,7 @@ from comm.amountconver import amountconver
 from db.dblocal import dblocal as localdb
 import vlsopt.violasclient
 from vlsopt.violasclient import violasclient, violaswallet, violasserver
-from ethopt.ethclient import ethclient
+from ethopt.ethclient import ethclient, ethwallet
 from btc.btcclient import btcclient
 from btc.btcwallet import btcwallet
 from vlsopt.violasproof import violasproof
@@ -128,9 +128,8 @@ class exbase(baseobject):
             self.append_property("from_client", self.violas_client if self.from_chain == "violas" else self.libra_client)
             self.append_property(f"{self.from_chain}_wallet", self.from_wallet)
         elif self.from_chain == "ethereum":
-            #self.append_property("pserver", self.ethereum_client)
             self.append_property("pserver", requestclient(self.name(), self.proofdb))
-            self.append_property("from_wallet", ethwallet(self.name(), None))
+            self.append_property("from_wallet", ethwallet(self.name(), wallet_name, None))
             self.append_property("from_client", self.ethereum_client)
             self.append_property("ethereum_wallet", self.from_wallet)
 
@@ -144,7 +143,7 @@ class exbase(baseobject):
             self.append_property("map_wallet", violaswallet(self.name(), wallet_name, self.map_chain))
             self.append_property("map_client", self.violas_client if self.map_chain == "violas" else self.libra_client)
         elif self.map_chain == "ethereum":
-            self.append_property("map_wallet", ethwallet(self.name(), None))
+            self.append_property("map_wallet", ethwallet(self.name(), wallet_name, None))
             self.append_property("map_client", self.ethereum_client)
         else:
             raise Exception(f"chain {self.from_chain} is invalid.")

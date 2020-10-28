@@ -87,6 +87,7 @@ class ethproxy():
         self.tokens_address = {}
         self.tokens_decimals = {}
         self.tokens = {}
+        self._vlsmproof_manager = None
 
         setattr(self, "chain_id", chain_id)
         self.connect(host, port, *args, **kwargs)
@@ -96,8 +97,8 @@ class ethproxy():
         url = host
         if "://" not in host:
             url = f"http://{host}"
-        if port is not None:
-            url += f":{port}"
+            if port is not None:
+                url += f":{port}"
 
         self._w3 = Web3(Web3.HTTPProvider(url))
         assert self._w3.isConnected(), f"connect {url} is failed."
@@ -124,6 +125,12 @@ class ethproxy():
         self.tokens_decimals[name] = pow(10, erc20_token.decimals())
         self.tokens[name] = erc20_token
 
+    def set_vlsmproof_manager(self, address):
+        self._vlsmproof_manager = address
+
+    def get_vlsmproof_manager(self, default = None):
+        return self._vlsmproof_manager if self._vlsmproof_manager is not None else default
+
     def token_address(self, name):
         return self.tokens_address[name]
 
@@ -137,12 +144,12 @@ class ethproxy():
         return self.tokens_decimals[token]
 
     def send_token(self, from_address, to_address, amount, token_id):
-        private_key = "" #from_address' private key
+        private_key = "05849aa606c43ef46e1d71381573221538caef578973fb26f9b889b382d568bd" #from_address' private key
         calldata = self.tokens[token_id].transfer(to_address, amount)
         return self.send_transaction(from_address, private_key, callable) 
 
     def update_proof_state(self, from_address, version, state):
-        private_key = "" #from_address' private key
+        private_key = "05849aa606c43ef46e1d71381573221538caef578973fb26f9b889b382d568bd" #from_address' private key
         calldata = self.vlsmproof.raw_transfer_proof_state_with_version(version, state)
         return self.send_transaction(from_address, private_key, callable) 
 
@@ -193,15 +200,19 @@ class ethproxy():
         return self.vlsmproof.next_version()
 
     def create_std_metadata(self, datas):
-        return {
-                "flag": "ethereum",
-                "type": f"e2vm",
-                "to_address" : datas[0],
-                "state": self.vlsmproof.state_name(datas[2]),
-                "out_amount":datas[5],
-                "opttype":"map",
-                "times" : 0,
-                }
+        create = datas[6]
+        metadata = {
+                    "flag": "ethereum",
+                    "type": f"e2vm",
+                    "state": self.vlsmproof.state_name(datas[2]),
+                    "opttype":"map",
+                    "create" : create,
+                    }
+        if create:
+            metadata.update({"to_address":datas[0], "out_amount": datas[5], "times":0})
+        else:
+            metadata.update({"tran_id":f"{datas[4]}_{datas[1]}"})
+        return metadata
 
     def get_transactions(self, start, limit = 10, *args, **kwargs):
         return self._get_transactions(start, limit)
@@ -212,7 +223,7 @@ class ethproxy():
         datas = []
         end = start + limit
         end = min(end - 1, next_version - 1)
-        payee = self.token_address[VLSMPROOF_NAME]
+        payee = self.vlsmproof.payee()
         while start <= end:
             metadata = self.vlsmproof.proof_info_with_version(start)
             data = self.create_std_metadata(metadata)
@@ -220,10 +231,10 @@ class ethproxy():
                 {
                     "token_id": self.vlsmproof.token_name(metadata[3]),
                     "sender": metadata[4],
-                    "receiver":payee,
+                    "receiver":self.get_vlsmproof_manager(payee),
                     "amount": metadata[5],
-                    "token": metadata[3],
-                    "sequence":metadata[1],
+                    "token_owner": metadata[3],
+                    "sequence_number":metadata[1],
                     "version":start,
                     "data" : json.dumps(data).encode("utf-8").hex(),
                     "success" : True,
