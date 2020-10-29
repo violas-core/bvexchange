@@ -24,7 +24,6 @@ from comm.error import error
 from ethopt.ethproxy import ethproxy as clientproxy
 from enum import Enum
 from baseobject import baseobject
-from comm.functions import split_full_address
 import redis
 
 import web3
@@ -33,6 +32,7 @@ from web3 import Web3
 #module name
 name="eclient"
 
+ETH_ADDRESS_LEN = comm.values.ETH_ADDRESS_LEN
 class ethwallet(baseobject):
     
     def __init__(self, name, wallet_name, chain="ethereum"):
@@ -99,12 +99,7 @@ class ethwallet(baseobject):
 
     def get_account(self, addressorid):
         try:
-            address = addressorid
-            if isinstance(addressorid, str) and len(addressorid) >= min(VIOLAS_ADDRESS_LEN):
-                auth, addr = self.split_full_address(addressorid).datas
-                address = addr
-
-            account = self.__wallet.get_account_by_address_or_refid(address)
+            account = self.__wallet.get_account_by_address_or_refid(addressorid)
             if account is None:
                 ret = result(error.ARG_INVALID)
             else:
@@ -114,12 +109,7 @@ class ethwallet(baseobject):
         return ret
 
     def find_account_by_address_hex(self, address):
-        (auth, addr) = self.split_full_address(address).datas
-        for i in range(len(self.__wallet.accounts)):
-            if self.__wallet.accounts[i].address.hex == addr:
-                return (i, self.__wallet.accounts[i])
-
-        return (-1, None)
+        return self.__wallet.find_account_by_address_hex(address)
 
     def has_account_by_address(self, address):
         try:
@@ -149,6 +139,10 @@ class ethwallet(baseobject):
             ret = parse_except(e)
         return ret
 
+    def __getattr__(self, name):
+        if name.startswith('__') and name.endswith('__'):
+            # Python internal stuff
+            raise AttributeError
 class ethclient(baseobject):
     def __init__(self, name, nodes, chain = "ethereum"):
         baseobject.__init__(self, name, chain)
@@ -221,18 +215,6 @@ class ethclient(baseobject):
     def get_syncing_state(self): 
         try:
             ret = result(error.SUCCEED, datas = self.__client.syncing_state()) 
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def send_coin(self, from_account, to_address, amount, token_id, module_address = None, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000):
-        try:
-            if (len(to_address) not in VIOLAS_ADDRESS_LEN) or (amount < 1) or ((module_address is not None) and (len(module_address) not in VIOLAS_ADDRESS_LEN)):
-                return result(error.ARG_INVALID)
-
-            self.__client.send_coin(sender_account=from_account, receiver_address=addr, \
-                    micro_coins=amount, token_id = token_id, module_address=module_addr, data=data, auth_key_prefix = auth_key_prefix, is_blocking=is_blocking, max_gas_amount = max_gas_amount)
-            ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
         return ret
@@ -316,12 +298,7 @@ class ethclient(baseobject):
         return ret
 
     def get_decimals(self, token_id):
-        try:
-            datas = self.__client.get_decimals(token_id)
-            ret = result(error.SUCCEED, "", datas)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+        return self.__client.get_decimals(token_id)
 
     def create_data_for_end(self, flag, opttype, tranid, *args, **kwargs):
         return {"type": "end", "flag": flag, "opttype":opttype,  \
@@ -334,13 +311,13 @@ class ethclient(baseobject):
     def create_data_for_mark(self, flag, dtype, id, version, *args, **kwargs):
         return {"type": "mark", "flag": flag, "version":version }
 
-    def send_coin(self, fromaddress, toaddress, amount, token_id, data):
+    def send_coin(self, account, toaddress, amount, token_id, data, *args, **kwargs):
         '''change state 
         '''
         if data["type"] == ("end", "stop"):
-            self.__client.update_proof_state(fromaddress, data["version"], data["type"])
+            self.__client.update_proof_state(account, data["version"], data["type"])
         elif data["type"] == "mark":
-            self.__client.send_token(fromaddress, toaddress, amount, token_id)
+            self.__client.send_token(account, toaddress, amount, token_id, data["version"])
         else:
             raise Exception(f"type{type} is invald.")
 

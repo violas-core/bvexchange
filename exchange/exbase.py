@@ -34,7 +34,8 @@ from analysis.analysis_filter import afilter
 
 #module self.name
 #name="vbbase"
-wallet_name = "vwallet"
+vwallet_name = "vwallet"
+ewallet_name = "ewallet"
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
@@ -124,12 +125,12 @@ class exbase(baseobject):
             self.append_property("btc_wallet", self.from_wallet)
         elif self.from_chain in ("violas", "libra"):
             self.append_property("pserver", requestclient(self.name(), self.proofdb))
-            self.append_property("from_wallet", violaswallet(self.name(), wallet_name, self.from_chain))
+            self.append_property("from_wallet", violaswallet(self.name(), vwallet_name, self.from_chain))
             self.append_property("from_client", self.violas_client if self.from_chain == "violas" else self.libra_client)
             self.append_property(f"{self.from_chain}_wallet", self.from_wallet)
         elif self.from_chain == "ethereum":
             self.append_property("pserver", requestclient(self.name(), self.proofdb))
-            self.append_property("from_wallet", ethwallet(self.name(), wallet_name, None))
+            self.append_property("from_wallet", ethwallet(self.name(), ewallet_name, None))
             self.append_property("from_client", self.ethereum_client)
             self.append_property("ethereum_wallet", self.from_wallet)
 
@@ -140,21 +141,33 @@ class exbase(baseobject):
             self.append_property("map_wallet", btcwallet(self.name(), None))
             self.append_property("map_client", self.btc_client)
         elif self.map_chain in ("violas", "libra"):
-            self.append_property("map_wallet", violaswallet(self.name(), wallet_name, self.map_chain))
+            self.append_property("map_wallet", violaswallet(self.name(), vwallet_name, self.map_chain))
             self.append_property("map_client", self.violas_client if self.map_chain == "violas" else self.libra_client)
         elif self.map_chain == "ethereum":
-            self.append_property("map_wallet", ethwallet(self.name(), wallet_name, None))
+            self.append_property("map_wallet", ethwallet(self.name(), ewallet_name, None))
             self.append_property("map_client", self.ethereum_client)
         else:
             raise Exception(f"chain {self.from_chain} is invalid.")
 
         if "violas" not in (self.from_chain, self.map_chain) and self.combine:
-            self.append_property("violas_wallet", violaswallet(self.name(), wallet_name, "violas"))
+            self.append_property("violas_wallet", violaswallet(self.name(), vwallet_name, "violas"))
             ret = self.violas_wallet.get_account(self.combine)
             self.check_state_raise(ret, f"get combine({self.combine})'s account failed.")
             self.append_property("combine_account", ret.datas)
 
         self.init_fill_address_token()
+
+    def load_vlsmproof(self, address):
+        if self.ethereum_client:
+            self.ethereum_client.load_vlsmproof(address)
+
+    def append_contract(self, name):
+        if self.ethereum_client:
+            self.ethereum_client.load_contract(name)
+
+    def set_vlsmproof_manager(self, address):
+        if self.ethereum_client:
+            self.ethereum_client.set_vlsmproof_manager(address)
 
     def init_fill_address_token(self):
         setattr(self, "fill_address_token", {})
@@ -328,7 +341,9 @@ class exbase(baseobject):
     
     def get_address_from_account(self, account):
         if not isinstance(account, str):
-            address = account.address.hex()
+            address = account.address
+            if not isinstance(address, str):
+                address = address.hex()
         else:
             address = account
         return address

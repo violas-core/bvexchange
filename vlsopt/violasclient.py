@@ -220,6 +220,9 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_decimals(self, nouse = None):
+        return DECIMAL_VIOLAS
+
     def token_id_effective(self, token_id):
         try:
             token_list = self.__client.get_registered_currencies()
@@ -299,7 +302,7 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def send_coin(self, from_account, to_address, amount, token_id, module_address = None, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000):
+    def send_coin(self, from_account, to_address, amount, token_id, module_address = None, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000, *args, **kwargs):
         try:
             if (len(to_address) not in VIOLAS_ADDRESS_LEN) or (amount < 1) or ((module_address is not None) and (len(module_address) not in VIOLAS_ADDRESS_LEN)):
                 return result(error.ARG_INVALID)
@@ -671,12 +674,6 @@ class violasserver(baseobject):
             ret = parse_except(e)
         return ret
 
-    def get_decimals(nouse = None):
-        try:
-            ret = result(error.SUCCEED, datas = DECIMAL_VIOLAS)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
 
 
 

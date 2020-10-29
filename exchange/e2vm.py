@@ -22,7 +22,7 @@ class e2vm(exmap):
             ):
 
         exmap.__init__(self, name, dtype, \
-                None, None, vlsnodes, ethnodes,\
+                None, vlsnodes, None, ethnodes,\
                 proofdb, receivers, senders,\
                 "ethereum", "violas")
 
