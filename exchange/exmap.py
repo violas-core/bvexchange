@@ -13,11 +13,6 @@ from comm.error import error
 from db.dblocal import dblocal as localdb
 from exchange.exbase import exbase
 
-#module self.name
-#name="exlv"
-wallet_name = "vwallet"
-
-#load logging
 class exmap(exbase):    
     def __init__(self, name, 
             dtype, 
@@ -78,8 +73,10 @@ class exmap(exbase):
         if not self.chain_data_is_valid(data):
            return 
 
-        map_amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).amount(self.map_chain, self.map_client.get_decimals(map_token_id))
-        micro_amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).microamount(self.map_chain, self.map_client.get_decimals(map_token_id))
+        print(f"in_dec : {self.from_client.get_decimals(from_token_id)} decimals: {self.map_client.get_decimals(map_token_id)}")
+        amount_swap = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()], self.from_client.get_decimals(from_token_id))
+        map_amount = amount_swap.amount(self.map_chain, self.map_client.get_decimals(map_token_id))
+        micro_amount = amount_swap.microamount(self.map_chain, self.map_client.get_decimals(map_token_id))
 
         self._logger.debug(f"exec_exchange-start...")
         if self.use_module(state, localdb.state.START):

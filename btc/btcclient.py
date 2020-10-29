@@ -276,7 +276,7 @@ class btcclient(baseobject):
         return {"type": "mark", "flag": flag, "address":id, \
                 "sequence":0, "version":version }
 
-    def send_coin(self, fromaddress, toaddress, amount, token_id, data):
+    def send_coin(self, fromaddress, toaddress, amount, token_id, data, *args, **kwargs):
         '''send btc 
            @amount : btc amount. ex. 1.5 == 150000000satoshi
         '''
@@ -426,12 +426,8 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def get_decimals(nouse = None):
-        try:
-            ret = result(error.SUCCEED, datas = DECIMAL_BTC)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
+    def get_decimals(self, nouse = None):
+        return DECIMAL_BTC
 
 def main():
     try:

@@ -682,8 +682,8 @@ class works:
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_eth_nodes(), chain="ethereum")
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__ethereum_min_valid_version - 1)
-                    tokens = stmanage.get_eth_token()
                     obj.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
+                    tokens = stmanage.get_eth_token()
                     for token in tokens:
                         obj.append_contract(token["name"])
 
@@ -745,6 +745,10 @@ class works:
                             list(set(stmanage.get_receiver_address_list(dtype, "ethereum", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
                             )
+                    obj.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
+                    tokens = stmanage.get_eth_token()
+                    for token in tokens:
+                        obj.append_contract(token["name"])
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:

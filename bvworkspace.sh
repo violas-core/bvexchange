@@ -25,11 +25,12 @@ update_ln_fils(){
 use_comm() {
     update_ln_fils "datas/abis/usdt_abi.py" "usdt_abi.py"
     update_ln_fils "datas/abis/vlsmproof_abi.py" "vlsmproof_abi.py"
+    update_ln_fils "datas/wallet/bwallet" "bwallet"
+    update_ln_fils "datas/wallet/ewallet" "ewallet"
 }
 use_internal(){
     echo "call use_internal"
     update_ln_fils "datas/config/bvexchange_internal.toml" "bvexchange.toml"
-    update_ln_fils "datas/wallet/bwallet" "bwallet"
     update_ln_fils "datas/wallet/vwallet_internal" "vwallet"
     update_ln_fils "datas/keys/mint_internal.key" "mint_test.key"
     update_ln_fils "datas/redis/redis_internal.conf" "redis.conf"
@@ -50,7 +51,6 @@ use_test(){
 use_external(){
     echo "call use_external"
     update_ln_fils "datas/config/bvexchange_external.toml" "bvexchange.toml"
-    update_ln_fils "datas/wallet/bwallet" "bwallet"
     update_ln_fils "datas/wallet/vwallet_external" "vwallet"
     update_ln_fils "datas/keys/mint_external.key" "mint_test.key"
     update_ln_fils "datas/redis/redis_external.conf" "redis.conf"

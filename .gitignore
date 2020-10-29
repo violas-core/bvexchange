@@ -4,6 +4,9 @@ __pycache__/
 *$py.class
 
 
+ethopt/ethwallt_test
+ethopt/ewallet
+ewallet
 ethopt/usdt_abi.py
 ethopt/vlsmproof_abi.py
 usdt_abi.py

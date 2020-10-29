@@ -22,6 +22,7 @@ from enum import Enum
 from comm.functions import json_print
 from ethopt.vlsmproofslot import vlsmproofslot
 from ethopt.erc20slot import erc20slot 
+from ethopt.lbethwallet import lbethwallet
 
 import web3
 from web3 import Web3
@@ -46,23 +47,22 @@ contract_codes = {
         VLSMPROOF_NAME: {"abi":VLSMPROOF_ABI, "bytecode": VLSMPROOF_BYTECODE, "token_type": "vlsmproof", "address":VLSMPROOF_ADDRESS}
         }
 
-class walletproxy():
+class walletproxy(lbethwallet):
     @classmethod
     def load(self, filename):
         ret = self.recover(filename)
         return ret
 
-    @property
-    def child_count(self):
-        return len(self.accounts)
-
     def find_account_by_address_hex(self, address):
         for i in range(self.child_count):
-            if self.accounts[i].address.hex == address:
+            if self.accounts[i].address == address:
                 return (i, self.accounts[i])
 
         return (-1, None)
 
+    def __getattr__(self, name):
+        if name.startswith('__') and name.endswith('__'):
+            raise AttributeError
 
 class ethproxy():
 
@@ -143,15 +143,13 @@ class ethproxy():
     def get_decimals(self, token):
         return self.tokens_decimals[token]
 
-    def send_token(self, from_address, to_address, amount, token_id):
-        private_key = "05849aa606c43ef46e1d71381573221538caef578973fb26f9b889b382d568bd" #from_address' private key
+    def send_token(self, account, to_address, amount, token_id, nonce = None):
         calldata = self.tokens[token_id].transfer(to_address, amount)
-        return self.send_transaction(from_address, private_key, callable) 
+        return self.send_transaction(account.address, account.key.hex(), callable, nonce = nonce) 
 
     def update_proof_state(self, from_address, version, state):
-        private_key = "05849aa606c43ef46e1d71381573221538caef578973fb26f9b889b382d568bd" #from_address' private key
         calldata = self.vlsmproof.raw_transfer_proof_state_with_version(version, state)
-        return self.send_transaction(from_address, private_key, callable) 
+        return self.send_transaction(account.address, account.key, callable, nonce = version) 
 
     def send_transaction(self, sender, private_key, calldata, nonce = None, gas = None, gas_price = None):
         if not gas:

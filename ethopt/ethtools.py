@@ -19,7 +19,7 @@ from comm.result import result
 from comm.error import error
 from comm.parseargs import parseargs
 from comm.functions import json_print
-from ethclient import ethclient
+from ethopt.ethclient import ethclient, ethwallet
 from enum import Enum
 from vrequest.request_client import requestclient
 from analysis.analysis_filter import afilter
@@ -169,7 +169,7 @@ def new_account():
     ret = wallet.new_account()
     wallet.dump_wallet()
     assert ret.state == error.SUCCEED, "new_account failed"
-    logger.debug("account address : {}".format(ret.datas.address.hex()))
+    logger.debug("account address : {}".format(ret.datas.address))
 
 def address_has_token_id(address, token_id):
     logger.debug(f"start address_has_token_id address= {address} module = {token_id}")
@@ -187,7 +187,7 @@ def show_accounts():
         if ret.state != error.SUCCEED:
            break 
         account = ret.datas
-        logger.debug("account.address({0}): {1}  auth_key_prefix: {2}".format(i, account.address.hex(), account.auth_key_prefix.hex()))
+        logger.debug(f"{i}: {account.address}")
         i += 1
 
 def show_accounts_full():
@@ -200,7 +200,7 @@ def show_accounts_full():
         if ret.state != error.SUCCEED:
            break 
         account = ret.datas
-        logger.debug(f"({i:03}): {account.auth_key_prefix.hex()}{account.address.hex()}")
+        logger.debug(f"({i:03}): address: {account.address} privkey: {account.key.hex()}")
         i += 1
 
 def get_account(address):
@@ -211,12 +211,6 @@ def has_account(address):
     global wallet_name
     wallet = get_ethwallet()
     logger.debug(wallet.has_account_by_address(address).datas)
-
-def get_account_prefix(address):
-    global wallet_name
-    wallet = get_ethwallet()
-    account = wallet.get_account(address).datas
-    logger.debug(f"address: {account.address.hex()}, auth_key_prefix: {account.auth_key_prefix.hex()}")
 
 
 '''
@@ -230,7 +224,7 @@ def init_args(pargs):
     pargs.append("get_account", "show account info.", True, ["address"])
     pargs.append("has_account", "has target account in wallet.", True, ["address"])
     pargs.append("show_accounts", "show all counts address list(local wallet).")
-    pargs.append("show_accounts_full", "show all counts address list(local wallet) with auth_key_prefix.")
+    pargs.append("show_accounts_full", "show all counts address list(local wallet) with privkey.")
 
     #client
     pargs.append("send_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "token_id", "module", "data[default = None  ex: "])
