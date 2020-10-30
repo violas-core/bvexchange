@@ -6,6 +6,7 @@ sys.path.append(os.getcwd())
 sys.path.append("..")
 import stmanage
 from comm.result import result, parse_except
+from db.dblocal import dblocal as localdb
 from comm.error import error
 from exchange.exmap import exmap
 
@@ -25,7 +26,11 @@ class e2vm(exmap):
                 None, vlsnodes, None, ethnodes,\
                 proofdb, receivers, senders,\
                 "ethereum", "violas")
+        self.__init_exec_states()
 
+    def __init_exec_states(self):
+        self.append_property("use_exec_update_db_states", 
+                            [state for state in localdb.state])
     def __del__(self):
         pass
     

@@ -88,7 +88,6 @@ class requestproof(requestbase):
 
     def is_target_state(self, state, tran_id):
         try:
-            print(f"tran_id:{tran_id}")
             ret = self.get_proof_by_hash(tran_id)
             if ret.state != error.SUCCEED:
                 return ret

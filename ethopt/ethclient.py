@@ -176,16 +176,15 @@ class ethclient(baseobject):
                     if self.work() == False:
                         return result(error.FAILED, f"connect {chain} work stop")
 
-                    self._logger.debug("try connect node({}) : host = {} port = {} validator={} faucet ={}".format( \
-                            node.get("name", ""), node.get("host"), node.get("port"), node.get("validator"), node.get("faucet")))
+                    self._logger.debug("try connect node({}) : host = {} port = {} chain_id = {}".format( \
+                            node.get("name", ""), node.get("host"), node.get("port"), node.get("chain_id", 42)))
                     client = clientproxy(host=node.get("host"), \
                             port=node.get("port"), \
-                            timeout = node.get("timeout"), \
-                            debug = node.get("debug", False))
+                            chain_id = node.get("chain_id", 42)
+                            )
                     if not client.is_connected():
                         self._logger.info(f"connect {chain} node failed({e}). test next...")
                         continue
-                    print(f"syncing state: {client.syncing_state()}")
 
                     self._logger.debug(f"connect {chain} node succeed.") 
                 except Exception as e:
@@ -289,6 +288,14 @@ class ethclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_rawtransaction(self, txhash):
+        try:
+            datas = self.__client.get_rawtransaction(txhash)
+            ret = result(error.SUCCEED, "", datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def get_transaction(self, version, fetch_event=True):
         try:
             datas = self.__client.get_transactions(version, 1 , fetch_event)
@@ -314,14 +321,17 @@ class ethclient(baseobject):
     def send_coin(self, account, toaddress, amount, token_id, data, *args, **kwargs):
         '''change state 
         '''
-        if data["type"] == ("end", "stop"):
-            self.__client.update_proof_state(account, data["version"], data["type"])
-        elif data["type"] == "mark":
-            self.__client.send_token(account, toaddress, amount, token_id, data["version"])
-        else:
-            raise Exception(f"type{type} is invald.")
-
-        self._logger.debug(f"result: {ret.datas}")
+        try:
+            if data["type"] in ("end", "stop"):
+                datas = self.__client.update_proof_state(account, data["version"], data["type"])
+            elif data["type"] == "mark":
+                datas = self.__client.send_token(account, toaddress, amount, token_id, data["version"])
+            else:
+                raise Exception(f"type{type} is invald.")
+            ret = result(error.SUCCEED if len(datas) > 0 else error.FAILED, "", datas = datas)
+            self._logger.debug(f"result: {ret.datas}")
+        except Exception as e:
+            ret = parse_except(e)
         return ret
 
     def __getattr__(self, name):

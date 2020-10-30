@@ -73,7 +73,6 @@ class exmap(exbase):
         if not self.chain_data_is_valid(data):
            return 
 
-        print(f"in_dec : {self.from_client.get_decimals(from_token_id)} decimals: {self.map_client.get_decimals(map_token_id)}")
         amount_swap = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()], self.from_client.get_decimals(from_token_id))
         map_amount = amount_swap.amount(self.map_chain, self.map_client.get_decimals(map_token_id))
         micro_amount = amount_swap.microamount(self.map_chain, self.map_client.get_decimals(map_token_id))
@@ -112,7 +111,9 @@ class exmap(exbase):
                         json.dumps(detail))
                 return ret
             else:
-                self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED)
+                detail.update({"txid":ret.datas})
+                self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED, \
+                        json.dumps(detail))
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state
         if self.use_module(state, localdb.state.VSUCCEED):

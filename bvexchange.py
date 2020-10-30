@@ -208,7 +208,7 @@ class works:
         finally:
             logger.critical(f"stop: {mod}")
 
-    def work_v2bproof(self, **kargs):
+    def work_v2xproof(self, **kargs):
         try:
             logger.critical("start: violas v2b proof")
             nsec = kargs.get("nsec", 0)
@@ -222,10 +222,10 @@ class works:
                 try:
                     basedata = "vfilter"
                     ttype = "violas"
-                    obj = analysis_proof_violas.aproofvls(name=mod, ttype="violas", dtype=dtype, \
+                    obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
-                    if dtype == "v2bm":
+                    if dtype in ("v2bm", "v2lm"):
                         obj.append_token_id(stmanage.get_support_map_token_id(ttype))
                     else:
                         obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
@@ -287,39 +287,6 @@ class works:
                     obj.set_record(stmanage.get_db(self.record_db_name()))
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
-                    self.set_work_obj(obj)
-                    obj.start()
-                except Exception as e:
-                    parse_except(e)
-                sleep(nsec)
-        except Exception as e:
-            parse_except(e)
-        finally:
-            logger.critical(f"stop: {mod}")
-
-    def work_v2lproof(self, **kargs):
-        try:
-            logger.critical("start: violas v2l proof")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            dtype = self.get_dtype_from_mod(mod)
-            while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
-                try:
-                    basedata = "vfilter"
-                    ttype = "violas"
-                    obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
-                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    #set can receive token of violas transaction
-                    if dtype == "v2lm":
-                        obj.append_token_id(stmanage.get_support_map_token_id(ttype))
-                    else:
-                        obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
-                    obj.set_record(stmanage.get_db(self.record_db_name()))
-                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
-                    obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
@@ -846,9 +813,9 @@ class works:
             elif name == "V2VSWAPPROOF":
                 self.funcs_map.update(self.create_func_dict(item, self.work_swapproof))
             elif self.is_match(name, "V2L", "PROOF", [11, 9]): #V2LXXXPROOF   V2LMPROOF
-                self.funcs_map.update(self.create_func_dict(item, self.work_v2lproof))
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2xproof))
             elif self.is_match(name, "V2B", "PROOF", [8, 9]):
-                self.funcs_map.update(self.create_func_dict(item, self.work_v2bproof))
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2xproof))
             elif self.is_match(name, "L2V", "PROOF", [11, 9]):
                 self.funcs_map.update(self.create_func_dict(item, self.work_l2vproof))
             elif self.is_match(name, "L2B", "PROOF", 8):
@@ -859,6 +826,8 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_b2lproof))
             elif self.is_match(name, "E2V", "PROOF", [9]):
                 self.funcs_map.update(self.create_func_dict(item, self.work_e2vproof))
+            elif self.is_match(name, "V2E", "PROOF", [9]):
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2xproof))
             elif self.is_match(name, "V2L", "EX", 8):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2l))
             elif self.is_match(name, "V2B", "EX", 5):
@@ -881,8 +850,9 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_b2vm))
             elif self.is_match(name, "E2VM", "EX", 6):
                 self.funcs_map.update(self.create_func_dict(item, self.work_e2vm))
-            #elif self.is_match(name, "V2EM", "EX", 6):
-            #    self.funcs_map.update(self.create_func_dict(item, self.work_v2em))
+            elif self.is_match(name, "V2EM", "EX", 6):
+                #self.funcs_map.update(self.create_func_dict(item, self.work_v2em))
+                pass
             elif name == "COMM":
                 self.funcs_map.update(self.create_func_dict(item, self.work_comm))
             else:
@@ -943,17 +913,7 @@ def signal_stop(signal, frame):
 
 def list_valid_mods():
     valid_mods = ["all"]
-    #support_mods = stmanage.get_support_mods()
     for mod in work_mod:
-    #    print(mod)
-    #    if mod.endswith("EX"):
-    #        dtype = mod[:-2]
-    #    elif mod.endswith("PROOF"):
-    #        dtype = mod[:-5]
-    #    else:
-    #        dtype = mod
-    #    if dtype.lower() in support_mods:
-    #        valid_mods.append(mod.name.lower())
         valid_mods.append(mod.name.lower())
     return valid_mods
 

@@ -287,7 +287,6 @@ class exbase(baseobject):
                 return ret
 
             tran_data = afilter.get_tran_data(ret.datas)
-            print(tran_data)
             swap_data = tran_data.get("data")
             data = json.loads(swap_data)
 

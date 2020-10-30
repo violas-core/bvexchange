@@ -163,6 +163,40 @@ def get_transactions(vmp):
     for data in datas:
         print(data.to_json())
 
+def update_proof_state_with_ver(w3, vmp, account, account1_privkey, version):
+    print(f'''
+    block number: {w3.eth.blockNumber}
+    syncing: {w3.eth.syncing}
+    ''')
+
+
+    print(f"proof info: data   sequence  state  token   sender amount")
+    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(account))
+    proof_info = vmp.proof_info_with_version(version)
+    print(f"proof info[{i}]: {proof_info}")
+    state = proof_info[2]
+    if  state != 1: 
+        print(f"version({i}) state({state}) is not 1, next version")
+        return
+
+    print(f"start version: {i}")
+    gasLimit = w3.eth.getBlock(w3.eth.blockNumber).get("gasLimit")
+    txn = vmp.raw_transfer_proof_state_with_version(i, 3).buildTransaction({
+        'chainId': 42, #kovan
+        'gas':gasLimit,
+        #'gasPrice': Web3.toWei(1, 'gwei'),
+        'gasPrice': w3.eth.gasPrice + Web3.toWei(100, 'gwei'),
+        'nonce': nonce,
+        })
+    print(f"txn:{txn}")
+    signed_txn = w3.eth.account.sign_transaction(txn, private_key=account1_privkey)
+    print(f"tx hash:{w3.toHex(signed_txn.hash)}")
+    print(f"tx rawtransaction:{w3.toHex(signed_txn.rawTransaction)}")
+    txhash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    print(f"ret tx hash:{w3.toHex(txhash)}")
+
+    #w3.eth.waitForTransactionReceipt(txhash)
+    
 def update_proof_state(w3, vmp, account, account1_privkey):
     print(f'''
     block number: {w3.eth.blockNumber}
