@@ -325,7 +325,7 @@ class violasclient(baseobject):
 
             self.__client.send_coin(sender_account=from_account, receiver_address=addr, \
                     micro_coins=amount, token_id = token_id, module_address=module_addr, data=data, auth_key_prefix = auth_key_prefix, is_blocking=is_blocking, max_gas_amount = max_gas_amount)
-            ret = result(error.SUCCEED) 
+            ret = result(error.SUCCEED, datas="") 
         except Exception as e:
             ret = parse_except(e)
         return ret

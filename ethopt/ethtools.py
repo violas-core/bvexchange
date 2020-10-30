@@ -136,6 +136,15 @@ def get_transactions(start_version, limit = 1, fetch_event = True, raw = False):
             info = afilter.get_tran_data(data, chain =="violas")
             json_print(info)
 
+def get_rawtransaction(txhash):
+    logger.debug(f"start get_rawtransaction(txhash={txhash}")
+
+    client = get_ethclient()
+    ret = client.get_rawtransaction(txhash)
+    if ret.state != error.SUCCEED:
+        return
+
+    print(ret.datas)
 def get_address_version(address):
     logger.debug(f"start get_address_version({address})")
     client = get_ethclient()
@@ -233,7 +242,7 @@ def init_args(pargs):
     pargs.append("get_account_transactions", "get account's transactions from eth server.", True, ["mtype", "address", "start", "limit", "state=(start/end)"])
     pargs.append("has_transaction", "check transaction is valid from eth server.", True, ["mtype", "tranid"])
     pargs.append("get_transactions", "get transactions from eth nodes.", True, ["start version", "limit=1", "fetch_event=True"])
-    pargs.append("get_rawtransaction", "get transaction from eth nodes.", True, ["version", "fetch_event=True"])
+    pargs.append("get_rawtransaction", "get transaction from eth nodes.", True, ["txhash"])
     pargs.append("get_latest_transaction_version", "show latest transaction version.")
     pargs.append("get_address_version", "get address's latest version'.", True, ["address"])
     pargs.append("get_address_sequence", "get address's latest sequence'.", True, ["address"])
@@ -360,12 +369,9 @@ def run(argc, argv):
             elif len(arg_list) == 1:
                 get_transactions(int(arg_list[0]))
         elif pargs.is_matched(opt, ["get_rawtransaction"]):
-            if len(arg_list) != 2 and len(arg_list) != 1:
+            if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
-            if len(arg_list) == 2:
-                get_transactions(int(arg_list[0]), 1, arg_list[1] in ("True"), True)
-            elif len(arg_list) == 1:
-                get_transactions(int(arg_list[0]), 1, False, True)
+            get_rawtransaction(arg_list[0])
         elif pargs.is_matched(opt, ["has_transaction"]):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)

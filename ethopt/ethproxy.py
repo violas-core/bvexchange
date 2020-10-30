@@ -147,17 +147,24 @@ class ethproxy():
         calldata = self.tokens[token_id].transfer(to_address, amount)
         return self.send_transaction(account.address, account.key.hex(), callable, nonce = nonce) 
 
-    def update_proof_state(self, from_address, version, state):
+    def update_proof_state(self, account, version, state):
         calldata = self.vlsmproof.raw_transfer_proof_state_with_version(version, state)
-        return self.send_transaction(account.address, account.key, callable, nonce = version) 
+        return self.send_transaction(account.address, account.key, calldata, nonce = version) 
 
     def send_transaction(self, sender, private_key, calldata, nonce = None, gas = None, gas_price = None):
-        if not gas:
-            gas = slef._w3.eth.getTransactionCount(Web3.toChecksumAddress(sender))
+
         if not gas_price:
             gas_price = self._w3.eth.gasPrice
         if not nonce:
-            nonce = self._w3.eth.getTransactionCount(Web3.toChecksumAddress(account))
+            nonce = self._w3.eth.getTransactionCount(Web3.toChecksumAddress(sender))
+        else:
+            #nonce += 100
+            nonce = self._w3.eth.getTransactionCount(Web3.toChecksumAddress(sender))
+
+        print(f"nonce: {nonce}")
+        if not gas:
+            #gas = self._w3.eth.getBlock(self._w3.eth.blockNumber).get("gasLimit")
+            gas = calldata.estimateGas({"from":sender})
 
         raw_tran = calldata.buildTransaction({
             "chainId": self.chain_id,
@@ -167,8 +174,8 @@ class ethproxy():
             })
 
         signed_txn = self._w3.eth.account.sign_transaction(raw_tran, private_key=private_key)
-        txhash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-        return txhash
+        txhash = self._w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+        return self._w3.toHex(txhash)
 
 
     def call_default(self, *args, **kwargs):
@@ -214,6 +221,9 @@ class ethproxy():
 
     def get_transactions(self, start, limit = 10, *args, **kwargs):
         return self._get_transactions(start, limit)
+
+    def get_rawtransaction(self, txhash):
+        return self._w3.eth.getTransaction(txhash)
 
     def _get_transactions(self, start, limit = 10):
         next_version = self.vlsmproof.next_version()
