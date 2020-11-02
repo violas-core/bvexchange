@@ -76,7 +76,7 @@ def mint_coin(address, amount, token_id, module):
 def bind_token_id(address, token_id, gas_token_id):
     logger.debug(f"start bind_token_id({address}, {token_id}, {gas_token_id}")
 
-def send_coin(from_address, to_address, amount, token_id, module = None, data = None):
+def send_coin(from_address, to_address, amount, token_id):
     global wallet_name
     wallet = get_ethwallet()
     ret = wallet.get_account(from_address)
@@ -84,13 +84,10 @@ def send_coin(from_address, to_address, amount, token_id, module = None, data = 
         raise Exception("get account failed")
     account = ret.datas
 
-    if module is not None or len(module) == 0:
-        module = None
-
     client = get_ethclient()
-    ret = client.send_coin(account, to_address, amount, token_id, module, data)
+    ret = client.send_coin_erc20(account, to_address, amount, token_id)
     assert ret.state == error.SUCCEED, ret.message
-    print(f"cur balance :{client.get_balance(account.address, token_id, module).datas}")
+    print(f"cur balance :{client.get_balance(account.address, token_id).datas}")
 
 def get_balance(address, token_id, module):
     logger.debug(f"start get_balance address= {address} module = {module} token_id= {token_id}")
@@ -236,7 +233,7 @@ def init_args(pargs):
     pargs.append("show_accounts_full", "show all counts address list(local wallet) with privkey.")
 
     #client
-    pargs.append("send_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "token_id", "module", "data[default = None  ex: "])
+    pargs.append("send_coin", "send token(erc20 coin) to target address", True, ["form_address", "to_address", "amount", "token_id"])
     pargs.append("get_balance", "get address's token(module) amount.", True, ["address", "token_id", "module"])
     pargs.append("get_balances", "get address's tokens.", True, ["address"])
     pargs.append("get_account_transactions", "get account's transactions from eth server.", True, ["mtype", "address", "start", "limit", "state=(start/end)"])
@@ -297,14 +294,9 @@ def run(argc, argv):
                 pargs.exit_error_opt(opt)
             chain = arg_list[0]
         elif pargs.is_matched(opt, ["send_coin"]):
-            if len(arg_list) not in (4,5,6):
+            if len(arg_list) != 4:
                 pargs.exit_error_opt(opt)
-            if len(arg_list) == 6:
-                ret = send_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3], arg_list[4], json.dumps(arg_list[5]))
-            elif len(arg_list) == 5:
-                ret = send_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3], arg_list[4])
-            elif len(arg_list) == 4:
-                ret = send_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3])
+            send_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3])
         elif pargs.is_matched(opt, ["get_account"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)

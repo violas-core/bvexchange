@@ -27,7 +27,7 @@ class erc20slot():
     def totalSupply(self):
         return self._contract.functions.totalSupply.call()
 
-    def balanceOf(self, owner):
+    def balance_of(self, owner):
         return self._contract.functions.balanceOf(Web3.toChecksumAddress(owner)).call()
 
     def approve(self, spender, value):
@@ -36,13 +36,13 @@ class erc20slot():
     def transfer(self, to, value):
         return self._contract.functions.transfer(to, value).call()
 
-    def transferFrom(self, fom, to, value):
+    def transfer_from(self, fom, to, value):
         return self._contract.functions.transferFrom(fom, to, value).call()
 
-    def transferRaw(self, to, value):
+    def raw_transfer(self, to, value):
         return self._contract.functions.transfer(to, value)
 
-    def transferFromRaw(self, fom, to, value):
+    def raw_transfer_from(self, fom, to, value):
         return self._contract.functions.transferFrom(fom, to, value)
 
 def test():
@@ -60,7 +60,7 @@ def test():
             "vlsmproof": {"abi":VLSMPROOF_ABI, "bytecode": VLSMPROOF_BYTECODE, "token_type": "vlsmproof"}
             }
 
-    host = "http://51.140.241.96:8545"
+    host = "https://kovan.infura.io/v3/2645261bd8844d0c9ac042c84606502d"
     w3 = Web3(Web3.HTTPProvider(host))
     if not w3.isConnected():
         raise Exception("not connect {host}")
@@ -72,15 +72,19 @@ def test():
     account = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
     account1_privkey = '05849aa606c43ef46e1d71381573221538caef578973fb26f9b889b382d568bd'
     #print(f"usdt balance:{usdt.balanceOf('0x89fF4a850e39A132614dbE517F80603b4A96fa0A')}")
-    print(f"usdt balance({account}):{usdt.balanceOf(account)}")
+    print(f"usdt balance({account}):{usdt.balance_of(account)}")
     account2 = "0x9382690D0B835b69FD9C0bc23EB772a0Ddb3613F"
-    print(f"usdt balance({account2}):{usdt.balanceOf(account2)}")
+    print(f"usdt balance({account2}):{usdt.balance_of(account2)}")
 
     nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(account))
-    usdt_txn = usdt.transferRaw(account2, 1000000).buildTransaction({
+    calldata = usdt.raw_transfer(account2, 1000000)
+    print(calldata)
+    gas = calldata.estimateGas({"from":account})
+
+    usdt_txn = calldata.buildTransaction({
         'chainId': 42, #kovan
-        'gas':10000000,
-        'gasPrice': Web3.toWei(6, 'gwei'),
+        'gas':gas,
+        'gasPrice': w3.eth.gasPrice,
         'nonce': nonce,
         })
     print(f"usdt_txn:{usdt_txn}")
@@ -91,7 +95,7 @@ def test():
     print(f"ret tx hash:{w3.toHex(txhash)}")
 
     #w3.eth.waitForTransactionReceipt(txhash)
-    print(f"usdt balance({account2}):{usdt.balanceOf(account2)}")
+    print(f"usdt balance({account2}):{usdt.balance_of(account2)}")
 
     
 if __name__ == "__main__":

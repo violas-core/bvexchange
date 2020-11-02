@@ -15,7 +15,7 @@ from time import sleep, ctime
 import stmanage
 import subprocess
 import comm.functions as fn
-from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm, b2vm, e2vm
+from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm, b2vm, e2vm, v2em
 from comm.result import parse_except
 from analysis import (
         analysis_base, 
@@ -37,7 +37,7 @@ class works:
     __record_db = "record"
 
     __libra_min_valid_version       = 0
-    __violas_min_valid_version      = 610_8000
+    __violas_min_valid_version      = 3248_3058
     __btc_min_valid_version         = 0
     __ethereum_min_valid_version    = 0
     def __init__(self):
@@ -210,7 +210,7 @@ class works:
 
     def work_v2xproof(self, **kargs):
         try:
-            logger.critical("start: violas v2b proof")
+            logger.critical("start: violas v2x proof")
             nsec = kargs.get("nsec", 0)
             mod = kargs.get("mod")
             assert mod is not None, f"mod name is None"
@@ -225,7 +225,7 @@ class works:
                     obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
-                    if dtype in ("v2bm", "v2lm"):
+                    if dtype in ("v2bm", "v2lm", "v2em"):
                         obj.append_token_id(stmanage.get_support_map_token_id(ttype))
                     else:
                         obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
@@ -462,7 +462,6 @@ class works:
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}")
                 try:
-                    dtype = "bfilter"
                     obj = analysis_filter.afilter(name=mod, ttype="btc", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_btc_conn(), chain="btc")
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
@@ -726,6 +725,37 @@ class works:
         finally:
             logger.critical(f"stop: {mod}")
 
+    def work_v2em(self, **kargs):
+        try:
+            logger.critical("start: v2em")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}")
+                try:
+                    obj = v2em.v2em(mod, 
+                            dtype,
+                            stmanage.get_violas_nodes(),
+                            stmanage.get_eth_nodes(), 
+                            stmanage.get_db(dtype), 
+                            list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
+                            list(set(stmanage.get_sender_address_list(dtype, "ethereum", False))),
+                            )
+                    obj.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
+                    tokens = stmanage.get_eth_token()
+                    for token in tokens:
+                        obj.append_contract(token["name"])
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
     def work_comm(self, **kargs):
         try:
             logger.critical("start: comm")
@@ -851,7 +881,7 @@ class works:
             elif self.is_match(name, "E2VM", "EX", 6):
                 self.funcs_map.update(self.create_func_dict(item, self.work_e2vm))
             elif self.is_match(name, "V2EM", "EX", 6):
-                #self.funcs_map.update(self.create_func_dict(item, self.work_v2em))
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2em))
                 pass
             elif name == "COMM":
                 self.funcs_map.update(self.create_func_dict(item, self.work_comm))

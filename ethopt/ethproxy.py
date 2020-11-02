@@ -113,7 +113,7 @@ class ethproxy():
         if name not in contract_codes:
             raise Exception(f"contract({name}) is invalid.")
 
-        if name in VLSMPROOF_NAME:
+        if name == VLSMPROOF_NAME:
             return
 
         contract = contract_codes[name]
@@ -144,8 +144,8 @@ class ethproxy():
         return self.tokens_decimals[token]
 
     def send_token(self, account, to_address, amount, token_id, nonce = None):
-        calldata = self.tokens[token_id].transfer(to_address, amount)
-        return self.send_transaction(account.address, account.key.hex(), callable, nonce = nonce) 
+        calldata = self.tokens[token_id].raw_transfer(to_address, amount)
+        return self.send_transaction(account.address, account.key, calldata, nonce = nonce) 
 
     def update_proof_state(self, account, version, state):
         calldata = self.vlsmproof.raw_transfer_proof_state_with_version(version, state)
@@ -153,17 +153,16 @@ class ethproxy():
 
     def send_transaction(self, sender, private_key, calldata, nonce = None, gas = None, gas_price = None):
 
+        print(f"send_transaction({sender},  {private_key}, {nonce})")
         if not gas_price:
             gas_price = self._w3.eth.gasPrice
         if not nonce:
             nonce = self._w3.eth.getTransactionCount(Web3.toChecksumAddress(sender))
         else:
-            #nonce += 100
             nonce = self._w3.eth.getTransactionCount(Web3.toChecksumAddress(sender))
 
         print(f"nonce: {nonce}")
         if not gas:
-            #gas = self._w3.eth.getBlock(self._w3.eth.blockNumber).get("gasLimit")
             gas = calldata.estimateGas({"from":sender})
 
         raw_tran = calldata.buildTransaction({
@@ -185,13 +184,13 @@ class ethproxy():
         return self._w3.eth.blockNumber
 
     def get_balance(self, address, token_id, *args, **kwargs):
-        return self.tokens[token_id].balanceOf(address)
+        print(f"token_id:{token_id}, address: {address}")
+        return self.tokens[token_id].balance_of(address)
 
-    def get_balances(self, address, token_id, *args, **kwargs):
-        token_name_list = self.vlsmproof.token_name_list()
+    def get_balances(self, address, *args, **kwargs):
         balances = {}
-        for token_id in token_name_list:
-            balances.update({token_name: self.get_balance(token_id, address)})
+        for token_id in self.tokens:
+            balances.update({token_id: self.get_balance(address, token_id)})
 
         return balances
 

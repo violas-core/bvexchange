@@ -9,7 +9,7 @@ db_echo=false
 v2b_maxtimes = 99
 
 #syncing proof flag ; default true
-syncing_mod = true
+syncing_mod = false
 
 [btc_conn]
     user = "btc"
@@ -108,10 +108,10 @@ syncing_mod = true
         stoken = "Coin1"
         mtoken = "USD"
         support= true  
-        run    = true
     [type_opts.v2leur]
         stoken = "Coin2"
         mtoken = "EUR"
+        support= false
         run    = true
     [type_opts.l2vusd]
         stoken = "VLSUSD"
@@ -136,9 +136,9 @@ syncing_mod = true
         stoken = "Coin2"
         mtoken = "EUR"
     [type_opts.l2b]
-        support = false
         stoken = "BTC"
         mtoken = "BTC"
+        support = false
     [type_opts.v2b]
         stoken = "BTC"
         mtoken = "BTC"
@@ -310,7 +310,7 @@ syncing_mod = true
         chain = "ethereum"
 
     [[address_list.receiver]]
-        address = "25f494041501aea8e70f47b9745a497b2a86e053a46eef559546051563b0a5a9"
+        address = "d84f52dd37d4652bbb3ff84eb6a6e4bf005d4464908bafaf52f2519233262eaf"
         type = "v2em"
         chain = "violas"
 
@@ -400,6 +400,12 @@ syncing_mod = true
         address = "792e363d33959b97140f2c6101e400d384e1e4d773c777ad6842f9f3e95e5f77"
         type = "e2vm"
         chain = "violas"
+
+    [[address_list.sender]]
+        address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
+        type = "v2em"
+        chain = "ethereum"
+
     #combine 
     [[address_list.combine]]
         address = "a4437c1668536113b5271c3acebcc355a2676b99a08dee7362d089973ae560ef"

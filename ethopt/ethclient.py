@@ -318,6 +318,9 @@ class ethclient(baseobject):
     def create_data_for_mark(self, flag, dtype, id, version, *args, **kwargs):
         return {"type": "mark", "flag": flag, "version":version }
 
+    def send_coin_erc20(self, account, toaddress, amount, token_id, *args, **kwargs):
+        return self.send_coin(account, toaddress, amount, token_id, data= {"type":"mark", "version": None},*args, **kwargs)
+
     def send_coin(self, account, toaddress, amount, token_id, data, *args, **kwargs):
         '''change state 
         '''
@@ -325,7 +328,7 @@ class ethclient(baseobject):
             if data["type"] in ("end", "stop"):
                 datas = self.__client.update_proof_state(account, data["version"], data["type"])
             elif data["type"] == "mark":
-                datas = self.__client.send_token(account, toaddress, amount, token_id, data["version"])
+                datas = self.__client.send_token(account, toaddress, amount, token_id, nonce = data["version"])
             else:
                 raise Exception(f"type{type} is invald.")
             ret = result(error.SUCCEED if len(datas) > 0 else error.FAILED, "", datas = datas)
