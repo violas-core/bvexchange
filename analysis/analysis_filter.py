@@ -127,7 +127,6 @@ class afilter(abase):
             swap_data = data.get_swap_event().to_json() if data.get_swap_event() is not None else None
             if swap_data:
                 swap_data = json.loads(swap_data)
-                print(f"swap_data:{swap_data}")
                 tran_data["data"] = self.swap_data_map_std_data(code_name, swap_data, tran_data.get("receiver"))
                 tran_data["token_id"] = self.get_token_id(code_name, swap_data)
                 tran_data["amount"] = self.get_amount(code_name, swap_data)
@@ -154,7 +153,6 @@ class afilter(abase):
                 ret.datas.get("flag", None) not in self.get_tran_types() or \
                 ret.datas.get("type") == self.datatype.UNKOWN or \
                 not ret.datas.get("tran_state", False):
-                    print(ret.datas)
                     return False
 
                 
