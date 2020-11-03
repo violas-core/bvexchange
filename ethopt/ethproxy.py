@@ -104,6 +104,13 @@ class ethproxy():
         assert self._w3.isConnected(), f"connect {url} is failed."
 
 
+    def __init_contract_erc20(self):
+        contract = contract_codes[VLSMPROOF_NAME]
+        self.load_vlsmproof(contract["address"])
+
+        for token in contract_codes:
+            self.load_contract(token)
+
     def load_vlsmproof(self, address):
         contract = contract_codes[VLSMPROOF_NAME]
         setattr(self, VLSMPROOF_NAME, vlsmproofslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"])))
@@ -143,17 +150,16 @@ class ethproxy():
     def get_decimals(self, token):
         return self.tokens_decimals[token]
 
-    def send_token(self, account, to_address, amount, token_id, nonce = None):
+    def send_token(self, account, to_address, amount, token_id, nonce = None, timeout = 180):
         calldata = self.tokens[token_id].raw_transfer(to_address, amount)
-        return self.send_transaction(account.address, account.key, calldata, nonce = nonce) 
+        return self.send_transaction(account.address, account.key, calldata, nonce = nonce, timeout = 180) 
 
-    def update_proof_state(self, account, version, state):
+    def update_proof_state(self, account, version, state, timeout = 180):
         calldata = self.vlsmproof.raw_transfer_proof_state_with_version(version, state)
-        return self.send_transaction(account.address, account.key, calldata, nonce = version) 
+        return self.send_transaction(account.address, account.key, calldata, nonce = version, timeout = timeout) 
 
-    def send_transaction(self, sender, private_key, calldata, nonce = None, gas = None, gas_price = None):
+    def send_transaction(self, sender, private_key, calldata, nonce = None, gas = None, gas_price = None, timeout = 180):
 
-        print(f"send_transaction({sender},  {private_key}, {nonce})")
         if not gas_price:
             gas_price = self._w3.eth.gasPrice
         if not nonce:
@@ -161,7 +167,6 @@ class ethproxy():
         else:
             nonce = self._w3.eth.getTransactionCount(Web3.toChecksumAddress(sender))
 
-        print(f"nonce: {nonce}")
         if not gas:
             gas = calldata.estimateGas({"from":sender})
 
@@ -174,6 +179,9 @@ class ethproxy():
 
         signed_txn = self._w3.eth.account.sign_transaction(raw_tran, private_key=private_key)
         txhash = self._w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+
+        #wait transaction, max time is 120s
+        self._w3.eth.waitForTransactionReceipt(txhash, timeout)
         return self._w3.toHex(txhash)
 
 

@@ -6,22 +6,62 @@ from comm.result import parse_except
 from comm.functions import get_address_from_full_address 
 from comm.functions import json_print
 from comm.values import trantypebase
+from comm.values import map_chain_name
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
+
+
+class token_info():
+    def __init__(self, token_info):
+        self.__parse_token_info(token_info)
+
+    def __parse_token_info(self, token_info)
+        self.__chain_tokens = {}
+        self.__mapping_tokens = {}
+        for chain, tokens = token_info["tokens"].items():
+            token = tokens["token"]
+            mtoken = tokens.get("mtoken")
+            self.__chain_tokens.update({chain: {"token": token, "mtoken": mtoken}})
+
+        for mtokens in token_info["mapping"]:
+            chain_token = mtokens["token"].split(".")
+            chain_mtoken = mtokens["mtoken"].split(".")
+
+            key = f"{chain_token[0]}_{chain_mtoken[0]}"
+            if key not in self.__mapping_tokens:
+                self.__mapping_tokens.update({key: {}})
+            self.__mapping_tokens[key].update({chain_token[1]:chain_mtoken[1]})
+
+            key = f"{chain_mtoken[0]}_{chain_token[0]}"
+            if key not in self.__mapping_tokens:
+                self.__mapping_tokens.update({key: {}})
+            self.__mapping_tokens[key].update({chain_mtoken[1]:chain_token[1]})
+
+    def get_tokens(self, chain):
+        return self.__chain_tokens[chain]["token"]
+
+    def get_mtokens(self, chain):
+        return self.__chain_tokens[chain]["mtoken"]
+    
+    def get_token_mapping(self, token, from_chain, to_chain):
+        return self.__mapping_tokens[f"{from_chain}_{to_chain}"][token]
+
+token_manage = token_info(setting.token_info)
 
 def check_setting():
     pass
 
 def set_conf_env_default():
     setting.set_conf_env_default()
-    setting.reset()
+    reset()
 
 def set_conf_env(conffile):
     setting.set_conf_env(conffile)
-    setting.reset()
+    reset()
 
 def reset():
     setting.reset()
+    token_manage = token_info(setting.token_info)
 
 def get_conf_env():
     return setting.get_conf_env()
@@ -75,11 +115,9 @@ def get_type_code(dtype, default = ""):
     return setting.type_code.get(dtype, default)
 
 def get_exchang_chains(mtype):
-    _map_chain_name = {}
-    for ttb in trantypebase:
-        name = ttb.name.lower()
-        _map_chain_name.update({name[:1]:name})
-    return (_map_chain_name[mtype[:1]], _map_chain_name[mtype[2:3]])
+    from_chain  = map_chain_name[mtype[0]]
+    to_chain    = map_chain_name[mtype[2]]
+    return (from_chain, to_chain)
 
 def get_token_form_to_with_type(etype, mtype):
     f_t_coins = {}
@@ -199,6 +237,10 @@ def get_max_times(mtype):
 #get btc/libra chain stable's map token
 def get_token_map(token = None):
     token_map = {}
+    for mapping in setting.token_info["mapping"]:
+        stoken = mapping["token"]
+        mtoken = mapping["mtoken"]
+
     for typename, tokens in setting.type_token.items():
         if typename.startswith("v2") and tokens.get("stoken") and tokens.get("mtoken"): #v2b v2l v2e
             token_map.update({tokens.get("stoken") : tokens.get("mtoken")})
