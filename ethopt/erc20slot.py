@@ -91,10 +91,13 @@ def test():
     signed_txn = w3.eth.account.sign_transaction(usdt_txn, private_key=account1_privkey)
     print(f"tx hash:{w3.toHex(signed_txn.hash)}")
     print(f"tx rawtransaction:{w3.toHex(signed_txn.rawTransaction)}")
+
+    print(f"usdt balance({account2}):{usdt.balance_of(account2)}")
+
     txhash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
     print(f"ret tx hash:{w3.toHex(txhash)}")
 
-    #w3.eth.waitForTransactionReceipt(txhash)
+    w3.eth.waitForTransactionReceipt(txhash, timeout = 120)
     print(f"usdt balance({account2}):{usdt.balance_of(account2)}")
 
     

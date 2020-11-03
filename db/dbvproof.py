@@ -21,7 +21,7 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime, UniqueConstraint, Index, String
 from db.dbvbase import dbvbase
-
+from comm.values import map_chain_name
 
 from enum import Enum
 
@@ -34,17 +34,10 @@ class dbvproof(dbvbase):
     __KEY_MIN_VERSION_ = "min_version_"
     def __init__(self, name, host, port, db, passwd = None):
         dbvbase.__init__(self, name, host, port, db, passwd)
-        self.__init_map_chain_name()
-
-    def __init_map_chain_name(self):
-        self._map_chain_name = {}
-        for ttb in trantypebase:
-            name = ttb.name.lower()
-            self._map_chain_name.update({name[:1]:name})
 
     @property
     def map_chain_name(self):
-        return self._map_chain_name
+        return map_chain_name
 
     def __del__(self):
         dbvbase.__del__(self)

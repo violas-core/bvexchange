@@ -38,6 +38,11 @@ class trantypebase(autoname):
     ETHEREUM    = auto()
     UNKOWN      = auto()
 
+map_chain_name = {}
+for ttb in trantypebase:
+    name = ttb.name.lower()
+    map_chain_name.update({name[:1]:name})
+
 #datatype for transaction's data type
 #parse metadata
 class datatypebase(autoname):

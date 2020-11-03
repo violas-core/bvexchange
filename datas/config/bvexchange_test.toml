@@ -90,6 +90,35 @@ syncing_mod = false
         #address = "0x6f08730dA8e7de49a4064d2217c6B68d7E61E727"
         support= true  
 
+#token info
+'''
+@token : chain token
+@mtoken : mapping token for other chain token
+'''
+[token_info]
+    [token_info.tokens]
+        [token_info.tokens.violas]
+            token = ["VLS", "VLSUSD", "VLSEUR", "VLSSGD", "VLSGBP"] 
+            mtoken = ["BTC", "USD", "USDT"]
+        [token_info.tokens.libra]
+            token = ["Coin1"]
+        [token_info.tokens.ethereum]
+            token = ["USDT"]
+        [token_info.tokens.btc]
+            token = ["BTC"]
+
+    [token_info.mapping]
+        token = "libra.Coin1"
+        mtoken = "violas.USD"
+    [token_info.mapping]
+        token = "btc.BTC"
+        mtoken = "violas.BTC"
+    [token_info.mapping]
+        token = "ethereum.usdt"
+        mtoken = "violas.USDT"
+        
+
+
 #violas <-> libra token map
 #violas coin:VLSAAA map to libra coin:BBB:  VLSAAA(violas chain) -uniswap-> LBRBBB(violas chain) -map-> BBB(libra chain)
 #libra coin map:AAA to violas coin:VLSBBB:  AAA(libra chain) -map-> LBRAAA(violas chain) -uniswap-> VLSBBB(violas chain)
@@ -105,71 +134,52 @@ syncing_mod = false
 #run    : execute analysis proof and exchange, default false
 [type_opts]
     [type_opts.v2lusd]
-        stoken = "Coin1"
-        mtoken = "USD"
+        token = "Coin1"
         support= true  
     [type_opts.v2leur]
-        stoken = "Coin2"
-        mtoken = "EUR"
+        token = "Coin2"
         support= false
         run    = true
     [type_opts.l2vusd]
-        stoken = "VLSUSD"
+        token = "VLSUSD"
     [type_opts.l2veur]
-        stoken = "VLSEUR"
+        token = "VLSEUR"
     [type_opts.l2vsgd]
-        stoken = "VLSSGD"
+        token = "VLSSGD"
     [type_opts.l2vgbp]
-        stoken = "VLSGBP"
+        token = "VLSGBP"
     [type_opts.b2vusd]
-        stoken = "VLSUSD"
+        token = "VLSUSD"
     [type_opts.b2veur]
-        stoken = "VLSEUR"
+        token = "VLSEUR"
     [type_opts.b2vsgd]
-        stoken = "VLSSGD"
+        token = "VLSSGD"
     [type_opts.b2vgbp]
-        stoken = "VLSGBP"
+        token = "VLSGBP"
     [type_opts.b2lusd]
-        stoken = "Coin1"
-        mtoken = "USD"
+        token = "Coin1"
+        support= false
     [type_opts.b2leur]
-        stoken = "Coin2"
-        mtoken = "EUR"
+        token = "Coin2"
+        support= false
     [type_opts.l2b]
-        stoken = "BTC"
-        mtoken = "BTC"
+        token = "BTC"
         support = false
     [type_opts.v2b]
-        stoken = "BTC"
-        mtoken = "BTC"
+        token = "btc.token.BTC"
     [type_opts.v2bm]
-        stoken = "BTC"
-        mtoken = "BTC"
-        support = true  
         etype  = "map"
     [type_opts.v2lm]
-        support= true  
-        run    = false
         etype  = "map"
     [type_opts.l2vm]
-        support= true  
-        run    = false
         etype  = "map"
     [type_opts.b2vm]
-        support= true
-        run    = false
         etype  = "map"
     [type_opts.v2vswap]
         support= true  
-        run    = false
     [type_opts.v2em]
-        stoken = "usdt"
-        mtoken = "USDT"
-        support = true  
         etype  = "map"
     [type_opts.e2vm]
-        support= true
-        run    = false
         etype  = "map"
 
 [type_code]
