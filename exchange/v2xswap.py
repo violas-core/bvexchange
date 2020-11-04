@@ -81,7 +81,7 @@ class v2xswap(exbase):
         opttype     = data["opttype"]
         from_token_id = data["token_id"] #VLSXXX
         to_token_id = self.to_token_id
-        map_token_id = stmanage.get_token_map(to_token_id) #stable token -> map token
+        map_token_id = stmanage.get_token_map(to_token_id, self.dtype) #stable token -> map token
         assert map_token_id is not None, f"get token({to_token_id}) failed, check config token_map"
 
         ret = result(error.FAILED)

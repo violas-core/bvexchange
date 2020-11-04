@@ -73,7 +73,7 @@ class x2vswap(exbase):
         opttype     = data["opttype"]
         stable_token_id = data["token_id"]
         from_token_id = stable_token_id
-        map_token_id = stmanage.get_token_map(stable_token_id) #stable token -> mapping token
+        map_token_id = stmanage.get_token_map(stable_token_id, self.dtype) #stable token -> mapping token
         to_token_id    = self.to_token_id #token_id is map 
 
         amount = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()]).microamount(self.map_chain)

@@ -135,7 +135,7 @@ class dbvproof(dbvbase):
         opttype = tran_info["opttype"]
         out_token = ""
         if opttype == "map":
-            out_token = stmanage.get_token_map(tran_info["token_id"])
+            out_token = stmanage.get_token_map(tran_info["token_id"], tran_info["type"])
         elif opttype in ("v2vswap", "fpswap"):
             out_token = tran_info.get("out_token")
         else : #swap for diff chain
