@@ -58,7 +58,7 @@ class exmap(exbase):
         times       = data["times"]
         opttype     = data["opttype"]
         from_token_id = data["token_id"]
-        map_token_id = stmanage.get_token_map(from_token_id) 
+        map_token_id = stmanage.get_token_map(from_token_id, self.dtype) 
 
         ret = result(error.FAILED)
         self._logger.info(f"start exchange {self.dtype}. version={version}, state = {state}, detail = {detail} datas from server.")
