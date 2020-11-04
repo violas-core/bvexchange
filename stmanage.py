@@ -15,13 +15,16 @@ class token_info():
     def __init__(self, token_info):
         self.__parse_token_info(token_info)
 
-    def __parse_token_info(self, token_info)
+    def __parse_token_info(self, token_info):
         self.__chain_tokens = {}
         self.__mapping_tokens = {}
-        for chain, tokens = token_info["tokens"].items():
-            token = tokens["token"]
-            mtoken = tokens.get("mtoken")
+        self.__mapping_tokens_unique = {}
+        self.__chain_names = set([])
+        for chain, tokens in token_info["tokens"].items():
+            token = tokens.get("token", [])
+            mtoken = tokens.get("mtoken", [])
             self.__chain_tokens.update({chain: {"token": token, "mtoken": mtoken}})
+            self.__chain_names.add(chain)
 
         for mtokens in token_info["mapping"]:
             chain_token = mtokens["token"].split(".")
@@ -37,17 +40,38 @@ class token_info():
                 self.__mapping_tokens.update({key: {}})
             self.__mapping_tokens[key].update({chain_mtoken[1]:chain_token[1]})
 
+            #temp for, next version should fix 
+            self.__mapping_tokens_unique.update({chain_mtoken[1]:chain_token[1]})
+            self.__mapping_tokens_unique.update({chain_token[1]:chain_mtoken[1]})
+
+    def check_chain_name(self, chain):
+        assert chain in self.__chain_names, "chain is violas/libra/btc/ethereum"
+
     def get_tokens(self, chain):
-        return self.__chain_tokens[chain]["token"]
+        self.check_chain_name(chain)
+        return self.__chain_tokens[chain].get("token", [])
 
     def get_mtokens(self, chain):
-        return self.__chain_tokens[chain]["mtoken"]
+        self.check_chain_name(chain)
+        return self.__chain_tokens[chain].get("mtoken", [])
     
+    def get_can_mapping_all(self):
+        return self.__mapping_tokens
+
+    def get_can_mapping(self, from_chain, to_chain):
+        self.check_chain_name(from_chain)
+        self.check_chain_name(to_chain)
+        return self.__mapping_tokens.get(f"{from_chain}_{to_chain}", [])
+
+    def get_token_mapping_unique(self, token):
+            return self.__mapping_tokens_unique.get(token)
+
     def get_token_mapping(self, token, from_chain, to_chain):
-        return self.__mapping_tokens[f"{from_chain}_{to_chain}"][token]
+        self.check_chain_name(from_chain)
+        self.check_chain_name(to_chain)
+        return self.__mapping_tokens[f"{from_chain}_{to_chain}"].get(token)
 
-token_manage = token_info(setting.token_info)
-
+token_manage = None #token_info(setting.token_info)
 def check_setting():
     pass
 
@@ -61,7 +85,9 @@ def set_conf_env(conffile):
 
 def reset():
     setting.reset()
+    global token_manage
     token_manage = token_info(setting.token_info)
+    check_setting()
 
 def get_conf_env():
     return setting.get_conf_env()
@@ -131,7 +157,7 @@ def get_token_form_to_with_type(etype, mtype):
             tcoins = get_support_map_token_id(tchain) 
 
         for fcoin in fcoins:
-            tcoin = get_token_map(fcoin)
+            tcoin = get_token_map(fcoin, mtype)
             if tcoin in tcoins: #get_support_stable_token_id(tchain):
                 f_t_coins.update({fcoin:tcoin})
 
@@ -146,6 +172,12 @@ def get_token_form_to_with_type(etype, mtype):
         raise Exception(f"etype({etype}) is invalid. make sure value(map swap)")
 
     return f_t_coins # from to
+
+def type_is_map(mtype):
+    opts = setting.type_token.get(mtype)
+    if opts:
+        return opts.get("etype", "swap") == "map"
+    return False
 
 def get_support_address_info(etype = None):
     support_mods = get_support_mods(etype)
@@ -235,83 +267,46 @@ def get_max_times(mtype):
     return setting.v2b_maxtimes
 
 #get btc/libra chain stable's map token
-def get_token_map(token = None):
-    token_map = {}
-    for mapping in setting.token_info["mapping"]:
-        stoken = mapping["token"]
-        mtoken = mapping["mtoken"]
+def get_token_map(token, mtype = None):
+    if mtype:
+        (from_chain, to_chain) = get_exchang_chains(mtype)
+        return token_manage.get_token_mapping(token, from_chain, to_chain)
+    else:
+        return token_manage.get_token_mapping_unique(token)
 
-    for typename, tokens in setting.type_token.items():
-        if typename.startswith("v2") and tokens.get("stoken") and tokens.get("mtoken"): #v2b v2l v2e
-            token_map.update({tokens.get("stoken") : tokens.get("mtoken")})
-            token_map.update({tokens.get("mtoken") : tokens.get("stoken")})
-    if token:
-        return token_map.get(token)
-    return token_map
 
 #get opttype' stable token(map, ...)
 def get_type_stable_token(mtype = None):
     type_stable_token = {}
     for typename, tokens in setting.type_token.items():
         if mtype is None or typename == mtype:
-            if tokens.get("stoken") is not None: 
-                type_stable_token.update({typename : tokens.get("stoken")})
+            if tokens.get("ttoken") is not None:
+                type_stable_token.update({typename : tokens.get("ttoken")})
 
     if mtype:
         return type_stable_token.get(mtype)
     return type_stable_token
 
-def get_type_map_token(mtype = None):
-    type_map_token = {}
-    for typename, tokens in setting.type_token.items():
-        if mtype is None or typename == mtype:
-            type_map_token.update({mtype : tokens.get("mtoken")})
-
-    if mtype:
-        return type_map_token.get(mtype)
-    return type_map_token
-
-def get_support_map_token_id(chain, dtype = None):
-    assert chain is not None, "chain is violas/libra/btc"
+def get_support_map_token_id(chain, mtype = None):
     mtoken_list = []
-    if chain == "violas":
-        #get map tokens only violas use
-        for opthead in ["v2l", "v2b", "v2e"]:
-            if dtype and not dtype.startswith(opthead):
-                continue
-
-            mtokens = [tokens.get("mtoken") for typename, tokens in setting.type_token.items() \
-                if typename.startswith(opthead) and tokens.get("mtoken")]
-            mtoken_list.extend(mtokens)
+    if chain and not mtype:
+        mtoken_list = token_manage.get_mtokens(chain)
+    elif mtype:
+        (from_chain, to_chain) = get_exchang_chains(mtype)
+        mtoken_list = token_manage.get_can_mapping(from_chain, to_chain)
+    else:
+        raise Exception("arguments(chain({chain}), mtype({mtype})) is invalid.")
     
     return list(set(mtoken_list))
 
 def get_support_stable_token_id(chain):
-    assert chain is not None, "chain is violas/libra/btc/ethereum"
-    stoken_list = []
-    opthead = [] 
-    if chain == "violas":
-        #get map tokens only violas use
-        optheads = ["l2v", "b2v"]
-    elif chain == "libra":
-        optheads = ["v2l"]
-    elif chain == "btc":
-        optheads = ["v2b"]
-    elif chain == "ethereum":
-        optheads = ["v2e"]
-
-    #get target chain stable token
-    for opthead in optheads:
-        stoken_list += [tokens.get("stoken") for typename, tokens in setting.type_token.items() \
-            if typename.startswith(opthead) and tokens.get("stoken")]
-    
-    return list(set(stoken_list))
+    token_list = token_manage.get_tokens(chain)
+    return list(set(token_list))
 
 def get_support_token_id(chain):
-    assert chain is not None, "chain is violas/libra/btc/ethereum"
-    mtokens = get_support_map_token_id(chain)
-    stokens = get_support_stable_token_id(chain)
-    return list(set(mtokens + stokens))
+    mtokens = token_manage.get_mtokens(chain)
+    tokens = token_manage.get_tokens(chain)
+    return list(set(mtokens + tokens))
 
 def get_swap_module():
     return setting.swap_module.get("address")
@@ -363,6 +358,9 @@ def get_eth_token(name = None):
         return setting.ethereum_tokens[name]
     return tokens
 
+def get_vlsmproof_address():
+    return get_eth_token("vlsmproof")["address"]
+
 def main():
     set_conf_env("bvexchange.toml")
     mtypes = ["v2bm", "v2lm", "l2vm", "b2vm", "vfilter", "lfilter"]
@@ -382,7 +380,6 @@ def main():
     print(f"get libra nodes: {get_libra_nodes()}")
     print(f"get db echo :{get_db_echo()}")
     print(f"get token_map: ")
-    json_print(get_token_map())
     print(f"get type_stable_token: ")
     json_print(get_type_stable_token())
     print(f"get type_stable_token(l2vusd)->VLSUSD: {get_type_stable_token('l2vusd')}")
@@ -417,15 +414,14 @@ def main():
     print(f"combin address(b2vusd, btc): {get_combine_address('b2vusd', 'btc')}")
     print(f"combin address(l2b, violas): {get_combine_address('l2b', 'violas')}")
     print(f"run mods: {get_run_mods()}")
+    print(f"support mods: {get_support_mods().keys()}")
     print(f"syncing state:{get_syncing_state()}")
     print("receiver info(map):")
     json_print(get_support_address_info("map"))
     print("receiver info(swap):")
     json_print(get_support_address_info("swap"))
-    print("eth token info(None):")
-    json_print(get_eth_token())
-    print("eth token info(usdt):")
-    json_print(get_eth_token("usdt"))
+    print("eth vlsmproof address(): 0xd1E73b216D9baC1dB6b4A790595304Ab6337a4D0")
+    json_print(get_vlsmproof_address())
 
     #json_print(get_conf())
 

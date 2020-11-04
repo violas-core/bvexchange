@@ -86,38 +86,31 @@ syncing_mod = false
     [ethereum_tokens.vlsmproof]
         address = "0xd1E73b216D9baC1dB6b4A790595304Ab6337a4D0"
         support= true  
-    [ethereum_tokens.usdt]
-        #address = "0x6f08730dA8e7de49a4064d2217c6B68d7E61E727"
-        support= true  
 
 #token info
-'''
-@token : chain token
-@mtoken : mapping token for other chain token
-'''
+#@token : chain token
+#@mtoken : mapping token for other chain token
 [token_info]
     [token_info.tokens]
         [token_info.tokens.violas]
-            token = ["VLS", "VLSUSD", "VLSEUR", "VLSSGD", "VLSGBP"] 
+            token = ["VLSUSD", "VLSEUR", "VLSSGD", "VLSGBP"] 
             mtoken = ["BTC", "USD", "USDT"]
         [token_info.tokens.libra]
             token = ["Coin1"]
         [token_info.tokens.ethereum]
-            token = ["USDT"]
+            token = ["usdt"]
         [token_info.tokens.btc]
             token = ["BTC"]
 
-    [token_info.mapping]
+    [[token_info.mapping]]
         token = "libra.Coin1"
         mtoken = "violas.USD"
-    [token_info.mapping]
+    [[token_info.mapping]]
         token = "btc.BTC"
         mtoken = "violas.BTC"
-    [token_info.mapping]
+    [[token_info.mapping]]
         token = "ethereum.usdt"
         mtoken = "violas.USDT"
-        
-
 
 #violas <-> libra token map
 #violas coin:VLSAAA map to libra coin:BBB:  VLSAAA(violas chain) -uniswap-> LBRBBB(violas chain) -map-> BBB(libra chain)
@@ -134,39 +127,40 @@ syncing_mod = false
 #run    : execute analysis proof and exchange, default false
 [type_opts]
     [type_opts.v2lusd]
-        token = "Coin1"
+        ttoken = "Coin1"
         support= true  
     [type_opts.v2leur]
-        token = "Coin2"
+        ttoken = "Coin2"
         support= false
         run    = true
     [type_opts.l2vusd]
-        token = "VLSUSD"
+        ttoken = "VLSUSD"
+        run    = true
     [type_opts.l2veur]
-        token = "VLSEUR"
+        ttoken = "VLSEUR"
     [type_opts.l2vsgd]
-        token = "VLSSGD"
+        ttoken = "VLSSGD"
     [type_opts.l2vgbp]
-        token = "VLSGBP"
+        ttoken = "VLSGBP"
     [type_opts.b2vusd]
-        token = "VLSUSD"
+        ttoken = "VLSUSD"
     [type_opts.b2veur]
-        token = "VLSEUR"
+        ttoken = "VLSEUR"
     [type_opts.b2vsgd]
-        token = "VLSSGD"
+        ttoken = "VLSSGD"
     [type_opts.b2vgbp]
-        token = "VLSGBP"
+        ttoken = "VLSGBP"
     [type_opts.b2lusd]
-        token = "Coin1"
+        ttoken = "Coin1"
         support= false
     [type_opts.b2leur]
-        token = "Coin2"
+        ttoken = "Coin2"
         support= false
     [type_opts.l2b]
-        token = "BTC"
+        ttoken = "BTC"
         support = false
     [type_opts.v2b]
-        token = "btc.token.BTC"
+        ttoken = "BTC"
     [type_opts.v2bm]
         etype  = "map"
     [type_opts.v2lm]

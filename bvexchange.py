@@ -73,7 +73,7 @@ class works:
             assert mod is not None, f"mod name is None"
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = b2v.b2v(mod,
                             dtype,
@@ -104,7 +104,7 @@ class works:
             assert mod is not None, f"mod name is None"
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = b2vm.b2vm(mod,
                             dtype,
@@ -131,7 +131,7 @@ class works:
             assert mod is not None, f"mod name is None"
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = v2b.v2b(mod, 
                             dtype,
@@ -162,7 +162,7 @@ class works:
             assert mod is not None, f"mod name is None"
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = v2bm.v2bm(mod, 
                             dtype,
@@ -190,7 +190,7 @@ class works:
             assert mod is not None, f"mod name is None"
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = analysis_filter.afilter(name=mod, ttype="violas", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
@@ -218,15 +218,15 @@ class works:
             #violas transaction's data types 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "vfilter"
                     ttype = "violas"
                     obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
-                    if dtype in ("v2bm", "v2lm", "v2em"):
-                        obj.append_token_id(stmanage.get_support_map_token_id(ttype))
+                    if stmanage.type_is_map(dtype):
+                        obj.append_token_id(stmanage.get_support_map_token_id(ttype, dtype))
                     else:
                         obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
@@ -251,7 +251,7 @@ class works:
 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = analysis_filter.afilter(name=mod, ttype="libra", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_libra_nodes(), chain="libra")
@@ -276,7 +276,7 @@ class works:
 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "lfilter"
                     ttype = "libra"
@@ -306,7 +306,7 @@ class works:
 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "vfilter"
                     ttype = "violas"
@@ -336,7 +336,7 @@ class works:
             #libra transaction's data types 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = l2v.l2v(mod, 
                             dtype,
@@ -368,7 +368,7 @@ class works:
             #libra transaction's data types 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = l2vm.l2vm(mod, 
                             dtype,
@@ -398,7 +398,7 @@ class works:
             #libra transaction's data types 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = v2l.v2l(mod, 
                             dtype,
@@ -431,7 +431,7 @@ class works:
             #libra transaction's data types 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = v2lm.v2lm(mod, 
                             dtype,
@@ -460,7 +460,7 @@ class works:
             #libra transaction's data types 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = analysis_filter.afilter(name=mod, ttype="btc", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_btc_conn(), chain="btc")
@@ -486,7 +486,7 @@ class works:
             #libra transaction's data types 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "bfilter"
                     ttype = "btc"
@@ -517,7 +517,7 @@ class works:
             #libra transaction's data types 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "bfilter"
                     ttype = "btc"
@@ -546,7 +546,7 @@ class works:
             assert mod is not None, f"mod name is None"
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = b2l.b2l(mod,
                             dtype,
@@ -580,7 +580,7 @@ class works:
             #libra transaction's data types 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "lfilter"
                     ttype = "libra"
@@ -609,7 +609,7 @@ class works:
             assert mod is not None, f"mod name is None"
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = l2b.l2b(mod,
                             dtype,
@@ -642,16 +642,16 @@ class works:
 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = analysis_filter.afilter(name=mod, ttype="ethereum", \
                             dbconf=stmanage.get_db(dtype), nodes=stmanage.get_eth_nodes(), chain="ethereum")
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__ethereum_min_valid_version - 1)
-                    obj.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
-                    tokens = stmanage.get_eth_token()
+                    obj.load_vlsmproof(stmanage.get_vlsmproof_address())
+                    tokens = stmanage.get_support_token_id("ethereum")
                     for token in tokens:
-                        obj.append_contract(token["name"])
+                        obj.append_contract(token)
 
                     self.set_work_obj(obj)
                     obj.start()
@@ -672,7 +672,7 @@ class works:
 
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "efilter"
                     ttype = "ethereum"
@@ -695,13 +695,13 @@ class works:
 
     def work_e2vm(self, **kargs):
         try:
-            logger.critical("start: b2vm")
+            logger.critical("start: e2vm")
             nsec = kargs.get("nsec", 0)
             mod = kargs.get("mod")
             assert mod is not None, f"mod name is None"
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = e2vm.e2vm(mod,
                             dtype,
@@ -711,10 +711,10 @@ class works:
                             list(set(stmanage.get_receiver_address_list(dtype, "ethereum", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
                             )
-                    obj.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
-                    tokens = stmanage.get_eth_token()
+                    obj.load_vlsmproof(stmanage.get_vlsmproof_address())
+                    tokens = stmanage.get_support_token_id("ethereum")
                     for token in tokens:
-                        obj.append_contract(token["name"])
+                        obj.append_contract(token)
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
@@ -733,7 +733,7 @@ class works:
             assert mod is not None, f"mod name is None"
             dtype = self.get_dtype_from_mod(mod)
             while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = v2em.v2em(mod, 
                             dtype,
@@ -743,10 +743,10 @@ class works:
                             list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "ethereum", False))),
                             )
-                    obj.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
-                    tokens = stmanage.get_eth_token()
+                    obj.load_vlsmproof(stmanage.get_vlsmproof_address())
+                    tokens = stmanage.get_support_token_id("ethereum")
                     for token in tokens:
-                        obj.append_contract(token["name"])
+                        obj.append_contract(token)
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
@@ -764,7 +764,7 @@ class works:
             assert mod is not None, f"mod name is None"
 
             while(self.__work_looping.get(mod, False)):
-                logger.debug("looping: comm")
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 sleep(nsec)
         except Exception as e:
             parse_except(e)
@@ -790,8 +790,7 @@ class works:
 
     def get_dtype_from_mod(self, modname):
         dtype = modname.lower()
-        #if dtype[:3] in ["v2b", "b2v", "l2v", "v2l", "b2l", "l2b", "v2v", "v2e", "e2v"]:
-        if dtype[1:2] in ["2"]:
+        if dtype[1] in ["2"]:
             if dtype.endswith("ex"):
                 return dtype[:-2]
             elif dtype.endswith("proof"):
