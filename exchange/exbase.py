@@ -165,10 +165,6 @@ class exbase(baseobject):
         if self.ethereum_client:
             self.ethereum_client.load_contract(name)
 
-    def set_vlsmproof_manager(self, address):
-        if self.ethereum_client:
-            self.ethereum_client.set_vlsmproof_manager(address)
-
     def init_fill_address_token(self):
         setattr(self, "fill_address_token", {})
         self.fill_address_token.update({"violas": self.fill_address_token_violas})
