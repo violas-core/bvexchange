@@ -8,9 +8,9 @@ sys.path.append(f"..")
 import web3
 from web3 import Web3
 
-class vlsmproofslot():
+class vlsmproofmainslot():
 
-    def __init__(self, contract, name = "vlsmproof"):
+    def __init__(self, contract, name = "vlsmproofmain"):
         self._contract = contract
         self._name = name
         self._functions = contract.functions
@@ -27,20 +27,14 @@ class vlsmproofslot():
     def raw_transfer(self, token_address, to, value):
         return self._functions.transfer(token_address, to, value)
 
-    def raw_granted_mng_permission(self, address):
-        return self._functions.grantedMngPermission(address)
-
     def raw_pause(self):
         return self._functions.pause()
 
     def raw_remove_token_with_name(self, name):
-        return self._functions.removeTokenWithName(name)
+        return self._functions.removeToken(name)
 
     def raw_revoe_token_with_token(self, address):
-        return self._functions.removeTokenWithToken(address)
-
-    def raw_revoke_mng_permission(self, address):
-        return self._functions.revokeMngPermission(address)
+        return self._functions.removeToken(address)
 
     def raw_transfer_owner_ship(self, address):
         return self._functions.transferOwnership(address)
@@ -51,12 +45,6 @@ class vlsmproofslot():
     def raw_transfer_proof(self, token_address, datas):
         return self._functions.transferProof(token_address, datas)
 
-    def raw_transfer_proof_state_with_addr(self, address, sequence, state):
-        return self._functions.transferProofStateWithAddr(address, sequence, state)
-
-    def raw_transfer_proof_state_with_version(self, version, state):
-        return self._functions.transferProofStateWithVersion(version, state)
-
     def raw_unpause(self):
         return self._functions.unpause()
 
@@ -65,15 +53,6 @@ class vlsmproofslot():
 
     def contract_version(self):
         return self._functions.contractVersion().call()
-
-    def current_balance(self):
-        return self._functions.currentBalance().call()
-
-    def manage_role_state(self, address):
-        return self._functions.manageRoleState(address).call()
-
-    def next_version(self):
-        return self._functions.nextVersion().call()
 
     def owner(self):
         return self._functions.owner().call()
@@ -84,46 +63,27 @@ class vlsmproofslot():
     def payee(self):
         return self._functions.payee().call()
 
-    def proof_info_with_addr(self, address, sequence):
-        return self._functions.proofInfoWithAddr(address, sequence).call()
-
-    def proof_info_with_version(self, version):
-        return self._functions.proofInfoWithVersion(version).call()
-
     def token_address(self, name):
         return self._functions.tokenAddress(name).call()
 
     def token_name(self, address):
         return self._functions.tokenName(address).call()
 
-    def balance_of(self, token_name, address):
-        return self._functions.balanceOf(self.token_address(token_name), address).call()
-
     def token_name_list(self):
-        return ["usdt"]
+        max_count = self._functions.tokenMaxCount().call()
+        names = []
+        for i in range(max_count):
+            name = self._functions.validTokenNames(i).call()
+            if name is not None and len(name) > 0:
+                names.append(name)
 
-    def proof_address_sequence(self, address):
-        raise Exception("not support proof_address_sequence")
+        return names
 
-    def proof_address_version(self, address, sequence):
-        raise Exception("not support proof_address_sequence")
-
-    def proof_address_version(self, address):
-        raise Exception("not support proof_address_sequence")
+    def proof_address(self):
+        return self._functions.proofAddress().call()
 
     def __getattr__(self, name):
         print(f"calling {name}")
-
-    def state_name(self, value):
-        if value == 1:
-            return "start"
-        elif value == 2:
-            return "stop"
-        elif value == 3:
-            return "end"
-        else:
-            raise Exception("state value({value}) is invalid.")
-
 
 def test():
 

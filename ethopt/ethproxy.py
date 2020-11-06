@@ -20,7 +20,9 @@ from comm.result import result, parse_except
 from comm.error import error
 from enum import Enum
 from comm.functions import json_print
-from ethopt.vlsmproofslot import vlsmproofslot
+from ethopt.vlsmproofmainslot import vlsmproofslot
+from ethopt.vlsmproofdatasslot import vlsmproofdatasslot
+from ethopt.vlsmproofstateslot import vlsmproofstateslot
 from ethopt.erc20slot import erc20slot 
 from ethopt.lbethwallet import lbethwallet
 
@@ -29,22 +31,19 @@ from web3 import Web3
 
 #module name
 name="ethproxy"
+import usdt_abi
+import vmp_main_abi
+import vmp_datas_abi
+import vmp_state_abi
 
-from usdt_abi import (
-        USDT_ABI,
-        USDT_BYTECODE,
-        USDT_ADDRESS
-        )
-
-from vlsmproof_abi import (
-        VLSMPROOF_ABI,
-        VLSMPROOF_BYTECODE,
-        VLSMPROOF_ADDRESS
-        )
-VLSMPROOF_NAME = "vlsmproof"
+VLSMPROOF_MAIN_NAME = "vmpmain"
+VLSMPROOF_DATAS_NAME = "vmpdatas"
+VLSMPROOF_STATE_NAME = "vmpstate"
 contract_codes = {
-        "usdt" : {"abi":USDT_ABI, "bytecode":USDT_BYTECODE, "token_type": "erc20", "address": USDT_ADDRESS},
-        VLSMPROOF_NAME: {"abi":VLSMPROOF_ABI, "bytecode": VLSMPROOF_BYTECODE, "token_type": "vlsmproof", "address":VLSMPROOF_ADDRESS}
+        "usdt" : {"abi":USDT_ABI, "bytecode":usdt_abi.ABI, "token_type": "erc20", "address": usdt_abi.ADDRESS},
+        VLSMPROOF_MAIN_NAME: {"abi":, "bytecode": vmp_main_abi.abi, "token_type": "main", "address":vmp_main_abi.ADDRESS}
+        VLSMPROOF_DATAS_NAME: {"abi":vmp_datas_abi.ABI, "bytecode": vmp_datas_abi.BYTECODE, "token_type": "datas", "address":vmp_datas_abi.ADDRESS}
+        VLSMPROOF_STATE_NAME: {"abi":vmp_state_abi.ABI, "bytecode": vmp_state_abi.BYTECODE, "token_type": "state", "address":vmp_state_abi.ADDRESS}
         }
 
 class walletproxy(lbethwallet):
@@ -111,10 +110,21 @@ class ethproxy():
         for token in contract_codes:
             self.load_contract(token)
 
-    def load_vlsmproof(self, address):
-        contract = contract_codes[VLSMPROOF_NAME]
-        setattr(self, VLSMPROOF_NAME, vlsmproofslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"])))
-        self.tokens_address[VLSMPROOF_NAME] = address
+    def load_vlsmproof(self, address, name = VLSMPROOF_MAIN_NAME):
+        contract = contract_codes[name]
+        if name == VLSMPROOF_MAIN_NAME:
+            vmpslot = vlsmproofmainslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
+            datas_address = vmpslot.proof_address()
+            self.load_vlsmproof(datas_address, VLSMPROOF_DATAS_NAME)
+        elif name == VLSMPROOF_DATAS_NAME:
+            vmpslot = vlsmproofdatasslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
+            state_address = vmpslot.state_address()
+            self.load_vlsmproof(state_address, VLSMPROOF_STATE_NAME)
+        elif name == VLSMPROOF_STATE_NAME:
+            vmpslot = vlsmproofstateslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
+        setattr(self, name, vmpslot)
+        self.tokens_address[name] = address
+        self.tokens[name] = vmpslot
 
     def load_contract(self, name):
         if name not in contract_codes:
@@ -124,7 +134,7 @@ class ethproxy():
             return
 
         contract = contract_codes[name]
-        address = self.vlsmproof.token_address(name)
+        address = self.tokens[VLSMPROOF_MAIN_NAME].token_address(name)
         assert contract is not None, f"not support token({name})"
         erc20_token = erc20slot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
         setattr(self, name, erc20_token)
@@ -155,7 +165,7 @@ class ethproxy():
         return self.send_transaction(account.address, account.key, calldata, nonce = nonce, timeout = 180) 
 
     def update_proof_state(self, account, version, state, timeout = 180):
-        calldata = self.vlsmproof.raw_transfer_proof_state_with_version(version, state)
+        calldata = self.tokens[VLSMPROOF_DATAS_NAME].raw_transfer_proof_state_with_version(version, state)
         return self.send_transaction(account.address, account.key, calldata, nonce = version, timeout = timeout) 
 
     def send_transaction(self, sender, private_key, calldata, nonce = None, gas = None, gas_price = None, timeout = 180):
@@ -203,20 +213,20 @@ class ethproxy():
         return balances
 
     def get_sequence_number(self, address):
-        return self.vlsmproof.proof_address_sequence(address)
+        return self.tokens[VLSMPROOF_DATAS_NAME].proof_address_sequence(address)
 
     def get_account_transaction_version(self, address, sequence):
-        return self.vlsmproof.proof_address_version(address, sequence)
+        return self.tokens[VLSMPROOF_DATAS_NAME].proof_address_version(address, sequence)
 
     def get_latest_version(self):
-        return self.vlsmproof.next_version()
+        return self.tokens[VLSMPROOF_DATAS_NAME].next_version()
 
     def create_std_metadata(self, datas):
         create = datas[6]
         metadata = {
                     "flag": "ethereum",
                     "type": f"e2vm",
-                    "state": self.vlsmproof.state_name(datas[2]),
+                    "state": self.tokens[VLSMPROOF_STATE_NAME].state_name(datas[2]),
                     "opttype":"map",
                     "create" : create,
                     }
@@ -233,18 +243,18 @@ class ethproxy():
         return self._w3.eth.getTransaction(txhash)
 
     def _get_transactions(self, start, limit = 10):
-        next_version = self.vlsmproof.next_version()
+        next_version = self.tokens[VLSMPROOF_DATAS_NAME].next_version()
         assert start >= 0 and start < next_version and limit >= 1, "arguments is invalid"
         datas = []
         end = start + limit
         end = min(end - 1, next_version - 1)
-        payee = self.vlsmproof.payee()
+        payee = self.tokens[VLSMPROOF_MAIN_NAME].payee()
         while start <= end:
-            metadata = self.vlsmproof.proof_info_with_version(start)
+            metadata = self..proof_info_with_version(start)
             data = self.create_std_metadata(metadata)
             datas.append(self.transaction(
                 {
-                    "token_id": self.vlsmproof.token_name(metadata[3]),
+                    "token_id": self.tokens[VLSMPROOF_MAIN_NAME].token_name(metadata[3]),
                     "sender": metadata[4],
                     "receiver":self.get_vlsmproof_manager(payee),
                     "amount": metadata[5],
