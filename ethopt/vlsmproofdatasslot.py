@@ -8,7 +8,7 @@ sys.path.append(f"..")
 import web3
 from web3 import Web3
 
-class vlsmproofproofslot():
+class vlsmproofdatasslot():
 
     def __init__(self, contract, name = "vlsmproofdatas"):
         self._contract = contract
@@ -66,8 +66,11 @@ class vlsmproofproofslot():
     def proof_address_latest_version(self, address):
         return self._functions.accountLatestVersion(address).call()
 
-    def state_address(self, address):
+    def state_address(self):
         return self._functions.stateAddress().call()
+
+    def next_version(self):
+        return self._functions.nextVersion().call()
 
     def __getattr__(self, name):
         print(f"calling {name}")

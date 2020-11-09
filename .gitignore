@@ -7,10 +7,8 @@ __pycache__/
 ethopt/ethwallt_test
 ethopt/ewallet
 ewallet
-ethopt/usdt_abi.py
-ethopt/vlsmproof_abi.py
-usdt_abi.py
-vlsmproof_abi.py
+ethopt/*_abi.py
+*_abi.py
 mint_test.key
 exchange/code_bak/
 bv_optimized.toml

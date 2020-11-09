@@ -19,7 +19,8 @@ class e2vm(exmap):
             vlsnodes, 
             proofdb, 
             receivers, 
-            senders 
+            senders,
+            mapper,
             ):
 
         exmap.__init__(self, name, dtype, \
@@ -27,10 +28,19 @@ class e2vm(exmap):
                 proofdb, receivers, senders,\
                 "ethereum", "violas")
         self.__init_exec_states()
+        self.set_contract_map_address(mapper)
 
     def __init_exec_states(self):
         self.append_property("use_exec_update_db_states", 
-                            [state for state in localdb.state])
+                            [state for state in localdb.state if state != localdb.state.COMPLETE])
+
+    def set_contract_map_address(self, address):
+        ret = self.ethereum_wallet.get_account(address)
+        if ret.state != error.SUCCEED:
+            raise Exception(f"get account failed.{ret.message}")
+        
+        self.ethereum_client.set_contract_map_account(ret.datas)
+
     def __del__(self):
         pass
     

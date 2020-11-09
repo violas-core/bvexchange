@@ -28,10 +28,15 @@ import redis
 
 import web3
 from web3 import Web3
-
+from ethopt.ethproxy import (
+        VLSMPROOF_MAIN_NAME,
+        contract_codes,
+        )
 #module name
 name="eclient"
 
+
+VLSMPROOF_MAIN_ADDRESS = contract_codes[VLSMPROOF_MAIN_NAME]["address"]
 ETH_ADDRESS_LEN = comm.values.ETH_ADDRESS_LEN
 class ethwallet(baseobject):
     
@@ -97,8 +102,14 @@ class ethwallet(baseobject):
     def get_account_count(self):
         return len(self.__wallet.accounts)
 
+    def is_main_contract_address(self, address):
+        return address == VLSMPROOF_MAIN_ADDRESS
+
     def get_account(self, addressorid):
         try:
+            if isinstance(addressorid, str) and addressorid == VLSMPROOF_MAIN_ADDRESS:
+                return result(error.SUCCEED, "", VLSMPROOF_MAIN_ADDRESS)
+
             account = self.__wallet.get_account_by_address_or_refid(addressorid)
             if account is None:
                 ret = result(error.ARG_INVALID)
@@ -143,6 +154,7 @@ class ethwallet(baseobject):
         if name.startswith('__') and name.endswith('__'):
             # Python internal stuff
             raise AttributeError
+
 class ethclient(baseobject):
     def __init__(self, name, nodes, chain = "ethereum"):
         baseobject.__init__(self, name, chain)
@@ -164,6 +176,14 @@ class ethclient(baseobject):
 
     def load_contract(self, name):
         self.__client.load_contract(name)
+
+    def set_contract_map_account(self, account):
+        self._sender_map_account = account
+
+    def map_account(self, account):
+        if isinstance(account, str) and account == VLSMPROOF_MAIN_ADDRESS:
+            return self._sender_map_account
+        return account
 
     def conn_node(self, name, nodes, chain = "ethereum"):
         try:
@@ -325,10 +345,11 @@ class ethclient(baseobject):
         '''change state 
         '''
         try:
+            sender_account = self.map_account(account)
             if data["type"] in ("end", "stop"):
-                datas = self.__client.update_proof_state(account, data["version"], data["type"])
+                datas = self.__client.update_proof_state(sender_account, data["version"], data["type"])
             elif data["type"] == "mark":
-                datas = self.__client.send_token(account, toaddress, amount, token_id, nonce = data["version"])
+                datas = self.__client.send_token(sender_account, toaddress, amount, token_id, nonce = data["version"])
             else:
                 raise Exception(f"type{type} is invald.")
             ret = result(error.SUCCEED if len(datas) > 0 else error.FAILED, "", datas = datas)
@@ -337,11 +358,20 @@ class ethclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_token_list(self):
+        try:
+            ret = result(error.SUCCEED, datas = self.__client.token_name_list())
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+
     def __getattr__(self, name):
         if name.startswith('__') and name.endswith('__'):
             # Python internal stuff
             raise AttributeError
-        raise Exception(f"not defined function:{name}")
+        return self.__client
+        #raise Exception(f"not defined function:{name}")
 
 def main():
     pass

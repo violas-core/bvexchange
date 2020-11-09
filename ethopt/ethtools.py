@@ -43,7 +43,6 @@ def get_ethclient():
     tokens = stmanage.get_eth_token()
     client.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
     for token in tokens:
-        print(f"token name: {token['name']}")
         client.load_contract(token["name"])
     return client
     
@@ -118,15 +117,12 @@ def get_transactions(start_version, limit = 1, fetch_event = True, raw = False):
 
     client = get_ethclient()
     ret = client.get_transactions(start_version, limit, fetch_event)
+    print(f"count: {len(ret.datas)}")
     if ret.state != error.SUCCEED:
         return
     if ret.datas is None or len(ret.datas) == 0:
         return
-    print(f"count: {len(ret.datas)}")
-
     for data in ret.datas:
-        print(data.to_json())
-        print("******")
         if raw:
             print(data)
         else:

@@ -24,7 +24,9 @@ update_ln_fils(){
 
 use_comm() {
     update_ln_fils "datas/abis/usdt_abi.py" "usdt_abi.py"
-    update_ln_fils "datas/abis/vlsmproof_abi.py" "vlsmproof_abi.py"
+    update_ln_fils "datas/abis/vmp_main_abi.py" "vmp_main_abi.py"
+    update_ln_fils "datas/abis/vmp_datas_abi.py" "vmp_datas_abi.py"
+    update_ln_fils "datas/abis/vmp_state_abi.py" "vmp_state_abi.py"
     update_ln_fils "datas/wallet/bwallet" "bwallet"
     update_ln_fils "datas/wallet/ewallet" "ewallet"
 }
