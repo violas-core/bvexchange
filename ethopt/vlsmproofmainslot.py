@@ -79,26 +79,30 @@ class vlsmproofmainslot():
 
         return names
 
+    def proof_address(self):
+        return self._functions.proofAddress().call()
+
     def __getattr__(self, name):
         print(f"calling {name}")
 
 def test():
-
-    from datas.abis.usdt_abi import (
-            USDT_ABI,
-            USDT_BYTECODE
-            )
-    from datas.abis.vlsmproof_abi import (
-            VLSMPROOF_ABI,
-            VLSMPROOF_BYTECODE
-            )
+    import usdt_abi
+    import vmp_main_abi
+    import vmp_datas_abi
+    import vmp_state_abi
+    VLSMPROOF_MAIN_NAME = "vmpmain"
+    VLSMPROOF_DATAS_NAME = "vmpdatas"
+    VLSMPROOF_STATE_NAME = "vmpstate"
     contract_codes = {
-            "usdt" : {"abi":USDT_ABI, "bytecode":USDT_BYTECODE, "token_type": "erc20"},
-            "vlsmproof": {"abi":VLSMPROOF_ABI, "bytecode": VLSMPROOF_BYTECODE, "token_type": "vlsmproof"}
-            }
+        "usdt" : {"abi":usdt_abi.ABI, "bytecode":usdt_abi.BYTECODE, "token_type": "erc20", "address": usdt_abi.ADDRESS},
+        VLSMPROOF_MAIN_NAME: {"abi": vmp_main_abi.ABI, "bytecode": vmp_main_abi.BYTECODE, "token_type": "main", "address":vmp_main_abi.ADDRESS},
+        VLSMPROOF_DATAS_NAME: {"abi":vmp_datas_abi.ABI, "bytecode": vmp_datas_abi.BYTECODE, "token_type": "datas", "address":vmp_datas_abi.ADDRESS},
+        VLSMPROOF_STATE_NAME: {"abi":vmp_state_abi.ABI, "bytecode": vmp_state_abi.BYTECODE, "token_type": "state", "address":vmp_state_abi.ADDRESS},
+    }
+
 
     #host = "http://127.0.0.1:8545"
-    host = "http://51.140.241.96:8545"
+    host = "https://kovan.infura.io/v3/2645261bd8844d0c9ac042c84606502d"
     w3 = Web3(Web3.HTTPProvider(host))
     if not w3.isConnected():
         raise Exception("not connect {host}")
@@ -106,8 +110,8 @@ def test():
         print("connected parity")
 
     usdt_address = "0x6f08730da8e7de49a4064d2217c6b68d7e61e727"
-    contract_address = "0xE6C7f2DAB2E9B16ab124E45dE3516196457A1120"
-    vmp = vlsmproofslot(w3.eth.contract(Web3.toChecksumAddress(contract_address), abi=contract_codes["vlsmproof"]["abi"]), "vlsmproof")
+    contract_address = "0xCb9b6D30E26d17Ce94A30Dd225dC336fC4536FE8"
+    vmp = vlsmproofmainslot(w3.eth.contract(Web3.toChecksumAddress(contract_address), abi=contract_codes[VLSMPROOF_MAIN_NAME]["abi"]), "vlsmproof")
 
     account = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
     account1_privkey = '05849aa606c43ef46e1d71381573221538caef578973fb26f9b889b382d568bd'
@@ -115,46 +119,6 @@ def test():
 
     #update_proof_state(w3, vmp, account, account1_privkey)
 
-def get_transactions(vmp):
-    datas = vmp.get_transactions(0, vmp.next_version())
-    for data in datas:
-        print(data.to_json())
-
-def update_proof_state_with_ver(w3, vmp, account, account1_privkey, version):
-    print(f'''
-    block number: {w3.eth.blockNumber}
-    syncing: {w3.eth.syncing}
-    ''')
-
-
-    print(f"proof info: data   sequence  state  token   sender amount")
-    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(account))
-    proof_info = vmp.proof_info_with_version(version)
-    print(f"proof info[{i}]: {proof_info}")
-    state = proof_info[2]
-    if  state != 1: 
-        print(f"version({i}) state({state}) is not 1, next version")
-        return
-
-    print(f"start version: {i}")
-    gasLimit = w3.eth.getBlock(w3.eth.blockNumber).get("gasLimit")
-    txn = vmp.raw_transfer_proof_state_with_version(i, 3).buildTransaction({
-        'chainId': 42, #kovan
-        'gas':gasLimit,
-        #'gasPrice': Web3.toWei(1, 'gwei'),
-        'gasPrice': w3.eth.gasPrice + Web3.toWei(100, 'gwei'),
-        'nonce': nonce,
-        })
-    print(f"txn:{txn}")
-    signed_txn = w3.eth.account.sign_transaction(txn, private_key=account1_privkey)
-    print(f"tx hash:{w3.toHex(signed_txn.hash)}")
-    print(f"tx rawtransaction:{w3.toHex(signed_txn.rawTransaction)}")
-    txhash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    print(f"ret tx hash:{w3.toHex(txhash)}")
-
-    #w3.eth.waitForTransactionReceipt(txhash)
-    
-def update_proof_state(w3, vmp, account, account1_privkey):
     print(f'''
     block number: {w3.eth.blockNumber}
     syncing: {w3.eth.syncing}
@@ -165,44 +129,14 @@ contract info:
     contract name: {vmp.slot_name()}
     name: {vmp.name()}
     symbol:{vmp.symbol()}
-    conract_version: {vmp.contract_version()}
-    current_balance: {vmp.current_balance()}
-    next_version: {vmp.next_version()}
     owner : {vmp.owner()}
     payee : {vmp.payee()} 
+    proof address : {vmp.proof_address()} 
     block number: {w3.eth.blockNumber}
     syncing: {w3.eth.syncing}
     gasLimit: {w3.eth.getBlock("latest").get("gasLimit")}
     ''')
 
-
-    print(f"proof info: data   sequence  state  token   sender amount")
-    nonce = w3.eth.getTransactionCount(Web3.toChecksumAddress(account))
-    for i in range(vmp.next_version()):
-        proof_info = vmp.proof_info_with_version(i)
-        print(f"proof info[{i}]: {proof_info}")
-        state = proof_info[2]
-        if  state != 1: 
-            print(f"version({i}) state({state}) is not 1, next version")
-            continue
-
-        print(f"start version: {i}")
-        gasLimit = w3.eth.getBlock("latest").get("gasLimit")
-        txn = vmp.raw_transfer_proof_state_with_version(i, 3).buildTransaction({
-            'chainId': 42, #kovan
-            'gas':gasLimit,
-            #'gasPrice': Web3.toWei(1, 'gwei'),
-            'gasPrice': w3.eth.gasPrice + Web3.toWei(100, 'gwei'),
-            'nonce': nonce,
-            })
-        print(f"txn:{txn}")
-        signed_txn = w3.eth.account.sign_transaction(txn, private_key=account1_privkey)
-        print(f"tx hash:{w3.toHex(signed_txn.hash)}")
-        print(f"tx rawtransaction:{w3.toHex(signed_txn.rawTransaction)}")
-        txhash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-        print(f"ret tx hash:{w3.toHex(txhash)}")
-
-        #w3.eth.waitForTransactionReceipt(txhash)
     
 if __name__ == "__main__":
     test()

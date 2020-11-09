@@ -20,7 +20,7 @@ from comm.result import result, parse_except
 from comm.error import error
 from enum import Enum
 from comm.functions import json_print
-from ethopt.vlsmproofmainslot import vlsmproofslot
+from ethopt.vlsmproofmainslot import vlsmproofmainslot
 from ethopt.vlsmproofdatasslot import vlsmproofdatasslot
 from ethopt.vlsmproofstateslot import vlsmproofstateslot
 from ethopt.erc20slot import erc20slot 
@@ -36,14 +36,14 @@ import vmp_main_abi
 import vmp_datas_abi
 import vmp_state_abi
 
-VLSMPROOF_MAIN_NAME = "vmpmain"
+VLSMPROOF_MAIN_NAME = "vlsmproof"
 VLSMPROOF_DATAS_NAME = "vmpdatas"
 VLSMPROOF_STATE_NAME = "vmpstate"
 contract_codes = {
-        "usdt" : {"abi":USDT_ABI, "bytecode":usdt_abi.ABI, "token_type": "erc20", "address": usdt_abi.ADDRESS},
-        VLSMPROOF_MAIN_NAME: {"abi":, "bytecode": vmp_main_abi.abi, "token_type": "main", "address":vmp_main_abi.ADDRESS}
-        VLSMPROOF_DATAS_NAME: {"abi":vmp_datas_abi.ABI, "bytecode": vmp_datas_abi.BYTECODE, "token_type": "datas", "address":vmp_datas_abi.ADDRESS}
-        VLSMPROOF_STATE_NAME: {"abi":vmp_state_abi.ABI, "bytecode": vmp_state_abi.BYTECODE, "token_type": "state", "address":vmp_state_abi.ADDRESS}
+        "usdt" : {"abi":usdt_abi.ABI, "bytecode":usdt_abi.BYTECODE, "token_type": "erc20", "address": usdt_abi.ADDRESS},
+        VLSMPROOF_MAIN_NAME: {"abi": vmp_main_abi.ABI, "bytecode": vmp_main_abi.BYTECODE, "token_type": "main", "address":vmp_main_abi.ADDRESS},
+        VLSMPROOF_DATAS_NAME: {"abi":vmp_datas_abi.ABI, "bytecode": vmp_datas_abi.BYTECODE, "token_type": "datas", "address":vmp_datas_abi.ADDRESS},
+        VLSMPROOF_STATE_NAME: {"abi":vmp_state_abi.ABI, "bytecode": vmp_state_abi.BYTECODE, "token_type": "state", "address":vmp_state_abi.ADDRESS},
         }
 
 class walletproxy(lbethwallet):
@@ -90,7 +90,7 @@ class ethproxy():
 
         setattr(self, "chain_id", chain_id)
         self.connect(host, port, *args, **kwargs)
-        self.load_vlsmproof(contract_codes[VLSMPROOF_NAME]["address"]) #default, config will override
+        self.load_vlsmproof(contract_codes[VLSMPROOF_MAIN_NAME]["address"]) #default, config will override
 
     def connect(self, host, port = None, *args, **kwargs):
         url = host
@@ -104,13 +104,16 @@ class ethproxy():
 
 
     def __init_contract_erc20(self):
-        contract = contract_codes[VLSMPROOF_NAME]
-        self.load_vlsmproof(contract["address"])
-
         for token in contract_codes:
             self.load_contract(token)
 
     def load_vlsmproof(self, address, name = VLSMPROOF_MAIN_NAME):
+        '''
+            load main  datas state
+        '''
+        if address == self.tokens_address.get(VLSMPROOF_MAIN_NAME, ""):
+            return
+
         contract = contract_codes[name]
         if name == VLSMPROOF_MAIN_NAME:
             vmpslot = vlsmproofmainslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
@@ -130,7 +133,7 @@ class ethproxy():
         if name not in contract_codes:
             raise Exception(f"contract({name}) is invalid.")
 
-        if name == VLSMPROOF_NAME:
+        if name in (VLSMPROOF_MAIN_NAME, VLSMPROOF_DATAS_NAME, VLSMPROOF_STATE_NAME):
             return
 
         contract = contract_codes[name]
@@ -215,6 +218,9 @@ class ethproxy():
     def get_sequence_number(self, address):
         return self.tokens[VLSMPROOF_DATAS_NAME].proof_address_sequence(address)
 
+    def token_name_list(self):
+        return self.tokens[VLSMPROOF_MAIN_NAME].token_name_list()
+
     def get_account_transaction_version(self, address, sequence):
         return self.tokens[VLSMPROOF_DATAS_NAME].proof_address_version(address, sequence)
 
@@ -243,20 +249,22 @@ class ethproxy():
         return self._w3.eth.getTransaction(txhash)
 
     def _get_transactions(self, start, limit = 10):
-        next_version = self.tokens[VLSMPROOF_DATAS_NAME].next_version()
-        assert start >= 0 and start < next_version and limit >= 1, "arguments is invalid"
         datas = []
+        next_version = self.tokens[VLSMPROOF_DATAS_NAME].next_version()
+        if next_version == 0:
+            return datas
+        assert start >= 0 and start < next_version and limit >= 1, "arguments is invalid"
         end = start + limit
         end = min(end - 1, next_version - 1)
         payee = self.tokens[VLSMPROOF_MAIN_NAME].payee()
         while start <= end:
-            metadata = self..proof_info_with_version(start)
+            metadata = self.tokens[VLSMPROOF_DATAS_NAME].proof_info_with_version(start)
             data = self.create_std_metadata(metadata)
             datas.append(self.transaction(
                 {
                     "token_id": self.tokens[VLSMPROOF_MAIN_NAME].token_name(metadata[3]),
                     "sender": metadata[4],
-                    "receiver":self.get_vlsmproof_manager(payee),
+                    "receiver":self.tokens_address[VLSMPROOF_MAIN_NAME],
                     "amount": metadata[5],
                     "token_owner": metadata[3],
                     "sequence_number":metadata[1],
@@ -273,7 +281,6 @@ class ethproxy():
             # Python internal stuff
             raise AttributeError
         raise Exception(f"not defined function:{name}")
-        #return self.call_default
         
     def __call__(self, *args, **kwargs):
         pass

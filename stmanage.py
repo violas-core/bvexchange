@@ -128,6 +128,9 @@ def __get_address_list(atype, mtype, chain = None, full = True):
 def get_receiver_address_list(mtype, chain = None, full = True):
     return __get_address_list("receiver", mtype, chain, full)
 
+def get_map_address(mtype, chain = None, full = True):
+    return __get_address_list("map", mtype, chain, full)[0]
+
 def get_address_info(atype):
     return setting.address_list.get(atype)
 

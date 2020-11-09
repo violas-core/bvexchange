@@ -710,11 +710,13 @@ class works:
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, "ethereum", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+                            stmanage.get_map_address(dtype, "ethereum", False),
                             )
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
                     tokens = stmanage.get_support_token_id("ethereum")
                     for token in tokens:
                         obj.append_contract(token)
+
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
