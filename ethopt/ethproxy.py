@@ -86,6 +86,7 @@ class ethproxy():
         self.tokens_address = {}
         self.tokens_decimals = {}
         self.tokens = {}
+        self.tokens_id = []
         self._vlsmproof_manager = None
 
         setattr(self, "chain_id", chain_id)
@@ -144,6 +145,8 @@ class ethproxy():
         self.tokens_address[name] = address
         self.tokens_decimals[name] = pow(10, erc20_token.decimals())
         self.tokens[name] = erc20_token
+        self.tokens_id.append(name)
+        print(f"load contract : {name}")
 
     def set_vlsmproof_manager(self, address):
         self._vlsmproof_manager = address
@@ -210,7 +213,7 @@ class ethproxy():
 
     def get_balances(self, address, *args, **kwargs):
         balances = {}
-        for token_id in self.tokens:
+        for token_id in self.tokens_id:
             balances.update({token_id: self.get_balance(address, token_id)})
 
         return balances
