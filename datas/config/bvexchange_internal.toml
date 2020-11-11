@@ -240,7 +240,7 @@ syncing_mod = false
     #receiver addresses
     ##violas chain receiver address
     [[address_list.receiver]]
-        address = "546f9c996dd049e1a9a2e11d0d001c42e69a3adef1ace4d9c1551e5415e71a4c"
+        address = "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
         type = "v2b"
         chain = "violas"
 
