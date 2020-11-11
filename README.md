@@ -25,6 +25,7 @@ cd bvexchnge
 sudo apt install python3.6 sqlite3 redis-server python3
 python3 install python3.6-dev
 pip3 install python-bitcoinrpc sqlalchemy redis5.0.7
+python3 -m pip install web3
 
 cd violas-client/
 pip3 install -r requirements.txt
@@ -39,6 +40,9 @@ cd bvexchange
 
 ### bvexchange.py
     work main file
+
+### bvexchange.py
+    work env change
 
 ### btc
     connect to bvlscore node and call rpc to work
@@ -69,6 +73,9 @@ cd bvexchange
 
 ### vlsopt
     violas related operations. violas client、server、wallet
+
+### ethopt
+    ethereum related operations. ethereum client、wallet
 
 ### vwallet
     violas wallet file
