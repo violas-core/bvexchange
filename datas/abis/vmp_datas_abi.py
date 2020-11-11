@@ -1,4 +1,5 @@
-ADDRESS = "0xF4C4De75931C2afbe5CC6E8Ef9c924Aac9251c15"
+ADDRESS = "0xE7f7504E45b9F8034282f9C786680a8ec7B687F7"
+BYTECODE = ""
 ABI = '''
         [
         {
@@ -137,6 +138,82 @@ ABI = '''
                         }
                     ],
                 "name": "accountVersion",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                        }
+                    ],
+                "stateMutability": "view",
+                "type": "function"
+                },
+        {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "version",
+                        "type": "uint256"
+                        }
+                    ],
+                "name": "addressIndex",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "sequence",
+                        "type": "uint256"
+                        },
+                    {
+                        "internalType": "address",
+                        "name": "sender",
+                        "type": "address"
+                        },
+                    {
+                        "internalType": "bool",
+                        "name": "create",
+                        "type": "bool"
+                        }
+                    ],
+                "stateMutability": "view",
+                "type": "function"
+                },
+        {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "sender",
+                        "type": "address"
+                        }
+                    ],
+                "name": "addressProof",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "maxSequence",
+                        "type": "uint256"
+                        },
+                    {
+                        "internalType": "uint256",
+                        "name": "minVersion",
+                        "type": "uint256"
+                        },
+                    {
+                        "internalType": "uint256",
+                        "name": "maxVersion",
+                        "type": "uint256"
+                        },
+                    {
+                        "internalType": "bool",
+                        "name": "inited",
+                        "type": "bool"
+                        }
+                    ],
+                "stateMutability": "view",
+                "type": "function"
+                },
+        {
+                "inputs": [],
+                "name": "continuousComplete",
                 "outputs": [
                     {
                         "internalType": "uint256",
@@ -403,6 +480,25 @@ ABI = '''
         {
                 "inputs": [
                     {
+                        "internalType": "uint256",
+                        "name": "verion",
+                        "type": "uint256"
+                        }
+                    ],
+                "name": "transferContinuousComplete",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                        }
+                    ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+                },
+        {
+                "inputs": [
+                    {
                         "internalType": "address",
                         "name": "newOwner",
                         "type": "address"
@@ -449,7 +545,7 @@ ABI = '''
                         "type": "bool"
                         }
                     ],
-                "stateMutability": "payable",
+                "stateMutability": "nonpayable",
                 "type": "function"
                 },
         {
@@ -478,7 +574,7 @@ ABI = '''
                         "type": "bool"
                         }
                     ],
-                "stateMutability": "payable",
+                "stateMutability": "nonpayable",
                 "type": "function"
                 },
         {
@@ -502,7 +598,7 @@ ABI = '''
                         "type": "bool"
                         }
                     ],
-                "stateMutability": "payable",
+                "stateMutability": "nonpayable",
                 "type": "function"
                 },
         {
@@ -531,7 +627,7 @@ ABI = '''
                         "type": "bool"
                         }
                     ],
-                "stateMutability": "payable",
+                "stateMutability": "nonpayable",
                 "type": "function"
                 },
         {
@@ -555,7 +651,7 @@ ABI = '''
                         "type": "bool"
                         }
                     ],
-                "stateMutability": "payable",
+                "stateMutability": "nonpayable",
                 "type": "function"
                 },
         {
@@ -603,4 +699,3 @@ ABI = '''
         ]
         '''
 
-BYTECODE = ""

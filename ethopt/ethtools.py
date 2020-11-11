@@ -40,10 +40,11 @@ wallet_name = "ewallet"
 def get_ethclient():
 
     client = ethclient(name, stmanage.get_eth_nodes(), chain)
-    tokens = stmanage.get_eth_token()
     client.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
+    tokens = client.get_token_list().datas
+    logger.debug(f"support tokens: {tokens}")
     for token in tokens:
-        client.load_contract(token["name"])
+        client.load_contract(token)
     return client
     
 

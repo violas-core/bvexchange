@@ -11,6 +11,7 @@ v2b_maxtimes = 99
 #syncing proof flag ; default true
 syncing_mod = false
 
+#connect btc chain config
 [btc_conn]
     user = "btc"
     password = "btc"
@@ -19,6 +20,12 @@ syncing_mod = false
     domain = "violaslayer"
     server = "violaslayer"
 
+#connect ethereum chain config
+[[ethereum_nodes]]
+    host = "https://kovan.infura.io/v3/2645261bd8844d0c9ac042c84606502d"
+    name = "ethereum 1"
+
+#connect violas chain config
 [[violas_nodes]]
     host = "52.27.228.84"
     port = 50001
@@ -43,6 +50,7 @@ syncing_mod = false
     name = "violas 3"
     faucet = "mint_test.key"
 
+#connect libra chain config
 [[libra_nodes]]
     host = "http://client.testnet.libra.org"
     name = "libra"
@@ -53,6 +61,8 @@ syncing_mod = false
     user = "violas"
     password = "violas"
 
+#redis db connect config. this is default config,
+#append db_list for specific value
 [db_default]
     host = "127.0.0.1"
     port = 6378
@@ -72,7 +82,47 @@ syncing_mod = false
     step = 30
 
 [[db_list]]
+    db = "efilter"
+    step = 1
+
+[[db_list]]
     db = "record"
+
+#ethereum contract for mapping erc20 token
+[ethereum_tokens]
+    [ethereum_tokens.vlsmproof]
+        address = "0xCb9b6D30E26d17Ce94A30Dd225dC336fC4536FE8"
+        support= true  
+
+# tokens info 
+# token_info.tokens chain support token. ex. token_info.tokens.violas is violas chain support token
+# token_info.tokens.CHAIN_NAME.token is chain token
+# token_info.tokens.CHAIN_NAME.mtoken is chain mapping token for thd chain. only violas 
+#
+# token_info.mapping is two chain token mapping. ex violas-USD <-> libra-Coin1
+# token_info.mapping.token is chain token, value is token path CHAIN_NAME.TOKEN
+# token_info.mapping.mtoken is violas mapping token for thd chain, value is token path CHAIN_NAME.TOKEN
+[token_info]
+    [token_info.tokens]
+        [token_info.tokens.violas]
+            token = ["VLSUSD", "VLSEUR", "VLSSGD", "VLSGBP"] 
+            mtoken = ["BTC", "USD", "USDT"]
+        [token_info.tokens.libra]
+            token = ["Coin1"]
+        [token_info.tokens.ethereum]
+            token = ["usdt"]
+        [token_info.tokens.btc]
+            token = ["BTC"]
+
+    [[token_info.mapping]]
+        token = "libra.Coin1"
+        mtoken = "violas.USD"
+    [[token_info.mapping]]
+        token = "btc.BTC"
+        mtoken = "violas.BTC"
+    [[token_info.mapping]]
+        token = "ethereum.usdt"
+        mtoken = "violas.USDT"
 
 #violas <-> libra token map
 #violas coin:VLSAAA map to libra coin:BBB:  VLSAAA(violas chain) -uniswap-> LBRBBB(violas chain) -map-> BBB(libra chain)
@@ -82,70 +132,62 @@ syncing_mod = false
 
 #
 #type : metadata's type; token is violas/libra token
-#stoken : target chain stable token
-#mtoken : violas chain map token only from violas chain swap use this field
-#mtoken : stoken = 1:1
+#ttoken : target chain stable token(Violas stable token, BTC, Ethereum erc20 token)
 #support   : type is support #default = true
 #run    : execute analysis proof and exchange, default false
-#etype  : exchange transaction type: map  swap, default swap
+#etype  : map or swap(default)
 [type_opts]
     [type_opts.v2lusd]
-        stoken = "Coin1"
-        mtoken = "USD"
+        ttoken = "Coin1"
         support= true  
-        run    = true
     [type_opts.v2leur]
-        stoken = "Coin2"
-        mtoken = "EUR"
+        ttoken = "Coin2"
+        support= false
         run    = true
     [type_opts.l2vusd]
-        stoken = "VLSUSD"
+        ttoken = "VLSUSD"
+        run    = true
     [type_opts.l2veur]
-        stoken = "VLSEUR"
+        ttoken = "VLSEUR"
     [type_opts.l2vsgd]
-        stoken = "VLSSGD"
+        ttoken = "VLSSGD"
     [type_opts.l2vgbp]
-        stoken = "VLSGBP"
+        ttoken = "VLSGBP"
     [type_opts.b2vusd]
-        stoken = "VLSUSD"
+        ttoken = "VLSUSD"
     [type_opts.b2veur]
-        stoken = "VLSEUR"
+        ttoken = "VLSEUR"
     [type_opts.b2vsgd]
-        stoken = "VLSSGD"
+        ttoken = "VLSSGD"
     [type_opts.b2vgbp]
-        stoken = "VLSGBP"
+        ttoken = "VLSGBP"
     [type_opts.b2lusd]
-        stoken = "Coin1"
-        mtoken = "USD"
+        ttoken = "Coin1"
+        support= false
     [type_opts.b2leur]
-        stoken = "Coin2"
-        mtoken = "EUR"
+        ttoken = "Coin2"
+        support= false
     [type_opts.l2b]
-        stoken = "BTC"
-        mtoken = "BTC"
+        ttoken = "BTC"
+        support = false
     [type_opts.v2b]
-        stoken = "BTC"
-        mtoken = "BTC"
+        ttoken = "BTC"
     [type_opts.v2bm]
-        stoken = "BTC"
-        mtoken = "BTC"
         etype  = "map"
     [type_opts.v2lm]
-        support= true  
-        run    = false
         etype  = "map"
     [type_opts.l2vm]
-        support= true  
-        run    = false
         etype  = "map"
     [type_opts.b2vm]
-        support= true  
-        run    = false
         etype  = "map"
     [type_opts.v2vswap]
         support= true  
-        run    = false
+    [type_opts.v2em]
+        etype  = "map"
+    [type_opts.e2vm]
+        etype  = "map"
 
+#btc opt code (state = start), web interface for auto-create
 [type_code]
     b2vm    = "0x3000"
     b2vusd  = "0x4000"
@@ -163,6 +205,8 @@ syncing_mod = false
     address = "00000000000000000000000045584348"
 
 #swap rule:
+#  thd chain ->(map) violas chain : x2vm--- . ex l2vm is libra token to map violas token(usd)
+#  violas chain ->(map) thd chain : v2xm--- . ex v2lm is violas token to map libra token(coin1)
 #  thd chain -> violas chain : x2v--- . ex l2vusd is libra token to swap violas token(usd)
 #  violas chain -> thd chain : v2x--- . ex v2lusd is violas token to swap libra token(coin1)
 #  l2vusd:
@@ -191,11 +235,12 @@ syncing_mod = false
 #  3. combine address must be difference, because we will calaculation swap result with combine address's token changed
 #  4. address_list.sender.address(type = X2vXXX and chain = "violas") must be difference, because we will execute mint token to it
 #     and execute swap function with this address. 
+#  5. ethereum chain's receiver is main contract, so set map address for contract address for change state
 [address_list]
     #receiver addresses
     ##violas chain receiver address
     [[address_list.receiver]]
-        address = "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
+        address = "546f9c996dd049e1a9a2e11d0d001c42e69a3adef1ace4d9c1551e5415e71a4c"
         type = "v2b"
         chain = "violas"
 
@@ -276,6 +321,16 @@ syncing_mod = false
     [[address_list.receiver]]
         address = "eda54651162270ccc0ff81cbcfffcded8ee2a1a52bd868c0baadb0d226731832"
         type = "v2bm"
+        chain = "violas"
+
+    [[address_list.receiver]]
+        address = "0xCb9b6D30E26d17Ce94A30Dd225dC336fC4536FE8"
+        type = "e2vm"
+        chain = "ethereum"
+
+    [[address_list.receiver]]
+        address = "cf0861291d97a2fd8d781fc162afc6ed181d90a6e37619829bb70afaf28b5edf"
+        type = "v2em"
         chain = "violas"
 
     #sender address
@@ -360,6 +415,16 @@ syncing_mod = false
         address = "607586552150ab702006dd1731f0a9169326aa2ff707002c6bab92b8c8fd4dd3"
         type = "b2vgbp"
         chain = "violas"
+    [[address_list.sender]]
+        address = "de8eeb09d629940e46c757b6727c7b1e1554b8e40c8a8a949b1db67168980c57"
+        type = "e2vm"
+        chain = "violas"
+
+    [[address_list.sender]]
+        address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
+        type = "v2em"
+        chain = "ethereum"
+
     #combine 
     [[address_list.combine]]
         address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
@@ -409,6 +474,13 @@ syncing_mod = false
         address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
         type = "b2vgbp"
         chain = "btc"
+
+    [[address_list.map]]
+        address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
+        type = "e2vm"
+        chain = "ethereum"
+
+#thread loopping sleep time(s)
 [looping_sleep]
     vfilter = 1
     lfilter = 1
