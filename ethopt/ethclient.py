@@ -21,6 +21,7 @@ import comm.values
 from comm import version
 from comm.result import result, parse_except
 from comm.error import error
+from comm.functions import is_mnemonic
 from ethopt.ethproxy import ethproxy as clientproxy
 from enum import Enum
 from baseobject import baseobject
@@ -40,30 +41,34 @@ VLSMPROOF_MAIN_ADDRESS = contract_codes[VLSMPROOF_MAIN_NAME]["address"]
 ETH_ADDRESS_LEN = comm.values.ETH_ADDRESS_LEN
 class ethwallet(baseobject):
     
-    def __init__(self, name, wallet_name, chain="ethereum"):
-        assert wallet_name is not None, "wallet_name is None"
+    def __init__(self, name, wallet, chain="ethereum"):
+        assert wallet is not None, "wallet is None"
         baseobject.__init__(self, name)
         self.__wallet = None
-        if wallet_name is not None:
-            ret = self.__load_wallet(wallet_name, chain)
+        if wallet is not None:
+            ret = self.__load_wallet(wallet, chain)
             if ret.state != error.SUCCEED:
-                raise Exception(f"load wallet[{wallet_name}] failed.")
+                raise Exception(f"load wallet[{wallet}] failed.")
 
     def __del__(self):
         pass
 
-    def __load_wallet(self, wallet_name, chain="ethereum"):
+    def __load_wallet(self, wallet, chain="ethereum"):
         try:
-            self.__wallet_name = wallet_name
+            self.__wallet_name = wallet
 
             from ethopt.ethproxy import walletproxy
 
-            if os.path.isfile(self.__wallet_name):
-                self.__wallet = walletproxy.load(self.__wallet_name)
+            if os.path.isfile(wallet):
+                self.__wallet = walletproxy.load(wallet)
+                ret = result(error.SUCCEED, "", "")
+            elif is_mnemonic(wallet):
+                self.__wallet_name = None
+                self.__wallet = walletproxy.loads(wallet)
                 ret = result(error.SUCCEED, "", "")
             else:
                 ret = result(error.SUCCEED, "not found wallet file", "")
-                raise Exception(f"not found {self.name()} wallet file({self.__wallet_name})")
+                raise Exception(f"not found {self.name()} wallet file({wallet})")
                 self.__wallet = walletproxy.new()
 
         except Exception as e:

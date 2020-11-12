@@ -99,4 +99,8 @@ def merge_full_address(address, auth_key_prefix = None):
         pass
     return None
 
-
+def is_mnemonic(data):
+    space_num = len(data.split(" "))
+    find_delimiter = data.find(":") > 0
+    not_find = data.find("/") == -1
+    return (space_num > 8 or find_delimiter) and not_find

@@ -52,6 +52,11 @@ class walletproxy(lbethwallet):
         ret = self.recover(filename)
         return ret
 
+    @classmethod
+    def loads(self, data):
+        ret = self.recover_from_mnemonic(data)
+        return ret
+
     def find_account_by_address_hex(self, address):
         for i in range(self.child_count):
             if self.accounts[i].address == address:

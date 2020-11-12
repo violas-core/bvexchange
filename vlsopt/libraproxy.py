@@ -38,6 +38,14 @@ class walletproxy(Wallet):
         ret = self.recover(filename)
         return ret
 
+    @classmethod
+    def loads(cls, data):
+        mnemonic_num = data.split(Wallet.DELIMITER)
+        assert len(mnemonic_num) == 2, "Format error: Wallet must <MNEMONIC_NUM>{Wallet.DELIMITER}<NUM>"
+        wallet = cls.new_from_mnemonic(mnemonic_num[0]) 
+        wallet.generate_addresses(int(mnemonic_num[1]))
+        return wallet
+
     @property
     def child_count(self):
         return len(self.accounts)

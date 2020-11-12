@@ -55,6 +55,10 @@ class lbethwallet:
                 return cls(data)
 
     @classmethod
+    def recover_from_mnemonic(cls, data):
+        return cls(data)
+
+    @classmethod
     def new(cls):
         account, mnemonic = web3.Account.create_with_mnemonic()
         return cls(mnemonic)

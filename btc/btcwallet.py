@@ -37,23 +37,26 @@ class btcwallet(baseobject):
         def address(self):
             return self.__address
 
-    def __init__(self, name, walletname = "bwallet"):
+    def __init__(self, name, wallet= "bwallet"):
         baseobject.__init__(self, name)
         self.__wallet_info = {}
-        if walletname is not None:
-            self.loads(walletname)
+        if wallet is not None:
+            self.loads(wallet)
         
-    def loads(self, walletname):
+    def loads(self, wallet):
         self.wallet_info.clear()
-        with open(walletname) as lines:
-            infos = lines.readlines()
-            for info in infos:
-                info = info.strip("\n")
-                info = info.strip("\r")
-                items = info.split(",")
-                if len(items) != 3:
-                    continue
-                self.__wallet_info[items[0]]  = {"address":items[0], "publickey":items[1], "privkey":items[2]}
+        if isinstance(wallet, dict):
+            self.wallet_info = wallet
+        elif os.path.isfile(wallet):
+            with open(wallet) as lines:
+                infos = lines.readlines()
+                for info in infos:
+                    info = info.strip("\n")
+                    info = info.strip("\r")
+                    items = info.split(",")
+                    if len(items) != 3:
+                        continue
+                    self.__wallet_info[items[0]]  = {"address":items[0], "publickey":items[1], "privkey":items[2]}
 
     @property 
     def wallet_info(self):

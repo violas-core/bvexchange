@@ -23,6 +23,7 @@ from ethopt.ethclient import ethclient, ethwallet
 from enum import Enum
 from vrequest.request_client import requestclient
 from analysis.analysis_filter import afilter
+from dataproof import dataproof
 
 #module name
 name="ethtools"
@@ -32,7 +33,6 @@ chain = "ethereum"
 #load logging
 logger = log.logger.getLogger(name) 
 
-wallet_name = "ewallet"
 '''
 *************************************************ethclient oper*******************************************************
 '''
@@ -49,7 +49,7 @@ def get_ethclient():
     
 
 def get_ethwallet():
-    return ethwallet(name, wallet_name, chain)
+    return ethwallet(name, dataproof.wallets("ethereum"), chain)
 
 def get_ethproof(dtype = "v2b"):
 
@@ -77,7 +77,6 @@ def bind_token_id(address, token_id, gas_token_id):
     logger.debug(f"start bind_token_id({address}, {token_id}, {gas_token_id}")
 
 def send_coin(from_address, to_address, amount, token_id):
-    global wallet_name
     wallet = get_ethwallet()
     ret = wallet.get_account(from_address)
     if ret.state != error.SUCCEED:
@@ -167,7 +166,6 @@ def get_syncing_state():
 *************************************************ethwallet oper*******************************************************
 '''
 def new_account():
-    global wallet_name
     wallet = get_ethwallet()
     ret = wallet.new_account()
     wallet.dump_wallet()
@@ -180,7 +178,6 @@ def address_has_token_id(address, token_id):
     logger.debug(client.has_token_id(address, token_id).datas)
 
 def show_accounts():
-    global wallet_name
     wallet = get_ethwallet()
     i = 0
     account_count = wallet.get_account_count()
@@ -194,7 +191,6 @@ def show_accounts():
         i += 1
 
 def show_accounts_full():
-    global wallet_name
     wallet = get_ethwallet()
     i = 0
     account_count = wallet.get_account_count()
@@ -211,7 +207,6 @@ def get_account(address):
     print(client.get_account_state(address).datas)
 
 def has_account(address):
-    global wallet_name
     wallet = get_ethwallet()
     logger.debug(wallet.has_account_by_address(address).datas)
 
@@ -222,6 +217,8 @@ def has_account(address):
 def init_args(pargs):
     pargs.append("help", "show arg list.")
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file")
+    pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic")
+
     #wallet 
     pargs.append("new_account", "new account and save to local wallet.")
     pargs.append("get_account", "show account info.", True, ["address"])
@@ -272,14 +269,18 @@ def run(argc, argv):
     for opt, arg in opts:
         if pargs.is_matched(opt, ["conf"]):
             stmanage.set_conf_env(arg)
-            break
+        elif pargs.is_matched(opt, ["wallet"]):
+            if not arg:
+                pargs.exit_error_opt(opt)
+            dataproof.wallets.update_wallet("ethereum", arg)
+
     if stmanage.get_conf_env() is None:
         stmanage.set_conf_env("../bvexchange.toml") 
 
     global chain
     for opt, arg in opts:
         
-        if opt in ["--conf"]:
+        if opt in ["--conf", "--wallet"]:
             continue
         
         if len(arg) > 0:

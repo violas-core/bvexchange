@@ -24,6 +24,7 @@ from violasclient import violasclient, violaswallet, violasserver
 from enum import Enum
 from vrequest.request_client import requestclient
 from analysis.analysis_filter import afilter
+from dataproof import dataproof
 
 #module name
 name="violastools"
@@ -34,7 +35,6 @@ datatype = "v2b"
 #load logging
 logger = log.logger.getLogger(name) 
 
-wallet_name = "vwallet"
 '''
 *************************************************violasclient oper*******************************************************
 '''
@@ -46,7 +46,7 @@ def get_violasclient():
     return violasclient(name, stmanage.get_violas_nodes(), chain)
 
 def get_violaswallet():
-    return violaswallet(name, wallet_name, chain)
+    return violaswallet(name, dataproof.wallets(chain), chain)
 
 def get_violasproof(dtype = "v2b"):
 
@@ -68,7 +68,6 @@ def show_all_token_list():
 
 def mint_coin(address, amount, token_id, module):
     logger.debug("start min_coin({address}, {amount}, {token_id}, {module})")
-    global wallet_name
     client = get_violasclient()
     wallet = get_violaswallet()
 
@@ -79,7 +78,6 @@ def mint_coin(address, amount, token_id, module):
 
 def bind_token_id(address, token_id, gas_token_id):
     logger.debug(f"start bind_token_id({address}, {token_id}, {gas_token_id}")
-    global wallet_name
     wallet = get_violaswallet()
     client = get_violasclient()
 
@@ -93,7 +91,6 @@ def bind_token_id(address, token_id, gas_token_id):
     print(client.get_account_state(address).datas)
 
 def send_coin(from_address, to_address, amount, token_id, module = None, data = None):
-    global wallet_name
     wallet = get_violaswallet()
     ret = wallet.get_account(from_address)
     if ret.state != error.SUCCEED:
@@ -182,7 +179,6 @@ def swap(sender, token_in, token_out, amount_in, amount_out_min=0, module_addres
 
     swap_set_module_ower(client, module = module_address)
 
-    global wallet_name
     wallet = get_violaswallet()
     ret = wallet.get_account(sender)
     if ret.state != error.SUCCEED:
@@ -228,7 +224,6 @@ def swap_get_liquidity_balances(address):
 def swap_remove_liquidity(address, token_a, token_b, liquidity):
     logger.debug(f"start swap_remove_liquidity({address}, {token_a}, {token_b}, {liquidity})")
     client = get_violasclient()
-    global wallet_name
     wallet = get_violaswallet()
     ret = wallet.get_account(address)
     if ret.state != error.SUCCEED:
@@ -243,7 +238,6 @@ def swap_remove_liquidity(address, token_a, token_b, liquidity):
 *************************************************violaswallet oper*******************************************************
 '''
 def new_account():
-    global wallet_name
     wallet = get_violaswallet()
     ret = wallet.new_account()
     wallet.dump_wallet()
@@ -256,7 +250,6 @@ def address_has_token_id(address, token_id):
     logger.debug(client.has_token_id(address, token_id).datas)
 
 def show_accounts():
-    global wallet_name
     wallet = get_violaswallet()
     i = 0
     account_count = wallet.get_account_count()
@@ -270,7 +263,6 @@ def show_accounts():
         i += 1
 
 def show_accounts_full():
-    global wallet_name
     wallet = get_violaswallet()
     i = 0
     account_count = wallet.get_account_count()
@@ -286,12 +278,10 @@ def get_account(address):
     print(client.get_account_state(address).datas)
 
 def has_account(address):
-    global wallet_name
     wallet = get_violaswallet()
     logger.debug(wallet.has_account_by_address(address).datas)
 
 def get_account_prefix(address):
-    global wallet_name
     wallet = get_violaswallet()
     account = wallet.get_account(address).datas
     logger.debug(f"address: {account.address.hex()}, auth_key_prefix: {account.auth_key_prefix.hex()}")
@@ -326,8 +316,9 @@ def has_transaction(mtype, tranid):
 '''
 def init_args(pargs):
     pargs.append("help", "show arg list.")
-    pargs.append("chain", "work chain name(violas/libra, default : violas). must be first argument", True, ["chain=violas"])
-    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file")
+    pargs.append("chain", "work chain name(violas/libra, default : violas). must be first argument", True, ["chain=violas"], priority = 10)
+    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)
+    pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13)
     #wallet 
     pargs.append("new_account", "new account and save to local wallet.")
     pargs.append("get_account", "show account info.", True, ["address"])
@@ -386,19 +377,12 @@ def run(argc, argv):
     pargs.check_unique(names)
 
     #--conf must be first
-    for opt, arg in opts:
-        if pargs.is_matched(opt, ["conf"]):
-            stmanage.set_conf_env(arg)
-            break
     if stmanage.get_conf_env() is None:
         stmanage.set_conf_env("../bvexchange.toml") 
 
     global chain
     for opt, arg in opts:
-        
-        if opt in ["--conf"]:
-            continue
-        
+
         if len(arg) > 0:
             count, arg_list = pargs.split_arg(arg)
 
@@ -407,6 +391,14 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             chain = arg_list[0]
+        elif pargs.is_matched(opt, ["conf"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            stmanage.set_conf_env(arg_list[0])
+        elif pargs.is_matched(opt, ["wallet"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            dataproof.wallets.update_wallet(chain, arg_list[0])
         elif pargs.is_matched(opt, ["bind_token_id"]):
             if len(arg_list) != 3:
                 pargs.exit_error_opt(opt)
@@ -559,6 +551,8 @@ def run(argc, argv):
             swap_remove_liquidity(arg_list[0], arg_list[1], arg_list[2], arg_list[3])
         else:
             raise Exception(f"not found matched opt{opt}")
+
+
     logger.debug("end manage.main")
 
 if __name__ == "__main__":
