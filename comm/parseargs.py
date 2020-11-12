@@ -13,6 +13,7 @@ name="parseargs"
 
 class parseargs:
     __args = {}
+    __args_priority = {}
     __unique = []
 
     def __init__(self):
@@ -49,7 +50,7 @@ class parseargs:
                 return True
         return False
 
-    def append(self, name, desc, hasarg = False, arglist = None):
+    def append(self, name, desc, hasarg = False, arglist = None, priority = 100):
         if name in self.__args:
             raise Exception("arg is exists.")
         if hasarg:
@@ -59,11 +60,13 @@ class parseargs:
             key = name
             value = f"desc: {desc} format: --{name}"
         self.__args[key] = value
+        self.__args_priority[name] = priority
 
     def remove(self, name):
         if self.__args is None or name not in self.__args:
             return
         del self.__args[name]
+        del self.__args_priority[name]
 
     def show_args(self):
         for key in list(self.__args.keys()):
@@ -109,8 +112,21 @@ class parseargs:
 
         sys.exit(2)
 
+    def __sort_opts(self, opts):
+        sorted_opts = []
+        for opt in opts:
+            for i, sopt in enumerate(sorted_opts):
+                if self.__args_priority[opt[0][2:]] < self.__args_priority[sopt[0][2:]]:
+                    sorted_opts.insert(i, opt)
+                    break
+            else:
+                sorted_opts.append(opt)
+        return sorted_opts
+
     def getopt(self, argv):
-        return getopt.getopt(argv, None, [arg.replace('-', "=") for arg in self.__args.keys()])
+        opts, err_msg = getopt.getopt(argv, None, [arg.replace('-', "=") for arg in self.__args.keys()])
+        opts = self.__sort_opts(opts)
+        return (opts, err_msg)
 
     def is_matched(self, opt, names):
         nl = [ "--" + name for name in names]

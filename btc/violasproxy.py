@@ -21,6 +21,7 @@ from baseobject import baseobject
 from enum import Enum, auto
 from btc.btcwallet import btcwallet
 from comm.values import autoname 
+from dataproof import dataproof
 #module name
 name="violasproxy"
 
@@ -69,7 +70,7 @@ class violasproxy(baseobject):
         self.host = str(host)
         self.port = port
         self.domain = str(domain)
-        self.wallet = btcwallet(walletname)
+        self.wallet = btcwallet(dataproof.wallets("btc"))
         self._logger.debug(f"connect violas server(host={host}  port={port} domain={domain}")
 
     def convert_arg_to_url(self, args):

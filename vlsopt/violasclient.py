@@ -24,6 +24,7 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 from baseobject import baseobject
 from comm.functions import split_full_address
+from comm.functions import is_mnemonic
 from comm.values import DECIMAL_VIOLAS
 import redis
 
@@ -46,10 +47,8 @@ class violaswallet(baseobject):
     def __del__(self):
         pass
 
-    def __load_wallet(self, wallet_name, chain="violas"):
+    def __load_wallet(self, wallet, chain="violas"):
         try:
-            self.__wallet_name = wallet_name
-
             if chain in ("violas"):
                 from vlsopt.violasproxy import walletproxy
             elif chain in ("libra"):
@@ -57,8 +56,13 @@ class violaswallet(baseobject):
             else:
                 raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas wallet")
 
-            if os.path.isfile(self.__wallet_name):
-                self.__wallet = walletproxy.load(self.__wallet_name)
+            self.__wallet_name = wallet
+            if isinstance(wallet, str) and os.path.isfile(wallet):
+                self.__wallet = walletproxy.load(wallet)
+                ret = result(error.SUCCEED, "", "")
+            elif is_mnemonic(wallet):
+                self.__wallet_name = None #not save to file
+                self.__wallet = walletproxy.loads(wallet)
                 ret = result(error.SUCCEED, "", "")
             else:
                 ret = result(error.SUCCEED, "not found wallet file", "")
