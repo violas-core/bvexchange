@@ -216,8 +216,8 @@ def has_account(address):
 '''
 def init_args(pargs):
     pargs.append("help", "show arg list.")
-    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file")
-    pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic")
+    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 10)
+    pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
 
     #wallet 
     pargs.append("new_account", "new account and save to local wallet.")
@@ -284,7 +284,7 @@ def run(argc, argv):
             continue
         
         if len(arg) > 0:
-            count, arg_list = pargs.split_arg(arg)
+            count, arg_list = pargs.split_arg(opt, arg)
 
             print("opt = {}, arg = {}".format(opt, arg_list))
         if pargs.is_matched(opt, ["chain"]):

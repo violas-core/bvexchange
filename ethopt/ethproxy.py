@@ -106,8 +106,6 @@ class ethproxy():
                 url += f":{port}"
 
         self._w3 = Web3(Web3.HTTPProvider(url))
-        assert self._w3.isConnected(), f"connect {url} is failed."
-
 
     def __init_contract_erc20(self):
         for token in contract_codes:
@@ -295,7 +293,7 @@ class ethproxy():
 
 
 def main():
-    client = clientproxy.connect("https://client.testnet.libra.org")
+    client = clientproxy.connect("")
     json_print(client.get_latest_version())
 if __name__ == "__main__":
     main()

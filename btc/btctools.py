@@ -20,6 +20,8 @@ from comm.parseargs import parseargs
 from comm.functions import json_print
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from btc.btcclient import btcclient
+from btc.btcwallet import btcwallet
+from dataproof import dataproof
 from enum import Enum
 
 #module name
@@ -31,12 +33,19 @@ logger = log.logger.getLogger(name)
 def getbtcclient():
     return btcclient(name, stmanage.get_btc_conn())
 
+def getbtcwallet():
+    return btcwallet(name, dataproof.wallets("btc"))
+
 def getb2vtransaction(cursor, limit = 1):
     client = getbtcclient()
     ret = client.get_transactions(cursor, limit)
     assert ret.state == error.SUCCEED, " getb2vtransaction failed"
     for data in ret.datas:
         print(data.to_json())
+
+def showaccountlist():
+    bwallet = getbtcwallet() 
+    json_print(bwallet.wallet_info)
 
 def gettransaction(tranid):
     client = getbtcclient()
@@ -131,7 +140,9 @@ def getwalletaddressbalance(address):
 
 def init_args(pargs):
     pargs.append("help", "show arg list")
-    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file")
+    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", 10)
+    pargs.append("wallet", "inpurt wallet file or mnemonic, input is btc wallet file or pairs(ADDRESS:PRIVKEY, ADDRESS:PRIVKEY)", True, "file name/pairs", priority = 13, argtype = parseargs.argtype.STR)
+
     pargs.append("sendtoaddress", "send to address.format.", True, ["address", "count"])
     pargs.append("sendexproofstart", "create new exchange start proof.", True, ["fromaddress", "toaddress", "amount", "vaddress", "sequence", "vtoken"])
     pargs.append("sendexproofend", "create new exchange end proof.", True, ["fromaddress", "toaddress", "vaddress", "sequence", "vamount", "version"])
@@ -148,6 +159,7 @@ def init_args(pargs):
     pargs.append("getwalletaddressbalance", "returns wallet target address's balance.", True, ["address"])
     pargs.append("getb2vtransaction", "returns array of proof list.[map to violas format]", True, ["cursor", "limit"])
     pargs.append("gettransaction", "returns proof info.", True, ["tranid"])
+    pargs.append("showaccountlist", "returns account info.")
 
 def run(argc, argv):
     try:
@@ -171,23 +183,23 @@ def run(argc, argv):
     pargs.check_unique(names)
 
     #--conf must be first
-    for opt, arg in opts:
-        if pargs.is_matched(opt, ["conf"]):
-            stmanage.set_conf_env(arg)
-            break
     if stmanage.get_conf_env() is None:
         stmanage.set_conf_env_default() 
 
-
     for opt, arg in opts:
-        if len(arg) > 0:
-            count, arg_list = pargs.split_arg(arg)
-
-            print("opt = {}, arg = {}".format(opt, arg_list))
-        if pargs.is_matched(opt, ["sendtoaddress"]):
+        count, arg_list = pargs.split_arg(opt, arg)
+        print("opt = {}, arg = {}".format(opt, arg_list))
+        if pargs.is_matched(opt, ["conf"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            stmanage.set_conf_env(arg_list[0])
+        elif pargs.is_matched(opt, ["sendtoaddress"]):
             if len(arg_list) != 2:
                 pargs.exit_error_opt(opt)
             ret = sendtoaddress(arg_list[0], arg_list[1])
+        elif pargs.is_matched(opt, ["wallet"]):
+            pargs.exit_check_opt_arg(opt, arg, 1)
+            dataproof.wallets.update_wallet("btc", arg_list[0])
         elif pargs.is_matched(opt, ["sendexproofstart"]):
             if len(arg_list) != 6:
                 pargs.exit_error_opt(opt)
@@ -255,6 +267,8 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             ret = gettransaction(arg_list[0])
+        elif pargs.is_matched(opt, ["showaccountlist"]):
+            showaccountlist()
 
     logger.debug("end manage.main")
 
