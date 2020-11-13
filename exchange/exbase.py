@@ -124,12 +124,12 @@ class exbase(baseobject):
             self.append_property("btc_wallet", self.from_wallet)
         elif self.from_chain in ("violas", "libra"):
             self.append_property("pserver", requestclient(self.name(), self.proofdb))
-            self.append_property("from_wallet", violaswallet(self.name(), dataproof.wallets(self.from_chain)), self.from_chain))
+            self.append_property("from_wallet", violaswallet(self.name(), dataproof.wallets(self.from_chain), self.from_chain))
             self.append_property("from_client", self.violas_client if self.from_chain == "violas" else self.libra_client)
             self.append_property(f"{self.from_chain}_wallet", self.from_wallet)
         elif self.from_chain == "ethereum":
             self.append_property("pserver", requestclient(self.name(), self.proofdb))
-            self.append_property("from_wallet", ethwallet(self.name(), dataproof.wallets(self.from_chain), None))
+            self.append_property("from_wallet", ethwallet(self.name(), dataproof.wallets(self.from_chain)))
             self.append_property("from_client", self.ethereum_client)
             self.append_property("ethereum_wallet", self.from_wallet)
 
@@ -140,10 +140,10 @@ class exbase(baseobject):
             self.append_property("map_wallet", btcwallet(self.name(), None))
             self.append_property("map_client", self.btc_client)
         elif self.map_chain in ("violas", "libra"):
-            self.append_property("map_wallet", violaswallet(self.name(), dataproof.wallets(self.map_chain)), self.map_chain))
+            self.append_property("map_wallet", violaswallet(self.name(), dataproof.wallets(self.map_chain), self.map_chain))
             self.append_property("map_client", self.violas_client if self.map_chain == "violas" else self.libra_client)
         elif self.map_chain == "ethereum":
-            self.append_property("map_wallet", ethwallet(self.name(), dataproof.wallets(self.map_chain), None))
+            self.append_property("map_wallet", ethwallet(self.name(), dataproof.wallets(self.map_chain)))
             self.append_property("map_client", self.ethereum_client)
         else:
             raise Exception(f"chain {self.from_chain} is invalid.")

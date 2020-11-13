@@ -207,9 +207,9 @@ class ethclient(baseobject):
                             port=node.get("port"), \
                             chain_id = node.get("chain_id", 42)
                             )
-                    if not client.is_connected():
-                        self._logger.info(f"connect {chain} node failed({e}). test next...")
-                        continue
+                    #if not client.is_connected():
+                    #    self._logger.info(f"connect {chain} node failed({e}). test next...")
+                    #    continue
 
                     self._logger.debug(f"connect {chain} node succeed.") 
                 except Exception as e:

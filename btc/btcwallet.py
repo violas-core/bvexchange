@@ -44,10 +44,12 @@ class btcwallet(baseobject):
             self.loads(wallet)
         
     def loads(self, wallet):
+        self.__wallet_name = None
         self.wallet_info.clear()
         if isinstance(wallet, dict):
-            self.wallet_info = wallet
+            self.__wallet_info = wallet
         elif os.path.isfile(wallet):
+            self.__wallet_name = wallet
             with open(wallet) as lines:
                 infos = lines.readlines()
                 for info in infos:

@@ -14,7 +14,13 @@ name="parseargs"
 class parseargs:
     __args = {}
     __args_priority = {}
+    __args_argtype = {}
     __unique = []
+
+    class argtype(Enum):
+        LIST = 0x01
+        STR  = 0x02
+        JSON = 0x03
 
     def __init__(self):
         pass
@@ -28,7 +34,6 @@ class parseargs:
         self.__unique.append(list(opts_unique))
 
     def check_unique(self, opts):
-        pass
         opt_list = [name.replace("--", "") for name in opts]
         for uni in self.__unique:
             count = 0
@@ -50,7 +55,7 @@ class parseargs:
                 return True
         return False
 
-    def append(self, name, desc, hasarg = False, arglist = None, priority = 100):
+    def append(self, name, desc, hasarg = False, arglist = None, priority = 100, argtype = argtype.LIST):
         if name in self.__args:
             raise Exception("arg is exists.")
         if hasarg:
@@ -61,6 +66,7 @@ class parseargs:
             value = f"desc: {desc} format: --{name}"
         self.__args[key] = value
         self.__args_priority[name] = priority
+        self.__args_argtype[name] = argtype
 
     def remove(self, name):
         if self.__args is None or name not in self.__args:
@@ -132,13 +138,32 @@ class parseargs:
         nl = [ "--" + name for name in names]
         return opt in nl
 
-    def split_arg(self, arg):
+    def split_arg(self, opt, arg):
         if arg is None:
             return (0, None)
-        #arg_list = "{}".format(arg).split(sign)
-        if "," not in arg:
-            argstr = "[\"{}\"]".format(arg)
+
+        #arg is not json format
+        if self.__args_argtype[opt.replace("-", "")] == self.argtype.STR:
+            arg_list = [arg]
+        elif self.__args_argtype[opt.replace("-", "")] == self.argtype.STR:
+            arg_list = json.loads(argstr)
         else:
-            argstr = "[{}]".format(arg)
-        arg_list = json.loads(argstr)
+            if "," not in arg:
+                argstr = "[\"{}\"]".format(arg)
+            else:
+                argstr = "[{}]".format(arg)
+            arg_list = json.loads(argstr)
         return  (len(arg_list), arg_list)
+
+    def exit_check_opt_arg(self, opt, arg, arg_count):
+        count, arg_list = self.split_arg(opt, arg)
+        counts = []
+        if isinstance(arg_count, int):
+            counts.append(arg_count)
+        if count not in counts:
+            self.exit_error_opt(opt)
+
+    def exit_check_opt_arg_min(self, opt, arg, arg_count):
+        count, arg_list = self.split_arg(opt, arg)
+        if count < arg_count:
+            self.exit_error_opt(opt)

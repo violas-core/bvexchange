@@ -318,7 +318,7 @@ def init_args(pargs):
     pargs.append("help", "show arg list.")
     pargs.append("chain", "work chain name(violas/libra, default : violas). must be first argument", True, ["chain=violas"], priority = 10)
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)
-    pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13)
+    pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
     #wallet 
     pargs.append("new_account", "new account and save to local wallet.")
     pargs.append("get_account", "show account info.", True, ["address"])
@@ -384,7 +384,7 @@ def run(argc, argv):
     for opt, arg in opts:
 
         if len(arg) > 0:
-            count, arg_list = pargs.split_arg(arg)
+            count, arg_list = pargs.split_arg(opt, arg)
 
             print("opt = {}, arg = {}".format(opt, arg_list))
         if pargs.is_matched(opt, ["chain"]):

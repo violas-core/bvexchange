@@ -70,7 +70,7 @@ class violasproxy(baseobject):
         self.host = str(host)
         self.port = port
         self.domain = str(domain)
-        self.wallet = btcwallet(dataproof.wallets("btc"))
+        self.wallet = btcwallet(name, dataproof.wallets("btc"))
         self._logger.debug(f"connect violas server(host={host}  port={port} domain={domain}")
 
     def convert_arg_to_url(self, args):
