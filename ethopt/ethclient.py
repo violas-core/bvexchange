@@ -161,12 +161,12 @@ class ethwallet(baseobject):
             raise AttributeError
 
 class ethclient(baseobject):
-    def __init__(self, name, nodes, chain = "ethereum"):
+    def __init__(self, name, nodes, chain = "ethereum", usd_chain = True):
         baseobject.__init__(self, name, chain)
         self.__client = None
         self.__node = None
         if nodes is not None:
-            ret = self.conn_node(name, nodes, chain)
+            ret = self.conn_node(name, nodes, chain, usd_chain = usd_chain)
             if ret.state != error.SUCCEED:
                 raise Exception(f"connect {chain} node failed.")
 
@@ -190,7 +190,7 @@ class ethclient(baseobject):
             return self._sender_map_account
         return account
 
-    def conn_node(self, name, nodes, chain = "ethereum"):
+    def conn_node(self, name, nodes, chain = "ethereum", usd_chain = True):
         try:
             if nodes is None or len(nodes) == 0:
                 return result(error.ARG_INVALID, repr(nodes), "")
@@ -205,7 +205,7 @@ class ethclient(baseobject):
                             node.get("name", ""), node.get("host"), node.get("port"), node.get("chain_id", 42)))
                     client = clientproxy(host=node.get("host"), \
                             port=node.get("port"), \
-                            chain_id = node.get("chain_id", 42)
+                            usd_chain = usd_chain
                             )
                     #if not client.is_connected():
                     #    self._logger.info(f"connect {chain} node failed({e}). test next...")
@@ -370,13 +370,18 @@ class ethclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_chain_id(self):
+        try:
+            ret = result(error.SUCCEED, datas = self.__client.get_chain_id())
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
 
     def __getattr__(self, name):
         if name.startswith('__') and name.endswith('__'):
             # Python internal stuff
             raise AttributeError
         return self.__client
-        #raise Exception(f"not defined function:{name}")
 
 def main():
     pass

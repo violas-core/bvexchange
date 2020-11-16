@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-from setting import setting
 import comm.values
 from comm import result
 from comm.result import parse_except
@@ -7,6 +6,7 @@ from comm.functions import get_address_from_full_address
 from comm.functions import json_print
 from comm.values import trantypebase
 from comm.values import map_chain_name
+from dataproof.dataproof import setting
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
@@ -75,29 +75,35 @@ token_manage = None #token_info(setting.token_info)
 def check_setting():
     pass
 
+def keys():
+    return setting.setting.keys()
+
+def get(key):
+    return setting.setting.get(key)
+
 def set_conf_env_default():
-    setting.set_conf_env_default()
+    setting.setting.set_conf_env_default()
     reset()
 
 def set_conf_env(conffile):
-    setting.set_conf_env(conffile)
+    setting.setting.set_conf_env(conffile)
     reset()
 
 def reset():
-    setting.reset()
+    setting.setting.reset()
     global token_manage
-    token_manage = token_info(setting.token_info)
+    token_manage = token_info(setting.setting.token_info)
     check_setting()
 
 def get_conf_env():
-    return setting.get_conf_env()
+    return setting.setting.get_conf_env()
 
 def get_looping_sleep(mtype):
-    sleep = int(setting.looping_sleep.get(mtype, 1))
+    sleep = int(setting.setting.looping_sleep.get(mtype, 1))
     return sleep
 
 def get_syncing_state():
-    return setting.syncing_mod
+    return setting.setting.syncing_mod
 
 def __get_address_list(atype, mtype, chain = None, full = True):
     ''' 
@@ -105,7 +111,7 @@ def __get_address_list(atype, mtype, chain = None, full = True):
            True: auth_prefix + address 
            False: address
     '''
-    addresses =  [dict.get("address") for dict in setting.address_list.get(atype) \
+    addresses =  [dict.get("address") for dict in setting.setting.address_list.get(atype) \
             if dict["type"] == mtype and mtype is not None and (chain is None or dict["chain"] == chain)]
     if addresses is not None and len(addresses) > 0:
         if full:
@@ -118,7 +124,7 @@ def __get_address_list(atype, mtype, chain = None, full = True):
 #maybe use. so keep it until libra support usd eur ...
 #def __get_tokenid_list(atype, mtype, chain = None):
 #    try:
-#        return [dict.get("tokenid") for dict in setting.address_list.get(atype) \
+#        return [dict.get("tokenid") for dict in setting.setting.address_list.get(atype) \
 #                if dict["type"] == mtype and mtype is not None and (chain is None or dict["chain"] == chain)]
 #    except Exception as e:
 #        parse_except(e)
@@ -132,7 +138,7 @@ def get_map_address(mtype, chain = None, full = True):
     return __get_address_list("map", mtype, chain, full)[0]
 
 def get_address_info(atype):
-    return setting.address_list.get(atype)
+    return setting.setting.address_list.get(atype)
 
 def get_sender_address_list(mtype, chain = None, full = True):
     return __get_address_list("sender", mtype, chain, full)
@@ -141,7 +147,7 @@ def get_combine_address_list(mtype, chain = None, full = True):
     return __get_address_list("combine", mtype, chain, full)
 
 def get_type_code(dtype, default = ""):
-    return setting.type_code.get(dtype, default)
+    return setting.setting.type_code.get(dtype, default)
 
 def get_exchang_chains(mtype):
     from_chain  = map_chain_name[mtype[0]]
@@ -177,7 +183,7 @@ def get_token_form_to_with_type(etype, mtype):
     return f_t_coins # from to
 
 def type_is_map(mtype):
-    opts = setting.type_token.get(mtype)
+    opts = setting.setting.type_token.get(mtype)
     if opts:
         return opts.get("etype", "swap") == "map"
     return False
@@ -230,8 +236,8 @@ def get_combine_address(mtype, chain , full = True):
 #
 
 def get_db(mtype):
-    db_info = dict(setting.db_default)
-    dbs = [db for db in setting.db_list if db.get("db") == mtype and mtype is not None]
+    db_info = dict(setting.setting.db_default)
+    dbs = [db for db in setting.setting.db_list if db.get("db") == mtype and mtype is not None]
     if dbs is not None and len(dbs) > 0:
         if db_info:
             db_info.update(dbs[0])
@@ -243,31 +249,31 @@ def get_db(mtype):
     return db_info
 
 def get_libra_nodes():
-    return setting.libra_nodes
+    return setting.setting.libra_nodes
 
 def get_violas_servers():
-    return setting.violas_servers
+    return setting.setting.violas_servers
 
 def get_eth_nodes():
-    return setting.ethereum_nodes
+    return setting.setting.ethereum_nodes
 
 def get_violas_nodes():
-    return setting.violas_nodes
+    return setting.setting.violas_nodes
 
 def get_btc_nodes():
-    return setting.btc_conn
+    return setting.setting.btc_conn
 
 def get_btc_conn():
-    return setting.btc_conn
+    return setting.setting.btc_conn
 
 def get_traceback_limit():
-    return setting.traceback_limit
+    return setting.setting.traceback_limit
 
 def get_db_echo():
-    return setting.db_echo
+    return setting.setting.db_echo
 
 def get_max_times(mtype):
-    return setting.v2b_maxtimes
+    return setting.setting.v2b_maxtimes
 
 #get btc/libra chain stable's map token
 def get_token_map(token, mtype = None):
@@ -281,7 +287,7 @@ def get_token_map(token, mtype = None):
 #get opttype' stable token(map, ...)
 def get_type_stable_token(mtype = None):
     type_stable_token = {}
-    for typename, tokens in setting.type_token.items():
+    for typename, tokens in setting.setting.type_token.items():
         if mtype is None or typename == mtype:
             if tokens.get("ttoken") is not None:
                 type_stable_token.update({typename : tokens.get("ttoken")})
@@ -312,14 +318,14 @@ def get_support_token_id(chain):
     return list(set(mtokens + tokens))
 
 def get_swap_module():
-    return setting.swap_module.get("address")
+    return setting.setting.swap_module.get("address")
 
 def get_swap_owner():
-    return setting.swap_owner.get("address")
+    return setting.setting.swap_owner.get("address")
 
 def get_run_mods():
     mods = []
-    for typename, opts in setting.type_token.items():
+    for typename, opts in setting.setting.type_token.items():
         run_state = opts.get("run", False)
         if run_state == True:
             mods.append(typename)
@@ -327,7 +333,7 @@ def get_run_mods():
 
 
 def get_support_mods(etype = None):
-    return setting.type_token_filter(etype)
+    return setting.setting.type_token_filter(etype)
     
 def get_conf():
     infos = {}
@@ -352,13 +358,13 @@ def get_conf():
 
 def get_eth_token(name = None):
     tokens = []
-    for key, token in setting.ethereum_tokens.items():
+    for key, token in setting.setting.ethereum_tokens.items():
         if token.get("support", True):
             token["name"] = key
             tokens.append(token)
 
     if name:
-        return setting.ethereum_tokens[name]
+        return setting.setting.ethereum_tokens[name]
     return tokens
 
 def get_vlsmproof_address():

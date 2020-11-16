@@ -7,6 +7,7 @@ import bvexchange
 import stmanage
 from comm.parseargs import parseargs
 from comm.version import version
+from comm.functions import json_print
 from tools import show_workenv
 from dataproof import dataproof
 
@@ -18,13 +19,21 @@ def init_args(pargs):
     pargs.append("version", "show version info")
     pargs.append("mod", "run mod", True, bvexchange.list_valid_mods())
     pargs.append("info", "show info", True, show_workenv.list_valid_mods())
+    pargs.append("show_conf", "show data proof info for config", True, "[all/target config]", priority = 30)
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 10)
+    pargs.append("eth_usd_chain", "load eth contract info(address, decimals). default:local abi, if set it will load from ethereum vlsmproofmain(contract) load", priority = 20)
     pargs.append("vwallet", "file or mnemonic:num for violas wallet", True, "[file/mnemonic:num]", priority = 20, argtype = parseargs.argtype.STR)
     pargs.append("lwallet", "file or mnemonic:num for violas wallet", True, "[file/mnemonic:num]", priority = 20, argtype = parseargs.argtype.STR)
     pargs.append("ewallet", "file or mnemonic:num for ethereum wallet", True, "[file/mnemonic:num]", priority = 20, argtype = parseargs.argtype.STR)
     pargs.append("bwallet", "file or address:privkey list for btc wallet, format: \"ADDRESS:PRIVKEY,ADDRESS:PRIVKEY\"", True, "[file/address:privkey]", priority= 20, argtype = parseargs.argtype.STR)
 
+def show_exec_args():
+    logger.debug('''
+    "eth_usd_chain": dataproof.configs("eth_usd_chain")
+            ''')
+
 def main(argc, argv):
+
     pargs = parseargs()
     try:
         logger.debug("start manage.main")
@@ -53,6 +62,12 @@ def main(argc, argv):
         if pargs.is_matched(opt, ["conf"]):
             pargs.exit_check_opt_arg(opt, arg, 1)
             stmanage.set_conf_env(arg)
+            init_dataproof_from_stmanage()
+        elif pargs.is_matched(opt, ["show_conf"]):
+            if count == 0 or (count == 1 and arg_list[0] == "all"):
+                json_print(dataproof.configs.datas)
+            else:
+                json_print(dataproof.configs(arg_list[0]))
         elif pargs.is_matched(opt, ["vwallet"]):
             pargs.exit_check_opt_arg(opt, arg, 1)
             dataproof.wallets.update_wallet("violas", arg_list[0])
@@ -65,11 +80,14 @@ def main(argc, argv):
         elif pargs.is_matched(opt, ["bwallet"]):
             pargs.exit_check_opt_arg(opt, arg, 1)
             dataproof.wallets.update_wallet("btc", arg_list[0])
+        elif pargs.is_matched(opt, ["eth_usd_chain"]):
+            dataproof.configs.set_config("eth_usd_chain", True)
         elif pargs.is_matched(opt, ["version"]) :
             logger.debug(f"version:{version()}")
         elif pargs.is_matched(opt, ["mod"]) :
             pargs.exit_check_opt_arg_min(opt, arg, 1)
             logger.debug(f"arg_list:{arg_list}")
+            show_exec_args()
             bvexchange.run(arg_list)
         elif pargs.is_matched(opt, ["info"]) :
             pargs.exit_check_opt_arg_min(opt, arg, 1)

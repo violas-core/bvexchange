@@ -24,6 +24,7 @@ from db.dbvbase import dbvbase
 from baseobject import baseobject
 from analysis.analysis_record import record
 import analysis.parse_transaction as ptran
+from dataproof import dataproof
 #module name
 name="abase"
 
@@ -77,7 +78,7 @@ class abase(baseobject):
 
     def _connect_ethereum(self, name, vnodes, chain="ethereum"):
         if vnodes is not None:
-            self._vclient = ethclient(name, vnodes, chain) 
+            self._vclient = ethclient(name, vnodes, chain, usd_chain = dataproof.configs("eth_usd_chain")) 
         return self._vclient
 
     def _connect_btc(self, name, node, chain="btc"):

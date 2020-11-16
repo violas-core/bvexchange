@@ -19,6 +19,7 @@ class tomlbase():
         self.__content = None
         self._toml_file = ""
         self.__load_conf()
+        self.__dataproof = {}
 
     def __load_conf(self):
 
@@ -35,6 +36,7 @@ class tomlbase():
         self.is_loaded = True
         for key, value in self.__content.items():
             setattr(self, key, value)
+            self.__dataproof.update({key:value})
 
     def __get_conf_file(self):
         release_path = ""
@@ -70,6 +72,10 @@ class tomlbase():
             sys.exit(-1)
 
     @property
+    def datas(self):
+        return self.__dataproof
+
+    @property
     def toml_file(self):
         return self._toml_file
 
@@ -79,14 +85,24 @@ class tomlbase():
 
     @property
     def content(self):
-        return self.__content
-
-    def get(self, key):
         self.__check_load_conf()
         if not self.is_loaded:
             print("not found configure file(toml). use --conf ")
             sys.exit(-1)
-        return self.content[key]
+        return self.__content
+
+    def keys(self):
+        return self.__dataproof.keys()
+
+    def set(self, key, value):
+        return self.__dataproof.update({key:value})
+
+    def get(self, key, default = None):
+        self.__check_load_conf()
+        if not self.is_loaded:
+            print("not found configure file(toml). use --conf ")
+            sys.exit(-1)
+        return self.__dataproof.get(key, default)
 
     @classmethod
     def set_conf_env(self, conffile):

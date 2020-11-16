@@ -37,17 +37,17 @@ logger = log.logger.getLogger(name)
 *************************************************ethclient oper*******************************************************
 '''
 
-def get_ethclient():
+def get_ethclient(usd_erc20 = True):
 
     client = ethclient(name, stmanage.get_eth_nodes(), chain)
     client.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
-    tokens = client.get_token_list().datas
-    logger.debug(f"support tokens: {tokens}")
-    for token in tokens:
-        client.load_contract(token)
+    if usd_erc20:
+        tokens = client.get_token_list().datas
+        logger.debug(f"support tokens: {tokens}")
+        for token in tokens:
+            client.load_contract(token)
     return client
     
-
 def get_ethwallet():
     return ethwallet(name, dataproof.wallets("ethereum"), chain)
 
@@ -156,12 +156,18 @@ def get_transaction_version(address, sequence):
     ret = client.get_transaction_version(address, sequence)
     logger.debug("version: {0}".format(ret.datas))
 
-
 def get_syncing_state():
     logger.debug(f"start get_syncing_state()")
     client = get_ethclient()
     ret = client.get_syncing_state()
     logger.debug("version: {0}".format(ret.datas))
+
+def get_chain_id():
+    logger.debug(f"start get_chain_id()")
+    client = get_ethclient(False)
+    ret = client.get_chain_id()
+    logger.debug("version: {0}".format(ret.datas))
+
 '''
 *************************************************ethwallet oper*******************************************************
 '''
@@ -242,6 +248,7 @@ def init_args(pargs):
     pargs.append("show_all_token_list", "show token list.")
     pargs.append("get_decimals", "get address's token decimals.", True, ["token_id"])
     pargs.append("get_syncing_state", "get chain syncing state.")
+    pargs.append("get_chain_id", "get chain id.")
 
 def run(argc, argv):
     try:
@@ -396,6 +403,8 @@ def run(argc, argv):
             get_decimals(arg_list[0])
         elif pargs.is_matched(opt, ["get_syncing_state"]):
             get_syncing_state()
+        elif pargs.is_matched(opt, ["get_chain_id"]):
+            get_chain_id()
         else:
             raise Exception(f"not found matched opt{opt}")
     logger.debug("end manage.main")
