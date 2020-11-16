@@ -11,7 +11,7 @@ class dataproof():
     FIELD_SPLIT = ":"
 
     def __init__(self):
-        print(f"init dataproof")
+        pass
 
     def set_default_value(self, key, value):
         _default_value.update({key:value})
@@ -38,7 +38,6 @@ class dataproof():
 
 class walletdatas(dataproof):
     def __init__(self):
-        print(f"init wallletdatas")
         dataproof.__init__(self)
         self.__init_defalut()
 
@@ -80,7 +79,6 @@ class walletdatas(dataproof):
 
 class configdatas(dataproof):
     def __init__(self):
-        print(f"init configdatas")
         dataproof.__init__(self)
         self.__init_defalut()
 
@@ -94,11 +92,9 @@ class configdatas(dataproof):
 
 class settingproxy(dataproof):
     def __init__(self):
-        print(f"init settingproxy")
         dataproof.__init__(self)
 
     def __getattr__(self, name):
-        print(f"getattr: {name}")
         if name == "setting":
             return config_setting.setting
 
