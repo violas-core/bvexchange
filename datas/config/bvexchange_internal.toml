@@ -11,6 +11,9 @@ v2b_maxtimes = 99
 #syncing proof flag ; default true
 syncing_mod = false
 
+eth_usd_local = false
+
+violas_wallet = "this is test for config : 1"
 #connect btc chain config
 [btc_conn]
     user = "btc"

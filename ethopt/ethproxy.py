@@ -40,7 +40,7 @@ VLSMPROOF_MAIN_NAME = "vlsmproof"
 VLSMPROOF_DATAS_NAME = "vmpdatas"
 VLSMPROOF_STATE_NAME = "vmpstate"
 contract_codes = {
-        "usdt" : {"abi":usdt_abi.ABI, "bytecode":usdt_abi.BYTECODE, "token_type": "erc20", "address": usdt_abi.ADDRESS},
+        "usdt" : {"abi":usdt_abi.ABI, "bytecode":usdt_abi.BYTECODE, "token_type": "erc20", "address": usdt_abi.ADDRESS, "decimals": 6},
         VLSMPROOF_MAIN_NAME: {"abi": vmp_main_abi.ABI, "bytecode": vmp_main_abi.BYTECODE, "token_type": "main", "address":vmp_main_abi.ADDRESS},
         VLSMPROOF_DATAS_NAME: {"abi":vmp_datas_abi.ABI, "bytecode": vmp_datas_abi.BYTECODE, "token_type": "datas", "address":vmp_datas_abi.ADDRESS},
         VLSMPROOF_STATE_NAME: {"abi":vmp_state_abi.ABI, "bytecode": vmp_state_abi.BYTECODE, "token_type": "state", "address":vmp_state_abi.ADDRESS},
@@ -86,15 +86,15 @@ class ethproxy():
     def clientname(self):
         return name
     
-    def __init__(self, host, port, chain_id = 42, *args, **kwargs):
+    def __init__(self, host, port, usd_chain = True, *args, **kwargs):
         self._w3 = None
         self.tokens_address = {}
         self.tokens_decimals = {}
         self.tokens = {}
         self.tokens_id = []
         self._vlsmproof_manager = None
+        self.__usd_chain_contract_info = usd_chain
 
-        setattr(self, "chain_id", chain_id)
         self.connect(host, port, *args, **kwargs)
         self.load_vlsmproof(contract_codes[VLSMPROOF_MAIN_NAME]["address"]) #default, config will override
 
@@ -111,6 +111,37 @@ class ethproxy():
         for token in contract_codes:
             self.load_contract(token)
 
+    def __get_contract_info(self, name):
+        contract = contract_codes[name]
+        assert contract is not None, f"contract name({name}) is invalid."
+        return contract
+
+    def __get_token_decimals_with_name(self, erc20_token, name):
+        contract = self.__get_contract_info(name)
+        decimals = contract.get("decimals")
+        if decimals is None or decimals <= 0 or self.__usd_chain_contract_info:
+            decimals = erc20_token.decimals()
+        return decimals
+        
+
+    def __get_token_address_with_name(self, name):
+        contract = self.__get_contract_info(name)
+        address = contract.get("address")
+        if address is None or len(address) <= 0 or self.__usd_chain_contract_info:
+            address = self.tokens[VLSMPROOF_MAIN_NAME].token_address(name)
+        return address
+
+
+    def __get_contract_address_with_name(self, vmpslot, name):
+        contract = self.__get_contract_info(name)
+        address = contract.get("address")
+        if address is None or len(address) <= 0 or self.__usd_chain_contract_info:
+            if name == VLSMPROOF_DATAS_NAME:
+                address = vmpslot.proof_address()
+            elif name == VLSMPROOF_STATE_NAME:
+                address = vmpslot.state_address()
+        return address
+
     def load_vlsmproof(self, address, name = VLSMPROOF_MAIN_NAME):
         '''
             load main  datas state
@@ -118,14 +149,15 @@ class ethproxy():
         if address == self.tokens_address.get(VLSMPROOF_MAIN_NAME, ""):
             return
 
+        print(f"load vlsmproof({address}, {name})")
         contract = contract_codes[name]
         if name == VLSMPROOF_MAIN_NAME:
             vmpslot = vlsmproofmainslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
-            datas_address = vmpslot.proof_address()
+            datas_address = self.__get_contract_address_with_name(vmpslot, VLSMPROOF_DATAS_NAME)
             self.load_vlsmproof(datas_address, VLSMPROOF_DATAS_NAME)
         elif name == VLSMPROOF_DATAS_NAME:
             vmpslot = vlsmproofdatasslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
-            state_address = vmpslot.state_address()
+            state_address = self.__get_contract_address_with_name(vmpslot, VLSMPROOF_STATE_NAME)
             self.load_vlsmproof(state_address, VLSMPROOF_STATE_NAME)
         elif name == VLSMPROOF_STATE_NAME:
             vmpslot = vlsmproofstateslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
@@ -141,12 +173,12 @@ class ethproxy():
             return
 
         contract = contract_codes[name]
-        address = self.tokens[VLSMPROOF_MAIN_NAME].token_address(name)
+        address = self.__get_token_address_with_name(name)
         assert contract is not None, f"not support token({name})"
         erc20_token = erc20slot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
         setattr(self, name, erc20_token)
         self.tokens_address[name] = address
-        self.tokens_decimals[name] = pow(10, erc20_token.decimals())
+        self.tokens_decimals[name] = pow(10, self.__get_token_decimals_with_name(erc20_token, name))
         self.tokens[name] = erc20_token
         self.tokens_id.append(name)
         print(f"load contract : {name}")
@@ -190,7 +222,7 @@ class ethproxy():
             gas = calldata.estimateGas({"from":sender})
 
         raw_tran = calldata.buildTransaction({
-            "chainId": self.chain_id,
+            "chainId": self.get_chain_id(),
             "gas" : gas,
             "gasPrice": gas_price,
             "nonce" : nonce
@@ -253,6 +285,9 @@ class ethproxy():
 
     def get_rawtransaction(self, txhash):
         return self._w3.eth.getTransaction(txhash)
+
+    def get_chain_id(self):
+        return self._w3.eth.chainId
 
     def _get_transactions(self, start, limit = 10):
         datas = []
