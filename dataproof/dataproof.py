@@ -50,8 +50,8 @@ class walletdatas(dataproof):
     def __init_wallet_info(self):
         self.set_default_value(f"{self.__wallet_key('violas')}", "vwallet")
         self.set_default_value(f"{self.__wallet_key('libra')}", "vwallet")
-        self.set_default_value(f"{self.__wallet_key('btc')}", "vwallet")
-        self.set_default_value(f"{self.__wallet_key('ethereum')}", "vwallet")
+        self.set_default_value(f"{self.__wallet_key('btc')}", "bwallet")
+        self.set_default_value(f"{self.__wallet_key('ethereum')}", "ewallet")
 
     def get_wallet(self, chain):
         key = self.__wallet_key(chain)
