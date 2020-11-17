@@ -86,7 +86,7 @@ class ethproxy():
     def clientname(self):
         return name
     
-    def __init__(self, host, port, usd_chain = True, *args, **kwargs):
+    def __init__(self, host, port, usd_chain = False, *args, **kwargs):
         self._w3 = None
         self.tokens_address = {}
         self.tokens_decimals = {}
