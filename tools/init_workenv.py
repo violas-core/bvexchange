@@ -40,7 +40,7 @@ def reg_run():
     libra_token_id_list = stmanage.get_support_token_id("libra")
 
     #get support opt-type list id for chain
-    opt_list = stmanage.get_support_mods()
+    opt_list = stmanage.get_support_mods_info()
 
     print(f"all token id: {violas_token_id_list}")
     for opt_type in opt_list:

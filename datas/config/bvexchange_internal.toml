@@ -11,7 +11,11 @@ v2b_maxtimes = 99
 #syncing proof flag ; default true
 syncing_mod = false
 
-eth_usd_local = false
+#true : get decimals contract-datas ... info from ethereum chain, 
+#false: get from local contract abi files; default: false. 
+#infura request count 10_0000, so set it false, but true is safer
+
+#eth_usd_chain = false
 
 #connect btc chain config
 [btc_conn]
@@ -139,22 +143,32 @@ eth_usd_local = false
 #run    : execute analysis proof and exchange, default false
 #etype  : map or swap(default)
 [type_opts]
+    [type_opts.vfilter]
+        support= true  
+    [type_opts.efilter]
+        support= true  
+    [type_opts.bfilter]
+        support= true  
+    [type_opts.lfilter]
+        support= false
     [type_opts.v2lusd]
         ttoken = "Coin1"
-        support= true  
+        support= false
     [type_opts.v2leur]
         ttoken = "Coin2"
         support= false
-        run    = true
     [type_opts.l2vusd]
         ttoken = "VLSUSD"
-        run    = true
+        support= false
     [type_opts.l2veur]
         ttoken = "VLSEUR"
+        support= false
     [type_opts.l2vsgd]
         ttoken = "VLSSGD"
+        support= false
     [type_opts.l2vgbp]
         ttoken = "VLSGBP"
+        support= false
     [type_opts.b2vusd]
         ttoken = "VLSUSD"
     [type_opts.b2veur]
@@ -174,6 +188,7 @@ eth_usd_local = false
         support = false
     [type_opts.v2b]
         ttoken = "BTC"
+        support= false
     [type_opts.v2bm]
         etype  = "map"
     [type_opts.v2lm]
@@ -483,6 +498,7 @@ eth_usd_local = false
         chain = "ethereum"
 
 #thread loopping sleep time(s)
+#db_default is 1 xfilter  xxxproof  xxxex  comm
 [looping_sleep]
     vfilter = 1
     lfilter = 1

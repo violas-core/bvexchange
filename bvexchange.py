@@ -790,6 +790,7 @@ class works:
             logger.debug(f"work thread run{self.__kwargs}")
             self.__work(**self.__kwargs)
 
+    @classmethod
     def get_dtype_from_mod(self, modname):
         dtype = modname.lower()
         if dtype[1] in ["2"]:
@@ -944,8 +945,11 @@ def signal_stop(signal, frame):
 
 def list_valid_mods():
     valid_mods = ["all"]
+    support_mods = stmanage.get_support_mods()
     for mod in work_mod:
-        valid_mods.append(mod.name.lower())
+        dtype = works.get_dtype_from_mod(mod.name.lower())
+        if dtype in support_mods:
+            valid_mods.append(mod.name.lower())
     return valid_mods
 
 def run(mods):

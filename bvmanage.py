@@ -15,7 +15,8 @@ name = "bvexchange"
 logger = log.logger.getLogger(name)
 
 def init_args(pargs):
-    pargs.append("help", "show args info")
+    pargs.clear()
+    pargs.append("help", "show args info", priority = 11)
     pargs.append("version", "show version info")
     pargs.append("mod", "run mod", True, bvexchange.list_valid_mods())
     pargs.append("info", "show info", True, show_workenv.list_valid_mods())
@@ -37,6 +38,10 @@ def main(argc, argv):
     pargs = parseargs()
     try:
         logger.debug("start manage.main")
+        #--conf must be first
+        if stmanage.get_conf_env() is None:
+            stmanage.set_conf_env_default() 
+
         init_args(pargs)
         pargs.show_help(argv)
         opts, err_args = pargs.getopt(argv)
@@ -53,16 +58,15 @@ def main(argc, argv):
     names = [opt for opt, arg in opts]
     pargs.check_unique(names)
 
-    #--conf must be first
-    if stmanage.get_conf_env() is None:
-        stmanage.set_conf_env_default() 
-
     for opt, arg in opts:
         count, arg_list = pargs.split_arg(opt, arg)
         if pargs.is_matched(opt, ["conf"]):
             pargs.exit_check_opt_arg(opt, arg, 1)
             stmanage.set_conf_env(arg)
             init_dataproof_from_stmanage()
+        elif pargs.is_matched(opt, ["help"]):
+            init_args(pargs)
+            pargs.show_help(argv)
         elif pargs.is_matched(opt, ["show_conf"]):
             if count == 0 or (count == 1 and arg_list[0] == "all"):
                 json_print(dataproof.configs.datas)
