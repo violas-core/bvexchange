@@ -28,6 +28,12 @@ class parseargs:
     def __del__(self):
         pass
 
+    def clear(self):
+        self.__args = {}
+        self.__args_priority = {}
+        self.__args_argtype = {}
+        self.__unique = []
+
     def appendunique(self, opts_unique):
         if opts_unique is None:
             return

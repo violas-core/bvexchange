@@ -189,7 +189,7 @@ def type_is_map(mtype):
     return False
 
 def get_support_address_info(etype = None):
-    support_mods = get_support_mods(etype)
+    support_mods = get_support_mods_info(etype)
     assert support_mods is not None, f"support_mods is invalid"
     addr_infos = []
     receiver_infos = get_address_info("receiver")
@@ -332,9 +332,15 @@ def get_run_mods():
     return mods
 
 
-def get_support_mods(etype = None):
+def get_support_mods_info(etype = None):
     return setting.setting.type_token_filter(etype)
     
+def get_support_mods():
+    mods = []
+    for typename, opts in setting.setting.type_token.items():
+        mods.append(typename)
+    return mods
+
 def get_conf():
     infos = {}
     mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
@@ -423,7 +429,8 @@ def main():
     print(f"combin address(b2vusd, btc): {get_combine_address('b2vusd', 'btc')}")
     print(f"combin address(l2b, violas): {get_combine_address('l2b', 'violas')}")
     print(f"run mods: {get_run_mods()}")
-    print(f"support mods: {get_support_mods().keys()}")
+    print(f"support mods info keys: {get_support_mods_info().keys()}")
+    print(f"support mods == mods info keys: {get_support_mods()}")
     print(f"syncing state:{get_syncing_state()}")
     print("receiver info(map):")
     json_print(get_support_address_info("map"))
