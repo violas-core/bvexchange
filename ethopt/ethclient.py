@@ -161,7 +161,7 @@ class ethwallet(baseobject):
             raise AttributeError
 
 class ethclient(baseobject):
-    def __init__(self, name, nodes, chain = "ethereum", usd_chain = True):
+    def __init__(self, name, nodes, chain = "ethereum", usd_chain = False):
         baseobject.__init__(self, name, chain)
         self.__client = None
         self.__node = None
@@ -190,7 +190,7 @@ class ethclient(baseobject):
             return self._sender_map_account
         return account
 
-    def conn_node(self, name, nodes, chain = "ethereum", usd_chain = True):
+    def conn_node(self, name, nodes, chain = "ethereum", usd_chain = False):
         try:
             if nodes is None or len(nodes) == 0:
                 return result(error.ARG_INVALID, repr(nodes), "")
