@@ -172,7 +172,7 @@ class v2xswap(exbase):
 
             self._logger.debug(f"exec_exchange-3. start fill_address_token...")
             send_amount = self.amountswap(detail["diff_balance"]).amount(self.map_chain)
-            ret = self.fill_address_token[self.map_chain](map_sender, to_token_id, send_amount)
+            ret = self.fill_address_token[self.map_chain](map_sender, to_token_id, send_amount, tran_id)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
                         json.dumps(detail))

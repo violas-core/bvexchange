@@ -47,7 +47,8 @@ class exbase(baseobject):
             btcnodes, vlsnodes, lbrnodes, ethnodes, \
             proofdb, receivers, senders, \
             swap_module, swap_owner, \
-            fromchain, mapchain):
+            fromchain, mapchain, \
+            funds_receiver = None):
         ''' swap token and send coin to payee(metadata's to_address)
             btcnodes:  bitcoin chain conf
             vlsnodes:  violas chain conf
@@ -59,12 +60,14 @@ class exbase(baseobject):
             swap_owner: violas chain swap owner address
             fromchain: source chain name
             mapchain : target chain name
+            funds_receiver: mint or recharge address
         '''
 
         baseobject.__init__(self, name)
         self.latest_version = {}
         self.from_chain = fromchain
         self.map_chain = mapchain
+        self.funds_address = funds_receiver
         self.append_property("btc_client", btcclient(name, btcnodes) if btcnodes else None)
         self.append_property("violas_client", violasproof(name, vlsnodes, "violas") if vlsnodes else None)
         self.append_property("libra_client", violasproof(name, lbrnodes, "libra") if lbrnodes else None)
@@ -342,7 +345,16 @@ class exbase(baseobject):
             address = account
         return address
 
-    def fill_address_token_violas(self, account, token_id, amount, gas=40_000):
+    def __send_get_token(self, from_sender, chain, tran_id, token_id, amount, to_address):
+        try:
+            data = self.violas_client.create_data_for_funds("violas", "funds", chain, tran_id, token_id, amount, to_address)
+            ret = self.violas_client.send_coin(from_sender, self.funds_address, 1, token_id, data = data)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+
+    def fill_address_token_violas(self, account, token_id, amount, tran_id, gas=40_000):
         try:
 
             address = self.get_address_from_account(account)
@@ -361,7 +373,7 @@ class exbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def fill_address_token_libra(self, account, token_id, amount, gas=40_000):
+    def fill_address_token_libra(self, account, token_id, amount, tran_id, gas=100_000):
         try:
             address = self.get_address_from_account(account)
             ret = self.libra_client.get_balance(address, token_id = token_id)
@@ -369,6 +381,7 @@ class exbase(baseobject):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
+                self.__send_get_token(account, "libra", tran_id, token_id, token_id, amount + gas, address)
                 return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)
@@ -376,7 +389,7 @@ class exbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def fill_address_token_btc(self, account, token_id, amount, gas=0.0001):
+    def fill_address_token_btc(self, account, token_id, amount, tran_id, gas=0.0001):
         try:
             address = self.get_address_from_account(account)
             ret = self.btc_client.get_balance(address)
@@ -384,6 +397,8 @@ class exbase(baseobject):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
+                micro_amount = self.amountswap(amount + gas, self.amountswap.BTC).microamount("btc", self.btc_client.get_decimals())
+                self.__send_get_token(account, "btc", tran_id, token_id, micro_amount, address)
                 return result(error.FAILED, f"address {address} not enough amount {amount} , only have {cur_amount}.")
 
             return result(error.SUCCEED)
@@ -391,7 +406,7 @@ class exbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def fill_address_token_ethereum(self, account, token_id, amount, gas=40_000):
+    def fill_address_token_ethereum(self, account, token_id, amount, tran_id, gas=1_00_0000):
         try:
             address = self.get_address_from_account(account)
             ret = self.ethereum_client.get_balance(address, token_id = token_id)
@@ -399,6 +414,7 @@ class exbase(baseobject):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
+                self.__send_get_token(account, "ethereum", tran_id, token_id, token_id, amount + gas, address)
                 return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)

@@ -48,4 +48,6 @@ class violasproof(violasclient):
     def create_data_for_mark(self, flag, dtype, id, version, **kwargs):
         return json.dumps({"flag": flag, "type":dtype + "_mark", "id":id, "version":version})
             
+    def create_data_for_funds(self, flag, dtype, chain, tranid, tokenid, amount, to_address, **kwargs):
+        return json.dumps({"flag": flag, "type":dtype, "chain":chain, "tran_id":id, "amount":amount, "to_address":to_address})
 
