@@ -69,6 +69,7 @@ class datatypebase(autoname):
     V2VSWAP     = auto()
     E2VM        = auto()
     V2EM        = auto()
+    FUNDS       = auto()
     UNKOWN      = auto()
 
 ##db index(redis)
@@ -81,6 +82,7 @@ class dbindexbase(enumbase):
     LFILTER = 3
     BFILTER = 4
     EFILTER = 5
+    FUNDS   = 6
     #proof datas
     V2LM    = 8
     L2VM    = 9
@@ -163,6 +165,8 @@ class workmod(enumbase):
     E2VMEX     = auto()
     V2EMPROOF  = auto()
     V2EMEX     = auto()
+    FUNDSPROOF = auto()
+    FUNDSEX    = auto()
 
 if __name__ == "__main__":
     print(dbindexbase.UNKOWN.info)

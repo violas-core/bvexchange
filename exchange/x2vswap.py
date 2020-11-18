@@ -121,7 +121,7 @@ class x2vswap(exbase):
 
             #mint LBRXXX to sender(type = LBRXXX), or check sender's token amount is enough
             self._logger.debug(f"exec_exchange-1. start fill_address_token...")
-            ret = self.fill_address_token[self.map_chain](map_sender.address.hex(), map_token_id, amount, detail["gas"])
+            ret = self.fill_address_token[self.map_chain](map_sender.address.hex(), map_token_id, amount, tran_id, detail["gas"])
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
                       json.dumps(detail))
