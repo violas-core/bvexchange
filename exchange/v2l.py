@@ -24,12 +24,14 @@ class v2l(v2xswap):
             senders, 
             combine, 
             swap_module, 
-            swap_owner):
+            swap_owner, 
+            **kwargs):
         v2xswap.__init__(self, name, dtype, \
                 None, vlsnodes, lbrnodes, \
                 proofdb, receivers, senders, combine, \
                 swap_module, swap_owner, \
-                "violas", "libra")
+                "violas", "libra", \
+                **kwargs)
 
         self.init_exec_states()
 

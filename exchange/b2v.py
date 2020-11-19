@@ -28,7 +28,8 @@ class b2v(x2vswap):
             senders,
             combine, #btc address
             swap_module,
-            swap_owner):
+            swap_owner,
+            **kwargs):
 
         '''bitcoin BTC swap to violas stable token 
             @dtype : opttype
@@ -45,7 +46,8 @@ class b2v(x2vswap):
                 btcnodes, vlsnodes, None, \
                 proofdb, receivers, senders, \
                 swap_module, swap_owner,\
-                "btc", "violas")
+                "btc", "violas", \
+                **kwargs)
         self.append_property("combine_account", combine)
         self.init_exec_states()
 

@@ -32,7 +32,8 @@ class v2xswap(exbase):
             swap_module,
             swap_owner, 
             from_chain, 
-            map_chain):
+            map_chain, 
+            **kwargs):
         ''' violas stable token swap to bitcoin BTC
             @dtype : opttype
             @btcnodes: btc node configure
@@ -49,7 +50,8 @@ class v2xswap(exbase):
                 btcnodes, vlsnodes, lbrnodes, None,\
                 proofdb, receivers, senders, \
                 swap_module, swap_owner,\
-                from_chain, map_chain)
+                from_chain, map_chain, \
+                **kwargs)
         self.append_property("combine", combine)
         self.init_combine_account()
 

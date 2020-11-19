@@ -18,13 +18,15 @@ class l2vm(exmap):
             vlsnodes, 
             proofdb, 
             receivers, 
-            senders 
+            senders,
+            **kwargs
             ):
 
         exmap.__init__(self, name, dtype, \
                 None, vlsnodes, lbrnodes, None,\
                 proofdb, receivers, senders,\
-                "libra", "violas")
+                "libra", "violas", \
+                **kwargs)
 
     def __del__(self):
         pass

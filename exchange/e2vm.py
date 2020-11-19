@@ -21,12 +21,14 @@ class e2vm(exmap):
             receivers, 
             senders,
             mapper,
+            **kwargs
             ):
 
         exmap.__init__(self, name, dtype, \
                 None, vlsnodes, None, ethnodes,\
                 proofdb, receivers, senders,\
-                "ethereum", "violas")
+                "ethereum", "violas", \
+                **kwargs)
         self.__init_exec_states()
         self.set_contract_map_address(mapper)
 

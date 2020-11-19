@@ -18,13 +18,14 @@ class b2vm(exmap):
             vlsnodes, 
             proofdb, 
             receivers, 
-            senders 
+            senders, 
+            **kwargs
             ):
 
         exmap.__init__(self, name, dtype, \
                 btcnodes, vlsnodes, None, None,\
                 proofdb, receivers, senders,\
-                "btc", "violas")
+                "btc", "violas", **kwargs)
 
     def __del__(self):
         pass

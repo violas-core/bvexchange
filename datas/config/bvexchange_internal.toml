@@ -350,6 +350,11 @@ syncing_mod = false
         type = "v2em"
         chain = "violas"
 
+    [[address_list.receiver]]
+        address = "e99ae1a3ff054ee3cfd1d9a2a56988400f82442367443b43ae58efff73bef348"
+        type = "funds"
+        chain = "violas"
+
     #sender address
     ##send btc
     [[address_list.sender]]

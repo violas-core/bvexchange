@@ -27,7 +27,8 @@ class l2v(x2vswap):
             receivers, 
             senders, 
             swap_module,
-            swap_owner):
+            swap_owner, 
+            **kwargs):
 
         '''libra Coin1/Coin2 swap to violas stable token 
             @dtype : opttype
@@ -44,7 +45,8 @@ class l2v(x2vswap):
                 None, vlsnodes, lbrnodes, \
                 proofdb, receivers, senders, \
                 swap_module, swap_owner,\
-                "libra", "violas")
+                "libra", "violas", \
+                **kwargs)
         self.init_exec_states()
 
     def init_exec_states(self):

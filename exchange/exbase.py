@@ -20,6 +20,7 @@ from comm.result import result, parse_except
 from comm.error import error
 from comm.amountconver import amountconver 
 from db.dblocal import dblocal as localdb
+from db.dbfunds import dbfunds as localfunds
 import vlsopt.violasclient
 from vlsopt.violasclient import violasclient, violaswallet, violasserver
 from ethopt.ethclient import ethclient, ethwallet
@@ -48,7 +49,7 @@ class exbase(baseobject):
             proofdb, receivers, senders, \
             swap_module, swap_owner, \
             fromchain, mapchain, \
-            funds_receiver = None):
+            **kwargs):
         ''' swap token and send coin to payee(metadata's to_address)
             btcnodes:  bitcoin chain conf
             vlsnodes:  violas chain conf
@@ -60,19 +61,21 @@ class exbase(baseobject):
             swap_owner: violas chain swap owner address
             fromchain: source chain name
             mapchain : target chain name
-            funds_receiver: mint or recharge address
+            kwargs:
+                funds_receiver: mint or recharge address
         '''
 
         baseobject.__init__(self, name)
         self.latest_version = {}
         self.from_chain = fromchain
         self.map_chain = mapchain
-        self.funds_address = funds_receiver
+        self.funds_address = kwargs.get("funds")
         self.append_property("btc_client", btcclient(name, btcnodes) if btcnodes else None)
         self.append_property("violas_client", violasproof(name, vlsnodes, "violas") if vlsnodes else None)
         self.append_property("libra_client", violasproof(name, lbrnodes, "libra") if lbrnodes else None)
         self.append_property("ethereum_client", ethclient(name, ethnodes, "ethereum", usd_chain= dataproof.configs("eth_usd_chain") if ethnodes else None))
         self.append_property("db", localdb(name, f"{self.from_chain}_{dtype}.db"))
+        self.append_property("dbfunds", localfunds(name, f"violas_funds.db"))
     
         #violas/libra init
         self.append_property("receivers", receivers)
@@ -347,8 +350,27 @@ class exbase(baseobject):
 
     def __send_get_token(self, from_sender, chain, tran_id, token_id, amount, to_address):
         try:
+            ret = self.dbfunds.has_info(tran_id)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            if ret.datas:
+                return result(error.SUCCEED)
+
             data = self.violas_client.create_data_for_funds("violas", "funds", chain, tran_id, token_id, amount, to_address)
+
+            #send funds request must be use violas' token, maybe use VLS alwars???
+            if chain != "violas":
+                usd_token = token_id
+            else:
+                usd_token = stmanage.get_token_map(token_id)
+
             ret = self.violas_client.send_coin(from_sender, self.funds_address, 1, token_id, data = data)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            ret = self.dbfunds.insert_commit(tran_id, chain, token_id, amount, to_address)
+
         except Exception as e:
             ret = parse_except(e)
         return ret
