@@ -43,6 +43,11 @@ Describe the chain type to which the transaction belongs
   <td>string</td>
   <td>transaction is in libra chain</td>
  </tr>
+ <tr>
+  <td><strong>ethereum</strong></td>
+  <td>string</td>
+  <td>transaction is in ethereum chain</td>
+ </tr>
 </table>
 
 
@@ -136,6 +141,16 @@ The type of transaction mapping, l2vxxx is to map stablecoins from violas chain 
    <td><strong>l2vm</strong></td>
    <td>string</td>
    <td>libra stable token(any token) swap to violas mapping token. ratio : 1:1</td>
+  </tr>
+  <tr>
+   <td><strong>v2em</strong></td>
+   <td>string</td>
+   <td>violas map token reflection to ethereum erc20 token. ratio: 1:1</td>
+  </tr>
+  <tr>
+   <td><strong>funds</strong></td>
+   <td>string</td>
+   <td>request funding from manager</td>
   </tr>
 </table>
 
@@ -1740,7 +1755,7 @@ violas mapping-token mapping libra stable token end/cancel/stop
 
 **Description**
 
-libra stable token mappint violas mapping-token
+libra stable token mapping violas mapping-token
 
 
 #### Attributes
@@ -1836,6 +1851,179 @@ libra stable token mapping violas mapping-token end/cancel/stop
 ```
 '{"flag":"libra", "type":"l2vm", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end/cancel/stop"}'
 ```
+
+### v2em - start
+
+**Description**
+
+ethereum erc20 token mapping violas mapping-token
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>violas</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>v2em</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>to_address</strong></td>
+  <td>string</td>
+  <td>hex-str(violas address)</td>
+  <td>Payee Address</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>start</td>
+  <td>Mapping</td>
+ </tr>
+ <tr>
+  <td><strong>times</strong></td>
+  <td>uint64</td>
+  <td>0~max(uint64)</td>
+  <td>exchange execute times: 1</td>
+ </tr>
+</table>
+
+```
+'{"flag":"violas", "type":"v2em", "times": 1, "to_address":"0x89fF4a850e39A132614dbE517F80603b4A96fa0A", "state":"start"}'
+```
+
+
+### v2em - end
+
+**Description**
+
+ethereum erc20 token mapping violas mapping-token end
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>violas</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>v2em</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>tran_id</strong></td>
+  <td>string</td>
+  <td>hex-str</td>
+  <td>The tran_id corresponding to the transaction to be modified</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>end</td>
+  <td>Mapping completed</td>
+ </tr>
+</table>
+
+```
+'{"flag":"violas", "type":"v2em", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+```
+
+### funds
+
+**Description**
+
+
+
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>violas</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>funds</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>btc/ethereum/violas/libra</td>
+  <td>chain name</td>
+ </tr>
+ <tr>
+  <td><strong>tran_id</strong></td>
+  <td>string</td>
+  <td>id</td>
+  <td>id for transaction</td>
+ </tr>
+ <tr>
+  <td><strong>token_id</strong></td>
+  <td>string</td>
+  <td>btc. etc</td>
+  <td>get token id</td>
+ </tr>
+ <tr>
+  <td><strong>amount</strong></td>
+  <td>string</td>
+  <td>int</td>
+  <td>amount for transaction</td>
+ </tr>
+ <tr>
+  <td><strong>to_address</strong></td>
+  <td>string</td>
+  <td>hex-str(violas address)</td>
+  <td>Payee Address</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>start</td>
+  <td>Mapping</td>
+ </tr>
+</table>
+
+```
+'{"flag":"violas", "type":"v2em", "times": 1, "to_address":"0x89fF4a850e39A132614dbE517F80603b4A96fa0A", "state":"start"}'
+```
+
 
 ---
 

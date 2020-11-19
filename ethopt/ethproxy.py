@@ -190,7 +190,6 @@ class ethproxy():
         self.tokens_decimals[name] = pow(10, self.__get_token_decimals_with_name(erc20_token, name))
         self.tokens[name] = erc20_token
         self.tokens_id.append(name)
-        print(f"load contract : {name}")
 
     def set_vlsmproof_manager(self, address):
         self._vlsmproof_manager = address

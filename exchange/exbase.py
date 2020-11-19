@@ -305,7 +305,7 @@ class exbase(baseobject):
             self.show_load_record_info(rpcparams)
             
             for key in rpcparams.keys():
-                datas = ret.datas.get(key)
+                datas = rpcparams.get(key)
                 for data in datas:
                     tran_id = data.get("tran_id")
                     if tran_id is None:
@@ -363,9 +363,10 @@ class exbase(baseobject):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
-                ret = self.violas_client.mint_coin(address, \
-                        amount = amount + gas - cur_amount, \
-                        token_id = token_id)
+                self.__send_get_token(account, "violas", tran_id, token_id, amount + gas, address)
+                #ret = self.violas_client.mint_coin(address, \
+                #        amount = amount + gas - cur_amount, \
+                #        token_id = token_id)
                 return ret
 
             return result(error.SUCCEED)
@@ -381,7 +382,7 @@ class exbase(baseobject):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
-                self.__send_get_token(account, "libra", tran_id, token_id, token_id, amount + gas, address)
+                self.__send_get_token(account, "libra", tran_id, token_id, amount + gas, address)
                 return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)
@@ -414,7 +415,7 @@ class exbase(baseobject):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
-                self.__send_get_token(account, "ethereum", tran_id, token_id, token_id, amount + gas, address)
+                self.__send_get_token(account, "ethereum", tran_id, token_id, amount + gas, address)
                 return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)

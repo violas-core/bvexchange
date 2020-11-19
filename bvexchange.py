@@ -37,7 +37,7 @@ class works:
     __record_db = "record"
 
     __libra_min_valid_version       = 0
-    __violas_min_valid_version      = 3248_3058
+    __violas_min_valid_version      = 4187_1350
     __btc_min_valid_version         = 0
     __ethereum_min_valid_version    = 0
     def __init__(self):
