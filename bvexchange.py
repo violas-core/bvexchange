@@ -844,6 +844,12 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_efilter))
             elif name == "V2VSWAPPROOF":
                 self.funcs_map.update(self.create_func_dict(item, self.work_swapproof))
+            elif name == "FUNDSPROOF":
+                pass
+                #self.funcs_map.update(self.create_func_dict(item, self.work_fundsproof))
+            elif name == "FUNDSEX":
+                pass
+                #self.funcs_map.update(self.create_func_dict(item, self.work_fundsex))
             elif self.is_match(name, "V2L", "PROOF", [11, 9]): #V2LXXXPROOF   V2LMPROOF
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2xproof))
             elif self.is_match(name, "V2B", "PROOF", [8, 9]):
@@ -884,7 +890,6 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_e2vm))
             elif self.is_match(name, "V2EM", "EX", 6):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2em))
-                pass
             elif name == "COMM":
                 self.funcs_map.update(self.create_func_dict(item, self.work_comm))
             else:

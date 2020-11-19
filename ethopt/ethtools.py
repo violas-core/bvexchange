@@ -98,7 +98,7 @@ def get_decimals(token_id):
     logger.debug(f"start get_decimals token_id= {token_id}")
     client = get_ethclient()
     ret = client.get_decimals(token_id)
-    logger.debug("decimals: {0}".format(ret.datas))
+    logger.debug(f"decimals: {ret}")
 
 def get_balances(address):
     logger.debug(f"start get_balances address= {address}")

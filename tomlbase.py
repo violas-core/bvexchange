@@ -31,6 +31,7 @@ class tomlbase():
         self._toml_file = filename 
         self.__toml = TOMLFile(filename)
         self.__content = self.toml.read()
+        self.__dataproof.update({"conf_file":filename})
 
         assert isinstance(self.__content, TOMLDocument)
         self.is_loaded = True
@@ -49,7 +50,6 @@ class tomlbase():
         path = Path(toml_file)
         if not path.is_file() or not path.exists():
             raise Exception(f"not found toml file: {toml_file} in ({os.path.dirname(__file__)}  {release_path})")
-        print(f"use config file: {toml_file}")
         return toml_file
 
     
@@ -66,7 +66,7 @@ class tomlbase():
             self.__load_conf()
 
     def reset(self):
-        self.__check_load_conf()
+        self.__load_conf()
         if not self.is_loaded:
             print("not found configure file(toml).")
             sys.exit(-1)
@@ -106,7 +106,7 @@ class tomlbase():
 
     @classmethod
     def set_conf_env(self, conffile):
-        os.environ.setdefault("BVEXCHANGE_CONFIG", conffile)
+        os.environ["BVEXCHANGE_CONFIG"] = conffile
 
     @classmethod
     def get_conf_env(self):
@@ -116,7 +116,7 @@ class tomlbase():
     def set_conf_env_default(self):
         splits = os.path.split(os.path.dirname(os.path.abspath(__file__)))
         basename = splits[-1]
-        os.environ.setdefault("BVEXCHANGE_CONFIG", os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{basename}.toml"))
+        os.environ["BVEXCHANGE_CONFIG"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{basename}.toml")
 
 def main():
     tomlbase.set_conf_env_default()
