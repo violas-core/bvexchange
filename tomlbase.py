@@ -23,6 +23,7 @@ class tomlbase():
 
     def __load_conf(self):
 
+        self.__dataproof = {}
         filename = self.__get_conf_file()
         if filename is None:
             self.is_loaded = False
