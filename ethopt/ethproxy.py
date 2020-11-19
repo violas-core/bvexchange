@@ -25,6 +25,7 @@ from ethopt.vlsmproofdatasslot import vlsmproofdatasslot
 from ethopt.vlsmproofstateslot import vlsmproofstateslot
 from ethopt.erc20slot import erc20slot 
 from ethopt.lbethwallet import lbethwallet
+from dataproof import dataproof
 
 import web3
 from web3 import Web3
@@ -118,28 +119,37 @@ class ethproxy():
 
     def __get_token_decimals_with_name(self, erc20_token, name):
         contract = self.__get_contract_info(name)
-        decimals = contract.get("decimals")
+        key = f"{name}_decimals"
+        decimals= dataproof.configs(key)
         if decimals is None or decimals <= 0 or self.__usd_chain_contract_info:
             decimals = erc20_token.decimals()
+            dataproof.configs.set_config(key, decimals)
         return decimals
         
 
     def __get_token_address_with_name(self, name):
         contract = self.__get_contract_info(name)
-        address = contract.get("address")
+        key = f"{name}_address"
+        address = dataproof.configs(key)
+        #address = contract.get("address")
         if address is None or len(address) <= 0 or self.__usd_chain_contract_info:
             address = self.tokens[VLSMPROOF_MAIN_NAME].token_address(name)
+            dataproof.configs.set_config(key, address)
         return address
-
 
     def __get_contract_address_with_name(self, vmpslot, name):
         contract = self.__get_contract_info(name)
-        address = contract.get("address")
+        key = f"{name}_address"
+        address = dataproof.configs(key)
         if address is None or len(address) <= 0 or self.__usd_chain_contract_info:
             if name == VLSMPROOF_DATAS_NAME:
                 address = vmpslot.proof_address()
             elif name == VLSMPROOF_STATE_NAME:
                 address = vmpslot.state_address()
+            else:
+                raise Exception(f"{name} is invalid.")
+
+            dataproof.configs.set_config(key, address)
         return address
 
     def load_vlsmproof(self, address, name = VLSMPROOF_MAIN_NAME):
@@ -149,7 +159,6 @@ class ethproxy():
         if address == self.tokens_address.get(VLSMPROOF_MAIN_NAME, ""):
             return
 
-        print(f"load vlsmproof({address}, {name})")
         contract = contract_codes[name]
         if name == VLSMPROOF_MAIN_NAME:
             vmpslot = vlsmproofmainslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))

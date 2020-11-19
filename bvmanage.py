@@ -29,9 +29,7 @@ def init_args(pargs):
     pargs.append("bwallet", "file or address:privkey list for btc wallet, format: \"ADDRESS:PRIVKEY,ADDRESS:PRIVKEY\"", True, "[file/address:privkey]", priority= 20, argtype = parseargs.argtype.STR)
 
 def show_exec_args():
-    logger.debug('''
-    "eth_usd_chain": dataproof.configs("eth_usd_chain")
-            ''')
+    logger.debug(f'"eth_usd_chain": dataproof.configs("eth_usd_chain")')
 
 def main(argc, argv):
 
@@ -63,7 +61,6 @@ def main(argc, argv):
         if pargs.is_matched(opt, ["conf"]):
             pargs.exit_check_opt_arg(opt, arg, 1)
             stmanage.set_conf_env(arg)
-            init_dataproof_from_stmanage()
         elif pargs.is_matched(opt, ["help"]):
             init_args(pargs)
             pargs.show_help(argv)

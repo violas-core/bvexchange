@@ -329,6 +329,7 @@ class ethclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    #the same to btc/violas get_decimals
     def get_decimals(self, token_id):
         return self.__client.get_decimals(token_id)
 
