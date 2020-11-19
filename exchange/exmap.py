@@ -24,14 +24,16 @@ class exmap(exbase):
             receivers, 
             senders, 
             fromchain,
-            mapchain
+            mapchain,
+            **kwargs
             ):
 
         exbase.__init__(self, name, dtype, \
                 btcnodes, vlsnodes, lbrnodes, ethnodes, \
                 proofdb, receivers, senders, \
                 None, None, \
-                fromchain, mapchain)
+                fromchain, mapchain,\
+                **kwargs)
         self.init_exec_states()
 
     def __del__(self):

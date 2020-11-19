@@ -19,13 +19,15 @@ class v2em(exmap):
             ethnodes, 
             proofdb, 
             receivers, 
-            senders 
+            senders,
+            **kwargs
             ):
 
         exmap.__init__(self, name, dtype, \
                 None, vlsnodes, None, ethnodes,\
                 proofdb, receivers, senders,\
-                "violas", "ethereum")
+                "violas", "ethereum", \
+                **kwargs)
         self.__init_exec_states()
 
     def __init_exec_states(self):

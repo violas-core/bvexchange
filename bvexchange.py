@@ -84,7 +84,8 @@ class works:
                             list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
                             stmanage.get_combine_address(dtype, "btc", True),
                             stmanage.get_swap_module(),
-                            stmanage.get_swap_owner()
+                            stmanage.get_swap_owner(),
+                            funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -113,6 +114,7 @@ class works:
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, "btc", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+                            funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -142,7 +144,8 @@ class works:
                             list(set(stmanage.get_sender_address_list(dtype, "btc", False))),
                             stmanage.get_combine_address(dtype, "violas"),
                             stmanage.get_swap_module(),
-                            stmanage.get_swap_owner()
+                            stmanage.get_swap_owner(),
+                            funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -171,6 +174,7 @@ class works:
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "btc", False))),
+                            funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -230,6 +234,36 @@ class works:
                     else:
                         obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
+                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
+                    obj.set_min_valid_version(self.__violas_min_valid_version - 1)
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
+
+    def work_fundsproof(self, **kargs):
+        try:
+            logger.critical("start: violas funds proof")
+            nsec = kargs.get("nsec", 0)
+            mod = kargs.get("mod")
+            assert mod is not None, f"mod name is None"
+
+            #violas transaction's data types 
+            dtype = self.get_dtype_from_mod(mod)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
+                try:
+                    basedata = "vfilter"
+                    ttype = "violas"
+                    obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
+                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
+                    #set can receive token of violas transaction
+                    obj.append_token_id(stmanage.get_support_token_id())
                     obj.set_step(stmanage.get_db(dtype).get("step", 100))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     self.set_work_obj(obj)
@@ -347,6 +381,7 @@ class works:
                             list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
+                            funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -376,7 +411,8 @@ class works:
                             stmanage.get_violas_nodes(), 
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "violas", False)))
+                            list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+                            funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -410,6 +446,7 @@ class works:
                             stmanage.get_combine_address(dtype, "violas"),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
+                            funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -440,6 +477,7 @@ class works:
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
+                            funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -558,7 +596,8 @@ class works:
                             list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
                             stmanage.get_combine_address(dtype, "violas", True),
                             stmanage.get_swap_module(),
-                            stmanage.get_swap_owner()
+                            stmanage.get_swap_owner(),
+                            funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -621,7 +660,8 @@ class works:
                             list(set(stmanage.get_sender_address_list(dtype, "btc", False))),
                             stmanage.get_combine_address(dtype, "violas", True),
                             stmanage.get_swap_module(),
-                            stmanage.get_swap_owner()
+                            stmanage.get_swap_owner(),
+                            funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -711,6 +751,7 @@ class works:
                             list(set(stmanage.get_receiver_address_list(dtype, "ethereum", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
                             stmanage.get_map_address(dtype, "ethereum", False),
+                            funds = stmanage.get_funds_address()
                             )
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
                     tokens = stmanage.get_support_token_id("ethereum")
@@ -744,6 +785,7 @@ class works:
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
                             list(set(stmanage.get_sender_address_list(dtype, "ethereum", False))),
+                            funds = stmanage.get_funds_address()
                             )
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
                     tokens = stmanage.get_support_token_id("ethereum")
@@ -846,7 +888,7 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_swapproof))
             elif name == "FUNDSPROOF":
                 pass
-                #self.funcs_map.update(self.create_func_dict(item, self.work_fundsproof))
+                self.funcs_map.update(self.create_func_dict(item, self.work_fundsproof))
             elif name == "FUNDSEX":
                 pass
                 #self.funcs_map.update(self.create_func_dict(item, self.work_fundsex))

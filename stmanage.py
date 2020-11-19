@@ -137,6 +137,9 @@ def get_receiver_address_list(mtype, chain = None, full = True):
 def get_map_address(mtype, chain = None, full = True):
     return __get_address_list("map", mtype, chain, full)[0]
 
+def get_funds_address(full = True):
+    return __get_address_list("receiver", "funds", "violas", full)[0]
+
 def get_address_info(atype):
     return setting.setting.address_list.get(atype)
 
@@ -282,7 +285,6 @@ def get_token_map(token, mtype = None):
         return token_manage.get_token_mapping(token, from_chain, to_chain)
     else:
         return token_manage.get_token_mapping_unique(token)
-
 
 #get opttype' stable token(map, ...)
 def get_type_stable_token(mtype = None):

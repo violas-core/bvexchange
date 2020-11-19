@@ -24,7 +24,8 @@ class v2b(v2xswap):
             senders, 
             combine, 
             swap_module,
-            swap_owner):
+            swap_owner,
+            **kwargs):
         ''' violas stable token swap to bitcoin BTC
             @dtype : opttype
             @vlsnodes: violas nodes configure
@@ -40,7 +41,8 @@ class v2b(v2xswap):
                 btcnodes, vlsnodes, None, \
                 proofdb, receivers, senders, combine, \
                 swap_module, swap_owner,\
-                "violas", "btc")
+                "violas", "btc", \
+                **kwargs)
 
         self.init_exec_states()
 

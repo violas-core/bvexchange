@@ -30,7 +30,8 @@ class x2vswap(exbase):
             swap_module,
             swap_owner,
             from_chain,
-            map_chain):
+            map_chain,
+            **kwargs):
 
         '''libra Coin1/Coin2 swap to violas stable token 
             @dtype : opttype
@@ -48,7 +49,8 @@ class x2vswap(exbase):
                 btcnodes, vlsnodes, lbrnodes, None,\
                 proofdb, receivers, senders, \
                 swap_module, swap_owner,\
-                from_chain, map_chain)
+                from_chain, map_chain, \
+                **kwargs)
 
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
             state = None, detail = {}):
