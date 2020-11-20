@@ -1953,11 +1953,12 @@ ethereum erc20 token mapping violas mapping-token end
 '{"flag":"violas", "type":"v2em", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
 ```
 
-### funds
+### funds - start
 
 **Description**
 
 
+request founds to main account
 
 
 #### Attributes
@@ -1983,7 +1984,7 @@ ethereum erc20 token mapping violas mapping-token end
   <td>Distinguish between different mapping types</td>
  </tr>
  <tr>
-  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td><strong><a href="#Flags---type">chain</a></strong></td>
   <td>string</td>
   <td>btc/ethereum/violas/libra</td>
   <td>chain name</td>
@@ -2021,9 +2022,55 @@ ethereum erc20 token mapping violas mapping-token end
 </table>
 
 ```
-'{"flag":"violas", "type":"v2em", "times": 1, "to_address":"0x89fF4a850e39A132614dbE517F80603b4A96fa0A", "state":"start"}'
+'{"flag":"violas", "type":"funds", "chain":"btc", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "token_id":"btc", "amount":1000, "to_address":"0x89fF4a850e39A132614dbE517F80603b4A96fa0A", "state":"start"}'
 ```
 
+
+### founds - end
+
+**Description**
+
+recharge completed
+
+#### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">flag</a></strong></td>
+  <td>string</td>
+  <td>violas</td>
+  <td>Differentiate transactions on different chains</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Types---type">type</a></strong></td>
+  <td>string</td>
+  <td>funds</td>
+  <td>Distinguish between different mapping types</td>
+ </tr>
+ <tr>
+  <td><strong>tran_id</strong></td>
+  <td>string</td>
+  <td>hex-str</td>
+  <td>The tran_id corresponding to the transaction to be modified</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#States---type">state</a></strong></td>
+  <td>string</td>
+  <td>end</td>
+  <td>Mapping completed</td>
+ </tr>
+</table>
+
+```
+'{"flag":"violas", "type":"funds", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "state":"end"}'
+```
 
 ---
 

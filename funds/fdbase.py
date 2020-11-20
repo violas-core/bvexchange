@@ -15,6 +15,8 @@ import comm
 import comm.error
 import comm.result
 import comm.values
+from wallet_factory import walletfactory
+from client_factory import clientfactory
 from time import sleep
 from comm.result import result, parse_except
 from comm.error import error
@@ -33,7 +35,7 @@ from enum import Enum
 from vrequest.request_client import requestclient
 from analysis.analysis_filter import afilter
 from dataproof import dataproof
-from comm.values import datatypebase
+from comm.values import datatypebase as datatype, trantypebase as trantype
 
 #module self.name
 #name="vbbase"
@@ -46,10 +48,8 @@ class exbase(baseobject):
         pass
 
     def __init__(self, name, dtype, \
-            btcnodes, vlsnodes, lbrnodes, ethnodes, \
-            proofdb, receivers, senders, \
-            swap_module, swap_owner, \
-            fromchain, mapchain, \
+            proofdb, receivers, \
+            fromchain = "violas", \
             **kwargs):
         ''' swap token and send coin to payee(metadata's to_address)
             btcnodes:  bitcoin chain conf
@@ -57,39 +57,31 @@ class exbase(baseobject):
             lbrnodes:  libra chain conf
             proofdb  : transaction proof source(proof db conf)
             receivers: receive chain' addresses
-            senders  : sender chain token adderss
-            swap_module: violas chain swap module address
-            swap_owner: violas chain swap owner address
-            fromchain: source chain name
-            mapchain : target chain name
+            fromchain: source chain name: violas
             kwargs:
-                funds_receiver: mint or recharge address
+                btc_nodes: connect btc node info
+                violas_nodes: connect violas node info
+                libra_nodes: connect libra node info
+                ethereum_nodes: connect ethereum node info
+                btc_senders: btc chain accounts
+                violas_senders: violas chain accounts
+                libra_senders: libra chain accounts
+                ethereum_senders: ethereum chain accounts
         '''
 
         baseobject.__init__(self, name)
         self.latest_version = {}
         self.from_chain = fromchain
-        self.map_chain = mapchain
-        self.funds_address = kwargs.get("funds")
-        self.append_property("btc_client", btcclient(name, btcnodes) if btcnodes else None)
-        self.append_property("violas_client", violasproof(name, vlsnodes, "violas") if vlsnodes else None)
-        self.append_property("libra_client", violasproof(name, lbrnodes, "libra") if lbrnodes else None)
-        self.append_property("ethereum_client", ethclient(name, ethnodes, "ethereum", usd_chain= dataproof.configs("eth_usd_chain") if ethnodes else None))
+
         self.append_property("db", localdb(name, f"{self.from_chain}_{dtype}.db"))
-        if dtype != datatypebase.FUNDS.value:
-            self.append_property("dbfunds", localfunds(name, f"request_funds.db"))
     
         #violas/libra init
         self.append_property("receivers", receivers)
-        self.append_property("senders ", senders)
         self.append_property("dtype", dtype)
-        self.append_property("to_token_id ", stmanage.get_type_stable_token(dtype))
-        self.append_property("swap_module", swap_module)
-        self.append_property("swap_owner", swap_owner)
         self.append_property("proofdb", proofdb)
 
         #use the above property, so call set_local_workspace here
-        self.set_local_workspace()
+        self.set_local_workspace(**kwargs)
 
     def __del__(self):
         pass
@@ -112,57 +104,25 @@ class exbase(baseobject):
         except Exception as e:
             parse_except(e)
 
-    def set_local_workspace(self):
-        setattr(self, "excluded", [])
-        setattr(self, "combine", None)
-        self.append_property("combine_account", None)
 
-        self.append_property(f"{self.from_chain}_chain", self.from_chain)
-        self.append_property(f"{self.map_chain}_chain", self.map_chain)
+    def set_local_workspace(self, **kwargs):
+        self.append_property("pserver", requestclient(self.name(), self.proofdb))
 
-        if self.swap_module and self.violas_client:
-            self.violas_client.swap_set_module_address(self.swap_module)
-        if self.swap_owner and self.violas_client:
-            self.violas_client.swap_set_owner_address(self.swap_owner)
+        for ttype in trantype:
+            if ttype == trantype.UNKOWN:
+                continue
 
-        if self.from_chain == "btc":
-            self.append_property("pserver", self.btc_client)
-            self.append_property("from_wallet", btcwallet(self.name(), None))
-            self.append_property("from_client", self.btc_client)
-            self.append_property("btc_wallet", self.from_wallet)
-        elif self.from_chain in ("violas", "libra"):
-            self.append_property("pserver", requestclient(self.name(), self.proofdb))
-            self.append_property("from_wallet", violaswallet(self.name(), dataproof.wallets(self.from_chain), self.from_chain))
-            self.append_property("from_client", self.violas_client if self.from_chain == "violas" else self.libra_client)
-            self.append_property(f"{self.from_chain}_wallet", self.from_wallet)
-        elif self.from_chain == "ethereum":
-            self.append_property("pserver", requestclient(self.name(), self.proofdb))
-            self.append_property("from_wallet", ethwallet(self.name(), dataproof.wallets(self.from_chain)))
-            self.append_property("from_client", self.ethereum_client)
-            self.append_property("ethereum_wallet", self.from_wallet)
+            #set property for senders 
+            senders_name = self.create_senders_key(ttype.value)
+            self.append_property(senders_name, kwargs.get(senders_name))
 
-        else:
-            raise Exception(f"chain {self.from_chain} is invalid.")
+            #set property for wallet
+            self.append_property(self.create_wallet_key(ttype.value), \
+                    walletfactory.create(self.name(), ttype.value))
 
-        if self.map_chain == "btc":
-            self.append_property("map_wallet", btcwallet(self.name(), None))
-            self.append_property("map_client", self.btc_client)
-        elif self.map_chain in ("violas", "libra"):
-            self.append_property("map_wallet", violaswallet(self.name(), dataproof.wallets(self.map_chain), self.map_chain))
-            self.append_property("map_client", self.violas_client if self.map_chain == "violas" else self.libra_client)
-        elif self.map_chain == "ethereum":
-            self.append_property("map_wallet", ethwallet(self.name(), dataproof.wallets(self.map_chain)))
-            self.append_property("map_client", self.ethereum_client)
-        else:
-            raise Exception(f"chain {self.from_chain} is invalid.")
-
-        if "violas" not in (self.from_chain, self.map_chain) and self.combine:
-            self.append_property("violas_wallet", violaswallet(self.name(), dataproof.wallets("violas"), "violas"))
-            ret = self.violas_wallet.get_account(self.combine)
-            self.check_state_raise(ret, f"get combine({self.combine})'s account failed.")
-            self.append_property("combine_account", ret.datas)
-
-        self.init_fill_address_token()
+            #set property for client
+            self.append_property(self.create_client_key(chain), \
+                    clientfactory.create(self.name(),kwargs.get(self.create_nodes_key(ttype.value))))
 
     def load_vlsmproof(self, address):
         if self.ethereum_client:
@@ -172,13 +132,6 @@ class exbase(baseobject):
         if self.ethereum_client:
             self.ethereum_client.load_contract(name)
 
-    def init_fill_address_token(self):
-        setattr(self, "fill_address_token", {})
-        self.fill_address_token.update({"violas": self.fill_address_token_violas})
-        self.fill_address_token.update({"libra": self.fill_address_token_libra})
-        self.fill_address_token.update({"btc": self.fill_address_token_btc})
-        self.fill_address_token.update({"ethereum": self.fill_address_token_ethereum})
-
     def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):
         ret = self.db.insert_commit(version, state, tran_id, receiver, detail)
         assert (ret.state == error.SUCCEED), "db error"
@@ -187,14 +140,18 @@ class exbase(baseobject):
         ret = self.db.update_state_commit(tran_id, state, detail = detail)
         assert (ret.state == error.SUCCEED), "db error"
 
-    #overwrite
-    def get_map_sender_address(self):
+    def get_map_sender_address(self, chain, token_id, amount):
         try:
             sender_account = None
-            for sender in self.senders:
+            senders_name = self.create_senders_key(ttype.value)
+            for sender in self.senders.get(senders_name):
                 sender_account = self.map_wallet.get_account(sender)
-                ret = result(error.SUCCEED, "", sender_account.datas)
-                return ret
+                address = self.get_address_from_account(sender_account)
+
+                ret = self.check_address_token_is_enough(self.get_property(f"{chain}_client"))
+
+                ret = result(error.SUCCEED, "", address)
+
 
             return result(error.FAILED, "not found sender account")
         except Exception as e:
@@ -211,7 +168,6 @@ class exbase(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
-
 
     def merge_db_to_rpcparams(self, rpcparams, dbinfos):
         try:
@@ -255,7 +211,6 @@ class exbase(baseobject):
                     infos[info_key] = infos[info_key] + 1
         self._logger.debug(f"record info:{infos}")
 
-
     def get_record_from_localdb_with_state(self, states):
         try:
             maxtimes = 999999999
@@ -282,21 +237,6 @@ class exbase(baseobject):
 
     def is_stop(self, tran_id):
         return self.pserver.is_stop(tran_id)
-
-    def get_swap_balance(self, version):
-        try:
-            ret = self.violas_client.get_transaction(version)
-            if ret.state != error.SUCCEED:
-                return ret
-
-            tran_data = afilter.get_tran_data(ret.datas)
-            swap_data = tran_data.get("data")
-            data = json.loads(swap_data)
-
-            ret = result(error.SUCCEED, datas = data.get("out_amount"))
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
 
     # local db state is VSUCCEED , update state to COMPLETE
     def rechange_db_state(self, states):
@@ -350,102 +290,6 @@ class exbase(baseobject):
             address = account
         return address
 
-    def __send_get_token(self, from_sender, chain, tran_id, token_id, amount, to_address):
-        try:
-            ret = self.dbfunds.has_info(tran_id)
-            if ret.state != error.SUCCEED:
-                return ret
-
-            if ret.datas:
-                return result(error.SUCCEED)
-
-            data = self.violas_client.create_data_for_funds("violas", "funds", chain, tran_id, token_id, amount, to_address)
-
-            #send funds request must be use violas' token, maybe use VLS alwars???
-            if chain != "violas":
-                usd_token = token_id
-            else:
-                usd_token = stmanage.get_token_map(token_id)
-
-            ret = self.violas_client.send_coin(from_sender, self.funds_address, 1, token_id, data = data)
-            if ret.state != error.SUCCEED:
-                return ret
-
-            ret = self.dbfunds.insert_commit(tran_id, chain, token_id, amount, to_address)
-
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-
-    def fill_address_token_violas(self, account, token_id, amount, tran_id, gas=40_000):
-        try:
-
-            address = self.get_address_from_account(account)
-            ret = self.violas_client.get_balance(address, token_id = token_id)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                self.__send_get_token(account, "violas", tran_id, token_id, amount + gas, address)
-                #ret = self.violas_client.mint_coin(address, \
-                #        amount = amount + gas - cur_amount, \
-                #        token_id = token_id)
-                return ret
-
-            return result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def fill_address_token_libra(self, account, token_id, amount, tran_id, gas=100_000):
-        try:
-            address = self.get_address_from_account(account)
-            ret = self.libra_client.get_balance(address, token_id = token_id)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                self.__send_get_token(account, "libra", tran_id, token_id, amount + gas, address)
-                return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
-
-            return result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def fill_address_token_btc(self, account, token_id, amount, tran_id, gas=0.0001):
-        try:
-            address = self.get_address_from_account(account)
-            ret = self.btc_client.get_balance(address)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                micro_amount = self.amountswap(amount + gas, self.amountswap.BTC).microamount("btc", self.btc_client.get_decimals())
-                self.__send_get_token(account, "btc", tran_id, token_id, micro_amount, address)
-                return result(error.FAILED, f"address {address} not enough amount {amount} , only have {cur_amount}.")
-
-            return result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def fill_address_token_ethereum(self, account, token_id, amount, tran_id, gas=1_00_0000):
-        try:
-            address = self.get_address_from_account(account)
-            ret = self.ethereum_client.get_balance(address, token_id = token_id)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                self.__send_get_token(account, "ethereum", tran_id, token_id, amount + gas, address)
-                return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
-
-            return result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
     def db_data_is_valid(self, data):
         try:
             toaddress   = data["receiver"]
@@ -476,34 +320,6 @@ class exbase(baseobject):
         ret = self.db.is_target_state(tranid, state)
         assert ret.state == error.SUCCEED, f"is_target_state({tranid}, {state}) failed."
         return ret.datas
-
-    def exec_refund(self, data, from_sender):
-        amount          = int(data["amount"]) 
-        tran_id         = data["tran_id"]
-        stable_token_id = data["token_id"]
-        payee           = data["address"]
-        version         = data["version"]
-
-        if self.is_target_state(tran_id, localdb.state.SSUCCEED.value) or \
-               self.is_target_state(tran_id, localdb.state.VSUCCEED.value) or \
-               self.is_target_state(tran_id, localdb.state.PSUCCEED.value):
-            self._logger.warning(f"found transaction is stopped/paymented. (tran_id = {tran_id})) in db({self.dtype}). not exec_refund, ignore it and process next.")
-            return result(error.SUCCEED)
-        ##convert to BTC satoshi(100000000satoshi == 1000000vBTC)
-        ##libra or violas not convert
-        amount = self.amountswap(amount, \
-                self.amountswap.amounttype[self.from_chain.upper()], 
-                self.from_client.get_decimals(stable_token_id)).amount(self.from_chain, self.from_client.get_decimals(stable_token_id))
-
-        self._logger.debug(f"execute refund({tran_id}, {amount}, {stable_token_id})")
-        data = self.from_client.create_data_for_stop(self.from_chain, self.dtype, tran_id, 0, version=version) 
-        ret = self.from_client.send_coin(from_sender, payee, amount, stable_token_id, data=data)
-        if ret.state != error.SUCCEED:
-            self.update_localdb_state_with_check(tran_id, localdb.state.SFAILED, detail = None)
-            return ret
-        else:
-            self.update_localdb_state_with_check(tran_id, localdb.state.SSUCCEED, detail = None)
-        return result(error.SUCCEED)
 
     def reexchange_data_from_failed(self, states):
         try:
@@ -561,11 +377,7 @@ class exbase(baseobject):
 
                         #refund case: 
                         #   case 1: failed times check(metadata: times > 0 (0 = always))  
-                        #   case 2: pre exec_refund is failed
-                        if (retry != 0 and retry <= times) or state == localdb.state.SFAILED:
-                            ret = self.exec_refund(data, from_sender)
-                            if ret.state != error.SUCCEED:
-                                self._logger.error(ret.message)
+                        if retry != 0 and retry <= times:
                             continue
 
                         ret = self.exec_exchange(data, from_sender, map_sender, \
@@ -608,7 +420,6 @@ class exbase(baseobject):
         return False
 
     def start(self):
-    
         try:
             self._logger.debug("start works")
             gas = 1000
@@ -659,18 +470,6 @@ class exbase(baseobject):
                         if not self.work() :
                             break
                         ret = self.exec_exchange(data, from_sender, map_sender, combine_account, receiver)
-                        if ret.state != error.SUCCEED:
-                            self._logger.error(ret.message)
-
-                #get cancel transaction, this version not support
-                self._logger.debug(f"start exchange(data type: cancel), datas from violas server.receiver={receiver}")
-                ret = self.pserver.get_transactions_for_cancel(receiver, self.dtype, 0, excluded = None)
-                self._logger.debug(f"will execute transaction(cancel) count: {len(ret.datas)}")
-                if ret.state == error.SUCCEED and len(ret.datas) > 0:
-                    for data in ret.datas:
-                        if not self.work() :
-                            break
-                        ret = self.exec_refund(data, from_sender)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
     

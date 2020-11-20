@@ -118,6 +118,12 @@ def parse_tran(transaction):
         datas["confirm"]        = transaction.get("confirm", 1)
         datas["txid"]           = transaction.get("txid", "")
 
+        #funds used
+        if datas["type"] == datatype.FUNDS.value:
+            datas["chain"] = data_dict.get("chain")
+            datas["amount"] = data_dict.get("amount")
+            datas["token_id"] = data_dict.get("token_id")
+
         ret = result(error.SUCCEED, datas = datas)
     except Exception as e:
         ret = parse_except(e, transaction)
