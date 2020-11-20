@@ -54,3 +54,18 @@ class baseobject(object):
     def append_property(self, name, value, new = True):
         if new:
             setattr(self, name.strip(), value)
+
+    def get_property(self, name):
+        ret getattr(self, name.strip())
+
+    def create_senders_key(self, chain):
+        return f"{chain}_senders"
+
+    def create_wallet_key(self, chain):
+        return f"{chain}_wallet"
+
+    def create_client_key(self, chain):
+        return f"{chain}_client"
+
+    def create_nodes_key(self, chain):
+        return f"{chain}_nodes"
