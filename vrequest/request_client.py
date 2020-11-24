@@ -43,6 +43,7 @@ class requestclient(baseobject):
                 "times":data.get("times", 0), \
                 "out_amount":data.get("out_amount", 0), \
                 "opttype":data.get("opttyoe"), \
+                "chain":data.get("chain"), \
                 "token_id":data["token_id"]}
         return datas
 

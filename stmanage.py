@@ -5,7 +5,7 @@ from comm.result import parse_except
 from comm.functions import get_address_from_full_address 
 from comm.functions import json_print
 from comm.values import trantypebase
-from comm.values import map_chain_name
+from comm.values import map_chain_name, workmod as work_mod
 from dataproof.dataproof import setting
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
@@ -153,13 +153,16 @@ def get_type_code(dtype, default = ""):
     return setting.setting.type_code.get(dtype, default)
 
 def get_exchang_chains(mtype):
-    from_chain  = map_chain_name[mtype[0]]
-    to_chain    = map_chain_name[mtype[2]]
+    from_chain  = map_chain_name.get(mtype[0])
+    to_chain    = map_chain_name.get(mtype[2])
     return (from_chain, to_chain)
 
 def get_token_form_to_with_type(etype, mtype):
     f_t_coins = {}
     fchain, tchain = get_exchang_chains(mtype)
+    if fchain is None and tchain is None:
+        return f_t_coins
+
     if etype == "map":
         if fchain == "violas":
             fcoins = get_support_map_token_id(fchain) 
@@ -190,6 +193,9 @@ def type_is_map(mtype):
     if opts:
         return opts.get("etype", "swap") == "map"
     return False
+
+def type_is_funds(mtype):
+    return mtype == work_mod.FUNDSPROOF.value
 
 def get_support_address_info(etype = None):
     support_mods = get_support_mods_info(etype)

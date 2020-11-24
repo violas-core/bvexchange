@@ -33,7 +33,7 @@ from enum import Enum
 from vrequest.request_client import requestclient
 from analysis.analysis_filter import afilter
 from dataproof import dataproof
-from comm.values import datatypebase
+from comm.values import datatypebase, trantypebase as trantype
 
 #module self.name
 #name="vbbase"
@@ -359,7 +359,7 @@ class exbase(baseobject):
             if ret.datas:
                 return result(error.SUCCEED)
 
-            data = self.violas_client.create_data_for_funds("violas", "funds", chain, tran_id, token_id, amount, to_address)
+            data = self.violas_client.create_data_for_funds(trantype.VIOLAS.value, datatypebase.FUNDS.value, chain, tran_id, token_id, amount, to_address)
 
             #send funds request must be use violas' token, maybe use VLS alwars???
             if chain != "violas":

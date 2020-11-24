@@ -15,7 +15,13 @@ from time import sleep, ctime
 import stmanage
 import subprocess
 import comm.functions as fn
-from exchange import b2v, v2b, v2l, l2v, v2lm, l2vm, v2bm, b2vm, e2vm, v2em
+from exchange import (
+        b2v, v2b, 
+        v2l, l2v, 
+        v2lm, l2vm, 
+        v2bm, b2vm, 
+        e2vm, v2em
+        )
 from comm.result import parse_except
 from analysis import (
         analysis_base, 
@@ -65,13 +71,17 @@ class works:
 
         self.__work_obj[obj.name()] = obj
 
-    def work_b2v(self, **kargs):
-        try:
-            logger.critical("start: b2vxxx")
+    def __get_input_args(self, **kargs):
             nsec = kargs.get("nsec", 0)
             mod = kargs.get("mod")
             assert mod is not None, f"mod name is None"
             dtype = self.get_dtype_from_mod(mod)
+            return (nsec, mod, dtype)
+
+    def work_b2v(self, **kargs):
+        try:
+            logger.critical("start: b2vxxx")
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -100,10 +110,7 @@ class works:
     def work_b2vm(self, **kargs):
         try:
             logger.critical("start: b2vm")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -128,10 +135,7 @@ class works:
     def work_v2b(self, **kargs):
         try:
             logger.critical("start: v2b")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -160,10 +164,7 @@ class works:
     def work_v2bm(self, **kargs):
         try:
             logger.critical("start: v2bm")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -189,10 +190,7 @@ class works:
     def work_vfilter(self, **kargs):
         try:
             logger.critical("start: violas filter")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -215,12 +213,7 @@ class works:
     def work_v2xproof(self, **kargs):
         try:
             logger.critical("start: violas v2x proof")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            #violas transaction's data types 
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -231,6 +224,8 @@ class works:
                     #set can receive token of violas transaction
                     if stmanage.type_is_map(dtype):
                         obj.append_token_id(stmanage.get_support_map_token_id(ttype, dtype))
+                    elif stmanage.type_is_funds(dtype):
+                        obj.append_token_id(stmanage.get_support_token_id())
                     else:
                         obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
@@ -246,44 +241,10 @@ class works:
         finally:
             logger.critical(f"stop: {mod}")
 
-    def work_fundsproof(self, **kargs):
-        try:
-            logger.critical("start: violas funds proof")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            #violas transaction's data types 
-            dtype = self.get_dtype_from_mod(mod)
-            while (self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}  interval(s): {nsec}")
-                try:
-                    basedata = "vfilter"
-                    ttype = "violas"
-                    obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
-                            dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
-                    #set can receive token of violas transaction
-                    obj.append_token_id(stmanage.get_support_token_id())
-                    obj.set_step(stmanage.get_db(dtype).get("step", 100))
-                    obj.set_min_valid_version(self.__violas_min_valid_version - 1)
-                    self.set_work_obj(obj)
-                    obj.start()
-                except Exception as e:
-                    parse_except(e)
-                sleep(nsec)
-        except Exception as e:
-            parse_except(e)
-        finally:
-            logger.critical(f"stop: {mod}")
-
     def work_lfilter(self, **kargs):
         try:
             logger.critical("start: libra filter")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -303,12 +264,7 @@ class works:
 
     def work_l2vproof(self, **kargs):
         try:
-            logger.critical("start: l2v proof")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -334,11 +290,7 @@ class works:
     def work_swapproof(self, **kargs):
         try:
             logger.critical("start: violas swap proof")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -363,12 +315,7 @@ class works:
     def work_l2v(self, **kargs):
         try:
             logger.critical("start: l2v")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            #libra transaction's data types 
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -396,12 +343,7 @@ class works:
     def work_l2vm(self, **kargs):
         try:
             logger.critical("start: l2vm")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            #libra transaction's data types 
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -427,12 +369,7 @@ class works:
     def work_v2l(self, **kargs):
         try:
             logger.critical("start: v2l")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            #libra transaction's data types 
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -461,12 +398,7 @@ class works:
     def work_v2lm(self, **kargs):
         try:
             logger.critical("start: v2lm")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            #libra transaction's data types 
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -491,12 +423,7 @@ class works:
     def work_bfilter(self, **kargs):
         try:
             logger.critical("start: btc filter")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            #libra transaction's data types 
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -516,13 +443,7 @@ class works:
 
     def work_b2vproof(self, **kargs):
         try:
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-            logger.critical(f"start: btc {mod} proof")
-
-            #libra transaction's data types 
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -547,13 +468,7 @@ class works:
 
     def work_b2lproof(self, **kargs):
         try:
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-            logger.critical(f"start: btc {mod} proof")
-
-            #libra transaction's data types 
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -579,10 +494,7 @@ class works:
     def work_b2l(self, **kargs):
         try:
             logger.critical("start: b2lxxx")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -611,13 +523,7 @@ class works:
 
     def work_l2bproof(self, **kargs):
         try:
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-            logger.critical(f"start: btc {mod} proof")
-
-            #libra transaction's data types 
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -643,10 +549,7 @@ class works:
     def work_l2b(self, **kargs):
         try:
             logger.critical("start: l2b")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -676,11 +579,7 @@ class works:
     def work_efilter(self, **kargs):
         try:
             logger.critical("start: ethereum filter")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -706,11 +605,7 @@ class works:
     def work_e2vproof(self, **kargs):
         try:
             logger.critical("start: ethereum map proof")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -736,10 +631,7 @@ class works:
     def work_e2vm(self, **kargs):
         try:
             logger.critical("start: e2vm")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -771,10 +663,7 @@ class works:
     def work_v2em(self, **kargs):
         try:
             logger.critical("start: v2em")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-            dtype = self.get_dtype_from_mod(mod)
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -803,10 +692,7 @@ class works:
     def work_comm(self, **kargs):
         try:
             logger.critical("start: comm")
-            nsec = kargs.get("nsec", 0)
-            mod = kargs.get("mod")
-            assert mod is not None, f"mod name is None"
-
+            nsec, mod, dtype = self.__get_input_args(**kargs)
             while(self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 sleep(nsec)
@@ -835,11 +721,11 @@ class works:
     @classmethod
     def get_dtype_from_mod(self, modname):
         dtype = modname.lower()
-        if dtype[1] in ["2"]:
-            if dtype.endswith("ex"):
-                return dtype[:-2]
-            elif dtype.endswith("proof"):
-                return dtype[:-5]
+        #if dtype[1] in ["2"]:
+        if dtype.endswith("ex"):
+            return dtype[:-2]
+        elif dtype.endswith("proof"):
+            return dtype[:-5]
         return dtype
 
     def thread_append(self, work, mod):
@@ -887,8 +773,7 @@ class works:
             elif name == "V2VSWAPPROOF":
                 self.funcs_map.update(self.create_func_dict(item, self.work_swapproof))
             elif name == "FUNDSPROOF":
-                pass
-                self.funcs_map.update(self.create_func_dict(item, self.work_fundsproof))
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2xproof))
             elif name == "FUNDSEX":
                 pass
                 #self.funcs_map.update(self.create_func_dict(item, self.work_fundsex))

@@ -43,35 +43,6 @@ for ttb in trantypebase:
     name = ttb.name.lower()
     map_chain_name.update({name[:1]:name})
 
-#datatype for transaction's data type
-#parse metadata
-class datatypebase(autoname):
-    V2LM        = auto()
-    L2VM        = auto()
-    V2LUSD      = auto()
-    V2LEUR      = auto()
-    V2LSGD      = auto()
-    V2LGBP      = auto()
-    L2VUSD      = auto()
-    L2VEUR      = auto()
-    L2VSGD      = auto()
-    L2VGBP      = auto()
-    V2B         = auto()
-    V2BM        = auto()
-    B2VM        = auto()
-    B2VUSD      = auto()
-    B2VEUR      = auto()
-    B2VSGD      = auto()
-    B2VGBP      = auto()
-    L2B         = auto()
-    B2LUSD      = auto()
-    B2LEUR      = auto()
-    V2VSWAP     = auto()
-    E2VM        = auto()
-    V2EM        = auto()
-    FUNDS       = auto()
-    UNKOWN      = auto()
-
 ##db index(redis)
 #dbindexbase item must be eq datatypebase item(B2Vxxx B2Lxxx L2Vxxx V2Lxxx)
 class dbindexbase(enumbase):
@@ -107,68 +78,38 @@ class dbindexbase(enumbase):
     V2VSWAP = 60
     E2VM   = 62
     V2EM   = 63
+xfilter = ["VFILTER", "LFILTER","BFILTER", "EFILTER"]
+dti_list = [item.name for item in dbindexbase if item.name not in ["TEST", "RECORD"]]
+em_nv = lambda names, filters, ex = "" : \
+        [(f"{name.upper()}{ex.upper()}", f"{name.lower()}{ex.lower()}") \
+        for name in names \
+        if filters is None or name.upper() not in filters]
 
-
+#datatype for transaction's data type
+#parse metadata
+datatypebase = Enum("datatypebase",
+        em_nv(dti_list + ["UNKOWN"], \
+                xfilter, \
+                str("") \
+                ) \
+        , module=__name__
+        )
 #work mod 
 #workmod item(PROOF/EX) must be eq dbindexbase 
-class workmod(enumbase):
-    COMM         = auto()   
-    VFILTER      = auto()    #scan violas chain
-    LFILTER      = auto()
-    BFILTER      = auto() #scan bitcoin chain
-    EFILTER      = auto() #scan bitcoin chain
-    V2VSWAPPROOF = auto() #scan violas chain swap
-    #chain : libra ;  data source: lfilter ; result : transaction proof ; format : L2V + token_id + PROOF
-    L2VMPROOF    = auto()
-    L2VMEX       = auto()
-    L2VUSDPROOF  = auto()
-    L2VUSDEX     = auto()
-    L2VEURPROOF  = auto()
-    L2VEUREX     = auto()
-    L2VGBPPROOF  = auto()
-    L2VGBPEX     = auto()
-    L2VSGDPROOF  = auto()
-    L2VSGDEX     = auto()
-    #chain : violas ; data source: vfilter ; result : transaction proof : fromat : V2L + token_id + PROOF
-    V2LMPROOF    = auto()
-    V2LMEX        = auto()
-    V2LUSDPROOF  = auto()
-    V2LUSDEX     = auto()
-    V2LEURPROOF  = auto()
-    V2LEUREX     = auto()
-    #exchange : libra token id -> violas token id; format : L2V + token id + EX
-    #exchange : violas token id -> libra token id; format : V2L + token id + EX
-    #
-    V2BPROOF     = auto()
-    V2BEX        = auto()
-    V2BMPROOF     = auto()
-    V2BMEX        = auto()
-    #
-    B2VMPROOF     = auto()
-    B2VMEX        = auto()
-    B2VUSDPROOF  = auto()
-    B2VUSDEX     = auto()
-    B2VEURPROOF  = auto()
-    B2VEUREX     = auto()
-    B2VSGDPROOF  = auto()
-    B2VSGDEX     = auto()
-    B2VGBPPROOF  = auto()
-    B2VGBPEX     = auto()
-    #libran <-> btc
-    #L2BPROOF     = auto()
-    #L2BEX        = auto()
-    #B2LUSDPROOF  = auto()
-    #B2LUSDEX     = auto()
-    #B2LEURPROOF  = auto()
-    #B2LEUREX     = auto()
-    E2VMPROOF  = auto()
-    E2VMEX     = auto()
-    V2EMPROOF  = auto()
-    V2EMEX     = auto()
-    FUNDSPROOF = auto()
-    FUNDSEX    = auto()
+workmod = Enum("workmod", \
+        em_nv(xfilter + ["COMM"], None, "") \
+        + em_nv(dti_list, \
+                xfilter, \
+                str("PROOF") \
+                ) \
+        + em_nv(dti_list , \
+                ["V2VSWAP"] + xfilter, \
+                str("EX") \
+                ) \
+        , module=__name__
+        )
 
 if __name__ == "__main__":
-    print(dbindexbase.UNKOWN.info)
-    print(workmod.COMM.info)
-    print(workmod.LFILTER.info)
+    for item in workmod:
+        print(f"{item.name} = {item.value}")
+    
