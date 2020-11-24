@@ -48,9 +48,6 @@ class amountconver():
     def out_value_micro(self, out_decimal):
         assert self.in_decimal and out_decimal, \
                 f"in_decimal: {self.in_decimal} and out_decimal: {out_decimal} is invalid."
-        print(\
-                f"micro_value : {self.micro_value} in_decimal: {self.in_decimal} and out_decimal : {out_decimal}"
-                )
         return int(float(self.micro_value * out_decimal) / self.in_decimal)
 
     def out_value_unit(self, out_decimal):
