@@ -151,6 +151,8 @@ syncing_mod = false
         support= true  
     [type_opts.lfilter]
         support= false
+    [type_opts.funds]
+        support= true  
     [type_opts.v2lusd]
         ttoken = "Coin1"
         support= false

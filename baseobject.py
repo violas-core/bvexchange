@@ -56,7 +56,7 @@ class baseobject(object):
             setattr(self, name.strip(), value)
 
     def get_property(self, name):
-        ret getattr(self, name.strip())
+        return getattr(self, name.strip())
 
     def create_senders_key(self, chain):
         return f"{chain}_senders"

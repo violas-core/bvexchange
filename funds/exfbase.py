@@ -38,11 +38,11 @@ from dataproof import dataproof
 from comm.values import datatypebase as datatype, trantypebase as trantype
 
 #module self.name
-#name="vbbase"
+#name="exfbase"
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
-class exbase(baseobject):    
+class exfbase(baseobject):    
 
     class amountswap(amountconver):
         pass
@@ -52,9 +52,6 @@ class exbase(baseobject):
             fromchain = "violas", \
             **kwargs):
         ''' swap token and send coin to payee(metadata's to_address)
-            btcnodes:  bitcoin chain conf
-            vlsnodes:  violas chain conf
-            lbrnodes:  libra chain conf
             proofdb  : transaction proof source(proof db conf)
             receivers: receive chain' addresses
             fromchain: source chain name: violas
@@ -339,8 +336,6 @@ class exbase(baseobject):
                     f"check address and amount")
             map_sender = ret.datas
 
-            combine_account = getattr(self, "combine_account", None)
-
             for receiver in receivers:
                 if not self.work() :
                     break
@@ -381,7 +376,7 @@ class exbase(baseobject):
                             continue
 
                         ret = self.exec_exchange(data, from_sender, map_sender, \
-                                combine_account, receiver, state = state, detail = detail)
+                                receiver, state = state, detail = detail)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
 
@@ -448,8 +443,6 @@ class exbase(baseobject):
             self.check_state_raise(ret, f"not found map sender. check address")
             map_sender = ret.datas
 
-            combine_account = self.combine_account
-
             #modulti receiver, one-by-one
             self._logger.debug(f"************************************************************ 3/4")
             for receiver in receivers:
@@ -469,7 +462,7 @@ class exbase(baseobject):
                     for data in ret.datas:
                         if not self.work() :
                             break
-                        ret = self.exec_exchange(data, from_sender, map_sender, combine_account, receiver)
+                        ret = self.exec_exchange(data, from_sender, map_sender, receiver)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
     
