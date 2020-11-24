@@ -388,10 +388,7 @@ class exbase(baseobject):
             cur_amount = ret.datas
             if cur_amount < amount + gas:
                 self.__send_get_token(account, "violas", tran_id, token_id, amount + gas, address)
-                #ret = self.violas_client.mint_coin(address, \
-                #        amount = amount + gas - cur_amount, \
-                #        token_id = token_id)
-                return ret
+                return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)
         except Exception as e:
@@ -424,7 +421,7 @@ class exbase(baseobject):
             if cur_amount < amount + gas:
                 micro_amount = self.amountswap(amount + gas, self.amountswap.BTC).microamount("btc", self.btc_client.get_decimals())
                 self.__send_get_token(account, "btc", tran_id, token_id, micro_amount, address)
-                return result(error.FAILED, f"address {address} not enough amount {amount} , only have {cur_amount}.")
+                return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)
         except Exception as e:
