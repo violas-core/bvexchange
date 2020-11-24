@@ -150,27 +150,21 @@ syncing_mod = false
     [type_opts.bfilter]
         support= true  
     [type_opts.lfilter]
-        support= false
+        support= true
     [type_opts.funds]
-        support= true  
+        support = true  
     [type_opts.v2lusd]
         ttoken = "Coin1"
-        support= false
     [type_opts.v2leur]
         ttoken = "Coin2"
-        support= false
     [type_opts.l2vusd]
         ttoken = "VLSUSD"
-        support= false
     [type_opts.l2veur]
         ttoken = "VLSEUR"
-        support= false
     [type_opts.l2vsgd]
         ttoken = "VLSSGD"
-        support= false
     [type_opts.l2vgbp]
         ttoken = "VLSGBP"
-        support= false
     [type_opts.b2vusd]
         ttoken = "VLSUSD"
     [type_opts.b2veur]
@@ -179,18 +173,8 @@ syncing_mod = false
         ttoken = "VLSSGD"
     [type_opts.b2vgbp]
         ttoken = "VLSGBP"
-    [type_opts.b2lusd]
-        ttoken = "Coin1"
-        support= false
-    [type_opts.b2leur]
-        ttoken = "Coin2"
-        support= false
-    [type_opts.l2b]
-        ttoken = "BTC"
-        support = false
     [type_opts.v2b]
         ttoken = "BTC"
-        support= false
     [type_opts.v2bm]
         etype  = "map"
     [type_opts.v2lm]
