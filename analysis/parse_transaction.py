@@ -120,9 +120,10 @@ def parse_tran(transaction):
 
         #funds used
         if datas["type"] == datatype.FUNDS.value:
-            datas["chain"] = data_dict.get("chain")
-            datas["amount"] = data_dict.get("amount")
-            datas["token_id"] = data_dict.get("token_id")
+            datas["chain"]      = data_dict.get("chain")
+            datas["amount"]     = data_dict.get("amount")
+            datas["token_id"]   = data_dict.get("token_id")
+            datas["opttype"]    = "funds"
 
         ret = result(error.SUCCEED, datas = datas)
     except Exception as e:

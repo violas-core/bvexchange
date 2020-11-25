@@ -69,6 +69,7 @@ class exfbase(baseobject):
         baseobject.__init__(self, name)
         self.latest_version = {}
         self.from_chain = fromchain
+        self.excluded = None
 
         self.append_property("db", localdb(name, f"{self.from_chain}_{dtype}.db"))
     
@@ -118,8 +119,8 @@ class exfbase(baseobject):
                     walletfactory.create(self.name(), ttype.value))
 
             #set property for client
-            self.append_property(self.create_client_key(chain), \
-                    clientfactory.create(self.name(),kwargs.get(self.create_nodes_key(ttype.value))))
+            self.append_property(self.create_client_key(ttype.value), \
+                    clientfactory.create(self.name(), ttype.value, kwargs.get(self.create_nodes_key(ttype.value))))
 
     def load_vlsmproof(self, address):
         if self.ethereum_client:
@@ -132,33 +133,47 @@ class exfbase(baseobject):
     def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):
         ret = self.db.insert_commit(version, state, tran_id, receiver, detail)
         assert (ret.state == error.SUCCEED), "db error"
+        return ret
 
     def update_localdb_state_with_check(self, tran_id, state, detail = json.dumps({"default":"no-use"})):
         ret = self.db.update_state_commit(tran_id, state, detail = detail)
         assert (ret.state == error.SUCCEED), "db error"
+        return ret
 
-    def get_map_sender_address(self, chain, token_id, amount):
+    def get_map_sender_account(self, chain, token_id, amount):
         try:
             sender_account = None
-            senders_name = self.create_senders_key(ttype.value)
-            for sender in self.senders.get(senders_name):
-                sender_account = self.map_wallet.get_account(sender)
-                address = self.get_address_from_account(sender_account)
+            senders_name = self.create_senders_key(chain)
+            map_wallet = self.get_property(self.create_wallet_key(chain))
+            senders = self.get_property(senders_name)
+            for sender in senders:
+                ret = map_wallet.get_account(sender)
+                if ret.state != error.SUCCEED:
+                    continue
+                sender_account = ret.datas
 
-                ret = self.check_address_token_is_enough(self.get_property(f"{chain}_client"))
+                ret = self.check_address_token_is_enough(self.get_property(self.create_client_key(chain)),
+                        sender_account, token_id, amount
+                        )
+                if ret.state != error.SUCCEED:
+                    continue
 
-                ret = result(error.SUCCEED, "", address)
+                if not ret.datas:
+                    self._logger.debug(f"account({sender})'s token({token_id}) amount < request amount({amount})")
+                    continue
 
+                return result(error.SUCCEED, datas = sender_account)
 
-            return result(error.FAILED, "not found sender account")
+            return result(error.FAILED, "not found sender account or amount({amount}) is too big")
         except Exception as e:
             ret = parse_except(e)
         return ret
 
-    def check_address_token_is_enough(self, client, address, token_id, amount):
+    def check_address_token_is_enough(self, client, account, token_id, amount):
         try:
+            address = self.get_address_from_account(account)
             ret = client.get_balance(address, token_id = token_id)
-            assert ret.state == SUCCEED, f"get balance failed"
+            assert ret.state == error.SUCCEED, f"get balance failed"
             
             cur_amount = ret.datas
             return result(error.SUCCEED, datas = cur_amount >= amount)
@@ -267,8 +282,8 @@ class exfbase(baseobject):
     def send_coin_for_update_state_to_end(self, sender, receiver, tran_id, token_id, amount = 1, **kwargs):
             self._logger.debug(f"start send_coin_for_update_state_to_end(sender={sender},"\
                     f"recever={receiver}, tran_id={tran_id}, amount={amount})")
-            tran_data = self.from_client.create_data_for_end(self.from_chain, self.dtype, tran_id, **kwargs)
-            ret = self.from_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
+            tran_data = self.violas_client.create_data_for_end(self.from_chain, self.dtype, tran_id, **kwargs)
+            ret = self.violas_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.VFAILED, detail = None)
             else:
@@ -330,17 +345,12 @@ class exfbase(baseobject):
 
             receivers = self.receivers
 
-            #get map sender from  senders
-            ret = self.get_map_sender_address()
-            self.check_state_raise(ret, f"not found map sender" + 
-                    f"check address and amount")
-            map_sender = ret.datas
 
             for receiver in receivers:
                 if not self.work() :
                     break
     
-                ret = self.from_wallet.get_account(receiver)
+                ret = self.violas_wallet.get_account(receiver)
                 self.check_state_raise(ret, f"get receiver({receiver})'s account failed.")
                 from_sender = ret.datas
 
@@ -369,6 +379,15 @@ class exfbase(baseobject):
         
                         data = ret.datas
                         retry = data.get("times")
+                        chain = data.get("chain")
+                        token_id = data.get("token_id")
+                        amount = data.get("amount")
+
+                        #get map sender from  senders
+                        ret = self.get_map_sender_account(chain, token_id, amount)
+                        self.check_state_raise(ret, f"not found {chain} {token_id} map sender or request amount is too big, " + 
+                                f"check address and amount({amount})")
+                        map_sender = ret.datas
 
                         #refund case: 
                         #   case 1: failed times check(metadata: times > 0 (0 = always))  
@@ -390,7 +409,7 @@ class exfbase(baseobject):
             self._logger.debug(f"syncing closed. ")
             return True
 
-        ret = self.from_client.get_latest_transaction_version()
+        ret = self.violas_client.get_latest_transaction_version()
         assert ret.state == error.SUCCEED, f"check syncing({self.dtype}) failed."
         if ret.state != error.SUCCEED:
             return False
@@ -438,10 +457,6 @@ class exfbase(baseobject):
             self._logger.debug(f"************************************************************ 2/4")
             self.rechange_db_state(self.use_exec_update_db_states)
 
-            #get map sender from senders
-            ret = self.get_map_sender_address()
-            self.check_state_raise(ret, f"not found map sender. check address")
-            map_sender = ret.datas
 
             #modulti receiver, one-by-one
             self._logger.debug(f"************************************************************ 3/4")
@@ -449,7 +464,7 @@ class exfbase(baseobject):
                 if not self.work() :
                     break
 
-                ret  = self.from_wallet.get_account(receiver)
+                ret  = self.violas_wallet.get_account(receiver)
                 self.check_state_raise(ret, f"get receiver({receiver})'s account failed.")
                 from_sender = ret.datas
                 latest_version = self.latest_version.get(receiver, -1) + 1
@@ -462,6 +477,18 @@ class exfbase(baseobject):
                     for data in ret.datas:
                         if not self.work() :
                             break
+
+                        #get map sender from senders, chain and token_id is multi
+                        chain = data.get("chain")
+                        token_id = data.get("token_id")
+                        amount = data.get("amount")
+
+                        #get map sender from  senders
+                        ret = self.get_map_sender_account(chain, token_id, amount)
+                        self.check_state_raise(ret, f"not found {chain} {token_id} map sender, " + 
+                                f"check address and amount({amount})")
+                        map_sender = ret.datas
+
                         ret = self.exec_exchange(data, from_sender, map_sender, receiver)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)

@@ -238,7 +238,7 @@ syncing_mod = false
 #  3. combine address must be difference, because we will calaculation swap result with combine address's token changed
 #  4. address_list.sender.address(type = X2vXXX and chain = "violas") must be difference, because we will execute mint token to it
 #     and execute swap function with this address. 
-#  5. ethereum chain's receiver is main contract, so set map address for contract address for change state
+#  5. ethereum chain's receiver is main contract, so set map(manage) address for contract address for change state
 [address_list]
     #receiver addresses
     ##violas chain receiver address
@@ -432,6 +432,11 @@ syncing_mod = false
         address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
         type = "v2em"
         chain = "ethereum"
+
+    [[address_list.sender]]
+        address = "e99ae1a3ff054ee3cfd1d9a2a56988400f82442367443b43ae58efff73bef348"
+        type = "funds"
+        chain = "violas"
 
     #combine 
     [[address_list.combine]]
