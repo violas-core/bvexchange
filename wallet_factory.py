@@ -19,7 +19,7 @@ class walletfactory(baseobject):
         baseobject.__init__(self, name)
 
     @classmethod
-    def create(cls, name, chain)
+    def create(cls, name, chain):
        if chain == trantype.BTC.value:
            return btcwallet(name, dataproof.wallets(chain))
        elif chain == trantype.VIOLAS.value:

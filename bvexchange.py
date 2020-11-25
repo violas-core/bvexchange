@@ -31,8 +31,15 @@ from analysis import (
         analysis_proof_swap,
         analysis_proof_eth
         )
+
+from funds import (
+        exfunds
+        )
 from enum import Enum
-from comm.values import workmod as work_mod
+from comm.values import (
+        workmod as work_mod,
+        trantypebase as trantype
+        )
 
 name="bvexchange"
 
@@ -90,9 +97,9 @@ class works:
                             stmanage.get_btc_nodes(), 
                             stmanage.get_violas_nodes(),
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "btc", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
-                            stmanage.get_combine_address(dtype, "btc", True),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.BTC.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
+                            stmanage.get_combine_address(dtype, trantype.BTC.value, True),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
                             funds = stmanage.get_funds_address()
@@ -119,8 +126,8 @@ class works:
                             stmanage.get_btc_nodes(), 
                             stmanage.get_violas_nodes(),
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "btc", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.BTC.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
                             funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
@@ -144,9 +151,9 @@ class works:
                             stmanage.get_violas_nodes(), 
                             stmanage.get_btc_nodes(),
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "btc", False))),
-                            stmanage.get_combine_address(dtype, "violas"),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.BTC.value, False))),
+                            stmanage.get_combine_address(dtype, trantype.VIOLAS.value),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
                             funds = stmanage.get_funds_address()
@@ -173,8 +180,8 @@ class works:
                             stmanage.get_violas_nodes(), 
                             stmanage.get_btc_nodes(),
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "btc", False))),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.BTC.value, False))),
                             funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
@@ -194,8 +201,8 @@ class works:
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
-                    obj = analysis_filter.afilter(name=mod, ttype="violas", \
-                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain="violas")
+                    obj = analysis_filter.afilter(name=mod, ttype=trantype.VIOLAS.value, \
+                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_violas_nodes(), chain=trantype.VIOLAS.value)
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     obj.set_swap_owner(stmanage.get_swap_owner())
@@ -218,14 +225,14 @@ class works:
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "vfilter"
-                    ttype = "violas"
+                    ttype = trantype.VIOLAS.value
                     obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
                     if stmanage.type_is_map(dtype):
                         obj.append_token_id(stmanage.get_support_map_token_id(ttype, dtype))
                     elif stmanage.type_is_funds(dtype):
-                        obj.append_token_id(stmanage.get_support_token_id())
+                        obj.append_token_id(stmanage.get_support_token_id(ttype))
                     else:
                         obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
                     obj.set_record(stmanage.get_db(self.record_db_name()))
@@ -248,8 +255,8 @@ class works:
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
-                    obj = analysis_filter.afilter(name=mod, ttype="libra", \
-                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_libra_nodes(), chain="libra")
+                    obj = analysis_filter.afilter(name=mod, ttype=trantype.LIBRA.value, \
+                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_libra_nodes(), chain=trantype.LIBRA.value)
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
                     self.set_work_obj(obj)
@@ -269,7 +276,7 @@ class works:
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "lfilter"
-                    ttype = "libra"
+                    ttype = trantype.LIBRA.value
                     obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of libra transaction
@@ -295,7 +302,7 @@ class works:
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "vfilter"
-                    ttype = "violas"
+                    ttype = trantype.VIOLAS.value
                     obj = analysis_proof_swap.aproofswap(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
@@ -324,8 +331,8 @@ class works:
                             stmanage.get_violas_nodes(), 
                             stmanage.get_libra_nodes(),
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.LIBRA.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
                             funds = stmanage.get_funds_address()
@@ -352,8 +359,8 @@ class works:
                             stmanage.get_libra_nodes(),
                             stmanage.get_violas_nodes(), 
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.LIBRA.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
                             funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
@@ -378,9 +385,9 @@ class works:
                             stmanage.get_violas_nodes(), 
                             stmanage.get_libra_nodes(),
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
-                            stmanage.get_combine_address(dtype, "violas"),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.LIBRA.value, False))),
+                            stmanage.get_combine_address(dtype, trantype.VIOLAS.value),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
                             funds = stmanage.get_funds_address()
@@ -407,8 +414,8 @@ class works:
                             stmanage.get_violas_nodes(), 
                             stmanage.get_libra_nodes(),
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.LIBRA.value, False))),
                             funds = stmanage.get_funds_address()
                             )
                     self.set_work_obj(obj)
@@ -427,8 +434,8 @@ class works:
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
-                    obj = analysis_filter.afilter(name=mod, ttype="btc", \
-                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_btc_conn(), chain="btc")
+                    obj = analysis_filter.afilter(name=mod, ttype=trantype.BTC.value, \
+                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_btc_conn(), chain=trantype.BTC.value)
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__btc_min_valid_version - 1)
                     self.set_work_obj(obj)
@@ -448,7 +455,7 @@ class works:
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "bfilter"
-                    ttype = "btc"
+                    ttype = trantype.BTC.value
                     obj = analysis_proof_btc.aproofbtc(name=mod, ttype = ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of btc transaction
@@ -473,7 +480,7 @@ class works:
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "bfilter"
-                    ttype = "btc"
+                    ttype = trantype.BTC.value
                     obj = analysis_proof_btc.aproofbtc(name=mod, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of btc transaction
@@ -504,9 +511,9 @@ class works:
                             stmanage.get_violas_nodes(),
                             stmanage.get_libra_nodes(),
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "btc", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "libra", False))),
-                            stmanage.get_combine_address(dtype, "violas", True),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.BTC.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.LIBRA.value, False))),
+                            stmanage.get_combine_address(dtype, trantype.VIOLAS.value, True),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
                             funds = stmanage.get_funds_address()
@@ -528,7 +535,7 @@ class works:
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "lfilter"
-                    ttype = "libra"
+                    ttype = trantype.LIBRA.value
                     obj = analysis_proof_violas.aproofvls(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of btc transaction
@@ -559,9 +566,9 @@ class works:
                             stmanage.get_violas_nodes(),
                             stmanage.get_libra_nodes(),
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "libra", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "btc", False))),
-                            stmanage.get_combine_address(dtype, "violas", True),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.LIBRA.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.BTC.value, False))),
+                            stmanage.get_combine_address(dtype, trantype.VIOLAS.value, True),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
                             funds = stmanage.get_funds_address()
@@ -583,14 +590,12 @@ class works:
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
-                    obj = analysis_filter.afilter(name=mod, ttype="ethereum", \
-                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_eth_nodes(), chain="ethereum")
+                    obj = analysis_filter.afilter(name=mod, ttype=trantype.ETHEREUM.value, \
+                            dbconf=stmanage.get_db(dtype), nodes=stmanage.get_eth_nodes(), chain=trantype.ETHEREUM.value)
                     obj.set_step(stmanage.get_db(dtype).get("step", 1000))
                     obj.set_min_valid_version(self.__ethereum_min_valid_version - 1)
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
-                    tokens = stmanage.get_support_token_id("ethereum")
-                    for token in tokens:
-                        obj.append_contract(token)
+                    [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
 
                     self.set_work_obj(obj)
                     obj.start()
@@ -610,7 +615,7 @@ class works:
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "efilter"
-                    ttype = "ethereum"
+                    ttype = trantype.ETHEREUM.value
                     obj = analysis_proof_eth.aproofeth(name=mod, ttype=ttype, dtype=dtype, \
                             dbconf=stmanage.get_db(dtype), fdbconf=stmanage.get_db(basedata))
                     #set can receive token of violas transaction
@@ -640,16 +645,13 @@ class works:
                             stmanage.get_eth_nodes(), 
                             stmanage.get_violas_nodes(),
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "ethereum", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
-                            stmanage.get_map_address(dtype, "ethereum", False),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.ETHEREUM.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
+                            stmanage.get_map_address(dtype, trantype.ETHEREUM.value, False),
                             funds = stmanage.get_funds_address()
                             )
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
-                    tokens = stmanage.get_support_token_id("ethereum")
-                    for token in tokens:
-                        obj.append_contract(token)
-
+                    [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
@@ -672,14 +674,12 @@ class works:
                             stmanage.get_violas_nodes(),
                             stmanage.get_eth_nodes(), 
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, "violas", False))),
-                            list(set(stmanage.get_sender_address_list(dtype, "ethereum", False))),
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
+                            list(set(stmanage.get_sender_address_list(dtype, trantype.ETHEREUM.value, False))),
                             funds = stmanage.get_funds_address()
                             )
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
-                    tokens = stmanage.get_support_token_id("ethereum")
-                    for token in tokens:
-                        obj.append_contract(token)
+                    [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
                     self.set_work_obj(obj)
                     obj.start()
                 except Exception as e:
@@ -689,6 +689,40 @@ class works:
             parse_except(e)
         finally:
             logger.critical(f"stop: {mod}")
+
+    def work_fundsex(self, **kargs):
+        try:
+            logger.critical("start: fundsex")
+            nsec, mod, dtype = self.__get_input_args(**kargs)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
+                try:
+                    obj = exfunds.exfunds(mod, 
+                            dtype,
+                            stmanage.get_db(dtype), 
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
+                            fromchain = trantype.VIOLAS.value,
+                            violas_nodes = stmanage.get_violas_nodes(), 
+                            btc_nodes = stmanage.get_btc_nodes(),
+                            libra_nodes = stmanage.get_libra_nodes(),
+                            ethereum_nodes = stmanage.get_eth_nodes(),
+                            btc_senders = list(set(stmanage.get_sender_address_list(dtype, trantype.BTC.value, False))),
+                            violas_senders = list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
+                            libra_senders = list(set(stmanage.get_sender_address_list(dtype, trantype.LIBRA.value, False))),
+                            ethereum_senders = list(set(stmanage.get_sender_address_list(dtype, trantype.ETHEREUM.value, False))),
+                            )
+                    obj.load_vlsmproof(stmanage.get_vlsmproof_address())
+                    [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
+
     def work_comm(self, **kargs):
         try:
             logger.critical("start: comm")
@@ -775,8 +809,7 @@ class works:
             elif name == "FUNDSPROOF":
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2xproof))
             elif name == "FUNDSEX":
-                pass
-                #self.funcs_map.update(self.create_func_dict(item, self.work_fundsex))
+                self.funcs_map.update(self.create_func_dict(item, self.work_fundsex))
             elif self.is_match(name, "V2L", "PROOF", [11, 9]): #V2LXXXPROOF   V2LMPROOF
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2xproof))
             elif self.is_match(name, "V2B", "PROOF", [8, 9]):

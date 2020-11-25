@@ -5,7 +5,11 @@ from comm.result import parse_except
 from comm.functions import get_address_from_full_address 
 from comm.functions import json_print
 from comm.values import trantypebase
-from comm.values import map_chain_name, workmod as work_mod
+from comm.values import (
+        map_chain_name, 
+        workmod as work_mod, 
+        datatypebase as datatype
+        )
 from dataproof.dataproof import setting
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
@@ -120,6 +124,8 @@ def __get_address_list(atype, mtype, chain = None, full = True):
             min_len = min(VIOLAS_ADDRESS_LEN)
             assert min_len > 0 , "address min(VIOLAS_ADDRESS_LEN) is invalid."
             return [get_address_from_full_address(addr) for addr in addresses]
+    return []
+
 
 #maybe use. so keep it until libra support usd eur ...
 #def __get_tokenid_list(atype, mtype, chain = None):
@@ -195,7 +201,7 @@ def type_is_map(mtype):
     return False
 
 def type_is_funds(mtype):
-    return mtype == work_mod.FUNDSPROOF.value
+    return mtype == datatype.FUNDS.value
 
 def get_support_address_info(etype = None):
     support_mods = get_support_mods_info(etype)

@@ -7,7 +7,8 @@ sys.path.append("..")
 import log
 import log.logger
 
-from vlsopt.violasclient import violasclient 
+from vlsopt.violasclient import violasclient
+from vlsopt.violasproof import violasproof
 from ethopt.ethclient import ethclient
 from btc.btcclient import btcclient
 from comm.values import trantypebase as trantype
@@ -19,15 +20,15 @@ class clientfactory(baseobject):
         baseobject.__init__(self, name)
 
     @classmethod
-    def create(cls, name, chain, nodes)
+    def create(cls, name, chain, nodes):
        if chain == trantype.BTC.value:
            return btcclient(name, nodes) if nodes else None
        elif chain == trantype.VIOLAS.value:
-           return violasclient(name, nodes, chain) if nodes else None
+           return violasproof(name, nodes, chain) if nodes else None
        elif chain == trantype.LIBRA.value:
-           return violasclient(name, nodes, chain) if nodes else None
+           return violasproof(name, nodes, chain) if nodes else None
        elif chain == trantype.ETHEREUM.value:
-           return ethclient(name, nodes, chain, usd_chain = dataproof.configs("eth_usd_chain")) if ethnodes else None
+           return ethclient(name, nodes, chain, usd_chain = dataproof.configs("eth_usd_chain")) if nodes else None
        
        raise Exception(f"create client failed. chain name({chain}) is invalid.")
 

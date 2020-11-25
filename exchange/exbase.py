@@ -362,7 +362,7 @@ class exbase(baseobject):
             data = self.violas_client.create_data_for_funds(trantype.VIOLAS.value, datatypebase.FUNDS.value, chain, tran_id, token_id, amount, to_address)
 
             #send funds request must be use violas' token, maybe use VLS alwars???
-            if chain != "violas":
+            if chain != trantype.VIOLAS.value:
                 usd_token = token_id
             else:
                 usd_token = stmanage.get_token_map(token_id)
@@ -387,7 +387,7 @@ class exbase(baseobject):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
-                self.__send_get_token(account, "violas", tran_id, token_id, amount + gas, address)
+                self.__send_get_token(account, trantype.VIOLAS.value, tran_id, token_id, amount + gas, address)
                 return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)

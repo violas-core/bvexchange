@@ -542,7 +542,6 @@ class violasclient(baseobject):
         try:
             (_, addr) = self.split_full_address(address).datas
             ret = self.swap_get_reserves_resource(addr)
-            print(ret.datas)
             ret = result(ret.state, datas = ret.datas is not None)
         except Exception as e:
             ret = parse_except(e)

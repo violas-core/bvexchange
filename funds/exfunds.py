@@ -13,7 +13,7 @@ from comm.error import error
 from db.dblocal import dblocal as localdb
 from funds.exfbase import exfbase
 
-class exmap(exfbase):    
+class exfunds(exfbase):    
     def __init__(self, name, 
             dtype, 
             proofdb, 
@@ -70,7 +70,7 @@ class exmap(exfbase):
         token_id = data["token_id"]
 
         target_client = self.get_property(self.create_client_key(target_chain))
-        assert to_client is not None, f"target chain{target_chain} is invalid."
+        assert target_client is not None, f"target chain{target_chain} is invalid."
 
         ret = result(error.FAILED)
         self._logger.info(f"start exfunds {self.dtype}. version={version}, state = {state}, detail = {detail} datas from server.")
@@ -85,8 +85,8 @@ class exmap(exfbase):
         if not self.chain_data_is_valid(data):
            return 
 
-        amount_swap = self.amountswap(amount, self.amountswap.amounttype[chain.upper()], self.target_client.get_decimals(token_id))
-        send_amount = amount_swap.amount(traget_chain, target_client.get_decimals(token_id))
+        amount_swap = self.amountswap(amount, self.amountswap.amounttype[target_chain.upper()], target_client.get_decimals(token_id))
+        send_amount = amount_swap.amount(target_chain, target_client.get_decimals(token_id))
         micro_amount = amount_swap.microamount(target_chain, target_client.get_decimals(token_id))
 
         self._logger.debug(f"exec_exchange-start...")
@@ -105,7 +105,7 @@ class exmap(exfbase):
                 self._logger.error(f"exec_exchange-1.result: failed. {ret.message}")
                 return ret
             elif not ret.datas:
-                detail.update({"msg": token is not enough.})
+                detail.update({"msg": "token is not enough."})
                 self._logger.error(f"exec_exchange-1.result: False。")
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLSUCCEED, \
                       json.dumps(detail))
@@ -115,8 +115,8 @@ class exmap(exfbase):
             markdata = target_client.create_data_for_mark(target_chain, self.dtype, \
                     tran_id, version)
 
-            self._logger.debug(f"exec_exchange-2. start send {map_token_id} to {toaddress} amount = {map_amount}...")
-            ret = self.map_client.send_coin(funds_sender, toaddress, \
+            self._logger.debug(f"exec_exchange-2. start send {token_id} to {toaddress} amount = {send_amount}...")
+            ret = target_client.send_coin(funds_sender, toaddress, \
                     send_amount, token_id, data=markdata)
 
             if ret.state != error.SUCCEED:
@@ -134,7 +134,7 @@ class exmap(exfbase):
         if self.use_module(state, localdb.state.VSUCCEED):
             self._logger.debug(f"exec_exchange-3. start send_coin_for_update_state_to_end...")
             ret =  self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, \
-                    from_token_id, 1, out_amount_real=micro_amount, version=version)
+                    token_id, 1, out_amount_real=micro_amount, version=version)
             if ret.state != error.SUCCEED:
                 return ret
 
