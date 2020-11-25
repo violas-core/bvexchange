@@ -5,8 +5,8 @@ traceback_limit = 4
 #db logging echo(False, True) default: False
 db_echo=false
 
-#v2b max replay exchange count(state = faild)
-v2b_maxtimes = 99
+#max retry exchange count(state = faild)
+#retry_maxtimes = 0
 
 #syncing proof flag ; default true
 syncing_mod = false
@@ -157,6 +157,7 @@ syncing_mod = false
         ttoken = "Coin1"
     [type_opts.v2leur]
         ttoken = "Coin2"
+        support = false
     [type_opts.l2vusd]
         ttoken = "VLSUSD"
     [type_opts.l2veur]

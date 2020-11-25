@@ -9,7 +9,10 @@ from comm.result import result, parse_except
 from db.dblocal import dblocal as localdb
 from comm.error import error
 from exchange.exmap import exmap
-
+from comm.values import (
+        datatypebase as datatype, 
+        trantypebase as trantype
+        )
 
 #load logging
 class e2vm(exmap):    
@@ -24,10 +27,11 @@ class e2vm(exmap):
             **kwargs
             ):
 
+        kwargs.update({self.create_nodes_key(trantype.ETHEREUM.value) : ethnodes})
+        kwargs.update({self.create_nodes_key(trantype.VIOLAS.value) : vlsnodes})
         exmap.__init__(self, name, dtype, \
-                None, vlsnodes, None, ethnodes,\
                 proofdb, receivers, senders,\
-                "ethereum", "violas", \
+                trantype.ETHEREUM, trantype.VIOLAS, \
                 **kwargs)
         self.__init_exec_states()
         self.set_contract_map_address(mapper)

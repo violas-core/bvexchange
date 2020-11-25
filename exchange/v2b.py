@@ -8,6 +8,10 @@ from comm.result import result, parse_except
 from comm.error import error
 from db.dblocal import dblocal as localdb
 from exchange.v2xswap import v2xswap
+from comm.values import (
+        datatypebase as datatype, 
+        trantypebase as trantype
+        )
 
 #module self.name
 #name="v2b"

@@ -195,8 +195,13 @@ class dblocal(baseobject):
         proofs = []
         try:
             filter_state = (self.info.state==state.value)
-            filter_times = (self.info.times<=maxtimes)
-            proofs = self.__session.query(self.info).filter(filter_state).filter(filter_times).all()
+            proofs = None
+            if maxtimes > 0:
+                filter_times = (self.info.times<=maxtimes)
+                proofs = self.__session.query(self.info).filter(filter_state).filter(filter_times).all()
+            else:
+                proofs = self.__session.query(self.info).filter(filter_state).all()
+
             ret = result(error.SUCCEED, datas = proofs)
         except Exception as e:
             ret = parse_except(e)

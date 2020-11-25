@@ -47,6 +47,8 @@ def json_to_dict(data):
 def get_opttype_from_dtype(dtype):
     if dtype in [datatype.V2LM.value, datatype.L2VM.value, datatype.V2BM.value, datatype.B2VM.value]:
         return "map"
+    elif dtype in [datatype.FUNDS.value]:
+        return "funds"
     else:
         return "swap"
 

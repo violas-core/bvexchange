@@ -8,7 +8,10 @@ import stmanage
 from comm.result import result, parse_except
 from comm.error import error
 from exchange.exmap import exmap
-
+from comm.values import (
+        datatypebase as datatype, 
+        trantypebase as trantype
+        )
 
 #load logging
 class v2bm(exmap):    
@@ -22,10 +25,11 @@ class v2bm(exmap):
             **kwargs
             ):
 
+        kwargs.update({self.create_nodes_key(trantype.VIOLAS.value) : vlsnodes})
+        kwargs.update({self.create_nodes_key(trantype.BTC.value) : btcnodes})
         exmap.__init__(self, name, dtype, \
-                btcnodes, vlsnodes,  None, None, \
                 proofdb, receivers, senders,\
-                "violas", "btc", \
+                trantype.VIOLAS, trantype.BTC, \
                 **kwargs)
 
     def __del__(self):

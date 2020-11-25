@@ -6,9 +6,6 @@ sys.path.append(os.getcwd())
 sys.path.append("..")
 import log
 import log.logger
-import traceback
-import datetime
-import sqlalchemy
 import stmanage
 import requests
 import comm
@@ -22,19 +19,8 @@ from comm.result import result, parse_except
 from comm.error import error
 from comm.amountconver import amountconver 
 from db.dblocal import dblocal as localdb
-from db.dbfunds import dbfunds as localfunds
-import vlsopt.violasclient
-from vlsopt.violasclient import violasclient, violaswallet, violasserver
-from ethopt.ethclient import ethclient, ethwallet
-from btc.btcclient import btcclient
-from btc.btcwallet import btcwallet
-from vlsopt.violasproof import violasproof
-from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from baseobject import baseobject
-from enum import Enum
 from vrequest.request_client import requestclient
-from analysis.analysis_filter import afilter
-from dataproof import dataproof
 from comm.values import datatypebase as datatype, trantypebase as trantype
 
 #module self.name
@@ -225,17 +211,15 @@ class exfbase(baseobject):
 
     def get_record_from_localdb_with_state(self, states):
         try:
-            maxtimes = 999999999
             rpcparams = {}
 
             assert states is not None and len(states) > 0, f"args states is invalid."
             
             ## failed 
-            if stmanage.get_max_times(self.name()) > 0:
-                maxtimes = stmanage.get_max_times(self.name())
+            maxtimes = stmanage.get_max_times(self.name())
 
             for state in states:
-                ret = self.load_record_and_merge(rpcparams, state)
+                ret = self.load_record_and_merge(rpcparams, state, maxtimes)
                 if(ret.state != error.SUCCEED):
                     return ret
             

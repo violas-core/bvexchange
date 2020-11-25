@@ -16,10 +16,6 @@ from exchange.exbase import exbase
 class exmap(exbase):    
     def __init__(self, name, 
             dtype, 
-            btcnodes, 
-            vlsnodes, 
-            lbrnodes,
-            ethnodes,
             proofdb, 
             receivers, 
             senders, 
@@ -28,10 +24,22 @@ class exmap(exbase):
             **kwargs
             ):
 
+        ''' map token and send coin to payee(metadata's to_address)
+            proofdb  : transaction proof source(proof db conf)
+            receivers: receive chain' addresses
+            senders  : sender chain token adderss
+            fromchain: source chain name
+            mapchain : target chain name
+            kwargs:
+                btc_nodes: connect btc node info
+                violas_nodes: connect violas node info
+                libra_nodes: connect libra node info
+                ethereum_nodes: connect ethereum node info
+                funds_receiver: mint or recharge address
+            
+        '''
         exbase.__init__(self, name, dtype, \
-                btcnodes, vlsnodes, lbrnodes, ethnodes, \
                 proofdb, receivers, senders, \
-                None, None, \
                 fromchain, mapchain,\
                 **kwargs)
         self.init_exec_states()
