@@ -6,9 +6,6 @@ sys.path.append(os.getcwd())
 sys.path.append("..")
 import log
 import log.logger
-import traceback
-import datetime
-import sqlalchemy
 import stmanage
 import requests
 import comm
@@ -21,19 +18,31 @@ from comm.error import error
 from comm.amountconver import amountconver 
 from db.dblocal import dblocal as localdb
 from db.dbfunds import dbfunds as localfunds
-import vlsopt.violasclient
-from vlsopt.violasclient import violasclient, violaswallet, violasserver
-from ethopt.ethclient import ethclient, ethwallet
+from wallet_factory import walletfactory
+from client_factory import clientfactory
+from vlsopt.violasclient import (
+        violaswallet 
+        )
+from ethopt.ethclient import (
+        ethclient, 
+        ethwallet
+        )
 from btc.btcclient import btcclient
 from btc.btcwallet import btcwallet
 from vlsopt.violasproof import violasproof
-from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
+from bitcoinrpc.authproxy import (
+        AuthServiceProxy, 
+        JSONRPCException
+        )
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
 from analysis.analysis_filter import afilter
 from dataproof import dataproof
-from comm.values import datatypebase, trantypebase as trantype
+from comm.values import (
+        datatypebase, 
+        trantypebase as trantype
+        )
 
 #module self.name
 #name="vbbase"
@@ -46,50 +55,40 @@ class exbase(baseobject):
         pass
 
     def __init__(self, name, dtype, \
-            btcnodes, vlsnodes, lbrnodes, ethnodes, \
             proofdb, receivers, senders, \
-            swap_module, swap_owner, \
             fromchain, mapchain, \
             **kwargs):
         ''' swap token and send coin to payee(metadata's to_address)
-            btcnodes:  bitcoin chain conf
-            vlsnodes:  violas chain conf
-            lbrnodes:  libra chain conf
             proofdb  : transaction proof source(proof db conf)
             receivers: receive chain' addresses
             senders  : sender chain token adderss
-            swap_module: violas chain swap module address
-            swap_owner: violas chain swap owner address
             fromchain: source chain name
             mapchain : target chain name
             kwargs:
+                btc_nodes: connect btc node info
+                violas_nodes: connect violas node info
+                libra_nodes: connect libra node info
+                ethereum_nodes: connect ethereum node info
                 funds_receiver: mint or recharge address
+                swap_module: violas chain swap module address
+                swap_owner: violas chain swap owner address
+            
         '''
 
         baseobject.__init__(self, name)
         self.latest_version = {}
-        self.from_chain = fromchain
-        self.map_chain = mapchain
-        self.funds_address = kwargs.get("funds")
-        self.append_property("btc_client", btcclient(name, btcnodes) if btcnodes else None)
-        self.append_property("violas_client", violasproof(name, vlsnodes, "violas") if vlsnodes else None)
-        self.append_property("libra_client", violasproof(name, lbrnodes, "libra") if lbrnodes else None)
-        self.append_property("ethereum_client", ethclient(name, ethnodes, "ethereum", usd_chain= dataproof.configs("eth_usd_chain") if ethnodes else None))
-        self.append_property("db", localdb(name, f"{self.from_chain}_{dtype}.db"))
-        if dtype != datatypebase.FUNDS.value:
-            self.append_property("dbfunds", localfunds(name, f"request_funds.db"))
+        self.from_chain = fromchain.value if isinstance(fromchain, trantype) else fromchain
+        self.map_chain = mapchain.value if isinstance(mapchain, trantype) else mapchain
     
         #violas/libra init
         self.append_property("receivers", receivers)
         self.append_property("senders ", senders)
         self.append_property("dtype", dtype)
         self.append_property("to_token_id ", stmanage.get_type_stable_token(dtype))
-        self.append_property("swap_module", swap_module)
-        self.append_property("swap_owner", swap_owner)
         self.append_property("proofdb", proofdb)
 
         #use the above property, so call set_local_workspace here
-        self.set_local_workspace()
+        self.set_local_workspace(**kwargs)
 
     def __del__(self):
         pass
@@ -112,55 +111,55 @@ class exbase(baseobject):
         except Exception as e:
             parse_except(e)
 
-    def set_local_workspace(self):
-        setattr(self, "excluded", [])
-        setattr(self, "combine", None)
+    def set_local_workspace(self, **kwargs):
+        self.append_property("excluded", [])
+        self.append_property("combine", None)
         self.append_property("combine_account", None)
 
         self.append_property(f"{self.from_chain}_chain", self.from_chain)
         self.append_property(f"{self.map_chain}_chain", self.map_chain)
+        self.append_property("swap_module", kwargs.get("swap_module"))
+        self.append_property("swap_owner", kwargs.get("swap_owner"))
+
+        self.append_property("db", localdb(self.name(), f"{self.from_chain}_{self.dtype}.db"))
+        self.append_property("funds_address", kwargs.get("funds"))
+        if self.dtype != datatypebase.FUNDS.value:
+            self.append_property("dbfunds", localfunds(self.name(), f"request_funds.db"))
+
+        for ttype in trantype:
+            if ttype == trantype.UNKOWN:
+                continue
+
+            #set property for senders 
+            senders_name = self.create_senders_key(ttype.value)
+            self.append_property(senders_name, kwargs.get(senders_name))
+
+            #set property for wallet
+            self.append_property(self.create_wallet_key(ttype.value), \
+                    walletfactory.create(self.name(), ttype.value))
+
+            #set property for client
+            self.append_property(self.create_client_key(ttype.value), \
+                    clientfactory.create(self.name(), ttype.value, kwargs.get(self.create_nodes_key(ttype.value))))
 
         if self.swap_module and self.violas_client:
             self.violas_client.swap_set_module_address(self.swap_module)
         if self.swap_owner and self.violas_client:
             self.violas_client.swap_set_owner_address(self.swap_owner)
 
-        if self.from_chain == "btc":
+        self.append_property("from_wallet", self.get_property(self.create_wallet_key(self.from_chain)))
+        self.append_property("from_client", self.get_property(self.create_client_key(self.from_chain)))
+
+        if trantype(self.from_chain) == trantype.BTC:
             self.append_property("pserver", self.btc_client)
-            self.append_property("from_wallet", btcwallet(self.name(), None))
-            self.append_property("from_client", self.btc_client)
-            self.append_property("btc_wallet", self.from_wallet)
-        elif self.from_chain in ("violas", "libra"):
+        elif trantype(self.from_chain) in (trantype.VIOLAS, trantype.LIBRA, trantype.ETHEREUM):
             self.append_property("pserver", requestclient(self.name(), self.proofdb))
-            self.append_property("from_wallet", violaswallet(self.name(), dataproof.wallets(self.from_chain), self.from_chain))
-            self.append_property("from_client", self.violas_client if self.from_chain == "violas" else self.libra_client)
-            self.append_property(f"{self.from_chain}_wallet", self.from_wallet)
-        elif self.from_chain == "ethereum":
-            self.append_property("pserver", requestclient(self.name(), self.proofdb))
-            self.append_property("from_wallet", ethwallet(self.name(), dataproof.wallets(self.from_chain)))
-            self.append_property("from_client", self.ethereum_client)
-            self.append_property("ethereum_wallet", self.from_wallet)
-
         else:
             raise Exception(f"chain {self.from_chain} is invalid.")
 
-        if self.map_chain == "btc":
-            self.append_property("map_wallet", btcwallet(self.name(), None))
-            self.append_property("map_client", self.btc_client)
-        elif self.map_chain in ("violas", "libra"):
-            self.append_property("map_wallet", violaswallet(self.name(), dataproof.wallets(self.map_chain), self.map_chain))
-            self.append_property("map_client", self.violas_client if self.map_chain == "violas" else self.libra_client)
-        elif self.map_chain == "ethereum":
-            self.append_property("map_wallet", ethwallet(self.name(), dataproof.wallets(self.map_chain)))
-            self.append_property("map_client", self.ethereum_client)
-        else:
-            raise Exception(f"chain {self.from_chain} is invalid.")
-
-        if "violas" not in (self.from_chain, self.map_chain) and self.combine:
-            self.append_property("violas_wallet", violaswallet(self.name(), dataproof.wallets("violas"), "violas"))
-            ret = self.violas_wallet.get_account(self.combine)
-            self.check_state_raise(ret, f"get combine({self.combine})'s account failed.")
-            self.append_property("combine_account", ret.datas)
+        if trantype(self.map_chain) != trantype.UNKOWN:
+            self.append_property("map_wallet", self.get_property(self.create_wallet_key(self.map_chain)))
+            self.append_property("map_client", self.get_property(self.create_client_key(self.map_chain)))
 
         self.init_fill_address_token()
 
@@ -173,11 +172,11 @@ class exbase(baseobject):
             self.ethereum_client.load_contract(name)
 
     def init_fill_address_token(self):
-        setattr(self, "fill_address_token", {})
-        self.fill_address_token.update({"violas": self.fill_address_token_violas})
-        self.fill_address_token.update({"libra": self.fill_address_token_libra})
-        self.fill_address_token.update({"btc": self.fill_address_token_btc})
-        self.fill_address_token.update({"ethereum": self.fill_address_token_ethereum})
+        self.append_property("fill_address_token", {})
+        self.fill_address_token.update({trantype.VIOLAS.value: self.fill_address_token_violas})
+        self.fill_address_token.update({trantype.LIBRA.value: self.fill_address_token_libra})
+        self.fill_address_token.update({trantype.BTC.value: self.fill_address_token_btc})
+        self.fill_address_token.update({trantype.ETHEREUM.value: self.fill_address_token_ethereum})
 
     def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):
         ret = self.db.insert_commit(version, state, tran_id, receiver, detail)
@@ -258,17 +257,15 @@ class exbase(baseobject):
 
     def get_record_from_localdb_with_state(self, states):
         try:
-            maxtimes = 999999999
             rpcparams = {}
 
             assert states is not None and len(states) > 0, f"args states is invalid."
             
             ## failed 
-            if stmanage.get_max_times(self.name()) > 0:
-                maxtimes = stmanage.get_max_times(self.name())
+            maxtimes = stmanage.get_max_times(self.name())
 
             for state in states:
-                ret = self.load_record_and_merge(rpcparams, state)
+                ret = self.load_record_and_merge(rpcparams, state, maxtimes)
                 if(ret.state != error.SUCCEED):
                     return ret
             

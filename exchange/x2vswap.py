@@ -12,6 +12,10 @@ from comm.result import result, parse_except
 from comm.error import error
 from db.dblocal import dblocal as localdb
 from exchange.exbase import exbase
+from comm.values import (
+        datatypebase as datatype, 
+        trantypebase as trantype
+        )
 
 #module self.name
 #name="l2v"
@@ -45,10 +49,13 @@ class x2vswap(exbase):
             @swap_module: swap module address
             @swap_owner: swap owner address
         '''
+        kwargs.update({self.create_nodes_key(trantype.VIOLAS.value) : vlsnodes})
+        kwargs.update({self.create_nodes_key(trantype.BTC.value) : btcnodes})
+        kwargs.update({self.create_nodes_key(trantype.LIBRA.value) : lbrnodes})
+        kwargs.update({"swap_module": swap_module})
+        kwargs.update({"swap_owner": swap_owner})
         exbase.__init__(self, name, dtype, \
-                btcnodes, vlsnodes, lbrnodes, None,\
                 proofdb, receivers, senders, \
-                swap_module, swap_owner,\
                 from_chain, map_chain, \
                 **kwargs)
 

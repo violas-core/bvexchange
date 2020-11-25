@@ -8,7 +8,10 @@ import stmanage
 from comm.result import result, parse_except
 from comm.error import error
 from exchange.exmap import exmap
-
+from comm.values import (
+        datatypebase as datatype, 
+        trantypebase as trantype
+        )
 
 #load logging
 class l2vm(exmap):    
@@ -22,10 +25,11 @@ class l2vm(exmap):
             **kwargs
             ):
 
+        kwargs.update({self.create_nodes_key(trantype.LIBRA.value) : lbrnodes})
+        kwargs.update({self.create_nodes_key(trantype.VIOLAS.value) : vlsnodes})
         exmap.__init__(self, name, dtype, \
-                None, vlsnodes, lbrnodes, None,\
                 proofdb, receivers, senders,\
-                "libra", "violas", \
+                trantype.LIBRA, trantype.VIOLAS, \
                 **kwargs)
 
     def __del__(self):

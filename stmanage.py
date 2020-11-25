@@ -288,7 +288,7 @@ def get_db_echo():
     return setting.setting.db_echo
 
 def get_max_times(mtype):
-    return setting.setting.v2b_maxtimes
+    return setting.setting.retry_maxtimes
 
 #get btc/libra chain stable's map token
 def get_token_map(token, mtype = None):

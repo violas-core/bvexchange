@@ -84,6 +84,7 @@ class configdatas(dataproof):
 
     def __init_defalut(self):
         self.set_default_value("eth_usd_chain", False)
+        self.set_default_value("retry_maxtimes", 99999999)
 
     def __call__(self, *args, **kwargs):
         key = args[0]
