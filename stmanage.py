@@ -288,7 +288,7 @@ def get_db_echo():
     return setting.setting.db_echo
 
 def get_max_times():
-    return setting.setting.retry_maxtimes
+    return setting("retry_maxtimes")
 
 #get btc/libra chain stable's map token
 def get_token_map(token, mtype = None):
@@ -366,7 +366,6 @@ def get_conf():
         if info["db"] is not None:
             info["db"]["password"] = "password is keep secret"
         info["loop sleep"] = get_looping_sleep(mtype)
-        info["max times"] = get_max_times(mtype)
         info["combine"] = get_combine_address(mtype, "violas")
         infos[mtype] = info
     infos["traceback limit"] = get_traceback_limit()
@@ -374,6 +373,7 @@ def get_conf():
     infos["violas nodes"] = get_violas_nodes()
     infos["violas server"] = get_violas_servers()
     infos["libra nodes"] = get_libra_nodes()
+    infos["max times"] = get_max_times()
     return infos
 
 def get_eth_token(name = None):
@@ -399,7 +399,6 @@ def main():
         print(f"sender address({mtype}): {get_sender_address_list(mtype)}")
         print(f"get db({mtype}): {get_db(mtype)}")
         print(f"get looping sleep({mtype}):{get_looping_sleep(mtype)}")
-        print(f"get max times({mtype})):{get_max_times(mtype)}")
         print(f"combin address({mtype}): {get_combine_address(mtype, 'violas')}")
 
     print(f"get traceback limit: {get_traceback_limit()}")
@@ -452,6 +451,7 @@ def main():
     json_print(get_support_address_info("swap"))
     print("eth vlsmproof address(): 0xd1E73b216D9baC1dB6b4A790595304Ab6337a4D0")
     json_print(get_vlsmproof_address())
+    print(f"max times = {get_max_times()}")
 
     #json_print(get_conf())
 
