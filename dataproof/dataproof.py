@@ -80,9 +80,9 @@ class walletdatas(dataproof):
 class configdatas(dataproof):
     def __init__(self):
         dataproof.__init__(self)
-        self.__init_defalut()
+        self.__init_default()
 
-    def __init_defalut(self):
+    def __init_default(self):
         self.set_default_value("eth_usd_chain", False)
         self.set_default_value("retry_maxtimes", 99999999)
 
@@ -91,13 +91,17 @@ class configdatas(dataproof):
         return self.get_config(key)
 
 
-class settingproxy(dataproof):
+class settingproxy(configdatas):
     def __init__(self):
-        dataproof.__init__(self)
+        configdatas.__init__(self)
 
     def __getattr__(self, name):
         if name == "setting":
             return config_setting.setting
+
+    def __call__(self, *args, **kwargs):
+        key = args[0]
+        return self.get_config(key)
 
 wallets = walletdatas()
 configs = configdatas()
