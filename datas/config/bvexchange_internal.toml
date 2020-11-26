@@ -430,7 +430,7 @@ syncing_mod = false
         chain = "violas"
 
     [[address_list.sender]]
-        address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
+        address = "0x49999B466D7d139f88E8eFea87A6D4D227Fb243e"
         type = "v2em"
         chain = "ethereum"
 
@@ -438,6 +438,11 @@ syncing_mod = false
         address = "e99ae1a3ff054ee3cfd1d9a2a56988400f82442367443b43ae58efff73bef348"
         type = "funds"
         chain = "violas"
+
+    [[address_list.sender]]
+        address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
+        type = "funds"
+        chain = "ethereum"
 
     #combine 
     [[address_list.combine]]
@@ -489,6 +494,7 @@ syncing_mod = false
         type = "b2vgbp"
         chain = "btc"
 
+    #map is use this account to change usdt(eth) mapping state to end, manager role 
     [[address_list.map]]
         address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
         type = "e2vm"
