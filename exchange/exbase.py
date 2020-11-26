@@ -187,12 +187,12 @@ class exbase(baseobject):
         assert (ret.state == error.SUCCEED), "db error"
 
     #overwrite
-    def get_map_sender_address(self):
+    def get_map_sender_account(self):
         try:
             sender_account = None
             for sender in self.senders:
                 sender_account = self.map_wallet.get_account(sender)
-                ret = result(error.SUCCEED, "", sender_account.datas)
+                ret = result(error.SUCCEED, "", sender_account)
                 return ret
 
             return result(error.FAILED, "not found sender account")
@@ -512,7 +512,7 @@ class exbase(baseobject):
             receivers = self.receivers
 
             #get map sender from  senders
-            ret = self.get_map_sender_address()
+            ret = self.get_map_sender_account()
             self.check_state_raise(ret, f"not found map sender" + 
                     f"check address and amount")
             map_sender = ret.datas
@@ -627,7 +627,7 @@ class exbase(baseobject):
             self.rechange_db_state(self.use_exec_update_db_states)
 
             #get map sender from senders
-            ret = self.get_map_sender_address()
+            ret = self.get_map_sender_account()
             self.check_state_raise(ret, f"not found map sender. check address")
             map_sender = ret.datas
 
