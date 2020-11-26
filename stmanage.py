@@ -287,7 +287,7 @@ def get_traceback_limit():
 def get_db_echo():
     return setting.setting.db_echo
 
-def get_max_times(mtype):
+def get_max_times():
     return setting.setting.retry_maxtimes
 
 #get btc/libra chain stable's map token
