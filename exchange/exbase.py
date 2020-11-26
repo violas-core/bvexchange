@@ -191,9 +191,7 @@ class exbase(baseobject):
         try:
             sender_account = None
             for sender in self.senders:
-                sender_account = self.map_wallet.get_account(sender)
-                ret = result(error.SUCCEED, "", sender_account)
-                return ret
+                return self.map_wallet.get_account(sender)
 
             return result(error.FAILED, "not found sender account")
         except Exception as e:
@@ -347,6 +345,12 @@ class exbase(baseobject):
             address = account
         return address
 
+    def __set_request_funds_account(self, from_sender, map_sender):
+        if trantype(self.from_chain) == trantype.VIOLAS:
+            self.append_property("request_funds_account", from_sender)
+        elif trantype(self.map_chain) == trantype.VIOLAS:
+            self.append_property("request_funds_account", map_sender)
+
     def __send_get_token(self, from_sender, chain, tran_id, token_id, amount, to_address):
         try:
             ret = self.dbfunds.has_info(tran_id)
@@ -364,7 +368,7 @@ class exbase(baseobject):
             else:
                 usd_token = stmanage.get_token_map(token_id)
 
-            ret = self.violas_client.send_coin(from_sender, self.funds_address, 1, token_id, data = data)
+            ret = self.violas_client.send_coin(self.request_funds_account, self.funds_address, 1, token_id, data = data)
             if ret.state != error.SUCCEED:
                 return ret
 
@@ -373,7 +377,6 @@ class exbase(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
-
 
     def fill_address_token_violas(self, account, token_id, amount, tran_id, gas=40_000):
         try:
@@ -562,6 +565,7 @@ class exbase(baseobject):
                                 self._logger.error(ret.message)
                             continue
 
+                        self.__set_request_funds_account(from_sender, map_sender)
                         ret = self.exec_exchange(data, from_sender, map_sender, \
                                 combine_account, receiver, state = state, detail = detail)
                         if ret.state != error.SUCCEED:
@@ -652,6 +656,7 @@ class exbase(baseobject):
                     for data in ret.datas:
                         if not self.work() :
                             break
+                        self.__set_request_funds_account(from_sender, map_sender)
                         ret = self.exec_exchange(data, from_sender, map_sender, combine_account, receiver)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
