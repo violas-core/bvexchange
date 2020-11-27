@@ -123,8 +123,7 @@ class exbase(baseobject):
 
         self.append_property("db", localdb(self.name(), f"{self.from_chain}_{self.dtype}.db"))
         self.append_property("funds_address", kwargs.get("funds"))
-        if self.dtype != datatypebase.FUNDS.value:
-            self.append_property("dbfunds", localfunds(self.name(), f"request_funds.db"))
+        self.append_property("db_funds", localfunds(self.name(), f"request_funds.db"))
 
         for ttype in trantype:
             if ttype == trantype.UNKOWN:
@@ -353,11 +352,12 @@ class exbase(baseobject):
 
     def __send_get_token(self, from_sender, chain, tran_id, token_id, amount, to_address):
         try:
-            ret = self.dbfunds.has_info(tran_id)
+            ret = self.db_funds.has_info(tran_id)
             if ret.state != error.SUCCEED:
                 return ret
 
             if ret.datas:
+                self._logger.debug(f"request funds for {tran_id} is existed. ")
                 return result(error.SUCCEED)
 
             data = self.violas_client.create_data_for_funds(trantype.VIOLAS.value, datatypebase.FUNDS.value, chain, tran_id, token_id, amount, to_address)
@@ -368,11 +368,13 @@ class exbase(baseobject):
             else:
                 usd_token = stmanage.get_token_map(token_id)
 
-            ret = self.violas_client.send_coin(self.request_funds_account, self.funds_address, 1, token_id, data = data)
+        
+            ret = self.violas_client.send_coin(self.request_funds_account, self.funds_address, 1, stmanage.get_violas_mtoken(token_id, chain), data = data)
             if ret.state != error.SUCCEED:
                 return ret
 
-            ret = self.dbfunds.insert_commit(tran_id, chain, token_id, amount, to_address)
+            ret = self.db_funds.insert_commit(tran_id, chain, token_id, amount, to_address)
+            assert ret.state == error.SUCCEED, f"insert_commit({tranid}) failed"
 
         except Exception as e:
             ret = parse_except(e)
@@ -387,7 +389,9 @@ class exbase(baseobject):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
-                self.__send_get_token(account, trantype.VIOLAS.value, tran_id, token_id, amount + gas, address)
+                ret = self.__send_get_token(account, trantype.VIOLAS.value, tran_id, token_id, amount + gas, address)
+                if ret.state != error.SUCCEED:
+                    return ret
                 return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)
@@ -403,7 +407,9 @@ class exbase(baseobject):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
-                self.__send_get_token(account, "libra", tran_id, token_id, amount + gas, address)
+                ret = self.__send_get_token(account, trantype.LIBRA.value, tran_id, token_id, amount + gas, address)
+                if ret.state != error.SUCCEED:
+                    return ret
                 return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)
@@ -420,7 +426,9 @@ class exbase(baseobject):
             cur_amount = ret.datas
             if cur_amount < amount + gas:
                 micro_amount = self.amountswap(amount + gas, self.amountswap.BTC).microamount("btc", self.btc_client.get_decimals())
-                self.__send_get_token(account, "btc", tran_id, token_id, micro_amount, address)
+                ret = self.__send_get_token(account, trantype.BTC.value, tran_id, token_id, micro_amount, address)
+                if ret.state != error.SUCCEED:
+                    return ret
                 return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)
@@ -436,7 +444,9 @@ class exbase(baseobject):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
-                self.__send_get_token(account, "ethereum", tran_id, token_id, amount + gas, address)
+                ret = self.__send_get_token(account, trantype.ETHEREUM.value, tran_id, token_id, amount + gas, address)
+                if ret.state != error.SUCCEED:
+                    return ret
                 return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
 
             return result(error.SUCCEED)

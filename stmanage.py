@@ -8,7 +8,8 @@ from comm.values import trantypebase
 from comm.values import (
         map_chain_name, 
         workmod as work_mod, 
-        datatypebase as datatype
+        datatypebase as datatype,
+        trantypebase as trantype
         )
 from dataproof.dataproof import setting
 
@@ -74,6 +75,12 @@ class token_info():
         self.check_chain_name(from_chain)
         self.check_chain_name(to_chain)
         return self.__mapping_tokens[f"{from_chain}_{to_chain}"].get(token)
+
+    def get_violas_mtoken(self, token, chain):
+        self.check_chain_name(chain)
+        if chain == trantype.VIOLAS.value:
+            return token
+        return self.__mapping_tokens[f"{chain}_{trantype.VIOLAS.value}"].get(token)
 
 token_manage = None #token_info(setting.token_info)
 def check_setting():
@@ -298,6 +305,9 @@ def get_token_map(token, mtype = None):
     else:
         return token_manage.get_token_mapping_unique(token)
 
+def get_violas_mtoken(token, chain):
+    return token_manage.get_violas_mtoken(token, chain)
+
 #get opttype' stable token(map, ...)
 def get_type_stable_token(mtype = None):
     type_stable_token = {}
@@ -425,6 +435,7 @@ def main():
     print(f"get token_map(EUR)->Coin2: {get_token_map('EUR')}")
     print(f"get token_map(USDT)->usdt: {get_token_map('USDT')}")
     print(f"get token_map(usdt)->USDT: {get_token_map('usdt')}")
+    print(f"get violas map token(usdt)->USDT: {get_violas_mtoken('usdt', 'ethereum')}")
     print(f"get support_stable_token_id(libra)->Coin1 Coin2: {get_support_stable_token_id('libra')}")
     print(f"get support_stable_token_id(violas)->VLSUSD VLSEUR VLSSGD VLSGBP: {get_support_stable_token_id('violas')}")
     print(f"get support_map_token_id(libra)->[]: {get_support_map_token_id('libra')}")
