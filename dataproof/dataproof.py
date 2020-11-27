@@ -86,6 +86,11 @@ class configdatas(dataproof):
         self.set_default_value("eth_usd_chain", False)
         self.set_default_value("retry_maxtimes", 99999999)
 
+    def __getattr__(self, name):
+        print(f"{name}----")
+        if name == "setting":
+            return config_setting.setting
+
     def __call__(self, *args, **kwargs):
         key = args[0]
         return self.get_config(key)

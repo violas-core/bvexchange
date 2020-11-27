@@ -106,6 +106,7 @@ class dbfunds(baseobject):
 
     def insert_commit(self, tranid, chain, tokenid, amount, receiver, detail = ""):
         try:
+            print(f"insert_commit({tranid})")
             ret = self.insert(tranid, chain, tokenid, amount, receiver, detail)
             if ret.state != error.SUCCEED:
                 return ret 

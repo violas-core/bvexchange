@@ -251,7 +251,6 @@ class ethproxy():
         return self._w3.eth.blockNumber
 
     def get_balance(self, address, token_id, *args, **kwargs):
-        print(f"token_id:{token_id}, address: {address}")
         return self.tokens[token_id].balance_of(address)
 
     def get_balances(self, address, *args, **kwargs):
