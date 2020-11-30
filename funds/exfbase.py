@@ -50,6 +50,7 @@ class exfbase(baseobject):
                 violas_senders: violas chain accounts
                 libra_senders: libra chain accounts
                 ethereum_senders: ethereum chain accounts
+                request_funds_sender: have request funds permission account address.
         '''
 
         baseobject.__init__(self, name)
@@ -91,6 +92,7 @@ class exfbase(baseobject):
 
     def set_local_workspace(self, **kwargs):
         self.append_property("pserver", requestclient(self.name(), self.proofdb))
+        self.append_property("request_funds_sender", kwargs.get("request_funds_sender"))
 
         for ttype in trantype:
             if ttype == trantype.UNKOWN:
@@ -111,6 +113,9 @@ class exfbase(baseobject):
     def load_vlsmproof(self, address):
         if self.ethereum_client:
             self.ethereum_client.load_vlsmproof(address)
+
+    def has_request_funds_permission(self, address):
+        return address in self.request_funds_sender
 
     def append_contract(self, name):
         if self.ethereum_client:
@@ -366,6 +371,10 @@ class exfbase(baseobject):
                         chain = data.get("chain")
                         token_id = data.get("token_id")
                         amount = data.get("amount")
+                        sender = data.get("sender")
+
+                        if not self.has_request_funds_permission(sender):
+                            continue
 
                         #get map sender from  senders
                         ret = self.get_map_sender_account(chain, token_id, amount)
@@ -466,6 +475,10 @@ class exfbase(baseobject):
                         chain = data.get("chain")
                         token_id = data.get("token_id")
                         amount = data.get("amount")
+                        sender = data.get("sender")
+
+                        if not self.has_request_funds_permission(sender):
+                            continue
 
                         #get map sender from  senders
                         ret = self.get_map_sender_account(chain, token_id, amount)

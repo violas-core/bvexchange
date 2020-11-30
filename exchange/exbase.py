@@ -72,6 +72,7 @@ class exbase(baseobject):
                 funds_receiver: mint or recharge address
                 swap_module: violas chain swap module address
                 swap_owner: violas chain swap owner address
+                combine_account: v2xxx mid account
             
         '''
 
@@ -113,8 +114,7 @@ class exbase(baseobject):
 
     def set_local_workspace(self, **kwargs):
         self.append_property("excluded", [])
-        self.append_property("combine", None)
-        self.append_property("combine_account", None)
+        self.append_property("combine_account", kwargs.get("combine_account"))
 
         self.append_property(f"{self.from_chain}_chain", self.from_chain)
         self.append_property(f"{self.map_chain}_chain", self.map_chain)
@@ -530,7 +530,7 @@ class exbase(baseobject):
                     f"check address and amount")
             map_sender = ret.datas
 
-            combine_account = getattr(self, "combine_account", None)
+            combine_account = self.get_property("combine_account")
 
             for receiver in receivers:
                 if not self.work() :
@@ -631,13 +631,13 @@ class exbase(baseobject):
 
             #db state: FAILED
             #if history datas is found state = failed, exchange it until succeed
-            self._logger.debug(f"************************************************************ 1/4")
+            self._logger.debug(f"************************************************************ 1/5")
             self.reexchange_data_from_failed(self.use_exec_failed_state)
     
             #db state: SUCCEED
             #check state from blockchain, and change exchange history data, 
             ##when change it to complete, can truncature history db
-            self._logger.debug(f"************************************************************ 2/4")
+            self._logger.debug(f"************************************************************ 2/5")
             self.rechange_db_state(self.use_exec_update_db_states)
 
             #get map sender from senders
@@ -648,7 +648,7 @@ class exbase(baseobject):
             combine_account = self.combine_account
 
             #modulti receiver, one-by-one
-            self._logger.debug(f"************************************************************ 3/4")
+            self._logger.debug(f"************************************************************ 3/5")
             for receiver in receivers:
                 if not self.work() :
                     break
@@ -683,8 +683,11 @@ class exbase(baseobject):
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
     
+            #append recover funds(receiver and combine account) to DD account
+            self._logger.debug(f"************************************************************ 4/5")
+
             ret = result(error.SUCCEED) 
-            self._logger.debug(f"************************************************************ 4/4")
+            self._logger.debug(f"************************************************************ 5/5")
     
         except Exception as e:
             ret = parse_except(e)

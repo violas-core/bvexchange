@@ -710,6 +710,7 @@ class works:
                             violas_senders = list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
                             libra_senders = list(set(stmanage.get_sender_address_list(dtype, trantype.LIBRA.value, False))),
                             ethereum_senders = list(set(stmanage.get_sender_address_list(dtype, trantype.ETHEREUM.value, False))),
+                            request_funds_sender = list(stmanage.get_permission_request_funds_address())
                             )
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
                     [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
