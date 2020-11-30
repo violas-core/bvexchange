@@ -151,7 +151,23 @@ def get_map_address(mtype, chain = None, full = True):
     return __get_address_list("map", mtype, chain, full)[0]
 
 def get_funds_address(full = True):
-    return __get_address_list("receiver", "funds", "violas", full)[0]
+    return __get_address_list("receiver", "funds", trantype.VIOLAS.value, full)[0]
+
+def get_permission_request_funds_address(full = False):
+    valid_mods = get_support_mods()
+    exchange_mods = [mod.value for mod in datatype]
+    addrs = []
+    set(exchange_mods).intersection_update(set(valid_mods))
+    print(valid_mods)
+    for mod in valid_mods:
+        (from_chain, to_chain) = get_exchang_chains(mod)
+        filter_addrs = []
+        if from_chain and trantype(from_chain) == trantype.VIOLAS:
+            filter_addrs = get_receiver_address_list(mod, trantype.VIOLAS.value, False)
+        elif to_chain and trantype(to_chain) == trantype.VIOLAS:
+            filter_addrs = get_sender_address_list(mod, trantype.VIOLAS.value, False)
+        addrs.extend(filter_addrs)
+    return set(addrs)
 
 def get_address_info(atype):
     return setting.setting.address_list.get(atype)
@@ -166,6 +182,9 @@ def get_type_code(dtype, default = ""):
     return setting.setting.type_code.get(dtype, default)
 
 def get_exchang_chains(mtype):
+    if mtype[1] != '2':
+        return (None, None)
+
     from_chain  = map_chain_name.get(mtype[0])
     to_chain    = map_chain_name.get(mtype[2])
     return (from_chain, to_chain)
@@ -463,6 +482,7 @@ def main():
     print("eth vlsmproof address(): 0xd1E73b216D9baC1dB6b4A790595304Ab6337a4D0")
     json_print(get_vlsmproof_address())
     print(f"max times = {get_max_times()}")
+    print(f"hav permission request funds addresses = {get_permission_request_funds_address()}")
 
     #json_print(get_conf())
 
