@@ -122,8 +122,16 @@ def __get_address_list(atype, mtype, chain = None, full = True):
            True: auth_prefix + address 
            False: address
     '''
+    #default addresses: only chain and type is not None
+    default_addresses = [dict.get("address") for dict in setting.setting.address_list.get(atype) \
+            if dict["type"] == "default" and mtype is not None and (chain is not None and dict.get("chain") == chain)]
+
     addresses =  [dict.get("address") for dict in setting.setting.address_list.get(atype) \
             if dict["type"] == mtype and mtype is not None and (chain is None or dict["chain"] == chain)]
+    
+    if addresses is None or len(addresses) < 1:
+        addresses.extend(default_addresses)
+
     if addresses is not None and len(addresses) > 0:
         if full:
             return addresses
@@ -229,6 +237,21 @@ def type_is_map(mtype):
 def type_is_funds(mtype):
     return mtype == datatype.FUNDS.value
 
+#def get_support_address_info(etype = None):
+#    support_mods = get_support_mods_info(etype)
+#    assert support_mods is not None, f"support_mods is invalid"
+#    addr_infos = []
+#    receiver_infos = get_address_info("receiver")
+#    for info in receiver_infos:
+#        if info.get("type") in support_mods:
+#            f_t_coins = get_token_form_to_with_type(etype, info.get("type"))
+#            info.update({"code":get_type_code(info.get("type")), \
+#                    "from_to_token": f_t_coins})
+#            addr_infos.append(info)
+#
+#    return addr_infos
+
+
 def get_support_address_info(etype = None):
     support_mods = get_support_mods_info(etype)
     assert support_mods is not None, f"support_mods is invalid"
@@ -242,7 +265,6 @@ def get_support_address_info(etype = None):
             addr_infos.append(info)
 
     return addr_infos
-
 
 #maybe use. so keep it until libra support usd eur ...
 #def get_token_address(mtype, chain = None, full = True):
@@ -384,6 +406,10 @@ def get_support_mods():
         mods.append(typename)
     return mods
 
+def get_support_dtypes():
+    mods = get_support_mods()
+    return [dtype.value for dtype in datatype if dtype.value in mods]
+
 def get_conf():
     infos = {}
     mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
@@ -483,6 +509,7 @@ def main():
     json_print(get_vlsmproof_address())
     print(f"max times = {get_max_times()}")
     print(f"hav permission request funds addresses = {get_permission_request_funds_address()}")
+    print(f"get_support_dtypes:{get_support_dtypes()}")
 
     #json_print(get_conf())
 

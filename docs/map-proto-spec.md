@@ -51,6 +51,28 @@ Describe the chain type to which the transaction belongs
 </table>
 
 
+## Chains - type
+
+**Description**
+
+Support chain name
+
+### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Flags---type">chain</a></strong></td>
+  <td>string</td>
+  <td>Support chain name</td>
+ </tr>
+</table>
+
 ## Types - type
 
 **Description**
@@ -193,6 +215,34 @@ Transaction request type
 </table>
 
 
+## Opttypes - type
+
+**Description**
+
+Operate option type
+
+### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong>map</strong></td>
+  <td>string</td>
+  <td>mapping operate</td>
+ </tr>
+ <tr>
+  <td><strong>liquidation</strong></td>
+  <td>string</td>
+  <td>violas liquidation operate</td>
+ </tr>
+</table>
+
+
 ## Keys - type
 
 **Description**
@@ -232,6 +282,21 @@ Keys in JSON string
   <td><strong><a href="#States---type">state</a></strong></td>
   <td>string</td>
   <td>Transaction request type</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Opttypes---type">opttype</a></strong></td>
+  <td>string</td>
+  <td>Transaction option type</td>
+ </tr>
+ <tr>
+  <td><strong><a href="#Chains---type">opttype</a></strong></td>
+  <td>string</td>
+  <td>chain name</td>
+ </tr>
+ <tr>
+  <td><strong>token_id</strong></td>
+  <td>string</td>
+  <td>token id for chain</td>
  </tr>
  <tr>
   <td><strong>out_amount</strong></td>
@@ -1984,6 +2049,12 @@ request founds to main account
   <td>Distinguish between different mapping types</td>
  </tr>
  <tr>
+  <td><strong><a href="#Opttypes---type">flag</a></strong></td>
+  <td>string</td>
+  <td>map</td>
+  <td>request server type</td>
+ </tr>
+ <tr>
   <td><strong><a href="#Flags---type">chain</a></strong></td>
   <td>string</td>
   <td>btc/ethereum/violas/libra</td>
@@ -2022,7 +2093,7 @@ request founds to main account
 </table>
 
 ```
-'{"flag":"violas", "type":"funds", "chain":"btc", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "token_id":"btc", "amount":1000, "to_address":"0x89fF4a850e39A132614dbE517F80603b4A96fa0A", "state":"start"}'
+'{"flag":"violas", "type":"funds", "opttype":"map", "chain":"btc", "tran_id":"253896506a16795e895cb19429b569a2ca56ff5f37cb637032acd78c8a6fb588", "token_id":"btc", "amount":1000, "to_address":"0x89fF4a850e39A132614dbE517F80603b4A96fa0A", "state":"start"}'
 ```
 
 
