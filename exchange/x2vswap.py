@@ -45,7 +45,6 @@ class x2vswap(exbase):
             @proofdb: violas proof configure, no-use
             @receivers: btc address, get valid swap transaction
             @senders: violas senders address, use this address to transfer(diff chain)
-            @combine: btc address, change state transaction's payer
             @swap_module: swap module address
             @swap_owner: swap owner address
         '''

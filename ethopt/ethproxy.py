@@ -210,6 +210,7 @@ class ethproxy():
         return self.tokens_decimals[token]
 
     def send_token(self, account, to_address, amount, token_id, nonce = None, timeout = 180):
+        print(f"amount:{amount} account: {account.address} token_id: {token_id}")
         calldata = self.tokens[token_id].raw_transfer(to_address, amount)
         return self.send_transaction(account.address, account.key, calldata, nonce = nonce, timeout = 180) 
 
@@ -229,6 +230,7 @@ class ethproxy():
         if not gas:
             gas = calldata.estimateGas({"from":sender})
 
+        print(f"chainid :{self.get_chain_id()} gas: {gas} gasPrice:{gas_price}")
         raw_tran = calldata.buildTransaction({
             "chainId": self.get_chain_id(),
             "gas" : gas,

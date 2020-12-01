@@ -624,6 +624,7 @@ class exbase(baseobject):
 
             #requirement checks
             self.__checks()
+            self.open_lock()
     
             #syncing
             if not self.check_syncing():
@@ -667,7 +668,9 @@ class exbase(baseobject):
                         if not self.work() :
                             break
                         self.__set_request_funds_account(from_sender, map_sender)
+                        self.lock()
                         ret = self.exec_exchange(data, from_sender, map_sender, combine_account, receiver)
+                        self.unlock()
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
 

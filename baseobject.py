@@ -14,10 +14,12 @@ import comm
 import comm.error
 import comm.result
 import comm.values
+from multiprocessing import Lock
 from comm.result import result, parse_except
 from comm.error import error
 from enum import Enum
 getlogger = log.logger.getLogger
+exe_lock = Lock()
 class baseobject(object):
     def __init__(self, name = 'base', work = True):
         self._name = None
@@ -26,6 +28,7 @@ class baseobject(object):
         self._map_chain = None
         self._work = work
         self._name = name
+        self.append_property("usd_exe_lock", False)
 
         if self._logger is None:
             self._logger = getlogger(name) 
@@ -38,6 +41,27 @@ class baseobject(object):
 
     def work_start(self):
         self._work = True
+
+    def open_lock(self):
+        self.usd_exe_lock = True
+
+    def close_lock(self):
+        self.usd_exe_lock = False
+
+    def lock(self):
+        try:
+            if self.usd_exe_lock:
+                exe_lock.acquire()
+        except Exception as e:
+            pass
+
+
+    def unlock(self):
+        try:
+            if self.usd_exe_lock:
+                exe_lock.release()
+        except Exception as e:
+            pass
 
     def name(self):
         return self._name

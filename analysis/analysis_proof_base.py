@@ -182,6 +182,8 @@ class aproofbase(abase):
     def start(self):
         try:
             self._logger.debug(f"start proof work")
+            self.open_lock()
+            self.lock()
 
             new_state = "start"
             ret = self._dbclient.get_latest_filter_ver()
@@ -294,6 +296,7 @@ class aproofbase(abase):
             ret = parse_except(e)
         finally:
             self._logger.debug("end vproof work")
+            self.unlock()
 
         return ret
 

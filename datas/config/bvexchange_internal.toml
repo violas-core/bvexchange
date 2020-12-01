@@ -218,7 +218,7 @@ syncing_mod = false
 #             a. libra transaction: send coinX to address_list.receiver.address(type = l2vusd and chain = "libra")
 #             b. bs(bvexchange server) get transaction(type = l2vusd and receiver = a.address) info(amount toaddress ex..)
 #             c. bs get address(address_list.sender.address(type = l2vusd and chain = "violas"))
-#             d. bs mint map-token(name = usd  amount = b.amount)
+#             d. bs new exchange transaction map-token(name = usd  amount = b.amount)
 #             e. bs execute swap to vlsusd and designated address(b.toaddress)
 #             f. bs change transaction state to end(libra transaction and use a.address)
 #  v2lusd:
@@ -226,7 +226,7 @@ syncing_mod = false
 #             a. violas transaction: send vlsXXX to address_list.receiver.address(type = v2lusd and chain = "violas")
 #             b. bs get transaction(type = v2lusd and receiver = a.address) info(amount toaddress ex..)
 #             c. bs get address_list.combine.address(type = v2lusd and chain = "violas") for swap use to receiver usd token
-#             d. bs execute swap, if succeed , get c.address token(usd) changed amount.
+#             d. bs execute swap, if succeed , get out_amount of transaction(version from a.address) value, and get swap token amount.
 #             e. libra transaction: send Coin1 to b.toaddress(amount = d.amount)
 #             f. bs change transaction state to end(violas transaction and use a.address)
 #             g. bs burn c.address's changed token(usd , amount)
@@ -236,7 +236,7 @@ syncing_mod = false
 #     in this configure, we can work multi thread(every-type has only one thread)
 #  2. libra chain has't swap, so can use the same address(testnet mod), maybe transaction will failed(libra support multi thread 
 #     for thread???), anyway wo first ignore it for fast work
-#  3. combine address must be difference, because we will calaculation swap result with combine address's token changed
+#  3. combine address is receive the swap token, v2xxxswap , is get mapping token for other chain, ex: btc usdt ..., burn token(violas)
 #  4. address_list.sender.address(type = X2vXXX and chain = "violas") must be difference, because we will execute mint token to it
 #     and execute swap function with this address. 
 #  5. ethereum chain's receiver is main contract, so set map(manage) address for contract address for change state
@@ -259,6 +259,10 @@ syncing_mod = false
         chain = "violas"
 
     ##btc chain receiver address
+    [[address_list.receiver]]
+        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
+        type = "default"
+        chain = "btc"
     [[address_list.receiver]]
         address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
         type = "b2v"
@@ -288,6 +292,10 @@ syncing_mod = false
         type = "b2leur"
         chain = "btc"
     ##libra chain receiver address
+    [[address_list.receiver]]
+        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+        type = "default"
+        chain = "libra"
     [[address_list.receiver]]
         address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
         type = "l2vusd"
@@ -337,6 +345,7 @@ syncing_mod = false
         type = "v2em"
         chain = "violas"
 
+    #receive funds request
     [[address_list.receiver]]
         address = "e99ae1a3ff054ee3cfd1d9a2a56988400f82442367443b43ae58efff73bef348"
         type = "funds"
@@ -360,10 +369,6 @@ syncing_mod = false
         type = "v2bm"
         chain = "btc"
 
-    [[address_list.sender]]
-        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "l2b"
-        chain = "btc"
     ##send violas tokens
     [[address_list.sender]]
         address = "a6c512b59c7e2501ebe2556259e345444036899620db1efcbe2a8301ed00a842"
@@ -434,65 +439,44 @@ syncing_mod = false
         type = "v2em"
         chain = "ethereum"
 
+    #FUNDS server use: violas-DD ethereum-account
+    ##violas DD account
     [[address_list.sender]]
         address = "e99ae1a3ff054ee3cfd1d9a2a56988400f82442367443b43ae58efff73bef348"
         type = "funds"
         chain = "violas"
 
+    ##ethereum main account: ERC20 token
     [[address_list.sender]]
         address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
         type = "funds"
         chain = "ethereum"
 
-    #combine 
+    #combine : reclaim token 
     [[address_list.combine]]
         address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
         type = "v2lusd"
         chain = "violas"
     [[address_list.combine]]
-        address = "c62da985e679fa642f51f84f694be65a8d3b6ca4b293491b63adf1dfc9754a33"
+        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
         type = "v2leur"
         chain = "violas"
     [[address_list.combine]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
-        type = "l2b"
-        chain = "btc"
-    [[address_list.combine]]
-        address = "c8a39b68308f01fe8f1921be4635f76ae8f5ebfc0aebd0d7bf8c94a992a16038"
+        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
         type = "v2b"
         chain = "violas"
     [[address_list.combine]]
-        address = "785bc36d0cc97aa3fef3c583625578717701909c5685e581533295bc590c7190"
+        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
         type = "l2b"
         chain = "violas"
     [[address_list.combine]]
-        address = "ef616009536a480e2c99cae448f76fad611f77b0370184e4399e270a71691da5"
+        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
         type = "b2lusd"
         chain = "violas"
     [[address_list.combine]]
-        address = "ae7bb57a3a90ef6d60043c4ef39724027c76503930423b76098cf75a22941e5a"
+        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
         type = "b2leur"
         chain = "violas"
-    [[address_list.combine]]
-        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "b2vm"
-        chain = "btc"
-    [[address_list.combine]]
-        address = "2N9fQcit5KB8vJHmBF5Z4DkUUTCgJA8GKb3"
-        type = "b2vusd"
-        chain = "btc"
-    [[address_list.combine]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
-        type = "b2veur"
-        chain = "btc"
-    [[address_list.combine]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
-        type = "b2vsgd"
-        chain = "btc"
-    [[address_list.combine]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
-        type = "b2vgbp"
-        chain = "btc"
 
     #map is use this account to change usdt(eth) mapping state to end, manager role 
     [[address_list.map]]

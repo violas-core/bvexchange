@@ -38,6 +38,9 @@ class trantypebase(autoname):
     ETHEREUM    = auto()
     UNKOWN      = auto()
 
+'''
+init chain dict for first char : chain name
+'''
 map_chain_name = {}
 for ttb in trantypebase:
     name = ttb.name.lower()
@@ -78,8 +81,19 @@ class dbindexbase(enumbase):
     V2VSWAP = 60
     E2VM   = 62
     V2EM   = 63
+
+'''
+filter chain type
+'''
 xfilter = ["VFILTER", "LFILTER","BFILTER", "EFILTER"]
 dti_list = [item.name for item in dbindexbase if item.name not in ["TEST", "RECORD"]]
+
+'''
+merge enum item from names filters and ex args
+@names is datatypebase name list
+@filters : remove from names
+@ex: append ex to then name end
+'''
 em_nv = lambda names, filters, ex = "" : \
         [(f"{name.upper()}{ex.upper()}", f"{name.lower()}{ex.lower()}") \
         for name in names \
@@ -94,6 +108,7 @@ datatypebase = Enum("datatypebase",
                 ) \
         , module=__name__
         )
+
 #work mod 
 #workmod item(PROOF/EX) must be eq dbindexbase 
 workmod = Enum("workmod", \
