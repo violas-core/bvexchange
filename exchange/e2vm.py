@@ -54,19 +54,6 @@ class e2vm(exmap):
 def main():
        print("start main")
        stmanage.set_conf_env("../bvexchange.toml")
-       mod = "e2vm"
-       dtype = "e2vm"
-       obj = e2bm(mod, 
-               dtype,
-               stmanage.get_eth_nodes(),
-               stmanage.get_violas_nodes(), 
-               stmanage.get_db(dtype), 
-               list(set(stmanage.get_receiver_address_list(dtype, "ethereum", False))),
-               list(set(stmanage.get_sender_address_list(dtype, "violas", False))),
-               )
-       ret = obj.start()
-       if ret.state != error.SUCCEED:
-           print(ret.message)
 
 if __name__ == "__main__":
     main()
