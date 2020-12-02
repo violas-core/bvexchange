@@ -153,6 +153,7 @@ syncing_mod = false
         support= true
     [type_opts.funds]
         support = true  
+        etype  = "funds"
     [type_opts.v2lusd]
         ttoken = "Coin1"
     [type_opts.v2leur]
@@ -258,67 +259,17 @@ syncing_mod = false
         type = "v2leur"
         chain = "violas"
 
-    ##btc chain receiver address
+    ##default: btc receiver
     [[address_list.receiver]]
         address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
         type = "default"
         chain = "btc"
-    [[address_list.receiver]]
-        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "b2v"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "b2vusd"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "b2veur"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "b2vsgd"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "b2vgbp"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "b2lusd"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "b2leur"
-        chain = "btc"
+
     ##libra chain receiver address
+    #default: libra receiver
     [[address_list.receiver]]
         address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
         type = "default"
-        chain = "libra"
-    [[address_list.receiver]]
-        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        type = "l2vusd"
-        chain = "libra"
-
-    [[address_list.receiver]]
-        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        type = "l2veur"
-        chain = "libra"
-
-    [[address_list.receiver]]
-        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        type = "l2vgbp"
-        chain = "libra"
-
-    [[address_list.receiver]]
-        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        type = "l2vsgd"
-        chain = "libra"
-
-    [[address_list.receiver]]
-        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        type = "l2vm"
         chain = "libra"
 
     [[address_list.receiver]]
@@ -326,10 +277,6 @@ syncing_mod = false
         type = "v2lm"
         chain = "violas"
 
-    [[address_list.receiver]]
-        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "b2vm"
-        chain = "btc"
     [[address_list.receiver]]
         address = "eda54651162270ccc0ff81cbcfffcded8ee2a1a52bd868c0baadb0d226731832"
         type = "v2bm"
@@ -358,15 +305,10 @@ syncing_mod = false
         type = "b2vm"
         chain = "violas"
 
-    ##send btc
+    #*default: btc-sender
     [[address_list.sender]]
         address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "v2b"
-        chain = "btc"
-
-    [[address_list.sender]]
-        address = "2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB"
-        type = "v2bm"
+        type = "default"
         chain = "btc"
 
     ##send violas tokens
@@ -395,19 +337,10 @@ syncing_mod = false
         type = "l2vsgd"
         chain = "violas"
 
+    #*default: sender libra
     [[address_list.sender]]
         address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        type = "v2lm"
-        chain = "libra"
-
-    [[address_list.sender]]
-        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        type = "v2lusd"
-        chain = "libra"
-
-    [[address_list.sender]]
-        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
-        type = "v2leur"
+        type = "default"
         chain = "libra"
 
     [[address_list.sender]]
@@ -453,29 +386,10 @@ syncing_mod = false
         chain = "ethereum"
 
     #combine : reclaim token 
+    #default: violas combine
     [[address_list.combine]]
         address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
         type = "v2lusd"
-        chain = "violas"
-    [[address_list.combine]]
-        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
-        type = "v2leur"
-        chain = "violas"
-    [[address_list.combine]]
-        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
-        type = "v2b"
-        chain = "violas"
-    [[address_list.combine]]
-        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
-        type = "l2b"
-        chain = "violas"
-    [[address_list.combine]]
-        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
-        type = "b2lusd"
-        chain = "violas"
-    [[address_list.combine]]
-        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
-        type = "b2leur"
         chain = "violas"
 
     #map is use this account to change usdt(eth) mapping state to end, manager role 
