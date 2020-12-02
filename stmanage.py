@@ -116,12 +116,13 @@ def get_looping_sleep(mtype):
 def get_syncing_state():
     return setting.setting.syncing_mod
 
-def __get_address_list(atype, mtype, chain, full = True):
-    ''' 
-       full: get address type 
-           True: auth_prefix + address 
-           False: address
-    '''
+''' 
+   full: get address type 
+       True: auth_prefix + address 
+       False: address
+'''
+def __get_address_list(atype, mtype, chain_name, full = True):
+    chain = get_chain_name(chain_name)
     #default addresses: only chain and type is not None
     default_addresses = [dict.get("address") for dict in setting.setting.address_list.get(atype) \
             if dict["type"] == "default" and mtype is not None and (chain is not None and dict.get("chain") == chain)]
@@ -152,7 +153,7 @@ def __get_address_list(atype, mtype, chain, full = True):
 #    return None
 #
 
-def get_receiver_address_list(mtype, chain = None, full = True):
+def get_receiver_address_list(mtype, chain, full = True):
     return __get_address_list("receiver", mtype, chain, full)
 
 def get_map_address(mtype, chain = None, full = True):
@@ -161,12 +162,14 @@ def get_map_address(mtype, chain = None, full = True):
 def get_funds_address(full = True):
     return __get_address_list("receiver", "funds", trantype.VIOLAS.value, full)[0]
 
+'''
+   get address for violas account, which have permission for request funds
+'''
 def get_permission_request_funds_address(full = False):
     valid_mods = get_support_mods()
     exchange_mods = [mod.value for mod in datatype]
     addrs = []
     set(exchange_mods).intersection_update(set(valid_mods))
-    print(valid_mods)
     for mod in valid_mods:
         (from_chain, to_chain) = get_exchang_chains(mod)
         filter_addrs = []
@@ -346,8 +349,15 @@ def get_token_map(token, mtype = None):
     else:
         return token_manage.get_token_mapping_unique(token)
 
-def get_violas_mtoken(token, chain):
-    return token_manage.get_violas_mtoken(token, chain)
+def get_chain_name(chain):
+    chain_name = chain
+    if isinstance(chain, trantype):
+        chain_name = chain.value
+    return chain_name
+
+def get_violas_mtoken(token, chain_name):
+    chain = get_chain_name(chain_name)
+    return token_manage.get_violas_mtoken(token, chain_name)
 
 #get opttype' stable token(map, ...)
 def get_type_stable_token(mtype = None):
@@ -361,7 +371,8 @@ def get_type_stable_token(mtype = None):
         return type_stable_token.get(mtype)
     return type_stable_token
 
-def get_support_map_token_id(chain, mtype = None):
+def get_support_map_token_id(chain_name, mtype = None):
+    chain = get_chain_name(chain_name)
     mtoken_list = []
     if chain and not mtype:
         mtoken_list = token_manage.get_mtokens(chain)
@@ -373,11 +384,13 @@ def get_support_map_token_id(chain, mtype = None):
     
     return list(set(mtoken_list))
 
-def get_support_stable_token_id(chain):
+def get_support_stable_token_id(chain_name):
+    chain = get_chain_name(chain_name)
     token_list = token_manage.get_tokens(chain)
     return list(set(token_list))
 
-def get_support_token_id(chain):
+def get_support_token_id(chain_name):
+    chain = get_chain_name(chain_name)
     mtokens = token_manage.get_mtokens(chain)
     tokens = token_manage.get_tokens(chain)
     return list(set(mtokens + tokens))
@@ -450,7 +463,7 @@ def main():
     mtypes = ["v2bm", "v2lm", "l2vm", "b2vm", "vfilter", "lfilter"]
 
     for mtype in mtypes:
-        print(f"receiver address({mtype}): {get_receiver_address_list(mtype)}")
+        print(f"receiver address({mtype}): {get_receiver_address_list(mtype, trantype.VIOLAS)}")
         print(f"sender address({mtype}): {get_sender_address_list(mtype, 'violas')}")
         print(f"get db({mtype}): {get_db(mtype)}")
         print(f"get looping sleep({mtype}):{get_looping_sleep(mtype)}")

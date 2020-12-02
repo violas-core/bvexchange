@@ -389,7 +389,7 @@ syncing_mod = false
     #default: violas combine
     [[address_list.combine]]
         address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
-        type = "v2lusd"
+        type = "default"
         chain = "violas"
 
     #map is use this account to change usdt(eth) mapping state to end, manager role 
