@@ -116,7 +116,7 @@ def get_looping_sleep(mtype):
 def get_syncing_state():
     return setting.setting.syncing_mod
 
-def __get_address_list(atype, mtype, chain = None, full = True):
+def __get_address_list(atype, mtype, chain, full = True):
     ''' 
        full: get address type 
            True: auth_prefix + address 
@@ -178,23 +178,34 @@ def get_permission_request_funds_address(full = False):
     return set(addrs)
 
 def get_address_info(atype):
-    return setting.setting.address_list.get(atype)
+    dtypes = get_support_dtypes()
+    address_info = []
+    for dtype in dtypes:
+        from_chain, to_chain = get_exchang_chains(dtype)
+        if from_chain and to_chain:
+            addresses = __get_address_list(atype, dtype, from_chain)
+            infos = [{"address":address, "type":dtype, "chain":from_chain} for address in addresses]
+            address_info.extend(infos)
+    return address_info
 
-def get_sender_address_list(mtype, chain = None, full = True):
+def get_sender_address_list(mtype, chain, full = True):
     return __get_address_list("sender", mtype, chain, full)
 
-def get_combine_address_list(mtype, chain = None, full = True):
+def get_combine_address_list(mtype, chain, full = True):
     return __get_address_list("combine", mtype, chain, full)
 
 def get_type_code(dtype, default = ""):
     return setting.setting.type_code.get(dtype, default)
 
 def get_exchang_chains(mtype):
-    if mtype[1] != '2':
-        return (None, None)
-
-    from_chain  = map_chain_name.get(mtype[0])
-    to_chain    = map_chain_name.get(mtype[2])
+    from_chain = None
+    to_chain = None
+    try:
+        from_chain  = map_chain_name.get(mtype[0])
+        to_chain    = map_chain_name.get(mtype[2])
+    except Exception as e:
+        from_chain = None
+        to_chain = None
     return (from_chain, to_chain)
 
 def get_token_form_to_with_type(etype, mtype):
@@ -237,21 +248,10 @@ def type_is_map(mtype):
 def type_is_funds(mtype):
     return mtype == datatype.FUNDS.value
 
-#def get_support_address_info(etype = None):
-#    support_mods = get_support_mods_info(etype)
-#    assert support_mods is not None, f"support_mods is invalid"
-#    addr_infos = []
-#    receiver_infos = get_address_info("receiver")
-#    for info in receiver_infos:
-#        if info.get("type") in support_mods:
-#            f_t_coins = get_token_form_to_with_type(etype, info.get("type"))
-#            info.update({"code":get_type_code(info.get("type")), \
-#                    "from_to_token": f_t_coins})
-#            addr_infos.append(info)
-#
-#    return addr_infos
-
-
+'''
+get type_opts.etype = map/swap info(token map relation, address dtype code(btc) etc..)
+@param etype map/swap/funds
+'''
 def get_support_address_info(etype = None):
     support_mods = get_support_mods_info(etype)
     assert support_mods is not None, f"support_mods is invalid"
@@ -415,8 +415,8 @@ def get_conf():
     mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
     for mtype in mtypes:
         info = {}
-        info["receiver"] = get_receiver_address_list(mtype)
-        info["sender"] = get_sender_address_list(mtype)
+        info["receiver"] = get_receiver_address_list(mtype, "violas")
+        info["sender"] = get_sender_address_list(mtype, "violas")
         info["db"] = get_db(mtype)
         if info["db"] is not None:
             info["db"]["password"] = "password is keep secret"
@@ -451,7 +451,7 @@ def main():
 
     for mtype in mtypes:
         print(f"receiver address({mtype}): {get_receiver_address_list(mtype)}")
-        print(f"sender address({mtype}): {get_sender_address_list(mtype)}")
+        print(f"sender address({mtype}): {get_sender_address_list(mtype, 'violas')}")
         print(f"get db({mtype}): {get_db(mtype)}")
         print(f"get looping sleep({mtype}):{get_looping_sleep(mtype)}")
         print(f"combin address({mtype}): {get_combine_address(mtype, 'violas')}")
@@ -511,7 +511,6 @@ def main():
     print(f"hav permission request funds addresses = {get_permission_request_funds_address()}")
     print(f"get_support_dtypes:{get_support_dtypes()}")
 
-    #json_print(get_conf())
 
 if __name__ == "__main__":
     main()
