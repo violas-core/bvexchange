@@ -909,13 +909,19 @@ def signal_stop(signal, frame):
     finally:
         logger.debug("end signal")
 
-def list_valid_mods():
-    valid_mods = ["all"]
+def list_support_mods():
+    valid_mods = []
     support_mods = stmanage.get_support_mods()
     for mod in work_mod:
         dtype = works.get_dtype_from_mod(mod.name.lower())
         if dtype in support_mods:
             valid_mods.append(mod.name.lower())
+    return valid_mods
+
+def list_valid_mods():
+    valid_mods = ["all"]
+    valid_mods.extend(list_support_mods())
+
     return valid_mods
 
 def run(mods):
@@ -940,10 +946,11 @@ def run(mods):
     signal.signal(signal.SIGTSTP, signal_stop)
     signal.signal(signal.SIGTERM, signal_stop)
     work_mods = {}
+    support_mods = list_support_mods()
     for mod in mods:
         if mod == "all":
-            for wm in work_mod:
-                work_mods[wm.name.lower()] = True
+            for wm in support_mods:
+                work_mods[wm] = True
             break
         else:
             work_mods[mod.lower()] = True

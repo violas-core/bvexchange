@@ -404,7 +404,7 @@ def get_swap_owner():
 def get_run_mods():
     mods = []
     for typename, opts in setting.setting.type_token.items():
-        run_state = opts.get("run", False)
+        run_state = opts.get("run")
         if run_state == True:
             mods.append(typename)
     return mods

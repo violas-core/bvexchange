@@ -221,7 +221,7 @@ class exfbase(baseobject):
             assert states is not None and len(states) > 0, f"args states is invalid."
             
             ## failed 
-            maxtimes = stmanage.get_max_times(self.name())
+            maxtimes = stmanage.get_max_times()
 
             for state in states:
                 ret = self.load_record_and_merge(rpcparams, state, maxtimes)
