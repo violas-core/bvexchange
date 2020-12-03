@@ -64,11 +64,13 @@ def main(argc, argv):
         elif pargs.is_matched(opt, ["help"]):
             init_args(pargs)
             pargs.show_help(argv)
+            return
         elif pargs.is_matched(opt, ["show_conf"]):
             if count == 0 or (count == 1 and arg_list[0] == "all"):
                 json_print(dataproof.configs.datas)
             else:
                 json_print(dataproof.configs(arg_list[0]))
+            return
         elif pargs.is_matched(opt, ["vwallet"]):
             pargs.exit_check_opt_arg(opt, arg, 1)
             dataproof.wallets.update_wallet("violas", arg_list[0])
@@ -85,24 +87,27 @@ def main(argc, argv):
             dataproof.configs.set_config("eth_usd_chain", True)
         elif pargs.is_matched(opt, ["version"]) :
             logger.debug(f"version:{version()}")
+            return
         elif pargs.is_matched(opt, ["mod"]) :
             pargs.exit_check_opt_arg_min(opt, arg, 1)
             logger.debug(f"arg_list:{arg_list}")
             show_exec_args()
             bvexchange.run(arg_list)
+            return
         elif pargs.is_matched(opt, ["info"]) :
             pargs.exit_check_opt_arg_min(opt, arg, 1)
             logger.debug(f"arg_list:{arg_list}")
             show_workenv.run(arg_list)
-        else: #from config get mod
-            dtypes = stmanage.get_run_mods()
-            run_mods = []
-            for dtype in dtypes:
-                for mod in bvexchange.list_valid_mods():
-                    if mod.startswith(dtype):
-                        run_mods.append(mod)
-            if run_mods:
-                bvexchange.run(run_mods)
+            return
+            
+    run_mods = []
+    dtypes = stmanage.get_run_mods()
+    for dtype in dtypes:
+        for mod in bvexchange.list_valid_mods():
+            if mod.startswith(dtype):
+                run_mods.append(mod)
+    if run_mods:
+        bvexchange.run(run_mods)
 
     logger.debug("end manage.main")
 

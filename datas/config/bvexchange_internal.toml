@@ -146,14 +146,18 @@ syncing_mod = false
 [type_opts]
     [type_opts.vfilter]
         support= true  
+        run = true
     [type_opts.efilter]
         support= true  
+        run = true
     [type_opts.bfilter]
         support= true  
+        run = true
     [type_opts.lfilter]
-        support= true
+        support= false
     [type_opts.funds]
         support = true  
+        run = true
         etype  = "funds"
     [type_opts.v2lusd]
         ttoken = "Coin1"
@@ -180,23 +184,29 @@ syncing_mod = false
     [type_opts.v2bm]
         etype  = "map"
         support= true  
+        run = true
     [type_opts.v2lm]
         etype  = "map"
         support= true  
+        run = true
     [type_opts.l2vm]
         etype  = "map"
         support= true  
+        run = true
     [type_opts.b2vm]
         etype  = "map"
         support= true  
+        run = true
     [type_opts.v2vswap]
         support= true  
     [type_opts.v2em]
         etype  = "map"
         support= true  
+        run = true
     [type_opts.e2vm]
         etype  = "map"
         support= true  
+        run = true
 
 #btc opt code (state = start), web interface for auto-create
 [type_code]
