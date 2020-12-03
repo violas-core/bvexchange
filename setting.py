@@ -14,7 +14,7 @@ class tomlopt(tomlbase):
         assert etype in (None, "swap", "map"), \
                 f"etype({etype}) is invalid. valid values(None, map, swap)"
         for key, opts in self.type_opts.items():
-            support_state = opts.get("support", True)
+            support_state = opts.get("support", False)
             support_etype = opts.get("etype", "swap")
             if support_state == True and etype in (None, support_etype):
                 supports.update({key:opts})
