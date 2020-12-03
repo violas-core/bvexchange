@@ -57,6 +57,7 @@ class exmap(exbase):
                         localdb.state.VSUCCEED, \
                         localdb.state.SSUCCEED]])
 
+    #overwrited exbase.exec_exchange
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
             state = None, detail = {}):
         fromaddress = data["address"]
@@ -128,8 +129,9 @@ class exmap(exbase):
         #sendexproofmark succeed , send violas coin with data for change tran state
         if self.use_module(state, localdb.state.VSUCCEED):
             self._logger.debug(f"exec_exchange-3. start send_coin_for_update_state_to_end...")
-            ret =  self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, \
-                    from_token_id, 1, out_amount_real=micro_amount, version=version)
+            combine_address = self.get_combine_address(combine_account, receiver)
+            ret =  self.send_coin_for_update_state_to_end(from_sender, combine_address, tran_id, \
+                    from_token_id, map_amount, out_amount_real=micro_amount, version=version)
             if ret.state != error.SUCCEED:
                 return ret
 

@@ -72,7 +72,7 @@ class exbase(baseobject):
                 funds_receiver: mint or recharge address
                 swap_module: violas chain swap module address
                 swap_owner: violas chain swap owner address
-                combine_account: v2xxx mid account
+                combine_account: swap:v2xxx mid account; map: combine funds to this account(violas)
             
         '''
 
@@ -335,6 +335,14 @@ class exbase(baseobject):
     def __checks(self):
         return True
     
+    def get_combine_address(self, combine_account, receiver):
+        if combine_account:
+            return self.get_address_from_account(combine_account)
+
+        if receiver:
+            return self.get_address_from_account(receiver)
+        return None
+
     def get_address_from_account(self, account):
         if not isinstance(account, str):
             address = account.address
@@ -577,7 +585,7 @@ class exbase(baseobject):
 
                         self.__set_request_funds_account(from_sender, map_sender)
                         ret = self.exec_exchange(data, from_sender, map_sender, \
-                                combine_account, receiver, state = state, detail = detail)
+                                self.combine_account, receiver, state = state, detail = detail)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
 
@@ -646,8 +654,6 @@ class exbase(baseobject):
             self.check_state_raise(ret, f"not found map sender. check address")
             map_sender = ret.datas
 
-            combine_account = self.combine_account
-
             #modulti receiver, one-by-one
             self._logger.debug(f"************************************************************ 3/5")
             for receiver in receivers:
@@ -669,7 +675,7 @@ class exbase(baseobject):
                             break
                         self.__set_request_funds_account(from_sender, map_sender)
                         self.lock()
-                        ret = self.exec_exchange(data, from_sender, map_sender, combine_account, receiver)
+                        ret = self.exec_exchange(data, from_sender, map_sender, self.combine_account, receiver)
                         self.unlock()
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
@@ -699,6 +705,19 @@ class exbase(baseobject):
     
         return ret
     
+    '''
+    @dev exchange mapping VIOLAS <-> BTC/ETHEREUM
+    @param data transaction info from proof db
+    @param from_sender receiver account, that receive token from wallet with proof string
+    @param combine_account violas account. swap-exchange:receive mapping token, map-exchange: recover funds account
+    @param receiver receive token account of update state with end, the same to from_sender's address
+    @param state None: new exchange; no-None: last exchange had failed , the state value is obtained from local db
+    @param detail cache data during execution
+    '''
+    def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
+            state = None, detail = {}):
+        raise Exception("you must be overwrite exec_exchange")
+
 def main():
        print("start main")
 
