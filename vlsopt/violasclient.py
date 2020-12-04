@@ -289,8 +289,8 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def send_violas_coin(self, from_account, to_address, amount, token_id, module_address = None, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000):
-        return self.send_coin(from_account, to_address, amount, token_id, module_address, data, auth_key_prefix, is_blocking, max_gas_amount)
+    def send_violas_coin(self, from_account, to_address, amount, token_id, module_address = None, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000, gas_token_id = None):
+        return self.send_coin(from_account, to_address, amount, token_id, module_address, data, auth_key_prefix, is_blocking, max_gas_amount, gas_token_id = gas_token_id)
 
     def check_address_has_token_id(self, address, token_id):
         try:
@@ -306,7 +306,7 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def send_coin(self, from_account, to_address, amount, token_id, module_address = None, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000, *args, **kwargs):
+    def send_coin(self, from_account, to_address, amount, token_id, module_address = None, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000, gas_token_id = None, *args, **kwargs):
         try:
             if (len(to_address) not in VIOLAS_ADDRESS_LEN) or (amount < 1) or ((module_address is not None) and (len(module_address) not in VIOLAS_ADDRESS_LEN)):
                 return result(error.ARG_INVALID)
@@ -317,7 +317,7 @@ class violasclient(baseobject):
             (auth, addr) = self.split_full_address(to_address, auth_key_prefix).datas
             (_, module_addr) = self.split_full_address(module_address).datas
 
-            self._logger.debug(f"send_coin(from_account={from_account.address.hex()} to_address={to_address} amount = {amount} token_id = {token_id} module_address={module_address} data = {data} auth_key_prefix = {auth_key_prefix} max_gas_amount = {max_gas_amount})")
+            self._logger.debug(f"send_coin(from_account={from_account.address.hex()} to_address={to_address} amount = {amount} token_id = {token_id} module_address={module_address} data = {data} auth_key_prefix = {auth_key_prefix} max_gas_amount = {max_gas_amount}, gas_token_id = {gas_token_id})")
 
             ret = self.check_address_has_token_id(from_account.address.hex(), token_id)
             if ret.state != error.SUCCEED:
@@ -328,7 +328,8 @@ class violasclient(baseobject):
                 return ret
 
             self.__client.send_coin(sender_account=from_account, receiver_address=addr, \
-                    micro_coins=amount, token_id = token_id, module_address=module_addr, data=data, auth_key_prefix = auth_key_prefix, is_blocking=is_blocking, max_gas_amount = max_gas_amount)
+                    micro_coins=amount, token_id = token_id, module_address=module_addr, \
+                    data=data, auth_key_prefix = auth_key_prefix, is_blocking=is_blocking, max_gas_amount = max_gas_amount, gas_token_id = gas_token_id)
             ret = result(error.SUCCEED, datas="") 
         except Exception as e:
             ret = parse_except(e)

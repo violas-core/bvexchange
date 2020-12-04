@@ -36,16 +36,24 @@ class exmap(exbase):
                 libra_nodes: connect libra node info
                 ethereum_nodes: connect ethereum node info
                 funds_receiver: mint or recharge address
-            
+                combine: recover funds account
         '''
         exbase.__init__(self, name, dtype, \
                 proofdb, receivers, senders, \
                 fromchain, mapchain,\
                 **kwargs)
+
+        self.init_combine_account(kwargs.get("combine"))
         self.init_exec_states()
 
     def __del__(self):
         pass
+
+    def init_combine_account(self, combine):
+        if combine:
+            ret = self.violas_wallet.get_account(combine)
+            self.check_state_raise(ret, f"get combine({self.combine})'s account failed.")
+            self.append_property("combine_account", ret.datas)
 
     def init_exec_states(self):
         self.append_property("use_exec_update_db_states", 

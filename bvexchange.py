@@ -182,7 +182,8 @@ class works:
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
                             list(set(stmanage.get_sender_address_list(dtype, trantype.BTC.value, False))),
-                            funds = stmanage.get_funds_address()
+                            funds = stmanage.get_funds_address(),
+                            combine = stmanage.get_combine_address(dtype, trantype.VIOLAS.value),
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -417,6 +418,7 @@ class works:
                             list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
                             list(set(stmanage.get_sender_address_list(dtype, trantype.LIBRA.value, False))),
                             funds = stmanage.get_funds_address()
+                            combine = stmanage.get_combine_address(dtype, trantype.VIOLAS.value),
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -676,7 +678,8 @@ class works:
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
                             list(set(stmanage.get_sender_address_list(dtype, trantype.ETHEREUM.value, False))),
-                            funds = stmanage.get_funds_address()
+                            funds = stmanage.get_funds_address(),
+                            combine = stmanage.get_combine_address(dtype, trantype.VIOLAS.value),
                             )
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
                     [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
