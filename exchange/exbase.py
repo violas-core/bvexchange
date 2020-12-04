@@ -388,44 +388,68 @@ class exbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def fill_address_token_violas(self, account, token_id, amount, tran_id, gas=40_000):
+    def get_token_and_gas_amount(self, client, amount, token_id, gas_token_id):
         try:
+            bdiff_token = gas_token_id is not None and gas_token_id != token_id
 
             address = self.get_address_from_account(account)
-            ret = self.violas_client.get_balance(address, token_id = token_id)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                ret = self.__send_get_token(account, trantype.VIOLAS.value, tran_id, token_id, amount + gas, address)
+            ret = client.get_balance(address, token_id = token_id)
+            assert ret.state == error.SUCCEED, f"get {address} balance({token_id}) failed"
+            token_amount = ret.datas
+            gas_amount = token_amount
+
+            if bdiff_token:
+                ret = client.get_balance(address, token_id = gas_token_id)
+                assert ret.state == error.SUCCEED, f"get {address} gas balance({gas_token_id}) failed"
+                gas_amount = ret.datas
+
+            return result(error.SUCCEED, datas = (bdiff_token, token_amount, gas_amount))
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def check_and_send_get_token(self, client, chain, account, token_id, amount, tran_id, gas, gas_token_id):
+        try:
+            ret = self.get_token_and_gas_amount(client, account, token_id, gas_token_id)
+            if ret.state != error.SUCCEED:
+                return ret
+            bdiff_token, token_amount, gas_amount = ret.datas
+
+            if bdiff_token and (gas_amount <= gas or token_amount < amount):
+                msg = None
+                if gas_amount < gas:
+                    ret = self.__send_get_token(account, chain, f"{tran_id}_gas", gas_token_id, gas, address)
+                    if ret.state != error.SUCCEED:
+                        return ret
+                    msg = f"address {address} not enough amount {gas_token_id}, olny have {gas_amount}{gas_token_id}."
+
+                if token_amount < amount:
+                    ret = self.__send_get_token(account, chain, tran_id, token_id, amount, address)
+                    if ret.state != error.SUCCEED:
+                        return ret
+                    msg = f"address {address} not enough amount {token_id}, olny have {token_amount}{token_id}."
+                return result(error.FAILED, msg)
+            elif not bdiff_token and token_amount < amount + gas:
+                ret = self.__send_get_token(account, chain, tran_id, token_id, amount + gas, address)
                 if ret.state != error.SUCCEED:
                     return ret
-                return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
+                msg = f"address {address} not enough amount {token_id}, olny have {token_amount}{token_id}."
+                return result(error.FAILED, msg)
 
             return result(error.SUCCEED)
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def fill_address_token_violas(self, account, token_id, amount, tran_id, gas=100_0000, gas_token_id = None):
+        return check_and_send_get_token(self.violas_client, trantype.VIOLAS.value, \
+                account, token_id, amount, tran_id, gas, gas_token_id)
 
     def fill_address_token_libra(self, account, token_id, amount, tran_id, gas=100_000):
-        try:
-            address = self.get_address_from_account(account)
-            ret = self.libra_client.get_balance(address, token_id = token_id)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                ret = self.__send_get_token(account, trantype.LIBRA.value, tran_id, token_id, amount + gas, address)
-                if ret.state != error.SUCCEED:
-                    return ret
-                return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
+        return check_and_send_get_token(self.libra_client, trantype.LIBRA.value, \
+                account, token_id, amount, tran_id, gas, gas_token_id)
 
-            return result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def fill_address_token_btc(self, account, token_id, amount, tran_id, gas=0.0001):
+    def fill_address_token_btc(self, account, token_id, amount, tran_id, gas=0.0001, gas_token_id = None):
         try:
             address = self.get_address_from_account(account)
             ret = self.btc_client.get_balance(address)
@@ -444,23 +468,10 @@ class exbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def fill_address_token_ethereum(self, account, token_id, amount, tran_id, gas=1_00_0000):
-        try:
-            address = self.get_address_from_account(account)
-            ret = self.ethereum_client.get_balance(address, token_id = token_id)
-            assert ret.state == error.SUCCEED, f"get balance failed"
-            
-            cur_amount = ret.datas
-            if cur_amount < amount + gas:
-                ret = self.__send_get_token(account, trantype.ETHEREUM.value, tran_id, token_id, amount + gas, address)
-                if ret.state != error.SUCCEED:
-                    return ret
-                return result(error.FAILED, f"address {address} not enough amount {token_id}, olny have {cur_amount}{token_id}.")
+    def fill_address_token_ethereum(self, account, token_id, amount, tran_id, gas=1_00_0000, gas_token_id = "eth"):
+        return check_and_send_get_token(self.ethereum_client, trantype.ETHEREUM.value, \
+                account, token_id, amount, tran_id, gas, gas_token_id)
 
-            return result(error.SUCCEED)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
     def db_data_is_valid(self, data):
         try:
             toaddress   = data["receiver"]

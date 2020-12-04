@@ -71,9 +71,9 @@ class violasproxy(Client):
         return self.new(url = url, faucet_file = faucet_file, faucet_server = faucet_server, waypoint = waypoint)
 
     def send_coin(self, sender_account, receiver_address, micro_coins, token_id=None, module_address=None, data=None, \
-            auth_key_prefix=None, is_blocking=False, max_gas_amount=400_000, unit_price=0, txn_expiration=13):
+            auth_key_prefix=None, is_blocking=False, max_gas_amount=400_000, unit_price=0, txn_expiration=13, gas_token_id = None):
         return self.transfer_coin(sender_account = sender_account, receiver_address = receiver_address, micro_coins = micro_coins, \
-                currency_code = token_id, currency_module_address = module_address, data = data, is_blocking = is_blocking)
+                currency_code = token_id, currency_module_address = module_address, data = data, is_blocking = is_blocking, gas_currency_code = gas_token_id)
 
 def main():
     #client = clientproxy.connect(host="52.27.228.84", port=40001)

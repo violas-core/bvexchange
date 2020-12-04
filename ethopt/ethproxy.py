@@ -210,27 +210,48 @@ class ethproxy():
         return self.tokens_decimals[token]
 
     def send_token(self, account, to_address, amount, token_id, nonce = None, timeout = 180):
-        print(f"amount:{amount} account: {account.address} token_id: {token_id}")
-        calldata = self.tokens[token_id].raw_transfer(to_address, amount)
-        return self.send_transaction(account.address, account.key, calldata, nonce = nonce, timeout = 180) 
+        if token_id.lower() == "eth":
+            return self.send_eth_transaction(account.address, account.key, to_address, amount, nonce = nonce, timeout = timeout) 
+        else:
+            calldata = self.tokens[token_id].raw_transfer(to_address, amount)
+            return self.send_contract_transaction(account.address, account.key, calldata, nonce = nonce, timeout = timeout) 
 
     def update_proof_state(self, account, version, state, timeout = 180):
         calldata = self.tokens[VLSMPROOF_DATAS_NAME].raw_transfer_proof_state_with_version(version, state)
-        return self.send_transaction(account.address, account.key, calldata, nonce = version, timeout = timeout) 
+        return self.send_transaction(account.address, account.key, calldata, timeout = timeout) 
 
-    def send_transaction(self, sender, private_key, calldata, nonce = None, gas = None, gas_price = None, timeout = 180):
-
+    def get_txn_args(self, sender, nonce = None, gas = None, gas_price = None, calldata = None):
         if not gas_price:
             gas_price = self._w3.eth.gasPrice
+
         if not nonce:
-            nonce = self._w3.eth.getTransactionCount(Web3.toChecksumAddress(sender))
-        else:
             nonce = self._w3.eth.getTransactionCount(Web3.toChecksumAddress(sender))
 
         if not gas:
-            gas = calldata.estimateGas({"from":sender})
+            if calldata:
+                gas = calldata.estimateGas({"from":sender})
+            else:
+                gas = self._w3.eth.estimateGas({"from":sender})
 
-        print(f"chainid :{self.get_chain_id()} gas: {gas} gasPrice:{gas_price}")
+        return (nonce, gas, gas_price)
+
+    def send_eth_transaction(self, sender, private_key, to_address, amount, nonce = None, gas = None, gas_price = None, timeout = 180):
+        nonce, gas, gas_price = self.get_txn_args(sender, nonce, gas, gas_price)
+        signed_txn = self._w3.eth.account.sign_transaction(dict(
+            chainId = self.get_chain_id(),
+            nonce = nonce,
+            to = to_address,
+            value = amount,
+            gas = gas,
+            gasPrice = gas_price
+            ),
+            private_key=private_key 
+            )
+
+        return self.send_transaction(signed_txn, timeout)
+
+    def send_contract_transaction(self, sender, private_key, calldata, nonce = None, gas = None, gas_price = None, timeout = 180):
+        nonce, gas, gas_price = self.get_txn_args(sender, nonce, gas, gas_price, calldata)
         raw_tran = calldata.buildTransaction({
             "chainId": self.get_chain_id(),
             "gas" : gas,
@@ -239,12 +260,14 @@ class ethproxy():
             })
 
         signed_txn = self._w3.eth.account.sign_transaction(raw_tran, private_key=private_key)
+        return self.send_transaction(signed_txn, timeout)
+
+    def send_transaction(self, signed_txn, timeout):
         txhash = self._w3.eth.sendRawTransaction(signed_txn.rawTransaction)
 
         #wait transaction, max time is 120s
         self._w3.eth.waitForTransactionReceipt(txhash, timeout)
         return self._w3.toHex(txhash)
-
 
     def call_default(self, *args, **kwargs):
         print(f"no defined function(args = {args} kwargs = {kwargs})")
@@ -253,6 +276,8 @@ class ethproxy():
         return self._w3.eth.blockNumber
 
     def get_balance(self, address, token_id, *args, **kwargs):
+        if token_id == "eth":
+            return self._w3.eth.getBalance(address)
         return self.tokens[token_id].balance_of(address)
 
     def get_balances(self, address, *args, **kwargs):
