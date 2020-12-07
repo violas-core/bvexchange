@@ -159,6 +159,9 @@ def get_receiver_address_list(mtype, chain, full = True):
 def get_map_address(mtype, chain = None, full = True):
     return __get_address_list("map", mtype, chain, full)[0]
 
+def get_request_funds_address_list(mtype = None, full = True):
+    return __get_address_list("funds", mtype, trantype.VIOLAS, full)
+
 def get_funds_address(full = True):
     return __get_address_list("receiver", "funds", trantype.VIOLAS.value, full)[0]
 
@@ -166,9 +169,11 @@ def get_funds_address(full = True):
    get address for violas account, which have permission for request funds
 '''
 def get_permission_request_funds_address(full = False):
+    addrs = []
+
+    #filter the address where you can apply for a token from bridge server
     valid_mods = get_support_mods()
     exchange_mods = [mod.value for mod in datatype]
-    addrs = []
     set(exchange_mods).intersection_update(set(valid_mods))
     for mod in valid_mods:
         (from_chain, to_chain) = get_exchang_chains(mod)
@@ -178,6 +183,12 @@ def get_permission_request_funds_address(full = False):
         elif to_chain and trantype(to_chain) == trantype.VIOLAS:
             filter_addrs = get_sender_address_list(mod, trantype.VIOLAS.value, False)
         addrs.extend(filter_addrs)
+
+    #Specify the address where you can apply for a token
+    external_request = get_request_funds_address_list("map", False)
+    addrs.extend(external_request)
+    external_request = get_request_funds_address_list("liq", False)
+    addrs.extend(external_request)
     return set(addrs)
 
 def get_address_info(atype):

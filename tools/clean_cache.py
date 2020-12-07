@@ -3,26 +3,15 @@
 clean all db datas
 '''
 import operator
-import sys,os
+import sys,os,getopt
 sys.path.append(os.getcwd())
 sys.path.append("..")
 import log
 import log.logger
-import traceback
-import datetime
-import sqlalchemy
-import random
-import redis
-from comm.error import error
-from comm.result import result, parse_except
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.engine.base import Engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime, UniqueConstraint, Index, String
-from db.dbvbase import dbvbase
-from enum import Enum
 import stmanage
+from comm.result import result, parse_except
+from db.dbvbase import dbvbase
+from comm.parseargs import parseargs
 
 
 #module name
@@ -58,26 +47,91 @@ def run(mods):
             print(mod)
             raise Exception(f"mod({mod}) is invalid {valid_mods}.")
 
-    work_mods = {}
+    logger.info(f"clean mods: {mods}")
+
+    print(f"will clean: {mods}")
+    for i in range(3):
+        print(f"continue clean ...? (yes/no)")
+        run_cmd = input()
+        if run_cmd in ("y", "yes"):
+            break
+        elif run_cmd in ("n", "no"):
+            return
+    else:
+        print("max times, retry run it.")
+        return 
+
+    for mod in mods:
+        clean_db(name, mod.lower())
+
+def init_args(pargs):
+    pargs.clear()
+    mods = list_valid_mods()
+    pargs.append("help", "show arg list.")
+    pargs.append("mod", "include infos", True, mods, priority = 20)
+    pargs.append("exclude", "exclude infos", True, [ mod for mod in mods if mod not in ("all")], priority = 30)
+
+def show_exec_args():
+    pass
+
+def get_include_mods(mods):
+    work_mods = []
     for mod in mods:
         if mod == "all":
-            for wm in work_mod:
-                clean_db(name, wm.name.lower())
+            work_mods = list_valid_mods()
+            work_mods.remove("all")
             break
-
-        clean_db(name, mod.lower())
+        work_mods.append(mod)
+    return work_mods
 
 def main(argc, argv):
 
+    pargs = parseargs()
     try:
-        stmanage.set_conf_env("../bvexchange.toml")
-        if argc < 1:
-            raise Exception(f"argument is invalid. args:{list_valid_mods()}")
-        run(argv)
-    except Exception as e:
-        parse_except(e)
-    finally:
-        logger.critical("main end")
+        logger.debug("start manage.main")
+        #--conf must be first
+        if stmanage.get_conf_env() is None:
+            stmanage.set_conf_env_default() 
 
+        init_args(pargs)
+        pargs.show_help(argv)
+        opts, err_args = pargs.getopt(argv)
+    except getopt.GetoptError as e:
+        logger.error(str(e))
+        sys.exit(2)
+    except Exception as e:
+        logger.error(str(e))
+        sys.exit(2)
+
+    if err_args is None or len(err_args) > 0:
+        pargs.show_args()
+
+    names = [opt for opt, arg in opts]
+    pargs.check_unique(names)
+
+    exclude_mods =  []
+    include_mods =  list_valid_mods()
+
+    for opt, arg in opts:
+        count, arg_list = pargs.split_arg(opt, arg)
+        if pargs.is_matched(opt, ["conf"]):
+            pargs.exit_check_opt_arg(opt, arg, 1)
+            stmanage.set_conf_env(arg)
+        elif pargs.is_matched(opt, ["help"]):
+            init_args(pargs)
+            pargs.show_help(argv)
+            return
+        elif pargs.is_matched(opt, ["exclude"]):
+            pargs.exit_check_opt_arg_min(opt, arg, 1)
+            exclude_mods = list(arg_list)
+            print(exclude_mods)
+        elif pargs.is_matched(opt, ["mod"]) :
+            pargs.exit_check_opt_arg_min(opt, arg, 1)
+            include_mods = get_include_mods(arg_list)
+
+    run_mods = set(include_mods).difference(set(exclude_mods))
+    show_exec_args()
+    run(run_mods)
+    return
 if __name__ == "__main__":
     main(len(sys.argv) - 1, sys.argv[1:])

@@ -37,25 +37,21 @@ syncing_mod = false
     host = "52.27.228.84"
     port = 50001
     name = "violas 1"
-    faucet = "mint_test.key"
 
 [[violas_nodes]]
     host = "18.220.66.235"
     port = 50001
     name = "violas 4"
-    faucet = "mint_test.key"
 
 [[violas_nodes]]
     host = "13.68.141.242"
     port = 50001
     name = "violas 2"
-    faucet = "mint_test.key"
 
 [[violas_nodes]]
     host = "47.52.195.50"
     port = 50001
     name = "violas 3"
-    faucet = "mint_test.key"
 
 #connect libra chain config
 [[libra_nodes]]
@@ -112,7 +108,7 @@ syncing_mod = false
 [token_info]
     [token_info.tokens]
         [token_info.tokens.violas]
-            token = ["VLSUSD", "VLSEUR", "VLSSGD", "VLSGBP"] 
+            token = ["VLSUSD", "VLSEUR", "VLSSGD", "VLSGBP", "VLS"] 
             mtoken = ["BTC", "USD", "USDT"]
         [token_info.tokens.libra]
             token = ["Coin1"]
@@ -430,6 +426,14 @@ syncing_mod = false
         type = "e2vm"
         chain = "ethereum"
 
+    [[address_list.funds]]
+        address = "de8eeb09d629940e46c757b6727c7b1e1554b8e40c8a8a949b1db67168980c57"
+        type = "map"
+        chain = "violas"
+    [[address_list.funds]]
+        address = "de8eeb09d629940e46c757b6727c7b1e1554b8e40c8a8a949b1db67168988888"
+        type = "liq"
+        chain = "violas"
 #thread loopping sleep time(s)
 #db_default is 1 xfilter  xxxproof  xxxex  comm
 [looping_sleep]

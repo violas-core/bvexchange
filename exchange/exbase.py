@@ -94,6 +94,23 @@ class exbase(baseobject):
     def __del__(self):
         pass
 
+    def show_execute_args(self, name, dtype, \
+            proofdb, receivers, senders, \
+            fromchain, mapchain, \
+            **kwargs):
+        if dataproof.configs("help_exe_args"):
+            self._logger.debug(
+            f'''
+            name = {name}
+            dtype = {dtype}
+            proofdb = {proofdb}
+            receivers = {receivers}
+            senders = {senders}
+            fromchain : {fromchain}
+            mapchain = {mapchain}
+            kwargs = {kwargs}
+            ''')
+
     def stop(self):
         try:
             if self.violas_client:

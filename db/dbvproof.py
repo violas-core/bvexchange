@@ -14,7 +14,10 @@ import redis
 import json
 from comm.error import error
 from comm.result import result, parse_except
-from comm.values import trantypebase, datatypebase
+from comm.values import (
+        trantypebase, 
+        datatypebase
+        )
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine.base import Engine
@@ -133,12 +136,13 @@ class dbvproof(dbvbase):
 
     def get_out_token(self, tran_info):
         opttype = tran_info["opttype"]
+        dtype = tran_info["type"]
         out_token = ""
-        if opttype == "map":
+        if opttype == "map" and dtype != datatypebase.FUNDS.value:
             out_token = stmanage.get_token_map(tran_info["token_id"], tran_info["type"])
         elif opttype in ("v2vswap", "fpswap"):
             out_token = tran_info.get("out_token")
-        elif opttype in ("funds"):
+        elif opttype in ("map", "liq") and dtype == datatypebase.FUNDS.value:
             out_token = tran_info.get("token_id")
         else : #swap for diff chain
             out_token = stmanage.get_type_stable_token(tran_info["type"])

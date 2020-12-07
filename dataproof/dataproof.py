@@ -84,7 +84,7 @@ class configdatas(dataproof):
 
     def __init_default(self):
         self.set_default_value("eth_usd_chain", False)
-        self.set_default_value("retry_maxtimes", 99999999)
+        self.set_default_value("retry_maxtimes", sys.maxsize)
 
     def __getattr__(self, name):
         print(f"{name}----")

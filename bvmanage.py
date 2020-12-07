@@ -23,6 +23,7 @@ def init_args(pargs):
     pargs.append("show_conf", "show data proof info for config", True, "[all/target config]", priority = 30)
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 10)
     pargs.append("eth_usd_chain", "load eth contract info(address, decimals). default:local abi, if set it will load from ethereum vlsmproofmain(contract) load", priority = 20)
+    pargs.append("help_exe_args", "show execute args for mods", priority = 20)
     pargs.append("vwallet", "file or mnemonic:num for violas wallet", True, "[file/mnemonic:num]", priority = 20, argtype = parseargs.argtype.STR)
     pargs.append("lwallet", "file or mnemonic:num for violas wallet", True, "[file/mnemonic:num]", priority = 20, argtype = parseargs.argtype.STR)
     pargs.append("ewallet", "file or mnemonic:num for ethereum wallet", True, "[file/mnemonic:num]", priority = 20, argtype = parseargs.argtype.STR)
@@ -85,6 +86,8 @@ def main(argc, argv):
             dataproof.wallets.update_wallet("btc", arg_list[0])
         elif pargs.is_matched(opt, ["eth_usd_chain"]):
             dataproof.configs.set_config("eth_usd_chain", True)
+        elif pargs.is_matched(opt, ["help_exe_args"]):
+            dataproof.configs.set_config("help_exe_args", True)
         elif pargs.is_matched(opt, ["version"]) :
             logger.debug(f"version:{version()}")
             return
@@ -100,6 +103,7 @@ def main(argc, argv):
             show_workenv.run(arg_list)
             return
             
+    #get run mods from config file
     run_mods = []
     dtypes = stmanage.get_run_mods()
     for dtype in dtypes:
