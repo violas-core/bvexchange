@@ -236,7 +236,7 @@ Operate option type
   <td>mapping operate</td>
  </tr>
  <tr>
-  <td><strong>liquidation</strong></td>
+  <td><strong>liq</strong></td>
   <td>string</td>
   <td>violas liquidation operate</td>
  </tr>
