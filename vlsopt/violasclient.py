@@ -134,7 +134,7 @@ class violaswallet(baseobject):
     def find_account_by_address_hex(self, address):
         (auth, addr) = self.split_full_address(address).datas
         for i in range(len(self.__wallet.accounts)):
-            if self.__wallet.accounts[i].address.hex == addr:
+            if self.__wallet.accounts[i].address.hex() == addr:
                 return (i, self.__wallet.accounts[i])
 
         return (-1, None)

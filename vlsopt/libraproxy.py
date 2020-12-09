@@ -22,8 +22,9 @@ from comm.result import result, parse_except
 from comm.error import error
 from enum import Enum
 from comm.functions import json_print
-
-VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
+from comm.values import (
+        VIOLAS_ADDRESS_LEN 
+        )
 
 #from violas.client import Client
 from lblibraclient.libra_client import Wallet
@@ -32,18 +33,39 @@ from lblibraclient.libra_client.lbrtypes.chain_id import NamedChain
 #module name
 name="libraproxy"
 
+ASSIGNMENT = "="
 class walletproxy(Wallet):
     @classmethod
     def load(self, filename):
-        ret = self.recover(filename)
-        return ret
+        if os.path.isfile(filename):
+            self.__wallet_name = filename
+            with open(filename) as lines:
+                infos = lines.readlines()
+                for info in infos:
+                    return self.loads(info)
+
 
     @classmethod
     def loads(cls, data):
         mnemonic_num = data.split(Wallet.DELIMITER)
-        assert len(mnemonic_num) == 2, "Format error: Wallet must <MNEMONIC_NUM>{Wallet.DELIMITER}<NUM>"
+        if len(mnemonic_num) < 2 or not mnemonic_num[1].isdecimal():
+            raise Exception(f"Format error: Wallet must <MNEMONIC_NUM>{Wallet.DELIMITER}<NUM>[ADDRESS{ASSIGNMENT}DD_ADDRESS;ADDRESS{ASSIGNMENT}DD_ADDRESS]")
+        
         wallet = cls.new_from_mnemonic(mnemonic_num[0]) 
         wallet.generate_addresses(int(mnemonic_num[1]))
+        if len(mnemonic_num) > 2:
+            i = 2
+            while i < len(mnemonic_num):
+                address_dd = mnemonic_num[i].split(ASSIGNMENT)
+                if len(address_dd) != 2:
+                    raise Exception(f"address mapping format error: ADDRESS{ASSIGNMENT}DD_ADDRESS")
+
+                if len(address_dd[0].strip()) not in VIOLAS_ADDRESS_LEN or \
+                        len(address_dd[1].strip()) not in VIOLAS_ADDRESS_LEN:
+                        raise Exception(f"address is invalid. {mnemonic_num[i]}")
+                wallet.replace_address(address_dd[0].strip(), address_dd[1].strip(), f"0"*32)
+                i = i + 1
+
         return wallet
 
     @property
