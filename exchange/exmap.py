@@ -12,7 +12,13 @@ from comm.result import result, parse_except
 from comm.error import error
 from db.dblocal import dblocal as localdb
 from exchange.exbase import exbase
+from comm.values import (
+        VIOLAS_ADDRESS_LEN
+        )
 
+from comm.values import (
+        trantypebase as trantype
+        )
 class exmap(exbase):    
     def __init__(self, name, 
             dtype, 
@@ -50,9 +56,9 @@ class exmap(exbase):
         pass
 
     def init_combine_account(self, combine):
-        if combine:
+        if combine and self.is_valid_address(combine, trantype.VIOLAS):
             ret = self.violas_wallet.get_account(combine)
-            self.check_state_raise(ret, f"get combine({self.combine})'s account failed.")
+            self.check_state_raise(ret, f"get combine({combine})'s account failed.")
             self.append_property("combine_account", ret.datas)
 
     def init_exec_states(self):

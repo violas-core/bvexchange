@@ -179,6 +179,24 @@ class exbase(baseobject):
 
         self.init_fill_address_token()
 
+    def is_valid_address(self, address, chain):
+        chain_tt = chain
+        if isinstance(chain, str):
+            chain_tt = trantype(chain)
+
+        if chain_tt == trantype.VIOLAS:
+            return violaswallet.is_valid_address(address).datas
+        elif chain_tt == trantype.LIBRA:
+            return violaswallet.is_valid_address(address).datas
+        elif chain_tt == trantype.BTC:
+            return btcwallet.is_valid_address(address).datas
+        elif chain_tt == trantype.ETHEREUM:
+            return ethwallet.is_valid_address(address).datas
+        else:
+            raise Exception(f"not support chain({chain})")
+
+        return False
+
     def load_vlsmproof(self, address):
         if self.ethereum_client:
             self.ethereum_client.load_vlsmproof(address)

@@ -19,7 +19,7 @@ DECIMAL_BTC     = 1_0000_0000
 
 VIOLAS_ADDRESS_LEN = [32, 64]
 ETH_ADDRESS_LEN = [42]
-
+BTC_ADDRESS_LEN = []
 class enumbase(Enum):
     @property
     def info(self):

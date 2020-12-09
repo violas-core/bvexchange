@@ -65,6 +65,10 @@ class walletproxy(lbethwallet):
 
         return (-1, None)
 
+    @classmethod
+    def is_valid_address(self, address):
+        return Web3.isAddress(address)
+
     def __getattr__(self, name):
         if name.startswith('__') and name.endswith('__'):
             raise AttributeError
