@@ -323,6 +323,12 @@ class ethproxy():
     def get_chain_id(self):
         return self._w3.eth.chainId
 
+    def get_token_min_amount(self, token_id):
+        return self.tokens[VLSMPROOF_MAIN_NAME].get_token_min_amount(token_id)
+
+    def get_token_max_amount(self, token_id):
+        return self.tokens[VLSMPROOF_MAIN_NAME].get_token_max_amount(token_id)
+
     def _get_transactions(self, start, limit = 10):
         datas = []
         next_version = self.tokens[VLSMPROOF_DATAS_NAME].next_version()
