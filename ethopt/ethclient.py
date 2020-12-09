@@ -22,7 +22,10 @@ from comm import version
 from comm.result import result, parse_except
 from comm.error import error
 from comm.functions import is_mnemonic
-from ethopt.ethproxy import ethproxy as clientproxy
+from ethopt.ethproxy import (
+        ethproxy as clientproxy,
+        walletproxy
+        )
 from enum import Enum
 from baseobject import baseobject
 import redis
@@ -32,6 +35,10 @@ from web3 import Web3
 from ethopt.ethproxy import (
         VLSMPROOF_MAIN_NAME,
         contract_codes,
+        )
+
+from comm.values import (
+        ETH_ADDRESS_LEN
         )
 #module name
 name="eclient"
@@ -56,8 +63,6 @@ class ethwallet(baseobject):
     def __load_wallet(self, wallet, chain="ethereum"):
         try:
             self.__wallet_name = wallet
-
-            from ethopt.ethproxy import walletproxy
 
             if os.path.isfile(wallet):
                 self.__wallet = walletproxy.load(wallet)
@@ -91,6 +96,14 @@ class ethwallet(baseobject):
                 self.__wallet = None
                 pass
             ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    @classmethod
+    def is_valid_address(self, address):
+        try:
+            ret = result(error.SUCCEED, datas = walletproxy.is_valid_address(address))
         except Exception as e:
             ret = parse_except(e)
         return ret

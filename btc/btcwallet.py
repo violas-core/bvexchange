@@ -64,6 +64,14 @@ class btcwallet(baseobject):
     def wallet_info(self):
         return self.__wallet_info
 
+    @classmethod
+    def is_valid_address(self, address):
+        try:
+            ret = result(error.SUCCEED, datas = True)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def address_is_exists(self, address):
         return address in self.wallet_info.keys()
 

@@ -25,10 +25,12 @@ from enum import Enum
 from baseobject import baseobject
 from comm.functions import split_full_address
 from comm.functions import is_mnemonic
-from comm.values import DECIMAL_VIOLAS
+from comm.values import (
+        DECIMAL_VIOLAS,
+        VIOLAS_ADDRESS_LEN
+        )
 import redis
 
-VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
 #module name
 name="vclient"
@@ -78,6 +80,14 @@ class violaswallet(baseobject):
             if self.__wallet is not None and self.__wallet_name:
                 self.__wallet.write_recovery(self.__wallet_name)
             ret = result(error.SUCCEED)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    @classmethod
+    def is_valid_address(self, address):
+        try:
+            ret = result(error.SUCCEED, datas = len(address) in VIOLAS_ADDRESS_LEN)
         except Exception as e:
             ret = parse_except(e)
         return ret
