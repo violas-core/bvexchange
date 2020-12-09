@@ -1,4 +1,5 @@
-ADDRESS = "0xCb9b6D30E26d17Ce94A30Dd225dC336fC4536FE8"
+ADDRESS = "0xFFf6458a07bCb69df2EaEbbf9Cf463aB08F3f39B"
+BYTECODE =""
 ABI = '''
         [
         {
@@ -229,8 +230,46 @@ ABI = '''
                 "type": "function"
                 },
         {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "token",
+                        "type": "address"
+                        }
+                    ],
+                "name": "tokenMaxAmount",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                        }
+                    ],
+                "stateMutability": "view",
+                "type": "function"
+                },
+        {
                 "inputs": [],
                 "name": "tokenMaxCount",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                        }
+                    ],
+                "stateMutability": "view",
+                "type": "function"
+                },
+        {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "token",
+                        "type": "address"
+                        }
+                    ],
+                "name": "tokenMinAmount",
                 "outputs": [
                     {
                         "internalType": "uint256",
@@ -374,6 +413,54 @@ ABI = '''
                 "inputs": [
                     {
                         "internalType": "address",
+                        "name": "token",
+                        "type": "address"
+                        },
+                    {
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                        }
+                    ],
+                "name": "updateTokenMaxAmount",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                        }
+                    ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+                },
+        {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "token",
+                        "type": "address"
+                        },
+                    {
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                        }
+                    ],
+                "name": "updateTokenMinAmount",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                        }
+                    ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+                },
+        {
+                "inputs": [
+                    {
+                        "internalType": "address",
                         "name": "proofAddr",
                         "type": "address"
                         }
@@ -386,7 +473,7 @@ ABI = '''
                         "type": "bool"
                         }
                     ],
-                "stateMutability": "payable",
+                "stateMutability": "nonpayable",
                 "type": "function"
                 },
         {
@@ -414,5 +501,3 @@ ABI = '''
                 }
         ]
         '''
-
-BYTECODE =""

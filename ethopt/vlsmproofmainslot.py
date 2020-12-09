@@ -82,6 +82,12 @@ class vlsmproofmainslot():
     def proof_address(self):
         return self._functions.proofAddress().call()
 
+    def get_token_min_amount(self, token_id):
+        return self._functions.tokenMinAmount(self.token_address(token_id)).call()
+
+    def get_token_max_amount(self, token_id):
+        return self._functions.tokenMaxAmount(self.token_address(token_id)).call()
+
     def __getattr__(self, name):
         print(f"calling {name}")
 

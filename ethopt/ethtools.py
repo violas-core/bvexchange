@@ -168,6 +168,18 @@ def get_chain_id():
     ret = client.get_chain_id()
     logger.debug("version: {0}".format(ret.datas))
 
+def get_token_min_amount(token_id):
+    logger.debug(f"start get_token_min_amount({token_id})")
+    client = get_ethclient(False)
+    ret = client.get_token_min_amount(token_id)
+    logger.debug("amount: {0}".format(ret.datas))
+
+def get_token_max_amount(token_id):
+    logger.debug(f"start get_token_max_amount({token_id})")
+    client = get_ethclient(False)
+    ret = client.get_token_max_amount(token_id)
+    logger.debug("amount: {0}".format(ret.datas))
+
 '''
 *************************************************ethwallet oper*******************************************************
 '''
@@ -249,6 +261,8 @@ def init_args(pargs):
     pargs.append("get_decimals", "get address's token decimals.", True, ["token_id"])
     pargs.append("get_syncing_state", "get chain syncing state.")
     pargs.append("get_chain_id", "get chain id.")
+    pargs.append("get_token_min_amount", "get token min amount of main contract.", True, ["token_id"])
+    pargs.append("get_token_max_amount", "get token min amount of main contract.", True, ["token_id"])
 
 def run(argc, argv):
     try:
@@ -405,6 +419,14 @@ def run(argc, argv):
             get_syncing_state()
         elif pargs.is_matched(opt, ["get_chain_id"]):
             get_chain_id()
+        elif pargs.is_matched(opt, ["get_token_min_amount"]):
+            if len(arg_list) not in [1]:
+                pargs.exit_error_opt(opt)
+            get_token_min_amount(arg_list[0])
+        elif pargs.is_matched(opt, ["get_token_max_amount"]):
+            if len(arg_list) not in [1]:
+                pargs.exit_error_opt(opt)
+            get_token_max_amount(arg_list[0])
         else:
             raise Exception(f"not found matched opt{opt}")
     logger.debug("end manage.main")

@@ -94,7 +94,7 @@ syncing_mod = false
 #ethereum contract for mapping erc20 token
 [ethereum_tokens]
     [ethereum_tokens.vlsmproof]
-        address = "0xCb9b6D30E26d17Ce94A30Dd225dC336fC4536FE8"
+        address = "0xFFf6458a07bCb69df2EaEbbf9Cf463aB08F3f39B"
         support= true  
 
 # tokens info 
