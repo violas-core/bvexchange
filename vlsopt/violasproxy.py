@@ -59,14 +59,14 @@ class walletproxy(Wallet):
         if len(mnemonic_num) > 2:
             i = 2
             while i < len(mnemonic_num):
-                address_dd = mnemonic_num[i].split(ASSIGNMENT)
+                address_dd = [value.strip() for value in mnemonic_num[i].split(ASSIGNMENT)]
                 if len(address_dd) != 2:
                     raise Exception(f"address mapping format error: ADDRESS{ASSIGNMENT}DD_ADDRESS")
-
-                if len(address_dd[0].strip()) not in VIOLAS_ADDRESS_LEN or \
-                        len(address_dd[1].strip()) not in VIOLAS_ADDRESS_LEN:
+                
+                if len(address_dd[0]) not in VIOLAS_ADDRESS_LEN or \
+                        len(address_dd[1]) not in VIOLAS_ADDRESS_LEN:
                         raise Exception(f"address is invalid. {mnemonic_num[i]}")
-                wallet.replace_address(address_dd[0].strip(), address_dd[1].strip(), f"0"*32)
+                wallet.replace_address(address_dd[0], address_dd[1])
                 i = i + 1
 
         return wallet

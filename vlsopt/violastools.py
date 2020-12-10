@@ -66,7 +66,7 @@ def show_all_token_list():
     assert ret.state == error.SUCCEED, "get tokens failed."
     json_print(ret.datas)
 
-def mint_coin(address, amount, token_id, module):
+def mint_coin(address, amount, token_id, module = None):
     logger.debug("start min_coin({address}, {amount}, {token_id}, {module})")
     client = get_violasclient()
     wallet = get_violaswallet()
@@ -100,15 +100,18 @@ def send_coin(from_address, to_address, amount, token_id, module = None, data = 
     if module is not None or len(module) == 0:
         module = None
 
+    if not isinstance(data, str):
+        data = json.dumps(data)
+
     client = get_violasclient()
     ret = client.send_coin(account, to_address, amount, token_id, module, data)
     assert ret.state == error.SUCCEED, ret.message
     print(f"cur balance :{client.get_balance(account.address, token_id, module).datas}")
 
-def get_balance(address, token_id, module):
-    logger.debug(f"start get_balance address= {address} module = {module} token_id= {token_id}")
+def get_balance(address, token_id):
+    logger.debug(f"start get_balance address= {address} token_id= {token_id}")
     client = get_violasclient()
-    ret = client.get_balance(address, token_id, module)
+    ret = client.get_balance(address, token_id, None)
     logger.debug("balance: {0}".format(ret.datas))
 
 def get_balances(address):
@@ -125,6 +128,12 @@ def get_latest_transaction_version():
 
 def get_transactions(start_version, limit = 1, fetch_event = True, raw = False):
     logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
+
+    if isinstance(fetch_event, str):
+        fetch_event = fetch_event == "True"
+
+    if isinstance(raw, str):
+        raw = raw == "True"
 
     client = get_violasclient()
     client.swap_set_owner_address(stmanage.get_swap_owner())
@@ -158,15 +167,29 @@ def get_address_sequence(address):
     logger.debug("version: {0}".format(ret.datas))
 
 def get_transaction_version(address, sequence):
-    logger.debug(f"start get_address_version({address}, {sequence})")
+    logger.debug(f"start get_transaction_version({address}, {sequence})")
     client = get_violasclient()
     ret = client.get_transaction_version(address, sequence)
     logger.debug("version: {0}".format(ret.datas))
 
+def create_child_vasp_account(parent_vasp_address, child_address, auth_key_prefix):
+    logger.debug(f"start create_child_vasp_account({parent_vasp_address}, {child_address}, {auth_key_prefix})")
+    client = get_violasclient()
+    wallet = get_violaswallet()
+    parent_vasp_account = wallet.get_account(parent_vasp_address).datas
+    assert parent_vasp_account is not None, f"get parent account(parent_vasp_address) failed"
+
+    ret = client.create_child_vasp_account(parent_vasp_account, child_address, auth_key_prefix)
+    logger.debug("result: {0}".format(ret.datas))
+
+def human_address(address):
+    logger.debug(f"start human_address({address})")
+    h_address = bytes.fromhex(address).decode().replace("\x00","00")
+    logger.debug(f"human address: {h_address}")
 '''
 *************************************************violas swap oper*******************************************************
 '''
-def show_swap_registered_tokens(module):
+def show_swap_registered_tokens(module = None):
     client = get_violasclient()
     swap_set_module_ower(client, module = module)
     ret = client.swap_get_registered_tokens()
@@ -293,7 +316,7 @@ def get_account_prefix(address):
 def get_violas_server():
     return violasserver(stmanage.get_violas_servers())
 
-def get_account_transactions(mtype, address, start, limit, state):
+def get_account_transactions(mtype, address, start = -1, limit = 10, state = "start"):
     logger.debug(f"start get_account_transactions({address}, {start}, {limit}, {state})")
     #server = get_violas_server()
     server = get_violasproof(mtype)
@@ -320,38 +343,39 @@ def init_args(pargs):
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)
     pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
     #wallet 
-    pargs.append("new_account", "new account and save to local wallet.")
-    pargs.append("get_account", "show account info.", True, ["address"])
-    pargs.append("has_account", "has target account in wallet.", True, ["address"])
-    pargs.append("show_accounts", "show all counts address list(local wallet).")
-    pargs.append("show_accounts_full", "show all counts address list(local wallet) with auth_key_prefix.")
+    pargs.append("new_account", "new account and save to local wallet.", callback = new_account)
+    pargs.append("get_account", "show account info.", True, ["address"], callback = get_account)
+    pargs.append("has_account", "has target account in wallet.", True, ["address"], callback = has_account)
+    pargs.append("show_accounts", "show all counts address list(local wallet).", callback = show_accounts)
+    pargs.append("show_accounts_full", "show all counts address list(local wallet) with auth_key_prefix.", show_accounts_full)
 
     #client
-    pargs.append("bind_token_id", "bind address to token_id.", True, ["address", "token_id", "gas_token_id"])
-    pargs.append("mint_coin", "mint some(amount) token(module) to target address.", True, ["address", "amount", "token_id", "module"])
-    pargs.append("send_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "token_id", "module", "data[default = None  ex: "])
-    pargs.append("get_balance", "get address's token(module) amount.", True, ["address", "token_id", "module"])
-    pargs.append("get_balances", "get address's tokens.", True, ["address"])
-    pargs.append("get_account_transactions", "get account's transactions from violas server.", True, ["mtype", "address", "start", "limit", "state=(start/end)"])
-    pargs.append("has_transaction", "check transaction is valid from violas server.", True, ["mtype", "tranid"])
-    pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=True"])
-    pargs.append("get_rawtransaction", "get transaction from violas nodes.", True, ["version", "fetch_event=True"])
-    pargs.append("get_latest_transaction_version", "show latest transaction version.")
-    pargs.append("get_address_version", "get address's latest version'.", True, ["address"])
-    pargs.append("get_address_sequence", "get address's latest sequence'.", True, ["address"])
-    pargs.append("get_transaction_version", "get address's version'.", True, ["address", "sequence"])
-    pargs.append("show_token_list", "show token list.", True, ["address"])
-    pargs.append("show_all_token_list", "show token list.")
-    pargs.append("get_account_prefix", "get account prefix.", True, ["address"])
-    pargs.append("address_has_token_id", "check account is published token_id.", True, ["address", "token_id"])
+    pargs.append("bind_token_id", "bind address to token_id.", True, ["address", "token_id", "gas_token_id"], callback = bind_token_id)
+    pargs.append("mint_coin", "mint some(amount) token(module) to target address.", True, ["address", "amount", "token_id", "module"], callback = mint_coin)
+    pargs.append("send_coin", "send token(coin) to target address", True, ["form_address", "to_address", "amount", "token_id", "module", "data[default = None  ex: "], callback = send_coin)
+    pargs.append("get_balance", "get address's token(module) amount.", True, ["address", "token_id", "module"], callback = get_balance)
+    pargs.append("get_balances", "get address's tokens.", True, ["address"], callback = get_balances)
+    pargs.append("get_account_transactions", "get account's transactions from violas server.", True, ["mtype", "address", "start", "limit", "state=(start/end)"], callback = get_account_transactions)
+    pargs.append("has_transaction", "check transaction is valid from violas server.", True, ["mtype", "tranid"], callback = has_transaction)
+    pargs.append("get_transactions", "get transactions from violas nodes.", True, ["start version", "limit=1", "fetch_event=True", "raw = False"], callback = get_transactions)
+    pargs.append("get_latest_transaction_version", "show latest transaction version.", callback = get_latest_transaction_version)
+    pargs.append("get_address_version", "get address's latest version'.", True, ["address"], callback = get_address_version)
+    pargs.append("get_address_sequence", "get address's latest sequence'.", True, ["address"], callback = get_address_sequence)
+    pargs.append("get_transaction_version", "get address's version'.", True, ["address", "sequence"], callback = get_transaction_version)
+    pargs.append("show_token_list", "show token list.", True, ["address"], callback = show_token_list)
+    pargs.append("show_all_token_list", "show token list.", callback = show_all_token_list)
+    pargs.append("get_account_prefix", "get account prefix.", True, ["address"], callback = get_account_prefix)
+    pargs.append("address_has_token_id", "check account is published token_id.", True, ["address", "token_id"], callback = address_has_token_id)
+    pargs.append("create_child_vasp_account", "create child vasp account.", True, ["parent_address", "child_address", "auth_key_prefix"], callback=create_child_vasp_account)
+    pargs.append("human_address", "show human address.", True, ["address"], callback = human_address)
 
     #swap opt
-    pargs.append("show_swap_registered_tokens", "show registered tokens for module.", True, ["address"])
-    pargs.append("swap", "swap violas chain token.", True, ["address", "token_in", "token_out", "amount_in", "amount_out_min", "module_address"])
-    pargs.append("check_is_swap_address", "check address is swap address.", True, ["address"])
-    pargs.append("swap_get_output_amount", "get swap out amount .", True, ["token_in", "token_out", "amount_in"])
-    pargs.append("swap_get_liquidity_balances", "get swap liquidity balances .", True, ["address"])
-    pargs.append("swap_remove_liquidity", "remover swap liquidity .", True, ["address", "token_a", "token_b", "liquidity"])
+    pargs.append("show_swap_registered_tokens", "show registered tokens for module.", True, ["address"], callback = show_swap_registered_tokens)
+    pargs.append("swap", "swap violas chain token.", True, ["address", "token_in", "token_out", "amount_in", "amount_out_min"], callback = swap)
+    pargs.append("check_is_swap_address", "check address is swap address.", True, ["address"], callback = check_is_swap_address)
+    pargs.append("swap_get_output_amount", "get swap out amount .", True, ["token_in", "token_out", "amount_in"], callback = swap_get_output_amount)
+    pargs.append("swap_get_liquidity_balances", "get swap liquidity balances .", True, ["address"], callback = swap_get_liquidity_balances)
+    pargs.append("swap_remove_liquidity", "remover swap liquidity .", callback = swap_remove_liquidity)
 
 
 def run(argc, argv):
@@ -360,7 +384,6 @@ def run(argc, argv):
         pargs = parseargs()
         init_args(pargs)
         pargs.show_help(argv)
-
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
         logger.error(e)
@@ -380,9 +403,11 @@ def run(argc, argv):
     if stmanage.get_conf_env() is None:
         stmanage.set_conf_env("../bvexchange.toml") 
 
+    
     global chain
     for opt, arg in opts:
 
+        arg_list = []
         if len(arg) > 0:
             count, arg_list = pargs.split_arg(opt, arg)
 
@@ -399,158 +424,10 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             dataproof.wallets.update_wallet(chain, arg_list[0])
-        elif pargs.is_matched(opt, ["bind_token_id"]):
-            if len(arg_list) != 3:
-                pargs.exit_error_opt(opt)
-            ret = bind_token_id(arg_list[0], arg_list[1], arg_list[2])
-        elif pargs.is_matched(opt, ["mint_coin"]):
-            if len(arg_list) != 4 and len(arg_list) != 3:
-                pargs.exit_error_opt(opt)
-            module = None
-            if len(arg_list) == 4:
-                module = arg_list[3]
-            ret = mint_coin(arg_list[0], int(arg_list[1]), arg_list[2], module)
-        elif pargs.is_matched(opt, ["send_coin"]):
-            if len(arg_list) not in (4,5,6):
-                pargs.exit_error_opt(opt)
-            if len(arg_list) == 6:
-                ret = send_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3], arg_list[4], json.dumps(arg_list[5]))
-            elif len(arg_list) == 5:
-                ret = send_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3], arg_list[4])
-            elif len(arg_list) == 4:
-                ret = send_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3])
-        elif pargs.is_matched(opt, ["get_account"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            get_account(arg)
-        elif pargs.is_matched(opt, ["has_account"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            has_account(arg)
-        elif pargs.is_matched(opt, ["show_accounts"]):
-            if len(arg) != 0:
-                pargs.exit_error_opt(opt)
-            show_accounts()
-        elif pargs.is_matched(opt, ["show_accounts_full"]):
-            if len(arg) != 0:
-                pargs.exit_error_opt(opt)
-            show_accounts_full()
-        elif pargs.is_matched(opt, ["new_account"]):
-            if len(arg) != 0:
-                pargs.exit_error_opt(opt)
-            ret = new_account()
-        elif pargs.is_matched(opt, ["get_balance"]):
-            if len(arg_list) not in [3, 2]:
-                pargs.exit_error_opt(opt)
-            module = None
-            token_id = None
-            if len(arg_list) == 2:
-                token_id = arg_list[1]
-            else:
-                module = arg_list[2]
-                token_id = arg_list[1]
-            get_balance(arg_list[0],  token_id, module )
-        elif pargs.is_matched(opt, ["get_balances"]):
-            if len(arg_list) not in [1]:
-                pargs.exit_error_opt(opt)
-            get_balances(arg_list[0])
-        elif pargs.is_matched(opt, ["get_account_transactions"]):
-            if len(arg_list) < 2 or len(arg_list) > 5:
-                pargs.exit_error_opt(opt)
-            mtype = arg_list[0]
-            receiver = arg_list[1]
-            start = -1
-            limit = 10
-            state = "start"
-
-            if len(arg_list) >= 3:
-               start = int(arg_list[2])
-
-            if len(arg_list) >= 4:
-               limit = int(arg_list[3])
-
-            if len(arg_list) >= 5:
-                state = arg_list[4]
-
-            get_account_transactions(mtype, receiver, start, limit, state)
-        elif pargs.is_matched(opt, ["get_transactions"]):
-            if len(arg_list) != 3 and len(arg_list) != 2 and len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            if len(arg_list) == 3:
-                get_transactions(int(arg_list[0]), int(arg_list[1]), arg_list[2] in ("True"))
-            elif len(arg_list) == 2:
-                get_transactions(int(arg_list[0]), int(arg_list[1]))
-            elif len(arg_list) == 1:
-                get_transactions(int(arg_list[0]))
-        elif pargs.is_matched(opt, ["get_rawtransaction"]):
-            if len(arg_list) != 2 and len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            if len(arg_list) == 2:
-                get_transactions(int(arg_list[0]), 1, arg_list[1] in ("True"), True)
-            elif len(arg_list) == 1:
-                get_transactions(int(arg_list[0]), 1, False, True)
-        elif pargs.is_matched(opt, ["has_transaction"]):
-            if len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            has_transaction(arg_list[0], arg_list[1])
-        elif pargs.is_matched(opt, ["address_has_token_id"]):
-            if len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            address_has_token_id(arg_list[0], arg_list[1])
-        elif pargs.is_matched(opt, ["get_latest_transaction_version"]):
-            get_latest_transaction_version()
-        elif pargs.is_matched(opt, ["get_address_version"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            get_address_version(arg_list[0])
-        elif pargs.is_matched(opt, ["get_address_sequence"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            get_address_sequence(arg_list[0])
-        elif pargs.is_matched(opt, ["get_transaction_version"]):
-            if len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            get_transaction_version(arg_list[0], int(arg_list[1]))
-        elif pargs.is_matched(opt, ["show_token_list"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            show_token_list(arg_list[0])
-        elif pargs.is_matched(opt, ["show_all_token_list"]):
-            show_all_token_list()
-        elif pargs.is_matched(opt, ["get_account_prefix"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            get_account_prefix(arg_list[0])
-        elif pargs.is_matched(opt, ["swap"]):
-            if len(arg_list) not in (5, 6):
-                pargs.exit_error_opt(opt)
-            module = stmanage.get_swap_module()
-            if len(arg_list) == 6:
-                module = arg_list[5]
-            swap(arg_list[0], arg_list[1], arg_list[2], int(arg_list[3]), int(arg_list[4]))
-
-        elif pargs.is_matched(opt, ["show_swap_registered_tokens"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            show_swap_registered_tokens(arg_list[0])
-        elif pargs.is_matched(opt, ["check_is_swap_address"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            check_is_swap_address(arg_list[0])
-        elif pargs.is_matched(opt, ["swap_get_output_amount"]):
-            if len(arg_list) != 3:
-                pargs.exit_error_opt(opt)
-            swap_get_output_amount(arg_list[0], arg_list[1], arg_list[2])
-        elif pargs.is_matched(opt, ["swap_get_liquidity_balances"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            swap_get_liquidity_balances(arg_list[0])
-        elif pargs.is_matched(opt, ["swap_remove_liquidity"]):
-            if len(arg_list) != 4:
-                pargs.exit_error_opt(opt)
-            swap_remove_liquidity(arg_list[0], arg_list[1], arg_list[2], arg_list[3])
+        elif pargs.has_callback(opt):
+            pargs.callback(opt, *arg_list)
         else:
-            raise Exception(f"not found matched opt{opt}")
+            raise Exception(f"not found matched opt: {opt}")
 
 
     logger.debug("end manage.main")

@@ -238,31 +238,29 @@ def init_args(pargs):
     pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
 
     #wallet 
-    pargs.append("new_account", "new account and save to local wallet.")
-    pargs.append("get_account", "show account info.", True, ["address"])
-    pargs.append("has_account", "has target account in wallet.", True, ["address"])
-    pargs.append("show_accounts", "show all counts address list(local wallet).")
-    pargs.append("show_accounts_full", "show all counts address list(local wallet) with privkey.")
+    pargs.append(new_account, "new account and save to local wallet.")
+    pargs.append(get_account, "show account info.")
+    pargs.append(has_account, "has target account in wallet.")
+    pargs.append(show_accounts, "show all counts address list(local wallet).")
+    pargs.append(show_accounts_full, "show all counts address list(local wallet) with privkey.")
 
     #client
-    pargs.append("send_coin", "send token(erc20 coin) to target address", True, ["form_address", "to_address", "amount", "token_id"])
-    pargs.append("get_balance", "get address's token(module) amount.", True, ["address", "token_id", "module"])
-    pargs.append("get_balances", "get address's tokens.", True, ["address"])
-    pargs.append("get_account_transactions", "get account's transactions from eth server.", True, ["mtype", "address", "start", "limit", "state=(start/end)"])
-    pargs.append("has_transaction", "check transaction is valid from eth server.", True, ["mtype", "tranid"])
-    pargs.append("get_transactions", "get transactions from eth nodes.", True, ["start version", "limit=1", "fetch_event=True"])
-    pargs.append("get_rawtransaction", "get transaction from eth nodes.", True, ["txhash"])
-    pargs.append("get_latest_transaction_version", "show latest transaction version.")
-    pargs.append("get_address_version", "get address's latest version'.", True, ["address"])
-    pargs.append("get_address_sequence", "get address's latest sequence'.", True, ["address"])
-    pargs.append("get_transaction_version", "get address's version'.", True, ["address", "sequence"])
-    pargs.append("show_token_list", "show token list.", True, ["address"])
-    pargs.append("show_all_token_list", "show token list.")
-    pargs.append("get_decimals", "get address's token decimals.", True, ["token_id"])
-    pargs.append("get_syncing_state", "get chain syncing state.")
-    pargs.append("get_chain_id", "get chain id.")
-    pargs.append("get_token_min_amount", "get token min amount of main contract.", True, ["token_id"])
-    pargs.append("get_token_max_amount", "get token min amount of main contract.", True, ["token_id"])
+    pargs.append(send_coin, "send token(erc20 coin) to target address")
+    pargs.append(get_balance, "get address's token(module) amount.")
+    pargs.append(get_balances, "get address's tokens.")
+    pargs.append(get_transactions, "get transactions from eth nodes.")
+    pargs.append(get_rawtransaction, "get transaction from eth nodes.")
+    pargs.append(get_latest_transaction_version, "show latest transaction version.")
+    pargs.append(get_address_version, "get address's latest version'.")
+    pargs.append(get_address_sequence, "get address's latest sequence'.")
+    pargs.append(get_transaction_version, "get address's version'.")
+    pargs.append(show_token_list, "show token list.")
+    pargs.append(show_all_token_list, "show token list.")
+    pargs.append(get_decimals, "get address's token decimals.")
+    pargs.append(get_syncing_state, "get chain syncing state.",)
+    pargs.append(get_chain_id, "get chain id.")
+    pargs.append(get_token_min_amount, "get token min amount of main contract.")
+    pargs.append(get_token_max_amount, "get token min amount of main contract.")
 
 def run(argc, argv):
     try:
@@ -312,64 +310,6 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             chain = arg_list[0]
-        elif pargs.is_matched(opt, ["send_coin"]):
-            if len(arg_list) != 4:
-                pargs.exit_error_opt(opt)
-            send_coin(arg_list[0], arg_list[1], arg_list[2], arg_list[3])
-        elif pargs.is_matched(opt, ["get_account"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            get_account(arg)
-        elif pargs.is_matched(opt, ["has_account"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            has_account(arg)
-        elif pargs.is_matched(opt, ["show_accounts"]):
-            if len(arg) != 0:
-                pargs.exit_error_opt(opt)
-            show_accounts()
-        elif pargs.is_matched(opt, ["show_accounts_full"]):
-            if len(arg) != 0:
-                pargs.exit_error_opt(opt)
-            show_accounts_full()
-        elif pargs.is_matched(opt, ["new_account"]):
-            if len(arg) != 0:
-                pargs.exit_error_opt(opt)
-            ret = new_account()
-        elif pargs.is_matched(opt, ["get_balance"]):
-            if len(arg_list) not in [3, 2]:
-                pargs.exit_error_opt(opt)
-            module = None
-            token_id = None
-            if len(arg_list) == 2:
-                token_id = arg_list[1]
-            else:
-                module = arg_list[2]
-                token_id = arg_list[1]
-            get_balance(arg_list[0],  token_id, module )
-        elif pargs.is_matched(opt, ["get_balances"]):
-            if len(arg_list) not in [1]:
-                pargs.exit_error_opt(opt)
-            get_balances(arg_list[0])
-        elif pargs.is_matched(opt, ["get_account_transactions"]):
-            if len(arg_list) < 2 or len(arg_list) > 5:
-                pargs.exit_error_opt(opt)
-            mtype = arg_list[0]
-            receiver = arg_list[1]
-            start = -1
-            limit = 10
-            state = "start"
-
-            if len(arg_list) >= 3:
-               start = int(arg_list[2])
-
-            if len(arg_list) >= 4:
-               limit = int(arg_list[3])
-
-            if len(arg_list) >= 5:
-                state = arg_list[4]
-
-            get_account_transactions(mtype, receiver, start, limit, state)
         elif pargs.is_matched(opt, ["get_transactions"]):
             if len(arg_list) != 3 and len(arg_list) != 2 and len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
@@ -379,54 +319,8 @@ def run(argc, argv):
                 get_transactions(int(arg_list[0]), int(arg_list[1]))
             elif len(arg_list) == 1:
                 get_transactions(int(arg_list[0]))
-        elif pargs.is_matched(opt, ["get_rawtransaction"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            get_rawtransaction(arg_list[0])
-        elif pargs.is_matched(opt, ["has_transaction"]):
-            if len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            has_transaction(arg_list[0], arg_list[1])
-        elif pargs.is_matched(opt, ["address_has_token_id"]):
-            if len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            address_has_token_id(arg_list[0], arg_list[1])
-        elif pargs.is_matched(opt, ["get_latest_transaction_version"]):
-            get_latest_transaction_version()
-        elif pargs.is_matched(opt, ["get_address_version"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            get_address_version(arg_list[0])
-        elif pargs.is_matched(opt, ["get_address_sequence"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            get_address_sequence(arg_list[0])
-        elif pargs.is_matched(opt, ["get_transaction_version"]):
-            if len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            get_transaction_version(arg_list[0], int(arg_list[1]))
-        elif pargs.is_matched(opt, ["show_token_list"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            show_token_list(arg_list[0])
-        elif pargs.is_matched(opt, ["show_all_token_list"]):
-            show_all_token_list()
-        elif pargs.is_matched(opt, ["get_decimals"]):
-            if len(arg_list) not in [1]:
-                pargs.exit_error_opt(opt)
-            get_decimals(arg_list[0])
-        elif pargs.is_matched(opt, ["get_syncing_state"]):
-            get_syncing_state()
-        elif pargs.is_matched(opt, ["get_chain_id"]):
-            get_chain_id()
-        elif pargs.is_matched(opt, ["get_token_min_amount"]):
-            if len(arg_list) not in [1]:
-                pargs.exit_error_opt(opt)
-            get_token_min_amount(arg_list[0])
-        elif pargs.is_matched(opt, ["get_token_max_amount"]):
-            if len(arg_list) not in [1]:
-                pargs.exit_error_opt(opt)
-            get_token_max_amount(arg_list[0])
+        elif pargs.has_callback(opt):
+            pargs.callback(opt, *arg_list)
         else:
             raise Exception(f"not found matched opt{opt}")
     logger.debug("end manage.main")

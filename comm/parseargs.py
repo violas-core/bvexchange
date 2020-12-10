@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import operator
+import operator, types
 import sys, getopt
 import json
 sys.path.append("..")
@@ -13,8 +13,6 @@ name="parseargs"
 
 class parseargs:
     __args = {}
-    __args_priority = {}
-    __args_argtype = {}
     __unique = []
 
     class argtype(Enum):
@@ -30,8 +28,6 @@ class parseargs:
 
     def clear(self):
         self.__args = {}
-        self.__args_priority = {}
-        self.__args_argtype = {}
         self.__unique = []
 
     def appendunique(self, opts_unique):
@@ -40,7 +36,7 @@ class parseargs:
         self.__unique.append(list(opts_unique))
 
     def check_unique(self, opts):
-        opt_list = [name.replace("--", "") for name in opts]
+        opt_list = [self.get_name(opt) for opt in opts]
         for uni in self.__unique:
             count = 0
             for opt in opt_list:
@@ -53,40 +49,86 @@ class parseargs:
 
     def isvalid(self, name):
         arg = name[2:]
-        return arg in [key.replace('-', '') for key in self.__args.keys()]
+        return arg in self.__args.keys()
 
     def hasarg(self, name):
-        for arg in self.__args.keys():
+        for key in self.__args:
+            arg = self.__args[key]["key"]
             if arg.find('-') >= 0 and name[2:] == arg.replace('-', ''):
                 return True
         return False
 
-    def append(self, name, desc, hasarg = False, arglist = None, priority = 100, argtype = argtype.LIST):
-        if name in self.__args:
-            raise Exception("arg is exists.")
-        if hasarg:
-            key = f"{name}-"
-            value = f"desc: {desc} format: --{name} \"{arglist}\""
+    def get_name(self, opt):
+        return opt.replace("-", "")
+
+    def has_callback(self, opt):
+        return self.__args[self.get_name(opt)]["callback"] is not None
+
+    def callback(self, opt, *args):
+        name = self.get_name(opt)
+        self.exit_check_opt_arg_min(opt, args, self.__args[name]["min_args"])
+        if self.__args[name]["hasarg"]:
+            self.__args[name]["callback"](*args)
         else:
-            key = name
-            value = f"desc: {desc} format: --{name}"
-        self.__args[key] = value
-        self.__args_priority[name] = priority
-        self.__args_argtype[name] = argtype
+            self.__args[name]["callback"]()
+
+    def append(self, name, desc, hasarg = False, arglist = None, optional_arglist = None, priority = 100, argtype = argtype.LIST, callback = None):
+
+        arg_name = name
+        if isinstance(name, types.FunctionType):
+            arg_name = name.__name__
+            if not callback:
+                callback = name
+
+        if arg_name in self.__args:
+            raise Exception("arg is exists.")
+
+        min_args = len(arglist) if arglist else 0
+        arglist_all = f"{arglist} {optional_arglist}"
+        if callback:
+            arg_defaults = callback.__defaults__
+            arglist_all = list(callback.__code__.co_varnames[:callback.__code__.co_argcount])
+            min_args = len(arglist_all) - len(arg_defaults) if arg_defaults else len(arglist_all)
+            hasarg = len(arglist_all) > 0
+            if arg_defaults:
+                for i in range(len(arg_defaults)):
+                    iarg = 0 - i - 1
+                    arglist_all[iarg] = f"{arglist_all[iarg]}={json.dumps(arg_defaults[iarg]) if arg_defaults[iarg] else None}"
+            arglist_all = ', '.join(arglist_all)
+
+        arglist_all = arglist_all.replace("[", "")
+        arglist_all = arglist_all.replace("]", "")
+
+        if hasarg:
+            key = f"{arg_name}-"
+            value = f"desc: {desc} format: --{arg_name} \"{arglist_all}\""
+        else:
+            key = arg_name
+            value = f"desc: {desc} format: --{arg_name}"
+
+        self.__args[arg_name] = {"key": key, \
+                "value": value, \
+                "required": arglist, \
+                "optional": optional_arglist, \
+                "required_count": len(arglist) if arglist else 0, \
+                "optional_count": len(optional_arglist) if optional_arglist else 0, \
+                "priority": priority, \
+                "argtype": argtype, \
+                "callback": callback, \
+                "hasarg": hasarg, \
+                "min_args": min_args}
 
     def remove(self, name):
-        if self.__args is None or name not in self.__args:
-            return
-        del self.__args[name]
-        del self.__args_priority[name]
+        self.__args.pop(name)
+        self.__unique.remove(name)
 
     def show_args(self):
         for key in list(self.__args.keys()):
-            print("{}{} \n\t\t\t\t{}".format("--", key.replace('-', ''), self.__args[key].replace('\n', '')))
+            print("{}{} \n\t\t\t\t{}".format("--", key, self.__args[key]["value"].replace('\n', '')))
         sys.exit(2)
 
     def exit_error_opt(self, opt):
-        print(self.__args["{}-".format(opt.replace('--', ''))])
+        print(self.__args[self.get_name(opt)]["value"])
         sys.exit(2)
 
     def __show_arg_info(self, info):
@@ -117,10 +159,7 @@ class parseargs:
 
         name = args[1]
 
-        if name in self.__args:
-            self.__show_arg_info("--{} \n\t{}".format(name, self.__args[name].replace("format:", "\n\tformat:")))
-        else:
-            self.__show_arg_info("--{} \n\t{}".format(name, self.__args["{}-".format(name)].replace("format:", "\n\tformat:")))
+        self.__show_arg_info("--{} \n\t{}".format(name, self.__args[name]["value"].replace("format:", "\n\tformat:")))
 
         sys.exit(2)
 
@@ -128,7 +167,7 @@ class parseargs:
         sorted_opts = []
         for opt in opts:
             for i, sopt in enumerate(sorted_opts):
-                if self.__args_priority[opt[0][2:]] < self.__args_priority[sopt[0][2:]]:
+                if opt["priority"] < sopt["priority"]:
                     sorted_opts.insert(i, opt)
                     break
             else:
@@ -136,8 +175,9 @@ class parseargs:
         return sorted_opts
 
     def getopt(self, argv):
-        opts, err_msg = getopt.getopt(argv, None, [arg.replace('-', "=") for arg in self.__args.keys()])
+        opts, err_msg = getopt.getopt(argv, None, [arg["key"].replace('-', "=") for _, arg in self.__args.items()])
         opts = self.__sort_opts(opts)
+        print(opts)
         return (opts, err_msg)
 
     def is_matched(self, opt, names):
@@ -149,9 +189,11 @@ class parseargs:
             return (0, None)
 
         #arg is not json format
-        if self.__args_argtype[opt.replace("-", "")] == self.argtype.STR:
+        arg_list = None
+        name = self.get_name(opt)
+        if self.__args[name]["argtype"] == self.argtype.STR:
             arg_list = [arg]
-        elif self.__args_argtype[opt.replace("-", "")] == self.argtype.STR:
+        elif self.__args[name]["argtype"] == self.argtype.STR:
             arg_list = json.loads(argstr)
         else:
             if "," not in arg:
