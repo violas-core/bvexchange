@@ -140,26 +140,26 @@ def getwalletaddressbalance(address):
 
 def init_args(pargs):
     pargs.append("help", "show arg list")
-    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", 10)
+    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 10)
     pargs.append("wallet", "inpurt wallet file or mnemonic, input is btc wallet file or pairs(ADDRESS:PRIVKEY, ADDRESS:PRIVKEY)", True, "file name/pairs", priority = 13, argtype = parseargs.argtype.STR)
 
-    pargs.append("sendtoaddress", "send to address.format.", True, ["address", "count"])
-    pargs.append("sendexproofstart", "create new exchange start proof.", True, ["fromaddress", "toaddress", "amount", "vaddress", "sequence", "vtoken"])
-    pargs.append("sendexproofend", "create new exchange end proof.", True, ["fromaddress", "toaddress", "vaddress", "sequence", "vamount", "version"])
-    pargs.append("sendexproofmark", "create new exchange mark proof.", True, ["fromaddress", "toaddress", "toamount", "vaddress", "sequence", "version"])
-    pargs.append("generatetoaddress", "generate new block to address.", True, ["count", "address"])
-    pargs.append("listunspent", "returns array of unspent transaction outputs.", True, ["minconf", "maxconf", "addresses", "include_unsafe", "query_options"])
-    pargs.append("listexproofforstart", "returns array of proof state is start .", True, ["opttype", "receiver"])
-    pargs.append("listexproofforend", "returns array of proof state is end .", True, ["opttype", "receiver"])
-    pargs.append("listexproofforstop", "returns array of proof state is stop.", True, ["opttype", "receiver"])
-    pargs.append("listexproofformark", "returns array of proof state is mark .", True, ["receiver"])
-    pargs.append("listexproofforb2v", "returns array of proof list type = b2v. .", True, ["cursor", "limit"])
-    pargs.append("btchelp", "returns bitcoin-cli help.")
-    pargs.append("getwalletbalance", "returns wallet balance.")
-    pargs.append("getwalletaddressbalance", "returns wallet target address's balance.", True, ["address"])
-    pargs.append("getb2vtransaction", "returns array of proof list.[map to violas format]", True, ["cursor", "limit"])
-    pargs.append("gettransaction", "returns proof info.", True, ["tranid"])
-    pargs.append("showaccountlist", "returns account info.")
+    pargs.append(sendtoaddress, "send to address.format.")
+    pargs.append(sendexproofstart, "create new exchange start proof.")
+    pargs.append(sendexproofend, "create new exchange end proof.")
+    pargs.append(sendexproofmark, "create new exchange mark proof.")
+    pargs.append(generatetoaddress, "generate new block to address.")
+    pargs.append(listunspent, "returns array of unspent transaction outputs.")
+    pargs.append(listexproofforstart, "returns array of proof state is start .")
+    pargs.append(listexproofforend, "returns array of proof state is end .")
+    pargs.append(listexproofforstop, "returns array of proof state is stop.")
+    pargs.append(listexproofformark, "returns array of proof state is mark .")
+    pargs.append(listexproofforb2v, "returns array of proof list type = b2v.")
+    pargs.append(btchelp, "returns bitcoin-cli help.")
+    pargs.append(getwalletbalance, "returns wallet balance.")
+    pargs.append(getwalletaddressbalance, "returns wallet target address's balance.")
+    pargs.append(getb2vtransaction, "returns array of proof list.[map to violas format]")
+    pargs.append(gettransaction, "returns proof info.")
+    pargs.append(showaccountlist, "returns account info.")
 
 def run(argc, argv):
     try:
@@ -193,83 +193,13 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             stmanage.set_conf_env(arg_list[0])
-        elif pargs.is_matched(opt, ["sendtoaddress"]):
-            if len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            ret = sendtoaddress(arg_list[0], arg_list[1])
         elif pargs.is_matched(opt, ["wallet"]):
             pargs.exit_check_opt_arg(opt, arg, 1)
             dataproof.wallets.update_wallet("btc", arg_list[0])
-        elif pargs.is_matched(opt, ["sendexproofstart"]):
-            if len(arg_list) != 6:
-                pargs.exit_error_opt(opt)
-            ret = sendexproofstart(arg_list[0], arg_list[1], float(arg_list[2]), arg_list[3], int(arg_list[4]), arg_list[5])
-        elif pargs.is_matched(opt, ["sendexproofend"]):
-            if len(arg_list) != 6:
-                pargs.exit_error_opt(opt)
-            ret = sendexproofend(arg_list[0], arg_list[1], arg_list[2], int(arg_list[3]), int(arg_list[4]), int(arg_list[5]))
-        elif pargs.is_matched(opt, ["sendexproofmark"]):
-            if len(arg_list) != 6:
-                pargs.exit_error_opt(opt)
-            ret = sendexproofmark(arg_list[0], arg_list[1], arg_list[2], arg_list[3], int(arg_list[4]), int(arg_list[5]))
-        elif pargs.is_matched(opt, ["generatetoaddress"]):
-            if len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            ret = generatetoaddress(int(arg_list[0]), arg_list[1])
-        elif pargs.is_matched(opt, ["listunspent"]):
-            if len(arg_list) != 5 and len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            if len(arg_list) != 2:
-                ret = listunspent(int(arg_list[0]), int(arg_list[1]), arg_list[2], arg_list[3], arg_list[4])
-            else:
-                ret = listunspent(int(arg_list[0]), int(arg_list[1]))
-        elif pargs.is_matched(opt, ["listexproofforstart"]):
-            if len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            ret = listexproofforstart(arg_list[0], arg_list[1])
-        elif pargs.is_matched(opt, ["listexproofforend"]):
-            if len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            ret = listexproofforend(arg_list[0], arg_list[1])
-        elif pargs.is_matched(opt, ["listexproofforstop"]):
-            if len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            ret = listexproofforstop(arg_list[0], arg_list[1])
-        elif pargs.is_matched(opt, ["listexproofformark"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            ret = listexproofformark(arg_list[0])
-        elif pargs.is_matched(opt, ["listexproofforb2v"]):
-            if len(arg_list) != 1 and len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            if len(arg_list) == 2:
-                limit = int(arg_list[1])
-                ret = listexproofforb2v(int(arg_list[0]), limit)
-            else:
-                ret = listexproofforb2v(int(arg_list[0]))
-        elif pargs.is_matched(opt, ["btchelp"]):
-            ret = btchelp()
-        elif pargs.is_matched(opt, ["getwalletbalance"]):
-            ret = getwalletbalance()
-        elif pargs.is_matched(opt, ["getwalletaddressbalance"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            ret = getwalletaddressbalance(arg_list[0])
-        elif pargs.is_matched(opt, ["getb2vtransaction"]):
-            if len(arg_list) != 1 and len(arg_list) != 2:
-                pargs.exit_error_opt(opt)
-            if len(arg_list) == 2:
-                limit = int(arg_list[1])
-                ret = getb2vtransaction(int(arg_list[0]), limit)
-            else:
-                ret = getb2vtransaction(int(arg_list[0]))
-        elif pargs.is_matched(opt, ["gettransaction"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
-            ret = gettransaction(arg_list[0])
-        elif pargs.is_matched(opt, ["showaccountlist"]):
-            showaccountlist()
-
+        elif pargs.has_callback(opt):
+            pargs.callback(opt, *arg_list)
+        else:
+            raise Exception(f"not found matched opt{opt}")
     logger.debug("end manage.main")
 
 if __name__ == "__main__":
