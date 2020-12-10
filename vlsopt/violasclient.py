@@ -574,11 +574,24 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def create_child_vasp_account(self, parent_vasp_account, child_address, auth_key_prefix, currency_code=None, add_all_currency=False,
+                                  child_initial_balance=0, gas_currency_code="VLS", **kwargs):
+        try:
+            datas = self.__client.create_child_vasp_account(parent_vasp_account, child_address, auth_key_prefix, currency_code, \
+                    add_all_currency， child_initial_balance, gas_currency_code, **kwargs)
+            ret = result(error.SUCCEED, datas = datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+
+
     def get_associate_account(self):
         return self.__client.associate_account
 
     def get_associate_address(self):
         return self.__client.associate_account.address_hex
+
 
 class violasserver(baseobject):
     __node = None

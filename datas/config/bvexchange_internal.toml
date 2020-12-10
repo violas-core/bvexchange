@@ -306,7 +306,7 @@ syncing_mod = false
         chain = "violas"
 
     [[address_list.receiver]]
-        address = "eda54651162270ccc0ff81cbcfffcded8ee2a1a52bd868c0baadb0d226731832"
+        address = "0000000000000000004252472d425443"
         type = "v2bm"
         chain = "violas"
 
@@ -316,13 +316,13 @@ syncing_mod = false
         chain = "ethereum"
 
     [[address_list.receiver]]
-        address = "cf0861291d97a2fd8d781fc162afc6ed181d90a6e37619829bb70afaf28b5edf"
+        address = "00000000000000000042524755534454"
         type = "v2em"
         chain = "violas"
 
     #receive funds request
     [[address_list.receiver]]
-        address = "e99ae1a3ff054ee3cfd1d9a2a56988400f82442367443b43ae58efff73bef348"
+        address = "00000000000000000042524746554e44"
         type = "funds"
         chain = "violas"
 
@@ -400,10 +400,10 @@ syncing_mod = false
         type = "v2em"
         chain = "ethereum"
 
-    #FUNDS server use: violas-DD ethereum-account
+    #FUNDS server use: payment funds violas-DD ethereum-account
     ##violas DD account
     [[address_list.sender]]
-        address = "e99ae1a3ff054ee3cfd1d9a2a56988400f82442367443b43ae58efff73bef348"
+        address = "00000000000000000042524746554e44"
         type = "funds"
         chain = "violas"
 
@@ -416,7 +416,7 @@ syncing_mod = false
     #combine : reclaim token 
     #default: violas combine
     [[address_list.combine]]
-        address = "c16af35c8082f78399bedabfd1ec8c409334bb5e39e5919e081b6db72482e139"
+        address = "0000000000000000004252474255524e"
         type = "default"
         chain = "violas"
 
@@ -426,12 +426,13 @@ syncing_mod = false
         type = "e2vm"
         chain = "ethereum"
 
+    #the address of permission request funds from funds-server
     [[address_list.funds]]
-        address = "de8eeb09d629940e46c757b6727c7b1e1554b8e40c8a8a949b1db67168980c57"
+        address = "00000000000000000042524755534454"
         type = "map"
         chain = "violas"
     [[address_list.funds]]
-        address = "de8eeb09d629940e46c757b6727c7b1e1554b8e40c8a8a949b1db67168988888"
+        address = "00000000000000000042524755534454"
         type = "liq"
         chain = "violas"
 #thread loopping sleep time(s)
