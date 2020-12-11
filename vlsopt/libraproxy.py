@@ -26,47 +26,26 @@ from comm.values import (
         VIOLAS_ADDRESS_LEN as LIBRA_ADDRESS_LEN
         )
 
+from vlsopt.proxybase import (
+        proxybase
+        )
+from lblibraclient.libra_client import (
+        Wallet,
+        Client as LBRClient
+        )
 #from violas.client import Client
-from lblibraclient.libra_client import Wallet
-from lblibraclient.libra_client import Client as LBRClient
+#from lblibraclient.libra_client import Wallet
+#from lblibraclient.libra_client import Client as LBRClient
 from lblibraclient.libra_client.lbrtypes.chain_id import NamedChain
 #module name
 name="libraproxy"
 
-ASSIGNMENT = "="
-class walletproxy(Wallet):
-    @classmethod
-    def load(self, filename):
-        if os.path.isfile(filename):
-            self.__wallet_name = filename
-            with open(filename) as lines:
-                infos = lines.readlines()
-                for info in infos:
-                    return self.loads(info)
+class walletproxy(Wallet, proxybase):
+    ADDRESS_LEN = LIBRA_ADDRESS_LEN
 
-
-    @classmethod
-    def loads(cls, data):
-        mnemonic_num = data.split(Wallet.DELIMITER)
-        if len(mnemonic_num) < 2 or not mnemonic_num[1].isdecimal():
-            raise Exception(f"Format error: Wallet must <MNEMONIC_NUM>{Wallet.DELIMITER}<NUM>[ADDRESS{ASSIGNMENT}DD_ADDRESS;ADDRESS{ASSIGNMENT}DD_ADDRESS]")
-        
-        wallet = cls.new_from_mnemonic(mnemonic_num[0]) 
-        wallet.generate_addresses(int(mnemonic_num[1]))
-        if len(mnemonic_num) > 2:
-            i = 2
-            while i < len(mnemonic_num):
-                address_dd = [value.strip() for value in mnemonic_num[i].split(ASSIGNMENT)]
-                if len(address_dd) != 2:
-                    raise Exception(f"address mapping format error: ADDRESS{ASSIGNMENT}DD_ADDRESS")
-                
-                if len(address_dd[0]) not in LIBRA_ADDRESS_LEN or \
-                        len(address_dd[1]) not in LIBRA_ADDRESS_LEN:
-                        raise Exception(f"address is invalid. {mnemonic_num[i]}")
-                wallet.replace_address(address_dd[0], address_dd[1])
-                i = i + 1
-
-        return wallet
+    @property
+    def name(self):
+        return name
 
     @property
     def child_count(self):

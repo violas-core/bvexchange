@@ -115,12 +115,19 @@ class violaswallet(baseobject):
     def get_account_count(self):
         return len(self.__wallet.accounts)
 
+    def get_wallet_address(self, address):
+        try:
+            (auth, addr) = split_full_address(address)
+            ret = result(error.SUCCEED, datas = self.__wallet.map_to_wallet_address(auth))
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def get_account(self, addressorid):
         try:
             address = addressorid
             if isinstance(addressorid, str) and len(addressorid) >= min(VIOLAS_ADDRESS_LEN):
-                auth, addr = self.split_full_address(addressorid).datas
-                address = addr
+                auth, address = self.split_full_address(addressorid).datas
 
             account = self.__wallet.get_account_by_address_or_refid(address)
             if account is None:
@@ -363,6 +370,7 @@ class violasclient(baseobject):
         try:
             (_, addr) = self.split_full_address(account_address).datas
 
+            print(addr)
             balance = self.__client.get_balances(account_address = addr)
             ret = result(error.SUCCEED, "", balance)
         except Exception as e:
@@ -574,7 +582,7 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def create_child_vasp_account(self, parent_vasp_account, child_address, auth_key_prefix, currency_code=None, add_all_currency=True,
+    def create_child_vasp_account(self, parent_vasp_account, child_address, auth_key_prefix, currency_code="VLS", add_all_currency=False,
                                   child_initial_balance=0, gas_currency_code="VLS", **kwargs):
         try:
             datas = self.__client.create_child_vasp_account(parent_vasp_account, child_address, auth_key_prefix, currency_code, \
