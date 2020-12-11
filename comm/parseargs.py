@@ -96,6 +96,7 @@ class parseargs:
                     arglist_all[iarg] = f"{arglist_all[iarg]}={json.dumps(arg_defaults[iarg]) if arg_defaults[iarg] else None}"
             arglist_all = ', '.join(arglist_all)
 
+        
         arglist_all = arglist_all.replace("[", "")
         arglist_all = arglist_all.replace("]", "")
 
@@ -166,8 +167,14 @@ class parseargs:
     def __sort_opts(self, opts):
         sorted_opts = []
         for opt in opts:
+            if isinstance(opt, tuple):
+                opt_name = opt[0]
+            args = self.__args[self.get_name(opt_name)]
             for i, sopt in enumerate(sorted_opts):
-                if opt["priority"] < sopt["priority"]:
+                if isinstance(sopt, tuple):
+                    sopt_name = sopt[0]
+                sargs = self.__args[self.get_name(sopt_name)]
+                if args["priority"] < sargs["priority"]:
                     sorted_opts.insert(i, opt)
                     break
             else:
@@ -177,7 +184,6 @@ class parseargs:
     def getopt(self, argv):
         opts, err_msg = getopt.getopt(argv, None, [arg["key"].replace('-', "=") for _, arg in self.__args.items()])
         opts = self.__sort_opts(opts)
-        print(opts)
         return (opts, err_msg)
 
     def is_matched(self, opt, names):
@@ -212,6 +218,10 @@ class parseargs:
             self.exit_error_opt(opt)
 
     def exit_check_opt_arg_min(self, opt, arg, arg_count):
-        count, arg_list = self.split_arg(opt, arg)
+        if not isinstance(arg, str):
+            count = len(arg)
+        else:
+            count, arg_list = self.split_arg(opt, arg)
+
         if count < arg_count:
             self.exit_error_opt(opt)

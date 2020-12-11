@@ -329,7 +329,7 @@ syncing_mod = false
     #sender address
     ##send btc
     [[address_list.sender]]
-        address = "7d572ec38dd124ad4faec3fc077217efab88cc9dd86f72d8816b3cabf155eb86"
+        address = "51ce26b353759b115d6320ba5eb196494c0bf7a6852124397df965ba694f1e5c"
         type = "b2vm"
         chain = "violas"
 
@@ -391,7 +391,7 @@ syncing_mod = false
         type = "b2vgbp"
         chain = "violas"
     [[address_list.sender]]
-        address = "de8eeb09d629940e46c757b6727c7b1e1554b8e40c8a8a949b1db67168980c57"
+        address = "62d36170c1eef8e625c479e11e3bbd3e58c441075c468ea04f3ac45beb4fa49d"
         type = "e2vm"
         chain = "violas"
 

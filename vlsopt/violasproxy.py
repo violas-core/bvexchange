@@ -27,49 +27,21 @@ from comm.values import (
         VIOLAS_ADDRESS_LEN 
         )
 
-#from violas.client import Client
-#from violas.wallet import Wallet
-#from violas.client import Client
 from lbviolasclient.violas_client.wallet_library import Wallet
 from lbviolasclient.violas_client.client import Client
+from vlsopt.proxybase import (
+        proxybase
+        )
 
 #module name
 name="violasproxy"
-ASSIGNMENT = "="
-class walletproxy(Wallet):
 
-    @classmethod
-    def load(self, filename):
-        if os.path.isfile(filename):
-            self.__wallet_name = filename
-            with open(filename) as lines:
-                infos = lines.readlines()
-                for info in infos:
-                    return self.loads(info)
-
-
-    @classmethod
-    def loads(cls, data):
-        mnemonic_num = data.split(Wallet.DELIMITER)
-        if len(mnemonic_num) < 2 or not mnemonic_num[1].isdecimal():
-            raise Exception(f"Format error: Wallet must <MNEMONIC_NUM>{Wallet.DELIMITER}<NUM>[ADDRESS{ASSIGNMENT}DD_ADDRESS;ADDRESS{ASSIGNMENT}DD_ADDRESS]")
-        
-        wallet = cls.new_from_mnemonic(mnemonic_num[0]) 
-        wallet.generate_addresses(int(mnemonic_num[1]))
-        if len(mnemonic_num) > 2:
-            i = 2
-            while i < len(mnemonic_num):
-                address_dd = [value.strip() for value in mnemonic_num[i].split(ASSIGNMENT)]
-                if len(address_dd) != 2:
-                    raise Exception(f"address mapping format error: ADDRESS{ASSIGNMENT}DD_ADDRESS")
-                
-                if len(address_dd[0]) not in VIOLAS_ADDRESS_LEN or \
-                        len(address_dd[1]) not in VIOLAS_ADDRESS_LEN:
-                        raise Exception(f"address is invalid. {mnemonic_num[i]}")
-                wallet.replace_address(address_dd[0], address_dd[1])
-                i = i + 1
-
-        return wallet
+class walletproxy(Wallet, proxybase):
+  
+    ADDRESS_LEN = VIOLAS_ADDRESS_LEN
+    @property
+    def name(self):
+        return name
 
     @property
     def child_count(self):
