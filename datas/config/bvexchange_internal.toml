@@ -136,7 +136,7 @@ syncing_mod = false
 #
 #type : metadata's type; token is violas/libra token
 #ttoken : target chain stable token(Violas stable token, BTC, Ethereum erc20 token)
-#support   : type is support #default = true
+#support   : type is support #default = false
 #run    : execute analysis proof and exchange, default false
 #etype  : map funds or swap(default) 
 [type_opts]
@@ -183,18 +183,15 @@ syncing_mod = false
         run = true
     [type_opts.v2lm]
         etype  = "map"
-        support= true  
-        run = true
     [type_opts.l2vm]
         etype  = "map"
-        support= true  
-        run = true
     [type_opts.b2vm]
         etype  = "map"
         support= true  
         run = true
     [type_opts.v2vswap]
         support= true  
+        run = true
     [type_opts.v2em]
         etype  = "map"
         support= true  
