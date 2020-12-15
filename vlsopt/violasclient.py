@@ -176,6 +176,12 @@ class violaswallet(baseobject):
         return ret
 
 class violasclient(baseobject):
+    class role_id(Enum):
+        DD_ACCOUNT  = 2
+        PARENT_VASP = 5
+        CHILD_VASP  = 6
+        UNKOWN      = sys.maxsize
+
     def __init__(self, name, nodes, chain = "violas"):
         baseobject.__init__(self, name, chain)
         self.__client = None
@@ -270,6 +276,7 @@ class violasclient(baseobject):
 
     def bind_token_id(self, account, token_id, gas_token_id):
         try:
+            print(f"bind_token_id({account}, {token_id}, {gas_token_id})")
             datas = self.__client.add_currency_to_account(account, token_id, gas_currency_code = gas_token_id)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
@@ -443,6 +450,73 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def get_account_role_id(self, address):
+        try:
+            ret = self.get_account_state(address)
+            if ret.state != error.SUCCEED:
+                return ret
+            ret = result(error.SUCCEED, "", ret.datas.get_role_id() if ret.datas else self.role_id.UNKOWN)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def check_account_is_registered(self, address):
+        try:
+            ret = self.get_account_role_id(address)
+            if ret.state != error.SUCCEED:
+                return ret
+            
+            ret = result(error.SUCCEED, "", ret.datas !=  self.role_id.UNKOWN)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_account_role_name(self, address):
+        try:
+            ret = self.get_account_role_id(address)
+            if ret.state != error.SUCCEED:
+                return ret
+            ret = result(error.SUCCEED, "", self.role_id(ret.datas).name)
+        except Exception as e:
+            ret = result(error.SUCCEED, "", "unkown")
+        return ret
+
+    def check_account_is_dd(self, address):
+        try:
+            ret = self.get_account_role_id(address)
+            if ret.state != error.SUCCEED:
+                return ret
+            
+            ret = result(error.SUCCEED, "", self.role_id(ret.datas) == self.role_id.DD_ACCOUNT)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+
+    def check_account_is_parent_vasp(self, address):
+        try:
+            ret = self.get_account_role_id(address)
+            if ret.state != error.SUCCEED:
+                return ret
+            
+            ret = result(error.SUCCEED, "", self.role_id(ret.datas) == self.role_id.PARENT_VASP)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def check_account_is_child_vasp(self, address):
+        try:
+            ret = self.__client.get_account_role_id(address)
+            if ret.state != error.SUCCEED:
+                return ret
+            
+            ret = result(error.SUCCEED, "", self.role_id(ret.datas) == self.role_id.CHILD_VASP)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+
+    #*************************************swap functions ************************************************
     def swap(self, sender_account, token_in, token_out, amount_in, amount_out_min=0, receiver = None, is_blocking=True, **kwargs):
         try:
             self._logger.debug(f"swap({sender_account.address.hex()}, {token_in}, {token_out}, {amount_in}, {amount_out_min}, {receiver})")
@@ -582,16 +656,18 @@ class violasclient(baseobject):
         return ret
 
     def create_child_vasp_account(self, parent_vasp_account, child_address, auth_key_prefix, currency_code="VLS", add_all_currency=False,
-                                  child_initial_balance=0, gas_currency_code="VLS", **kwargs):
+                                  child_initial_balance=0, gas_token_id="VLS", **kwargs):
         try:
-            datas = self.__client.create_child_vasp_account(parent_vasp_account, child_address, auth_key_prefix, currency_code, \
-                    add_all_currency, child_initial_balance, gas_currency_code, **kwargs)
+            (auth, addr) = split_full_address(child_address)
+            if auth_key_prefix:
+                auth = auth_key_prefix
+
+            datas = self.__client.create_child_vasp_account(parent_vasp_account, addr, auth, currency_code, \
+                    add_all_currency, child_initial_balance, gas_token_id, **kwargs)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
         return ret
-
-
 
     def get_associate_account(self):
         return self.__client.associate_account

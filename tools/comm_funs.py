@@ -95,16 +95,19 @@ def has_token_id(vclient, address, token_id):
     assert address is not None and len(address) in VIOLAS_ADDRESS_LEN, f"address({address}) is invalid."
     return vclient.has_token_id(address, token_id).datas
 
-def mint_coin(vclient, wclient, receiver, amount, token_id, auth_key_prefix = None, gas_token_id = None):
-    vclient._logger.debug(f"start mint_coin({receiver}, {amount}, {token_id}, {auth_key_prefix})")
+def mint_coin(vclient, wclient, parent_vasp_address, receiver, amount, token_id, auth_key_prefix = None, gas_token_id = None):
+    vclient._logger.debug(f"start mint_coin({receiver}, {amount}, {token_id}, {auth_key_prefix}, {gas_token_id})")
     assert receiver is not None and len(receiver) in VIOLAS_ADDRESS_LEN, f"receiver({receiver}) is invalid."
-    assert amount > 0, f"amount({amount} must be > 0)"
+    assert amount >= 0, f"amount({amount} must be > 0)"
     if has_tokens(vclient, wclient, receiver) and has_token_id(vclient, receiver, token_id) == False:
         vclient._logger.debug(f"bind token id({token_id})....")
         bind_token_id(vclient, wclient, receiver, token_id, gas_token_id)
 
-    ret = vclient.mint_coin(receiver, amount, token_id = token_id, auth_key_prefix = auth_key_prefix)
-    assert ret.state == error.SUCCEED, f"mint_coin failed."
+    if amount > 0:
+        parent_vasp_account = wclient.get_account(parent_vasp_address).datas
+        assert parent_vasp_account is not None, f"get parent account(parent_vasp_address) failed"
+        ret = vclient.send_coin(parent_vasp_account, receiver, amount, token_id = token_id, auth_key_prefix = auth_key_prefix, gas_token_id = gas_token_id)
+        assert ret.state == error.SUCCEED, f"mint_coin failed."
     vclient._logger.info(f"mint violas coin ok")
 
 def address_list_bind_token_id(vclient, wclient, senders, token_id, gas_token_id = None):
@@ -115,7 +118,32 @@ def address_list_bind_token_id(vclient, wclient, senders, token_id, gas_token_id
     for sender in senders:
         bind_token_id(vclient, wclient, sender, token_id, gas_token_id)
 
-def init_address_list(vclient, wclient, senders, token_id, minamount= 1000000000, gas_token_id = None):
+def create_child_vasp_account(vclient, wclient, parent_vasp_address, child_address, auth_key_prefix = None, gas_token_id = "VLS", child_initial_balance = 0):
+    vclient._logger.debug(f"start create_child_vasp_account({parent_vasp_address}, {child_address}, {auth_key_prefix})")
+    ret = vclient.check_account_is_registered(child_address)
+    assert ret.state == error.SUCCEED, f"check account {child_address} registered state faild."
+    if not ret.datas:
+        parent_vasp_account = wclient.get_account(parent_vasp_address).datas
+        assert parent_vasp_account is not None, f"get parent account(parent_vasp_address) failed"
+        ret = vclient.create_child_vasp_account(parent_vasp_account, child_address, auth_key_prefix, gas_token_id = gas_token_id, child_initial_balance = child_initial_balance)
+        assert ret.state == error.SUCCEED, f"registered {parent_vasp_address}'s child vasp account {child_address} faild."
+        return ret
+    vclient._logger.debug(f"account({child_address}) is registered.")
+    return result(error.SUCCEED)
+
+def fill_token_id(vclient, wclient, from_address, to_address, gas_token_id = "VLS", amount = 1_00_0000):
+    ret = vclient.check_account_is_registered(to_address)
+    assert ret.state == error.SUCCEED, f"check account {address} registered state faild."
+    if has_tokens(vclient, wclient, to_address) and has_token_id(vclient, to_address, token_id) == False:
+        vclient._logger.debug(f"bind token id({token_id})....")
+        bind_token_id(vclient, wclient, to_address, token_id, gas_token_id = "VLS")
+
+    from_account = wclient.get_account(from_address).datas
+    assert from_account is not None, f"get from account({from_address}) failed"
+    ret = vclient.send_coin(from_account, to_address, amount, token_id = gas_token_id, gas_token_id = gas_token_id)
+    return ret
+
+def init_address_list(vclient, wclient, parent_vasp_address, senders, token_id, minamount= 0, gas_token_id = "VLS"):
     vclient._logger.debug(f"start init_address_list({senders}, {token_id}, {minamount})")
     assert senders is not None and len(senders) > 0, f"senders is empty."
     for address in senders:
@@ -126,14 +154,17 @@ def init_address_list(vclient, wclient, senders, token_id, minamount= 1000000000
     min_balance = minamount
     #mimt vbtc coin
     for sender in senders:
+        #check address(account) is registered
+        ret = create_child_vasp_account(vclient, wclient, parent_vasp_address, sender, gas_token_id = gas_token_id, child_initial_balance = minamount)
+
         ret = vclient.get_balance(account_address = sender, token_id = token_id)
         assert ret.state == error.SUCCEED, f"get_balance({sender}, {token_id}) failed."
         cur_balance = ret.datas
-        if cur_balance is None or (minamount is not None and cur_balance < min_balance):
+        if cur_balance is None or (minamount is not None and cur_balance <= min_balance):
             if cur_balance is None:
                 cur_balance = 0
 
-            mint_coin(vclient, wclient, sender, min_balance - cur_balance, token_id, auth_key_prefix = None, gas_token_id = gas_token_id)
+            mint_coin(vclient, wclient, parent_vasp_address, sender, min_balance - cur_balance, token_id, auth_key_prefix = None, gas_token_id = gas_token_id)
             vclient._logger.debug(f"mint coin({token_id}) {min_balance - cur_balance}")
 
         ret = vclient.get_balance(sender, token_id = token_id)

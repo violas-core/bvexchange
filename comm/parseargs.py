@@ -92,7 +92,7 @@ class parseargs:
         if optional_arglist:
             arglist_all += f" {optional_arglist}"
 
-        if callback:
+        if callback and arglist is None and optional_arglist is None:
             arg_defaults = callback.__defaults__
             arglist_all = list(callback.__code__.co_varnames[:callback.__code__.co_argcount])
             min_args = len(arglist_all) - len(arg_defaults) if arg_defaults else len(arglist_all)
@@ -117,8 +117,8 @@ class parseargs:
         self.__args[arg_name] = {"key": key, \
                 "value": value, \
                 "required": arglist, \
-                "optional": optional_arglist, \
                 "required_count": len(arglist) if arglist else 0, \
+                "optional": optional_arglist, \
                 "optional_count": len(optional_arglist) if optional_arglist else 0, \
                 "priority": priority, \
                 "argtype": argtype, \
