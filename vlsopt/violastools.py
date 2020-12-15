@@ -297,8 +297,14 @@ def get_account(address):
 def get_account_role_id(address):
     client = get_violasclient()
     role_alias = {2:"DD", 5:"PARENT_VASP", 6:"CHILD_VASP"}
-    role_id = client.get_account_state(address).datas.get_role_id()
-    print(f"role_id: {role_id} alias: {role_alias.get(role_id)}")
+    role_name = client.get_account_role_name(address).datas
+    role_id= client.get_account_role_id(address).datas
+    print(f"role_id: {role_id} alias: {role_name}")
+
+def check_account_is_registered(address):
+    client = get_violasclient()
+    ret = client.check_account_is_registered(address)
+    print(f"{address} registered: {ret.datas} ")
 
 def has_account(address):
     wallet = get_violaswallet()
@@ -378,6 +384,7 @@ def init_args(pargs):
     pargs.append(get_account_prefix, "get account prefix.")
     pargs.append(address_has_token_id, "check account is published token_id.")
     pargs.append(create_child_vasp_account, "create child vasp account.")
+    pargs.append(check_account_is_registered, "check account is registered in violas/libra chain.")
 
     #swap opt
     pargs.append(show_swap_registered_tokens, "show registered tokens for module.")
