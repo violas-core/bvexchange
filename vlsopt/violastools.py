@@ -395,9 +395,7 @@ def run(argc, argv):
         pargs = parseargs()
         init_args(pargs)
         pargs.show_help(argv)
-        print(chain)
         opts, err_args = pargs.getopt(argv)
-        print(chain)
     except getopt.GetoptError as e:
         logger.error(e)
         sys.exit(2)

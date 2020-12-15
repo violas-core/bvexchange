@@ -370,7 +370,6 @@ class violasclient(baseobject):
         try:
             (_, addr) = self.split_full_address(account_address).datas
 
-            print(addr)
             balance = self.__client.get_balances(account_address = addr)
             ret = result(error.SUCCEED, "", balance)
         except Exception as e:

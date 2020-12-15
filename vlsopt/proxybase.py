@@ -56,6 +56,5 @@ class proxybase():
 
                 i = i + 1
 
-        print(wallet.name)
         return wallet
 
