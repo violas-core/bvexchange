@@ -35,7 +35,11 @@ class proxybase():
 
     @classmethod
     def loads(cls, data):
+        data.strip()
+        data = data.replace("\n", "")
+        data = data.replace("\r", "")
         mnemonic_num = data.split(cls.DELIMITER)
+        print(mnemonic_num)
         if len(mnemonic_num) < 2 or not mnemonic_num[1].isdecimal():
             raise Exception(f"Format error: Wallet must <MNEMONIC_NUM>{cls.DELIMITER}<NUM>[ADDRESS{cls.ASSIGNMENT}DD_ADDRESS;ADDRESS{cls.ASSIGNMENT}DD_ADDRESS]")
         

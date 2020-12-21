@@ -53,9 +53,9 @@ def gettransaction(tranid):
     assert ret.state == error.SUCCEED, " gettransaction failed"
     print(ret.to_json())
 
-def sendtoaddress(address, count):
+def sendtoaddress(address, amount):
     client = getbtcclient()
-    ret = client.sendtoaddress(address, count)
+    ret = client.sendtoaddress(address, amount)
     assert ret.state == error.SUCCEED, " sendtoaddress failed"
     print(ret.datas)
     
@@ -143,10 +143,9 @@ def init_args(pargs):
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 10)
     pargs.append("wallet", "inpurt wallet file or mnemonic, input is btc wallet file or pairs(ADDRESS:PRIVKEY, ADDRESS:PRIVKEY)", True, "file name/pairs", priority = 13, argtype = parseargs.argtype.STR)
 
-    pargs.append(sendtoaddress, "send to address.format.")
     pargs.append(sendexproofstart, "create new exchange start proof.")
     pargs.append(sendexproofend, "create new exchange end proof.")
-    pargs.append(sendexproofmark, "create new exchange mark proof.")
+    pargs.append(sendexproofmark, "create new exchange mark proof, subtract fee from toamount.")
     pargs.append(generatetoaddress, "generate new block to address.")
     pargs.append(listunspent, "returns array of unspent transaction outputs.")
     pargs.append(listexproofforstart, "returns array of proof state is start .")

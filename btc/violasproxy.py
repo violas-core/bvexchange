@@ -268,7 +268,7 @@ class violasproxy(baseobject):
         fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
         url = self.create_opt_url(self.opt.SET, self.opttype.MARK, state="mark", \
                 fromaddress=fromaddress, toaddress=toaddress, toamount=toamount, \
-                vreceiver=vaddress, sequence=sequence, version=version, fromprivkeys=json.dumps(fromprivkeys))
+                vreceiver=vaddress, sequence=sequence, version=version, fromprivkeys=json.dumps(fromprivkeys), subtractfee = True)
         return self.run_request(url)
 
     def generatetoaddress(self, count, address):
