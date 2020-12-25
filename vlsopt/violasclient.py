@@ -175,6 +175,21 @@ class violaswallet(baseobject):
             ret = parse_except(e)
         return ret
 
+    def sign_message(self, address, message):
+        try:
+            ret = self.get_account(address)
+            if ret.state != error.SUCCEED:
+                return ret
+            sigger = ret.datas
+            data = message
+            if isinstance(message, str):
+                data = message.encode()
+            
+            ret = result(error.SUCCEED, datas=sigger.sign(data).hex())
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
 class violasclient(baseobject):
     class role_id(Enum):
         DD_ACCOUNT  = 2
@@ -674,7 +689,6 @@ class violasclient(baseobject):
 
     def get_associate_address(self):
         return self.__client.associate_account.address_hex
-
 
 class violasserver(baseobject):
     __node = None

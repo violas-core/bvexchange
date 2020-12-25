@@ -265,7 +265,7 @@ def address_has_token_id(address, token_id):
     client = get_violasclient()
     logger.debug(client.has_token_id(address, token_id).datas)
 
-def show_accounts():
+def show_accounts(all_info = False):
     wallet = get_violaswallet()
     i = 0
     account_count = wallet.get_account_count()
@@ -276,9 +276,15 @@ def show_accounts():
            break 
         account = ret.datas
         logger.debug("account.address({0}): {1}  auth_key_prefix: {2}".format(i, account.address.hex(), account.auth_key_prefix.hex()))
+
+        if isinstance(all_info, str):
+            all_info = all_info in ("True", "true")
+
+        if all_info:
+            print(f"------------------------:private key : {account.private_key_hex}    public key: {account.public_key_hex}")
         i += 1
 
-def show_accounts_full():
+def show_accounts_full(all_info = False):
     wallet = get_violaswallet()
     i = 0
     account_count = wallet.get_account_count()
@@ -288,7 +294,12 @@ def show_accounts_full():
            break 
         account = ret.datas
         logger.debug(f"({i:03}): {account.auth_key_prefix.hex()}{account.address.hex()}")
+        if isinstance(all_info, str):
+            all_info = all_info in ("True", "true")
+        if all_info:
+            print(f"------------------------:private key : {account.private_key_hex}    public key: {account.public_key_hex}")
         i += 1
+
 def get_account(address):
     client = get_violasclient()
     print(client.get_account_state(address).datas)
@@ -324,6 +335,11 @@ def get_wallet_address(address):
     logger.debug(f"start get_wallet_address({address})")
     wallet = get_violaswallet()
     logger.debug(f"human address: {wallet.get_wallet_address(address)}")
+
+def sign_message(address, message):
+    wallet = get_violaswallet()
+    logger.debug(f"human address: {wallet.sign_message(address, message)}")
+
 '''
 *************************************************violasserver oper*******************************************************
 '''
@@ -365,6 +381,7 @@ def init_args(pargs):
     pargs.append(show_accounts_full, "show all counts address list(local wallet) with auth_key_prefix.")
     pargs.append(human_address, "show human address.")
     pargs.append(get_wallet_address, "get wallet address if address is dd address.")
+    pargs.append(sign_message, "signing message.")
 
     #client
     pargs.append(bind_token_id, "bind address to token_id.")
