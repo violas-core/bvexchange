@@ -117,8 +117,8 @@ def get_balances(address):
     ret = client.get_balances(address)
     logger.debug("balance: {0}".format(ret.datas))
 
-def get_latest_transaction_version():
-    logger.debug(f"start get_latest_transaction_version")
+def get_latest_version():
+    logger.debug(f"start get_latest_version")
     client = get_violasclient()
     ret = client.get_latest_transaction_version()
     logger.debug("latest version: {0}".format(ret.datas))
@@ -392,7 +392,7 @@ def init_args(pargs):
     pargs.append(get_account_transactions, "get account's transactions from violas server.")
     pargs.append(has_transaction, "check transaction is valid from violas server.")
     pargs.append(get_transactions, "get transactions from violas nodes.")
-    pargs.append(get_latest_transaction_version, "show latest transaction version.")
+    pargs.append(get_latest_version, "show latest transaction version.")
     pargs.append(get_address_version, "get address's latest version.")
     pargs.append(get_address_sequence, "get address's latest sequence.")
     pargs.append(get_transaction_version, "get address's version.")

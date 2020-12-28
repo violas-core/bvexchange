@@ -213,6 +213,17 @@ class ethproxy():
     def get_decimals(self, token):
         return self.tokens_decimals[token]
 
+    def allowance(self, owner, spender, token_id, **kwargs):
+        return self.tokens[token_id].allowance(owner, spender)
+
+    def approve(self, account, spender, amount, token_id, timeout = 180, **kwargs):
+        calldata = self.tokens[token_id].raw_approve(spender, amount)
+        return self.send_contract_transaction(account.address, account.key, calldata, timeout = timeout) 
+
+    def send_proof(self, account,  token_id, datas, timeout = 180, **kwargs):
+        calldata = self.tokens[VLSMPROOF_MAIN_NAME].raw_transfer_proof(self.tokens_address[token_id], datas)
+        return self.send_contract_transaction(account.address, account.key, calldata, timeout = timeout) 
+
     def send_token(self, account, to_address, amount, token_id, nonce = None, timeout = 180):
         if token_id.lower() == "eth":
             return self.send_eth_transaction(account.address, account.key, to_address, amount, nonce = nonce, timeout = timeout) 
