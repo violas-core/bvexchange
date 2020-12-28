@@ -54,6 +54,8 @@ def has_tokens(vclient, wclient, address):
     return balances is not None and len(balances) > 0
 
 def list_address_info(vclient, wclient, addresses, ret):
+    if not addresses:
+        return
     for address in addresses:
         info = get_address_info(vclient, wclient, address)
         ret.update({address:info})
@@ -144,6 +146,20 @@ def fill_token_id(vclient, wclient, from_address, to_address, gas_token_id = "VL
     return ret
 
 def init_address_list(vclient, wclient, parent_vasp_address, senders, token_id, minamount= 0, gas_token_id = "VLS"):
+    '''
+    @dev init senders 
+        operate:
+        case 1. registered address of senders, if sender is not childvasp(default token is gas_token_id)
+        case 2. bind token id(token id)
+        case 3. fill token for sender
+    @param vclient violas client
+    @param wclient wallet client
+    @param parent_vasp_address  parent vasp account address, create child vasp and fill token to sender 
+    @param senders operate addresses
+    @param token_id init token_id
+    @param minamount  inited token amount
+    @param gas_token_id create_child_vasp_account or transfer gas token
+    '''
     vclient._logger.debug(f"start init_address_list({senders}, {token_id}, {minamount})")
     assert senders is not None and len(senders) > 0, f"senders is empty."
     for address in senders:

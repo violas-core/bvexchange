@@ -29,6 +29,12 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 from baseobject import baseobject
 from vlsopt.violasclient import violasclient, violaswallet
+from ethopt.ethclient import (
+        ethclient,
+        ethwallet
+        )
+
+from dataproof import dataproof
 import stmanage
 import redis
 from tools import comm_funs
@@ -37,6 +43,20 @@ name="showworkenv"
 wallet_name="vwallet"
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 logger = log.logger.getLogger(name)
+
+def get_ethclient(usd_erc20 = True):
+
+    client = ethclient(name, stmanage.get_eth_nodes(), "ethereum")
+    client.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
+    if usd_erc20:
+        tokens = client.get_token_list().datas
+        logger.debug(f"support tokens: {tokens}")
+        for token in tokens:
+            client.load_contract(token)
+    return client
+    
+def get_ethwallet():
+    return ethwallet(name, dataproof.wallets("ethereum"), "ethereum")
 
 def show_db():
     infos = {}
@@ -57,67 +77,67 @@ def show_db():
 
 def show_address():
     vclient = comm_funs.violasreg(name, stmanage.get_violas_nodes())
-    wclient = comm_funs.walletreg(name, wallet_name)
+    vwclient = comm_funs.walletreg(name, wallet_name)
 
-    infos = {}
-    #create vbtc module
-    vbtc_module = stmanage.get_module_address("v2b", "violas")
-    assert vbtc_module is not None and len(vbtc_module) in VIOLAS_ADDRESS_LEN, f"vbtc address[{vbtc_module}] is not found"
-
-    comm_funs.list_address_info(vclient, wclient, [vbtc_module], vbtc_module, ret = infos)
-
-    #create vlibra module
-    vlibra_module = stmanage.get_module_address("v2l", "violas")
-    assert vlibra_module is not None and len(vlibra_module) in VIOLAS_ADDRESS_LEN, "vlibra module is not found"
-
-    comm_funs.list_address_info(vclient, wclient, [vlibra_module], vlibra_module, ret = infos)
-
-    #vbtc sender bind  module
-    senders = stmanage.get_sender_address_list("b2v", "violas")
-    assert senders is not None and len(senders) > 0, f"v2b senders[{senders}] not found."
-
-    comm_funs.list_address_info(vclient, wclient, senders, vbtc_module, ret = infos)
-
-    #vlibra sender bind module
-    senders = stmanage.get_sender_address_list("l2v", "violas")
-    assert senders is not None and len(senders) > 0, f"v2l senders not found."
-
-    comm_funs.list_address_info(vclient, wclient, senders, vlibra_module, ret = infos)
-
-    receivers = stmanage.get_receiver_address_list("v2l", "violas")
-    assert receivers is not None and len(receivers) > 0, f"v2l receiver not found."
-
-    comm_funs.list_address_info(vclient, wclient, receivers, vlibra_module, ret = infos)
-
-    receivers = stmanage.get_receiver_address_list("v2b", "violas")
-    assert receivers is not None and len(receivers) > 0, f"v2b receiver not found."
-    comm_funs.list_address_info(vclient, wclient, receivers, vbtc_module, ret = infos)
-
-    combin = stmanage.get_combine_address("v2b", "violas")
-    assert combin is not None and len(combin) > 0, f"v2b combin not found or is invalid."
-    comm_funs.list_address_info(vclient, wclient, [combin], vbtc_module, ret = infos)
-
-    logger.debug("start bind dtype = v2l chain = violas combin")
-    combin = stmanage.get_combine_address("v2l", "violas")
-    assert combin is not None and len(combin) in VIOLAS_ADDRESS_LEN, f"v2l combin not found or is invalid."
-    comm_funs.list_address_info(vclient, wclient, [combin], vlibra_module, ret = infos)
-
-    #start get libra address info
-    '''
-    logger.debug("********start get libra chain address info********")
-    linfos = {}
     lclient = comm_funs.violasreg(name, stmanage.get_libra_nodes(), chain = "libra")
     lwclient = comm_funs.walletreg(name, wallet_name, chain = "libra")
-    #vbtc sender bind  module
-    senders = stmanage.get_sender_address_list("v2l", "libra")
-    assert senders is not None and len(senders) > 0, f"v2l senders[{senders}] not found."
 
-    comm_funs.list_address_info(lclient, lwclient, senders, None, ret = linfos)
+    eclient = get_ethclient()
+    ewclient = get_ethwallet()
 
-    logger.debug("********libra chain address info********")
-    json_print(linfos)
 
-    '''
+    cclients = {"violas":vclient, "libra":lclient, "ethereum": eclient}
+    wclients = {"violas":vwclient, "libra":lwclient, "ethereum": ewclient}
+    infos = {}
+
+    dtypes = stmanage.get_support_dtypes()
+    for dtype in dtypes:
+        from_chain, to_chain = stmanage.get_exchang_chains(dtype)
+
+        cclient = cclients.get(to_chain)
+        wclient = wclients.get(to_chain)
+        if not cclient or not wclient or not to_chain:
+            print(f"not found {to_chain} in {dtype}, continue next...")
+            continue
+
+        print(f"get chain = {to_chain}  dtype = {dtype} info.")
+        senders = stmanage.get_sender_address_list(dtype, to_chain)
+        print(f"get {senders} chain = {to_chain} info.")
+        comm_funs.list_address_info(cclient, wclient, senders, ret = infos)
+
+        combin = stmanage.get_combine_address(dtype, to_chain)
+        if not combin:
+           continue 
+        print(f"get {combin} chain = {to_chain} info.")
+        comm_funs.list_address_info(cclient, wclient, [combin], ret = infos)
+
+
+    for dtype in dtypes:
+        from_chain, to_chain = stmanage.get_exchang_chains(dtype)
+
+        cclient = cclients.get(from_chain)
+        wclient = wclients.get(from_chain)
+        if not cclient or not wclient or not to_chain:
+            print(f"not found {from_chain}, continue next...")
+            continue
+
+        print(f"get chain = {from_chain}  dtype = {dtype} info.")
+        if dtype == "e2vm":
+            receivers = [stmanage.get_map_address(dtype, from_chain)]
+        else:
+            receivers = stmanage.get_receiver_address_list(dtype, from_chain)
+
+        print(f"get {receivers} chain = {from_chain} info.")
+        comm_funs.list_address_info(cclient, wclient, receivers, ret = infos)
+
+        #uniswap use combine
+        combin = stmanage.get_combine_address(dtype, from_chain)
+        if not combin:
+           continue 
+        print(f"get {combin} chain = {from_chain} info.")
+        comm_funs.list_address_info(cclient, wclient, [combin], ret = infos)
+
+    #start get libra address info
 
     logger.debug("********violas chain address info********")
     json_print(infos)
