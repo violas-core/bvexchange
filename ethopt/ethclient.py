@@ -24,7 +24,10 @@ from comm.error import error
 from comm.functions import is_mnemonic
 from ethopt.ethproxy import (
         ethproxy as clientproxy,
-        walletproxy
+        walletproxy,
+        VLSMPROOF_MAIN_NAME,
+        VLSMPROOF_DATAS_NAME,
+        VLSMPROOF_STATE_NAME
         )
 from enum import Enum
 from baseobject import baseobject
@@ -357,6 +360,30 @@ class ethclient(baseobject):
     def create_data_for_mark(self, flag, dtype, id, version, *args, **kwargs):
         return {"type": "mark", "flag": flag, "version":version }
 
+    def approve(self, account, to_address, amount, token_id, **kwargs):
+        try:
+            datas = self.__client.approve(account, to_address, amount, token_id, **kwargs)
+            ret = result(error.SUCCEED, datas = datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def allowance(self, from_address, to_address, token_id, **kwargs):
+        try:
+            datas = self.__client.allowance(from_address, to_address, token_id, **kwargs)
+            ret = result(error.SUCCEED, datas = datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def send_proof(self, account, token_id, datas, **kwargs):
+        try:
+            datas = self.__client.send_proof(account, token_id, datas, **kwargs)
+            ret = result(error.SUCCEED, datas = datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def send_coin_erc20(self, account, toaddress, amount, token_id, *args, **kwargs):
         return self.send_coin(account, toaddress, amount, token_id, data= {"type":"mark", "version": None},*args, **kwargs)
 
@@ -380,6 +407,23 @@ class ethclient(baseobject):
     def get_token_list(self):
         try:
             ret = result(error.SUCCEED, datas = self.__client.token_name_list())
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_proof_contract_address(self, name):
+        try:
+            datas = None
+            if name == "main":
+                datas = self.__client.token_address(VLSMPROOF_MAIN_NAME)
+            elif name == "datas":
+                datas = self.__client.token_address(VLSMPROOF_DATAS_NAME)
+            elif name == "state":
+                datas = self.__client.token_address(VLSMPROOF_STATE_NAME)
+            else:
+                raise ValueError(f"name({name}) is invalid.")
+
+            ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
             ret = parse_except(e)
         return ret

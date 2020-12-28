@@ -55,7 +55,7 @@ def get_ethproof(dtype = "v2b"):
 
     return requestclient(name, stmanage.get_db(dtype))
 
-def show_token_list(module):
+def show_token_list(module = None):
     logger.debug(f"start show_token_name({module})")
     client = get_ethclient()
     ret = client.get_token_list(module)
@@ -68,6 +68,13 @@ def show_all_token_list():
     ret = client.get_token_list()
     assert ret.state == error.SUCCEED, "get tokens failed."
     json_print(ret.datas)
+
+def show_proof_contract_address(name):
+    logger.debug(f"start show_proof_contract_address({name})")
+    client = get_ethclient()
+    ret = client.get_proof_contract_address(name)
+    assert ret.state == error.SUCCEED, "get proof contract failed."
+    print(ret.datas)
 
 def mint_coin(address, amount, token_id, module):
     logger.debug("start min_coin({address}, {amount}, {token_id}, {module})")
@@ -87,6 +94,37 @@ def send_coin(from_address, to_address, amount, token_id):
     ret = client.send_coin_erc20(account, to_address, amount, token_id)
     assert ret.state == error.SUCCEED, ret.message
     print(f"cur balance :{client.get_balance(account.address, token_id).datas}")
+
+def approve(from_address, to_address, amount, token_id):
+    wallet = get_ethwallet()
+    ret = wallet.get_account(from_address)
+    if ret.state != error.SUCCEED:
+        raise Exception("get account failed")
+    account = ret.datas
+
+    client = get_ethclient()
+    ret = client.approve(account, to_address, amount, token_id)
+    assert ret.state == error.SUCCEED, ret.message
+    print(f"cur balance :{client.allowance(from_address, to_address, token_id).datas}")
+
+def send_proof(from_address, token_id, datas):
+    wallet = get_ethwallet()
+    ret = wallet.get_account(from_address)
+    if ret.state != error.SUCCEED:
+        raise Exception("get account failed")
+    account = ret.datas
+
+    client = get_ethclient()
+    
+    ret = client.send_proof(account, token_id, datas)
+    assert ret.state == error.SUCCEED, ret.message
+    print(f"cur balance :{client.get_balance(account.address, token_id).datas}")
+
+def allowance(from_address, to_address, token_id):
+    client = get_ethclient()
+    ret = client.allowance(from_address, to_address, token_id)
+    assert ret.state == error.SUCCEED, ret.message
+    print(f"allowance balance :{ret.datas}")
 
 def get_balance(address, token_id, module):
     logger.debug(f"start get_balance address= {address} module = {module} token_id= {token_id}")
@@ -246,6 +284,9 @@ def init_args(pargs):
 
     #client
     pargs.append(send_coin, "send token(erc20 coin) to target address")
+    pargs.append(approve, "approve to_address use coin amount from from_address")
+    pargs.append(allowance, "request to_address can use coin amount from from_address")
+    pargs.append(send_proof, "send mapping proof")
     pargs.append(get_balance, "get address's token(module) amount.")
     pargs.append(get_balances, "get address's tokens.")
     pargs.append(get_transactions, "get transactions from eth nodes.")
@@ -254,13 +295,15 @@ def init_args(pargs):
     pargs.append(get_address_version, "get address's latest version'.")
     pargs.append(get_address_sequence, "get address's latest sequence'.")
     pargs.append(get_transaction_version, "get address's version'.")
-    pargs.append(show_token_list, "show token list.")
-    pargs.append(show_all_token_list, "show token list.")
     pargs.append(get_decimals, "get address's token decimals.")
     pargs.append(get_syncing_state, "get chain syncing state.",)
     pargs.append(get_chain_id, "get chain id.")
     pargs.append(get_token_min_amount, "get token min amount of main contract.")
     pargs.append(get_token_max_amount, "get token min amount of main contract.")
+    pargs.append(show_token_list, "show token list.")
+    pargs.append(show_all_token_list, "show token list.")
+    pargs.append(show_proof_contract_address, "show proof main address(args = main datas state).")
+
 
 def run(argc, argv):
     try:
@@ -302,6 +345,7 @@ def run(argc, argv):
         if opt in ["--conf", "--wallet"]:
             continue
         
+        arg_list = []
         if len(arg) > 0:
             count, arg_list = pargs.split_arg(opt, arg)
 

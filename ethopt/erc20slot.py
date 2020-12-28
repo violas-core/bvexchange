@@ -33,6 +33,9 @@ class erc20slot():
     def approve(self, spender, value):
         return self._contract.functions.approve(Web3.toChecksumAddress(spender), value).call()
 
+    def allowance(self, owner, spender):
+        return self._contract.functions.allowance(Web3.toChecksumAddress(owner), Web3.toChecksumAddress(spender)).call()
+
     def transfer(self, to, value):
         return self._contract.functions.transfer(to, value).call()
 
@@ -44,6 +47,9 @@ class erc20slot():
 
     def raw_transfer_from(self, fom, to, value):
         return self._contract.functions.transferFrom(fom, to, value)
+
+    def raw_approve(self, spender, value):
+        return self._contract.functions.approve(Web3.toChecksumAddress(spender), value)
 
 def test():
 
