@@ -423,7 +423,7 @@ class exbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def get_token_and_gas_amount(self, client, amount, token_id, gas_token_id):
+    def get_token_and_gas_amount(self, client, account, token_id, gas_token_id):
         try:
             bdiff_token = gas_token_id is not None and gas_token_id != token_id
 
