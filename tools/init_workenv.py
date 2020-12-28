@@ -29,7 +29,7 @@ token_min_amount = {
         "VLS": 1_00_0000,
         }
 
-parent_vasp_address = "a5eeb37371bb939845a62bcaa1c2b41f"
+parent_vasp_address = "db56a43a2548c10ffc8c5671116f5b9daa0cb601b6ebf8fad96b617ec5173f9f"
 token_list = ["VLS", "USDT", "BTC"]
 opt_list = ["e2vm", "v2em", "v2bm", "b2vm"]
 
@@ -41,7 +41,7 @@ def get_violasclient():
 def get_violaswallet():
     return violaswallet(name, dataproof.wallets(chain), chain)
 
-def get_parent_address():
+def get_parent_address(parent_vasp_address):
     return parent_vasp_address
 
 def get_token_list(vclient, stmanage):
@@ -100,12 +100,12 @@ def init_all():
 
 
 #test use: init client address
-def init_one(address):
+def init_one(address, parent_vasp_address = parent_vasp_address):
     vclient = get_violasclient()
     wclient = get_violaswallet()
 
     token_list= get_token_list(vclient, stmanage)
-    parent_vasp_address = get_parent_address()
+    parent_vasp_address = get_parent_address(parent_vasp_address)
     btc_token_id = "BTC"
 
     logger.debug(f"token_list: {token_list}")

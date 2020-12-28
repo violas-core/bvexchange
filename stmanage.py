@@ -436,7 +436,7 @@ def get_support_dtypes():
 
 def get_conf():
     infos = {}
-    mtypes = ["v2b", "v2l", "l2v", "b2v", "vfilter", "lfilter"]
+    mtypes = get_support_dtypes()
     for mtype in mtypes:
         info = {}
         info["receiver"] = get_receiver_address_list(mtype, "violas")

@@ -477,11 +477,11 @@ class exbase(baseobject):
         return ret
 
     def fill_address_token_violas(self, account, token_id, amount, tran_id, gas=100_0000, gas_token_id = None):
-        return check_and_send_get_token(self.violas_client, trantype.VIOLAS.value, \
+        return self.check_and_send_get_token(self.violas_client, trantype.VIOLAS.value, \
                 account, token_id, amount, tran_id, gas, gas_token_id)
 
     def fill_address_token_libra(self, account, token_id, amount, tran_id, gas=100_000):
-        return check_and_send_get_token(self.libra_client, trantype.LIBRA.value, \
+        return self.check_and_send_get_token(self.libra_client, trantype.LIBRA.value, \
                 account, token_id, amount, tran_id, gas, gas_token_id)
 
     def fill_address_token_btc(self, account, token_id, amount, tran_id, gas=0.0001, gas_token_id = None):
@@ -504,7 +504,7 @@ class exbase(baseobject):
         return ret
 
     def fill_address_token_ethereum(self, account, token_id, amount, tran_id, gas=1_00_0000, gas_token_id = "eth"):
-        return check_and_send_get_token(self.ethereum_client, trantype.ETHEREUM.value, \
+        return self.check_and_send_get_token(self.ethereum_client, trantype.ETHEREUM.value, \
                 account, token_id, amount, tran_id, gas, gas_token_id)
 
     def db_data_is_valid(self, data):
