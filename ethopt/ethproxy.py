@@ -233,7 +233,7 @@ class ethproxy():
 
     def update_proof_state(self, account, version, state, timeout = 180):
         calldata = self.tokens[VLSMPROOF_DATAS_NAME].raw_transfer_proof_state_with_version(version, state)
-        return self.send_transaction(account.address, account.key, calldata, timeout = timeout) 
+        return self.send_contract_transaction(account.address, account.key, calldata, timeout = timeout) 
 
     def get_txn_args(self, sender, nonce = None, gas = None, gas_price = None, calldata = None):
         if not gas_price:
