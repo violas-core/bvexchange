@@ -88,6 +88,15 @@ class ethproxy():
         def get_data(self):
             return self._data["data"]
 
+        def get_amount(self):
+            return self._data["amount"]
+
+        def get_proof_state(self):
+            metadata = self.get_data()
+            metadatas = bytes.fromhex(metadata).decode()
+            datas = json.loads(metadatas)
+            return datas.get("state")
+
     def clientname(self):
         return name
     
@@ -304,6 +313,9 @@ class ethproxy():
 
     def get_sequence_number(self, address):
         return self.tokens[VLSMPROOF_DATAS_NAME].proof_address_sequence(address)
+
+    def get_account_latest_version(self, address):
+        return self.tokens[VLSMPROOF_DATAS_NAME].proof_address_latest_version(address)
 
     def token_name_list(self):
         return self.tokens[VLSMPROOF_MAIN_NAME].token_name_list()

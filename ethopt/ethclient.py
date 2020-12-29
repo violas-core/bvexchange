@@ -278,29 +278,34 @@ class ethclient(baseobject):
     def get_address_sequence(self, address):
         try:
             num = self.__client.get_sequence_number(address)
-            ret = result(error.SUCCEED, "", num - 1)
+            ret = result(error.SUCCEED, "", num)
         except Exception as e:
             ret = parse_except(e)
         return ret
 
     def get_transaction_version(self, address, sequence):
         try:
-            num = self.__client.get_account_transaction(address, sequence)
+            num = self.__client.get_account_transaction_version(address, sequence)
             ret = result(error.SUCCEED, "", num)
         except Exception as e:
             ret = parse_except(e)
         return ret
-    def get_address_version(self, address):
-        try:
-            ret = self.get_address_sequence(address)
-            if ret.state != error.SUCCEED:
-                return ret
 
-            ret = self.get_transaction_version(address, ret.datas)
+    def get_address_version(self, address, sequence):
+        try:
+            ret = self.get_transaction_version(address, sequence)
             if ret.state != error.SUCCEED:
                 return ret
 
             ret = result(error.SUCCEED, "", ret.datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_address_latest_version(self, address):
+        try:
+            ver = self.__client.get_account_latest_version(address)
+            ret = result(error.SUCCEED, "", ver)
         except Exception as e:
             ret = parse_except(e)
         return ret
