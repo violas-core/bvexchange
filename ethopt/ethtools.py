@@ -77,7 +77,7 @@ def show_proof_contract_address(name):
     print(ret.datas)
 
 def mint_coin(address, amount, token_id, module):
-    logger.debug("start min_coin({address}, {amount}, {token_id}, {module})")
+    logger.debug("start mint_coin({address}, {amount}, {token_id}, {module})")
     print(client.get_balance(address, token_id, module).datas)
 
 def bind_token_id(address, token_id, gas_token_id):
@@ -150,6 +150,12 @@ def get_latest_transaction_version():
     ret = client.get_latest_transaction_version()
     logger.debug("latest version: {0}".format(ret.datas))
 
+def get_address_latest_version(address):
+    logger.debug(f"start get_address_latest_version({address})")
+    client = get_ethclient()
+    ret = client.get_address_latest_version(address)
+    logger.debug("latest version: {0}".format(ret.datas))
+
 def get_transactions(start_version, limit = 1, fetch_event = True, raw = False):
     logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
 
@@ -176,11 +182,6 @@ def get_rawtransaction(txhash):
         return
 
     print(ret.datas)
-def get_address_version(address):
-    logger.debug(f"start get_address_version({address})")
-    client = get_ethclient()
-    ret = client.get_address_version(address)
-    logger.debug("version: {0}".format(ret.datas))
 
 def get_address_sequence(address):
     logger.debug(f"start get_address_sequence({address})")
@@ -292,7 +293,7 @@ def init_args(pargs):
     pargs.append(get_transactions, "get transactions from eth nodes.")
     pargs.append(get_rawtransaction, "get transaction from eth nodes.")
     pargs.append(get_latest_transaction_version, "show latest transaction version.")
-    pargs.append(get_address_version, "get address's latest version'.")
+    pargs.append(get_address_latest_version, "get address's latest version'.")
     pargs.append(get_address_sequence, "get address's latest sequence'.")
     pargs.append(get_transaction_version, "get address's version'.")
     pargs.append(get_decimals, "get address's token decimals.")

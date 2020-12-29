@@ -61,7 +61,7 @@ class vlsmproofdatasslot():
         return self._functions.accountSequence(address).call()
 
     def proof_address_version(self, address, sequence):
-        return self._functions.accountVersion(address).call()
+        return self._functions.accountVersion(address, sequence).call()
 
     def proof_address_latest_version(self, address):
         return self._functions.accountLatestVersion(address).call()
