@@ -415,7 +415,7 @@ syncing_mod = false
         type = "map"
         chain = "violas"
     [[address_list.funds]]
-        address = "00000000000000000042524755534454"
+        address = "0135ab4ae628617b11a39ed2058e3930"
         type = "liq"
         chain = "violas"
 #thread loopping sleep time(s)
