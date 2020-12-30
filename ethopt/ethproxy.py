@@ -91,7 +91,7 @@ class ethproxy():
         def get_amount(self):
             return self._data["amount"]
 
-        def get_proof_state(self):
+        def get_state(self):
             metadata = self.get_data()
             metadatas = bytes.fromhex(metadata).decode()
             datas = json.loads(metadatas)

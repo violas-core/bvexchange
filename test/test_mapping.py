@@ -93,7 +93,7 @@ def is_violas_tran(dtype, datas):
 
 def get_tran_id(dtype, datas):
     tran_data = json.loads(datas) if isinstance(datas, str) else datas
-    data = json_loads(tran_data.get("data"))
+    data = json.loads(tran_data.get("data"))
     return data.get("tran_id")
 
 def test_e2vm():
@@ -130,8 +130,10 @@ def test_e2vm():
 
         ret = eclient.allowance(from_address, to_address, token_id)
         assert ret.state == error.SUCCEED, ret.message
+
+        #make approve to 0
         if ret.datas > 0:
-            ret = eclient.approve(account, to_address, amount, token_id)
+            ret = eclient.approve(account, to_address, 0, token_id)
             assert ret.state == error.SUCCEED, ret.message
 
         ret = eclient.approve(account, to_address, amount, token_id)
@@ -173,7 +175,7 @@ def test_e2vm():
             state = tran.get_state()
             map_amount = tran.get_amount()
             info = afilter.get_tran_data(tran, False)
-            map_tran_id = get_tran_id(info)
+            map_tran_id = get_tran_id("e2vm", info)
             
             sleep(2)
             assert time.time() - start_time < max_work_time, f"time out, {version} state not changed, check usdt transaction"
@@ -202,7 +204,7 @@ def test_e2vm():
                         if not is_violas_tran_mark("e2vm", info):
                             continue
 
-                        tran_tran_id = get_tran_id(info)
+                        tran_tran_id = get_tran_id("e2vm", info)
                         tran_receiver = info.get("receiver")
                         tran_sender  = info.get("sender")
                         tran_amount = info.get("amount")
