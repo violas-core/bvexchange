@@ -18,6 +18,7 @@ from multiprocessing import Lock
 from comm.result import result, parse_except
 from comm.error import error
 from enum import Enum
+
 getlogger = log.logger.getLogger
 exe_lock = Lock()
 class baseobject(object):

@@ -2049,7 +2049,7 @@ request founds to main account
   <td>Distinguish between different mapping types</td>
  </tr>
  <tr>
-  <td><strong><a href="#Opttypes---type">flag</a></strong></td>
+  <td><strong><a href="#Opttypes---type">opttype</a></strong></td>
   <td>string</td>
   <td>map</td>
   <td>request server type</td>

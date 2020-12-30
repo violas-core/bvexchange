@@ -4,6 +4,7 @@ import sys, getopt
 from time import sleep
 import json
 import os
+import time
 sys.path.append(os.getcwd())
 sys.path.append("..")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
@@ -41,6 +42,8 @@ from vrequest.request_client import requestclient
 from analysis.analysis_filter import afilter
 from dataproof import dataproof
 
+name = "testmapping"
+logger = log.logger.getLogger(name)
 '''
 violas or libra client
 '''
@@ -65,7 +68,7 @@ def get_ethclient(usd_erc20 = True, chain = "ethereum"):
             client.load_contract(token)
     return client
     
-def get_ethwallet(, chain = "ethereum"):
+def get_ethwallet(chain = "ethereum"):
     return ethwallet(name, dataproof.wallets("ethereum"), chain)
 
 '''
@@ -101,17 +104,17 @@ def test_e2vm():
     max_work_time = 180
 
     from_address    = stmanage.get_map_address("e2vm", "ethereum")
-    to_address      = eclient.get_proof_contract_address("main")
+    to_address      = eclient.get_proof_contract_address("main").datas
     vls_receiver    = stmanage.get_receiver_address_list("v2em", "violas")[0] #DD user
     vls_e2vm_senders  = stmanage.get_sender_address_list("e2vm", "violas") 
 
 
-    ret = client.get_token_list()
+    ret = eclient.get_token_list()
     assert ret.state == error.SUCCEED, "get tokens failed."
     token_ids = ret.datas
 
     
-    ret = wallet.get_account(from_address)
+    ret = ewallet.get_account(from_address)
     assert ret.state == error.SUCCEED, f"get account(from_address) failed"
     account = ret.datas
 
@@ -119,15 +122,21 @@ def test_e2vm():
         start_time = time.time()
         ret = eclient.get_token_min_amount(token_id)
         assert ret.state == error.SUCCEED, f"get {token_id} min amount failed"
-        amount = max(1000, ret.datas)
+        amount = max(2000, ret.datas)
 
         ret = eclient.get_address_sequence(from_address)
         assert ret.state == error.SUCCEED, ret.message
         sequence = ret.datas
 
+        ret = eclient.allowance(from_address, to_address, token_id)
+        assert ret.state == error.SUCCEED, ret.message
+        if ret.datas > 0:
+            ret = eclient.approve(account, to_address, amount, token_id)
+            assert ret.state == error.SUCCEED, ret.message
+
         ret = eclient.approve(account, to_address, amount, token_id)
         assert ret.state == error.SUCCEED, ret.message
-        print(f"allowance amount :{eclient.allowance(from_address, to_address, token_id).datas}")
+        eclient._logger.debug(f"allowance amount :{eclient.allowance(from_address, to_address, token_id).datas}")
 
         #get vls_e2vm_sender sequence before mapping e2vm
         vls_e2vm_senders_sequence = {}
@@ -157,7 +166,7 @@ def test_e2vm():
         #wait state changed
         state = "start"
         map_amount = 0 
-        while state == "start"
+        while state == "start":
             ret = eclient.get_transactions(version, 1)
             assert ret.state == error.SUCCEED, ret.message
             tran = ret.datas[0]
@@ -205,3 +214,7 @@ def test_e2vm():
                 else:
                     assert False, f"not found transaction for mapping {token_id}, check tran_id = {map_tran_id} in {vls_e2vm_senders_sequence}"
 
+
+if __name__ == "__main__":
+    stmanage.set_conf_env("../bvexchange.toml")
+    test_e2vm()

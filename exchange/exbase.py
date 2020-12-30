@@ -684,6 +684,7 @@ class exbase(baseobject):
             if not self.check_syncing():
                 return result(error.SUCCEED)
 
+            self.lock()
             #db state: FAILED
             #if history datas is found state = failed, exchange it until succeed
             self._logger.debug(f"************************************************************ 1/5")
@@ -720,9 +721,7 @@ class exbase(baseobject):
                         if not self.work() :
                             break
                         self.__set_request_funds_account(from_sender, map_sender)
-                        self.lock()
                         ret = self.exec_exchange(data, from_sender, map_sender, self.combine_account, receiver)
-                        self.unlock()
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
 
@@ -747,6 +746,7 @@ class exbase(baseobject):
         except Exception as e:
             ret = parse_except(e)
         finally:
+            self.unlock()
             self._logger.debug("works end.")
     
         return ret
