@@ -21,7 +21,10 @@ import comm.values
 from comm import version
 from comm.result import result, parse_except
 from comm.error import error
-from comm.functions import is_mnemonic
+from comm.functions import (
+        is_mnemonic,
+        output_args
+        )
 from ethopt.ethproxy import (
         ethproxy as clientproxy,
         walletproxy,
@@ -365,6 +368,7 @@ class ethclient(baseobject):
     def create_data_for_mark(self, flag, dtype, id, version, *args, **kwargs):
         return {"type": "mark", "flag": flag, "version":version }
 
+    @output_args
     def approve(self, account, to_address, amount, token_id, **kwargs):
         try:
             datas = self.__client.approve(account, to_address, amount, token_id, **kwargs)
@@ -373,6 +377,7 @@ class ethclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    @output_args
     def allowance(self, from_address, to_address, token_id, **kwargs):
         try:
             datas = self.__client.allowance(from_address, to_address, token_id, **kwargs)
@@ -381,6 +386,7 @@ class ethclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    @output_args
     def send_proof(self, account, token_id, datas, **kwargs):
         try:
             datas = self.__client.send_proof(account, token_id, datas, **kwargs)

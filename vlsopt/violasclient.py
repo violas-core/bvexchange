@@ -24,7 +24,10 @@ from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 from baseobject import baseobject
 from comm.functions import split_full_address
-from comm.functions import is_mnemonic
+from comm.functions import (
+        is_mnemonic,
+        output_args
+        )
 from comm.values import (
         DECIMAL_VIOLAS,
         VIOLAS_ADDRESS_LEN
@@ -449,6 +452,7 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    @output_args
     def get_transactions(self, start_version, limit = 1, fetch_event=True):
         try:
             datas = self.__client.get_transactions(start_version, limit, fetch_event)

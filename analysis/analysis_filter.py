@@ -124,7 +124,7 @@ class afilter(abase):
 
         #violas v2vswap transaction
         if isviolas and code_name in ("swap", "remove_liquidity", "add_liquidity"):
-            swap_data = data.get_swap_event().to_json() if data.get_swap_event() is not None else None
+            swap_data = data.get_swap_type_events(data.get_code_type()).to_json() if data.get_swap_type_events(data.get_code_type()) is not None else None
             if swap_data:
                 swap_data = json.loads(swap_data)
                 tran_data["data"] = self.swap_data_map_std_data(code_name, swap_data, tran_data.get("receiver"))

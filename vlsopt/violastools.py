@@ -275,13 +275,13 @@ def show_accounts(all_info = False):
         if ret.state != error.SUCCEED:
            break 
         account = ret.datas
-        logger.debug("account.address({0}): {1}  auth_key_prefix: {2}".format(i, account.address.hex(), account.auth_key_prefix.hex()))
+        print(f"account.address({i:02}): address : {account.address_hex}  auth_key: {account.auth_key_prefix.hex()}")
 
         if isinstance(all_info, str):
             all_info = all_info in ("True", "true")
 
         if all_info:
-            print(f"------------------------:private key : {account.private_key_hex}    public key: {account.public_key_hex}")
+            print(f"                   : pri__key: {account.private_key_hex}  pub__key: {account.public_key_hex}")
         i += 1
 
 def show_accounts_full(all_info = False):

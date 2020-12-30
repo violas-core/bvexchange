@@ -15,6 +15,9 @@ import subprocess
 import fcntl
 import comm.values
 from comm.result import result, parse_except
+from functools import (
+        wraps
+        )
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
@@ -104,3 +107,13 @@ def is_mnemonic(data):
     find_delimiter = data.find(":") > 0
     not_find = data.find("/") == -1
     return (space_num > 8 or find_delimiter) and not_find
+
+def output_args(func):
+    @wraps(func)
+    def args_decorate(*args, **kwargs):
+        self = args[0]
+        args = list(args[1:])
+        self._logger.debug(f"--------{func.__name__}({','.join(str(arg)for arg in args)}, {kwargs})")
+        return func(self, *args, **kwargs)
+    return args_decorate
+
