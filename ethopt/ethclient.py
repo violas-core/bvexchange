@@ -406,7 +406,7 @@ class ethclient(baseobject):
             if data["type"] in ("end", "stop"):
                 datas = self.__client.update_proof_state(sender_account, data["version"], data["type"])
             elif data["type"] == "mark":
-                datas = self.__client.send_token(sender_account, toaddress, amount, token_id, nonce = data["version"])
+                datas = self.__client.send_token(sender_account, toaddress, amount, token_id)
             else:
                 raise Exception(f"type{type} is invald.")
             ret = result(error.SUCCEED if len(datas) > 0 else error.FAILED, "", datas = datas)
