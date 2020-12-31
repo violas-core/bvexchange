@@ -12,7 +12,7 @@ from authproxy import AuthServiceProxy, JSONRPCException
 #url = 'http://ac.testnet.violas.io:50001'
 
 #violas internal 
-url = 'http://52.27.228.84:50001'
+url = 'http://13.68.141.242:50001'
 
 class FancyFloat(float):
     def __repr__(self):
@@ -43,7 +43,7 @@ def json_reset(data):
 
 def main():
     ui = AuthServiceProxy(url)
-    ret = ui.get_transactions(10229864, 1, True)
+    ret = ui.get_transactions(5003997, 1, True)
     json_print(ret)
 
     #ret = ui.get_currencies()

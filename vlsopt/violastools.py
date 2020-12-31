@@ -41,9 +41,9 @@ logger = log.logger.getLogger(name)
 
 def get_violasclient():
     if chain == "libra":
-        return violasclient(name, stmanage.get_libra_nodes(), chain)
+        return violasclient(name, stmanage.get_libra_nodes(), chain, use_faucet_file = True)
 
-    return violasclient(name, stmanage.get_violas_nodes(), chain)
+    return violasclient(name, stmanage.get_violas_nodes(), chain, use_faucet_file = True)
 
 def get_violaswallet():
     return violaswallet(name, dataproof.wallets(chain), chain)
@@ -137,8 +137,10 @@ def get_transactions(start_version, limit = 1, fetch_event = True, raw = False):
     client.swap_set_module_address(stmanage.get_swap_module())
     ret = client.get_transactions(start_version, limit, fetch_event)
     if ret.state != error.SUCCEED:
+        logger.debug(f"{ret.message}")
         return
     if ret.datas is None or len(ret.datas) == 0:
+        print(f"count: {len(ret.datas)}")
         return
     print(f"count: {len(ret.datas)}")
 

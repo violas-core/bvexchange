@@ -56,12 +56,15 @@ class violasproxy(Client):
 
     @classmethod
     def connect(self, host, port = None, faucet_file = None, 
-            timeout =30, debug = False, faucet_server = None, waypoint = None):
+            timeout =30, debug = False, faucet_server = None, waypoint = None, use_faucet_file = False):
         url = host
         if "://" not in host:
             url = f"http://{host}"
         if port is not None:
             url += f":{port}"
+        if not use_faucet_file:
+            faucet_file = None
+
         return self.new(url = url, faucet_file = faucet_file, faucet_server = faucet_server, waypoint = waypoint)
 
     def send_coin(self, sender_account, receiver_address, micro_coins, token_id=None, module_address=None, data=None, \
