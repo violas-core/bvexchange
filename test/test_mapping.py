@@ -283,7 +283,7 @@ def test_v2em():
         if after_usdt_amount > before_usdt_amount:
             vclient._logger.debug(f"mapping ok, mapping to {usdt_receiver} {eth_token_name} amount  {after_usdt_amount - before_usdt_amount}, input amount is {map_amount}")
             return
-        print(f"\r\bRemaining time(s) = {max_work_time - int(time.time() - start_time)} will sleeping... 2 s", end = "") 
+        print(f"\r\bRemaining time = {max_work_time - int(time.time() - start_time)}(s) will sleeping... 2 s", end = "") 
         sleep(2)
 
     if work_continue():
