@@ -27,8 +27,8 @@ import redis
 name="violasproof"
 
 class violasproof(violasclient):
-    def __init__(self, name, nodes, chain="violas"):
-        violasclient.__init__(self, name, nodes, chain)
+    def __init__(self, name, nodes, chain="violas", use_faucet_file = False):
+        violasclient.__init__(self, name, nodes, chain, use_faucet_file = use_faucet_file)
 
     def __del__(self):
         violasclient.__del__(self)

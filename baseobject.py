@@ -43,8 +43,8 @@ class baseobject(object):
     def work_start(self):
         self._work = True
 
-    def open_lock(self):
-        self.usd_exe_lock = True
+    def open_lock(self, value = False):
+        self.usd_exe_lock = False
 
     def close_lock(self):
         self.usd_exe_lock = False
