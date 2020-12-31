@@ -64,14 +64,15 @@ class libraproxy(LBRClient):
         return name
 
     @classmethod
-    def connect(self, host, port = None, faucet_file = None, timeout =30, debug = False):
+    def connect(self, host, port = None, faucet_file = None, timeout =30, debug = False, use_faucet_file = False):
         url = host
         if "://" not in host:
             url = f"http://{host}"
         if port is not None:
             url += f":{port}"
 
-        return self.new(url, NamedChain.TESTNET)
+
+        return self.new(url = url)
 
     def send_coin(self, sender_account, receiver_address, micro_coins, token_id=None, module_address=None, \
             data=None, auth_key_prefix=None, is_blocking=False, max_gas_amount=400_000, unit_price=0, txn_expiration=13, gas_token_id = None):
