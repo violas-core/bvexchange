@@ -200,12 +200,12 @@ class violasclient(baseobject):
         CHILD_VASP  = 6
         UNKOWN      = sys.maxsize
 
-    def __init__(self, name, nodes, chain = "violas"):
+    def __init__(self, name, nodes, chain = "violas", use_faucet_file = False):
         baseobject.__init__(self, name, chain)
         self.__client = None
         self.__node = None
         if nodes is not None:
-            ret = self.conn_node(name, nodes, chain)
+            ret = self.conn_node(name, nodes, chain, use_faucet_file = use_faucet_file)
             if ret.state != error.SUCCEED:
                 raise Exception(f"connect {chain} node failed.")
 
@@ -215,7 +215,7 @@ class violasclient(baseobject):
     def clientname(self):
         return self.__client.clientname()
 
-    def conn_node(self, name, nodes, chain = "violas"):
+    def conn_node(self, name, nodes, chain = "violas", use_faucet_file = False):
         try:
             if nodes is None or len(nodes) == 0:
                 return result(error.ARG_INVALID, repr(nodes), "")
@@ -238,7 +238,8 @@ class violasclient(baseobject):
                             port=node.get("port"), \
                             faucet_file = node.get("faucet"), \
                             timeout = node.get("timeout"), \
-                            debug = node.get("debug", False))
+                            debug = node.get("debug", False), \
+                            use_faucet_file = use_faucet_file)
                     client.get_latest_version()
                     self._logger.debug(f"connect {chain} node succeed.") 
                 except Exception as e:
@@ -294,7 +295,6 @@ class violasclient(baseobject):
 
     def bind_token_id(self, account, token_id, gas_token_id):
         try:
-            print(f"bind_token_id({account}, {token_id}, {gas_token_id})")
             datas = self.__client.add_currency_to_account(account, token_id, gas_currency_code = gas_token_id)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
@@ -455,7 +455,7 @@ class violasclient(baseobject):
     @output_args
     def get_transactions(self, start_version, limit = 1, fetch_event=True):
         try:
-            datas = self.__client.get_transactions(start_version, limit, fetch_event)
+            datas = self.__client.get_transactions(int(start_version), limit, fetch_event)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)

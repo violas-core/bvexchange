@@ -678,7 +678,7 @@ class exbase(baseobject):
 
             #requirement checks
             self.__checks()
-            self.open_lock()
+            self.open_lock(dataproof.configs("exchange_async"))
     
             #syncing
             if not self.check_syncing():

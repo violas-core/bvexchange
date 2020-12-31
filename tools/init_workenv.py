@@ -116,6 +116,22 @@ def init_one(address, parent_vasp_address = parent_vasp_address):
         print(f"fill token {token_id} amount to {minamount}")
         comm_funs.init_address_list(vclient, wclient, parent_vasp_address, [address], token_id, minamount = minamount)
 
+def mint_coin(address, parent_vasp_address = parent_vasp_address):
+    vclient = get_violasclient()
+    wclient = get_violaswallet()
+
+    token_list= get_token_list(vclient, stmanage)
+    parent_vasp_address = get_parent_address(parent_vasp_address)
+    btc_token_id = "BTC"
+
+    logger.debug(f"token_list: {token_list}")
+    logger.debug(f"parent vasp address: {parent_vasp_address}")
+    print(f"{address} role name: {vclient.get_account_role_name(address)}")
+    for token_id in token_list:
+        minamount = token_min_amount.get(token_id, 0)
+        print(f"fill token {token_id} amount to {minamount}")
+        comm_funs.init_address_list(vclient, wclient, parent_vasp_address, [address], token_id, minamount = minamount)
+
 def init_args(pargs):
     pargs.append("help", "show arg list.")
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)

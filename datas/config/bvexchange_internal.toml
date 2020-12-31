@@ -18,6 +18,9 @@ syncing_mod = false
 
 #eth_usd_chain = false
 
+#exchange asynchronous state. default: true
+exchange_async = true 
+
 #connect btc chain config
 [btc_conn]
     user = "btc"
@@ -415,7 +418,7 @@ syncing_mod = false
         type = "map"
         chain = "violas"
     [[address_list.funds]]
-        address = "0135ab4ae628617b11a39ed2058e3930"
+        address = "b14bc3286e4b9b41c86022f2e614d721"
         type = "liq"
         chain = "violas"
 #thread loopping sleep time(s)

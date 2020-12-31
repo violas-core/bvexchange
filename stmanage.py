@@ -110,6 +110,7 @@ def get_conf_env():
     return setting.setting.get_conf_env()
 
 def get_looping_sleep(mtype):
+    mtype = to_str_value(mtype)
     sleep = int(setting.setting.looping_sleep.get(mtype, 1))
     return sleep
 
@@ -122,7 +123,8 @@ def get_syncing_state():
        False: address
 '''
 def __get_address_list(atype, mtype, chain_name, full = True):
-    chain = get_chain_name(chain_name)
+    chain = to_str_value(chain_name)
+    mtype = to_str_value(mtype)
     #default addresses: only chain and type is not None
     default_addresses = [dict.get("address") for dict in setting.setting.address_list.get(atype) \
             if dict["type"] == "default" and mtype is not None and (chain is not None and dict.get("chain") == chain)]
@@ -176,6 +178,7 @@ def get_permission_request_funds_address(full = False):
     exchange_mods = [mod.value for mod in datatype]
     set(exchange_mods).intersection_update(set(valid_mods))
     for mod in valid_mods:
+        # this mod is mtype(datatype)
         (from_chain, to_chain) = get_exchang_chains(mod)
         filter_addrs = []
         if from_chain and trantype(from_chain) == trantype.VIOLAS:
@@ -192,13 +195,13 @@ def get_permission_request_funds_address(full = False):
     return set(addrs)
 
 def get_address_info(atype):
-    dtypes = get_support_dtypes()
+    mtypes = get_support_dtypes()
     address_info = []
-    for dtype in dtypes:
-        from_chain, to_chain = get_exchang_chains(dtype)
+    for mtype in mtypes:
+        from_chain, to_chain = get_exchang_chains(mtype)
         if from_chain and to_chain:
-            addresses = __get_address_list(atype, dtype, from_chain)
-            infos = [{"address":address, "type":dtype, "chain":from_chain} for address in addresses]
+            addresses = __get_address_list(atype, mtype, from_chain)
+            infos = [{"address":address, "type":mtype, "chain":from_chain} for address in addresses]
             address_info.extend(infos)
     return address_info
 
@@ -208,10 +211,12 @@ def get_sender_address_list(mtype, chain, full = True):
 def get_combine_address_list(mtype, chain, full = True):
     return __get_address_list("combine", mtype, chain, full)
 
-def get_type_code(dtype, default = ""):
-    return setting.setting.type_code.get(dtype, default)
+def get_type_code(mtype, default = ""):
+    mtype = to_str_value(mtype)
+    return setting.setting.type_code.get(mtype, default)
 
 def get_exchang_chains(mtype):
+    mtype = to_str_value(mtype)
     from_chain = None
     to_chain = None
     try:
@@ -223,6 +228,7 @@ def get_exchang_chains(mtype):
     return (from_chain, to_chain)
 
 def get_token_form_to_with_type(etype, mtype):
+    mtype = to_str_value(mtype)
     f_t_coins = {}
     fchain, tchain = get_exchang_chains(mtype)
     if fchain is None and tchain is None:
@@ -254,16 +260,18 @@ def get_token_form_to_with_type(etype, mtype):
     return f_t_coins # from to
 
 def type_is_map(mtype):
+    mtype = to_str_value(mtype)
     opts = setting.setting.type_token.get(mtype)
     if opts:
         return opts.get("etype", "swap") == "map"
     return False
 
 def type_is_funds(mtype):
+    mtype = to_str_value(mtype)
     return mtype == datatype.FUNDS.value
 
 '''
-get type_opts.etype = map/swap info(token map relation, address dtype code(btc) etc..)
+get type_opts.etype = map/swap info(token map relation, address mtype code(btc) etc..)
 @param etype map/swap/funds
 '''
 def get_support_address_info(etype = None):
@@ -360,18 +368,18 @@ def get_token_map(token, mtype = None):
     else:
         return token_manage.get_token_mapping_unique(token)
 
-def get_chain_name(chain):
-    chain_name = chain
-    if isinstance(chain, trantype):
-        chain_name = chain.value
-    return chain_name
+def to_str_value(data):
+    if not data:
+        return data
+    return data.value if not isinstance(data, str) else data
 
 def get_violas_mtoken(token, chain_name):
-    chain = get_chain_name(chain_name)
+    chain = to_str_value(chain_name)
     return token_manage.get_violas_mtoken(token, chain_name)
 
 #get opttype' stable token(map, ...)
 def get_type_stable_token(mtype = None):
+    mtype = to_str_value(mtype)
     type_stable_token = {}
     for typename, tokens in setting.setting.type_token.items():
         if mtype is None or typename == mtype:
@@ -383,7 +391,8 @@ def get_type_stable_token(mtype = None):
     return type_stable_token
 
 def get_support_map_token_id(chain_name, mtype = None):
-    chain = get_chain_name(chain_name)
+    chain = to_str_value(chain_name)
+    mtype = to_str_value(mtype)
     mtoken_list = []
     if chain and not mtype:
         mtoken_list = token_manage.get_mtokens(chain)
@@ -396,12 +405,12 @@ def get_support_map_token_id(chain_name, mtype = None):
     return list(set(mtoken_list))
 
 def get_support_stable_token_id(chain_name):
-    chain = get_chain_name(chain_name)
+    chain = to_str_value(chain_name)
     token_list = token_manage.get_tokens(chain)
     return list(set(token_list))
 
 def get_support_token_id(chain_name):
-    chain = get_chain_name(chain_name)
+    chain = to_str_value(chain_name)
     mtokens = token_manage.get_mtokens(chain)
     tokens = token_manage.get_tokens(chain)
     return list(set(mtokens + tokens))
@@ -432,7 +441,7 @@ def get_support_mods():
 
 def get_support_dtypes():
     mods = get_support_mods()
-    return [dtype.value for dtype in datatype if dtype.value in mods]
+    return [mtype.value for mtype in datatype if mtype.value in mods]
 
 def get_conf():
     infos = {}
