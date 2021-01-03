@@ -31,6 +31,7 @@ class violasproxy(baseobject):
         GET = auto()
         SET = auto()
         CHECK = auto()
+        ORIGINAL = auto()
 
     class txstate(autoname):
         START   = auto()
@@ -290,6 +291,11 @@ class violasproxy(baseobject):
     def getwalletaddressbalance(self, address, minconf=1, maxconf=99999999):
         url = self.create_opt_url(self.opt.GET, self.opttype.BALANCE, address=address, minconf = minconf, maxconf=maxconf)
         return self.run_request(url)
+
+    def call_original_cli(self, name, *args):
+        url = self.create_opt_url(self.opt.ORIGINAL, api_args = json_dumps(args))
+        return self.run_request(url)
+
 
 def main():
     try:
