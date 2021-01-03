@@ -59,9 +59,9 @@ def sendtoaddress(address, amount):
     assert ret.state == error.SUCCEED, " sendtoaddress failed"
     print(ret.datas)
     
-def sendexproofstart(fromaddress, toaddress, amount, vaddress, sequence, vtoken):
+def sendexproofstart(opttype, fromaddress, toaddress, amount, vaddress, sequence, vtoken):
     client = getbtcclient()
-    ret = client.sendexproofstart(fromaddress, toaddress, amount, vaddress, sequence, vtoken)
+    ret = client.sendexproofstart(opttype, fromaddress, toaddress, amount, vaddress, sequence, vtoken)
     assert ret.state == error.SUCCEED, " sendexproofstart failed"
     print(ret.datas)
 
@@ -143,7 +143,7 @@ def init_args(pargs):
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 10)
     pargs.append("wallet", "inpurt wallet file or mnemonic, input is btc wallet file or pairs(ADDRESS:PRIVKEY, ADDRESS:PRIVKEY)", True, "file name/pairs", priority = 13, argtype = parseargs.argtype.STR)
 
-    pargs.append(sendexproofstart, "create new exchange start proof.")
+    pargs.append(sendexproofstart,f"create new exchange start proof. opttype: {[opttype for opttype in stmanage.get_support_dtypes() if opttype.startswith('b2')]}")
     pargs.append(sendexproofend, "create new exchange end proof.")
     pargs.append(sendexproofmark, "create new exchange mark proof, subtract fee from toamount.")
     pargs.append(generatetoaddress, "generate new block to address.")
@@ -163,6 +163,8 @@ def init_args(pargs):
 def run(argc, argv):
     try:
         logger.debug("start btc.main")
+        if stmanage.get_conf_env() is None:
+            stmanage.set_conf_env("../bvexchange.toml") 
         pargs = parseargs()
         init_args(pargs)
         pargs.show_help(argv)

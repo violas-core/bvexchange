@@ -44,6 +44,10 @@ from comm.values import(
         trantypebase as trantype,
         datatypebase as datatype
         )
+from comm.amountconver import (
+        amountconver
+        )
+
 from enum import Enum
 from vrequest.request_client import requestclient
 from analysis.analysis_filter import afilter
@@ -283,11 +287,79 @@ def test_v2em():
         if after_usdt_amount > before_usdt_amount:
             vclient._logger.debug(f"mapping ok, mapping to {usdt_receiver} {eth_token_name} amount  {after_usdt_amount - before_usdt_amount}, input amount is {map_amount}")
             return
-        print(f"\r\bRemaining time = {max_work_time - int(time.time() - start_time)}(s) will sleeping... 2 s", end = "") 
-        sleep(2)
+
+        message_wheel(max_work_time, start_time)
 
     if work_continue():
         assert False, f"time out, check bridge server is working...{txn}"
+
+def test_b2vm():
+    bwallet = get_btcwallet()
+    bclient = get_btcclient()
+    vclient = get_violasclient()
+    vwallet = get_violaswallet()
+    max_work_time = 180
+
+    #violas-BTC : bitcoin-BTC = 1 : 100
+    map_amount = 1_0_0000 #satoshi 1_0000_0000 = 1 BTC
+    
+    #send BTC from this address
+    from_address = '2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY'
+    assert bwallet.address_is_exists(from_address), f"sender {from_address} is not found in btc wallet"
+
+    #association btc account, receive btc from other btc wallet, only send  btc to this account, can mapping vls-btc
+    to_address = stmanage.get_receiver_address_list(datatype.B2VM, trantype.BTC)[0]
+    assert bwallet.address_is_exists(to_address), f"association btc account {to_address} is not found in btc wallet"
+
+    #receive violas-BTC from b2vm: payee   this account is not other payment
+    vls_btc_receiver = stmanage.get_receiver_address_list(datatype.V2BM, trantype.VIOLAS)[0]
+    found_vbr = vwallet.has_account_by_address(vls_btc_receiver).datas
+    assert found_vbr == True, f"not found violas chain receiver({vls_btc_receiver}) of btc token"
+    sequence = int(time.time())
+    btc_module = "00000000000000000000000000000001"
+
+    #mark currenct BTC amount
+    ret = vclient.get_balance(vls_btc_receiver, "BTC", None)
+    assert ret.state == ret.SUCCEED, f"get balance({vls_btc_receiver}, "BTC") failed. {ret.message}"
+    before_btc_amount = ret.datas
+
+    btc_amount = amountconver(map_amount, amountconver.amounttype.BTC).amount(amountconver.amounttype.BTC)
+    ret = bclient.sendexproofstart(datatype.B2VM.vaule, from_address, to_address, btc_amount, sequence, btc_module)
+    assert ret.state == ret.SUCCEED, f"sendexproofstart failed. {ret.message}"
+    txid = ret.datas
+
+    start_time = int(time.time())
+    while start_time + max_work_time >= int(time.time()) and work_continue():
+        ret = client.call_original_cli("getrawtransaction", txid, True)
+
+        if ret.state != error.SUCCEED:
+            message_wheel(max_work_time, start_time)
+            continue
+
+        tran_info = ret.datas
+        confirmations = tran_info.get("confirmations")
+        if confirmations <= 0:
+            message_wheel(max_work_time, start_time)
+            continue
+
+
+    #wait 30 s, make sure v2bm is exchange, may be check transaction is more acurrate ??????, here is use Ideal state
+    message_wheel(30, int(time.time()))
+
+    
+    #mark currenct BTC amount
+    ret = vclient.get_balance(vls_btc_receiver, "BTC", None)
+    assert ret.state == ret.SUCCEED, f"get balance({vls_btc_receiver}, "BTC") failed. {ret.message}"
+    after_btc_amount = ret.datas
+
+    increase_btc_amount = after_btc_amount - before_btc_amount
+    b2vm_amount = amountconver(map_amount, amountconver.amounttype.BTC).microamount(amountconver.amounttype.VIOLAS)
+    assert b2vm_amount == increase_btc_amount, f"b2vm failed. amount is not equl btc-satoshi: {map_amount} get vls-BTC: {increase_btc_amount}"
+
+
+def message_wheel(max_work_time, start_time, sleep_secs = 2)    
+        print(f"\r\bRemaining time = {max_work_time - int(time.time() - start_time)}(s) will sleeping... {sleep_secs} s", end = "") 
+        sleep(sleep_secs)
 
 _work_continue = True
 def signal_stop(signal, frame):
@@ -299,6 +371,7 @@ def signal_stop(signal, frame):
         parse_except(e)
     finally:
         print("end signal")
+
 
 def work_continue():
     return _work_continue
