@@ -18,7 +18,10 @@ import comm.error
 import comm.result
 import comm.values
 from comm.values import dbindexbase as dbindex
-from comm.functions import json_print
+from comm.functions import (
+        json_print, 
+        human_address
+        )
 from comm.result import result, parse_except
 from comm.error import error
 from db.dblocal import dblocal as localdb

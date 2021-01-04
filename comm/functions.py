@@ -117,3 +117,9 @@ def output_args(func):
         return func(self, *args, **kwargs)
     return args_decorate
 
+def human_address(address):
+    try:
+        return bytes.fromhex(address).decode().replace("\x00","00")
+    except Exception as e:
+        pass
+    return address

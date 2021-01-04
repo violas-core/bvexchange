@@ -429,7 +429,7 @@ class btcclient(baseobject):
     def get_decimals(self, nouse = None):
         return DECIMAL_BTC
 
-    def call_original_cli(self, name, *args)
+    def call_original_cli(self, name, *args):
         try:
             datas = self.__rpc_connection.call_original_cli(name, *args)
             ret = result(error.SUCCEED, "", datas)
