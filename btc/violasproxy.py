@@ -62,6 +62,7 @@ class violasproxy(baseobject):
         PROOF       = auto()
         PROOFBASE   = auto()
         FIXTRAN     = auto()
+        ROUTING     = auto()
 
     def __init__(self, name, host, port = None, user = None, password = None, domain="violaslayer", walletname="bwallet"):
         baseobject.__init__(self, name)
@@ -293,7 +294,7 @@ class violasproxy(baseobject):
         return self.run_request(url)
 
     def call_original_cli(self, name, *args):
-        url = self.create_opt_url(self.opt.ORIGINAL, api_args = json_dumps(args))
+        url = self.create_opt_url(self.opt.ORIGINAL, self.opttype.ROUTING, api = name, api_args = json.dumps(args))
         return self.run_request(url)
 
 

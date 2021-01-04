@@ -138,6 +138,13 @@ def getwalletaddressbalance(address):
 
     json_print(ret.to_json())
 
+def getrawtransaction(txid, verbose = True):
+    client = getbtcclient()
+    ret = client.call_original_cli("getrawtransaction", txid, verbose)
+
+    json_print(ret.to_json())
+
+
 def init_args(pargs):
     pargs.append("help", "show arg list")
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 10)
@@ -158,6 +165,7 @@ def init_args(pargs):
     pargs.append(getwalletaddressbalance, "returns wallet target address's balance.")
     pargs.append(getb2vtransaction, "returns array of proof list.[map to violas format]")
     pargs.append(gettransaction, "returns proof info.")
+    pargs.append(getrawtransaction, "returns raw transaction info.")
     pargs.append(showaccountlist, "returns account info.")
 
 def run(argc, argv):

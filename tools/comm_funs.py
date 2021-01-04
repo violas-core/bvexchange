@@ -26,6 +26,10 @@ from vlsopt.violasclient import violasclient, violaswallet
 from vlsopt.violasproof  import violasproof
 import stmanage
 import redis
+from comm.functions import (
+        json_print, 
+        human_address
+        )
 #module name
 name="commfuns"
 wallet_name="vwallet"
@@ -58,7 +62,7 @@ def list_address_info(vclient, wclient, addresses, ret):
         return
     for address in addresses:
         info = get_address_info(vclient, wclient, address)
-        ret.update({address:info})
+        ret.update({f"{address}->{human_address(address)}":info})
 
 def get_gas_token_id(vclient, wclient, address, token_id, min_balance = 40_0000):
     vclient._logger.debug(f"start get_gas_token_id({address}, {token_id}, {min_balance})")

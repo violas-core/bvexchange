@@ -311,12 +311,22 @@ def test_b2vm():
     to_address = stmanage.get_receiver_address_list(datatype.B2VM, trantype.BTC)[0]
     assert bwallet.address_is_exists(to_address), f"association btc account {to_address} is not found in btc wallet"
 
+    #send vls_btc_sender: get transaction(b2vm) from this account, check b2vm is succeed
+    vls_btc_sender = stmanage.get_sender_address_list(datatype.B2VM, trantype.VIOLAS)
+    found_vbs = vwallet.has_account_by_address(vls_btc_receiver).datas
+    assert found_vbs == True, f"not found violas chain sender({vls_btc_sender}) of btc token"
+
     #receive violas-BTC from b2vm: payee   this account is not other payment
     vls_btc_receiver = stmanage.get_receiver_address_list(datatype.V2BM, trantype.VIOLAS)[0]
     found_vbr = vwallet.has_account_by_address(vls_btc_receiver).datas
     assert found_vbr == True, f"not found violas chain receiver({vls_btc_receiver}) of btc token"
     sequence = int(time.time())
     btc_module = "00000000000000000000000000000001"
+
+    #mark vls-btc-sender current sequence
+    ret = vclient.get_address_sequence(vls_btc_sender)
+    assert ret.state == error.SUCCEED, ret.message
+    sender_start_sequence = ret.datas
 
     #mark currenct BTC amount
     ret = vclient.get_balance(vls_btc_receiver, "BTC", None)
@@ -327,6 +337,7 @@ def test_b2vm():
     ret = bclient.sendexproofstart(datatype.B2VM.vaule, from_address, to_address, btc_amount, sequence, btc_module)
     assert ret.state == ret.SUCCEED, f"sendexproofstart failed. {ret.message}"
     txid = ret.datas
+    map_tran_id = f"{from_address}_{sequence}"
 
     start_time = int(time.time())
     while start_time + max_work_time >= int(time.time()) and work_continue():
@@ -343,19 +354,103 @@ def test_b2vm():
             continue
 
 
-    #wait 30 s, make sure v2bm is exchange, may be check transaction is more acurrate ??????, here is use Ideal state
-    message_wheel(30, int(time.time()))
-
-    
-    #mark currenct BTC amount
-    ret = vclient.get_balance(vls_btc_receiver, "BTC", None)
-    assert ret.state == ret.SUCCEED, f"get balance({vls_btc_receiver}, "BTC") failed. {ret.message}"
-    after_btc_amount = ret.datas
-
-    increase_btc_amount = after_btc_amount - before_btc_amount
+    #will increase btc amount of vls_btc_receiver
     b2vm_amount = amountconver(map_amount, amountconver.amounttype.BTC).microamount(amountconver.amounttype.VIOLAS)
-    assert b2vm_amount == increase_btc_amount, f"b2vm failed. amount is not equl btc-satoshi: {map_amount} get vls-BTC: {increase_btc_amount}"
+    #wait 30 s, make sure v2bm is exchange, may be check transaction is more acurrate ??????, here is use Ideal state
+    start_time = int(time.time())
+    while start_time + max_work_time >= int(time.time()) and work_continue():
+        #mark vls-btc-sender current sequence
+        ret = vclient.get_address_sequence(vls_btc_sender)
+        assert ret.state == error.SUCCEED, ret.message
+        sender_latest_sequence = ret.datas
+        if sender_latest_sequence == sender_start_sequence:
+            message_wheel(10, int(time.time()))
+            continue
 
+        while sender_start_sequence < sender_latest_sequence:
+            sender_start_sequence += 1
+            ret = vclient.get_transaction_version(vls_btc_sender, sender_start_sequence)
+            assert ret.state == ret.SUCCEED, f"get_transaction_version({vls_btc_sender}, {sender_start_sequence}) failed. {ret.message}"
+            new_version = ret.datas
+
+            ret = vclient.get_transactions(new_version, 1, True)
+            assert ret.state == ret.SUCCEED, f"get_transactions({new_version}) failed. {ret.message}"
+            
+            tran = ret.datas[0] 
+            info = afilter.get_tran_data(tran, "violas")
+
+            if not is_violas_tran_mark("b2vm", info):
+                vclient._logger.debug("not tran mark, check next...")
+                continue
+
+            tran_tran_id = get_tran_id("b2vm", info)
+            tran_receiver = info.get("receiver")
+            tran_sender  = info.get("sender")
+            tran_amount = info.get("amount")
+            tran_token_id = info.get("token_id")
+
+            if tran_tran_id == map_tran_id and vls_btc_receiver == tran_receiver:
+                assert tran_amount == map_amount, "mapping amount is error. eth-{token_id} amount = {map_amount}, but violas-{tran_token_id} amount is {tran_amount}"
+                mapping_ok = True
+                print(f"mapping succeed. check violas address: version = {new_version}, receiver = {vls_receiver}, amount = {map_amount}")
+                return
+
+def test_v2bm():
+    bwallet = get_btcwallet()
+    bclient = get_btcclient()
+    vclient = get_violasclient()
+    vwallet = get_violaswallet()
+    map_token_id = "BTC"
+    max_work_time = 180
+
+    #violas-BTC : bitcoin-BTC = 1 : 100
+    map_amount = 1_000 # == 1_00_0000 satoshi
+
+    from_address = stmanage.get_sender_address_list(datatype.B2VM, trantype.VIOLAS)[0]
+    found_fa = vwallet.has_account_by_address(vls_btc_receiver).datas
+    assert found_fa == True, f"not found violas chain sender({from_address}) of btc token"
+
+    to_address = stmanage.get_receiver_address_list(datatype.V2BM, trantype.VIOLAS)[0]
+    found_ta = vwallet.has_account_by_address(to_address).datas
+    assert found_ta == True, f"not found violas chain sender({to_address}) of btc token"
+
+    #receive BTC in bitcoin chain
+    btc_receiver = '2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY'
+    assert bwallet.address_is_exists(btc_receiver), f"sender {btc_receiver} is not found in btc wallet"
+
+    #send BTC of the address, get transaction from this account
+    btc_sender = stmanage.get_sender_address_list(datatype.V2BM, trantype.BTC)
+    assert bwallet.address_is_exists(btc_sender), f"sender {btc_sender} is not found in btc wallet"
+
+    before_btc_amount = bclient.get_balance(btc_receiver).datas
+    metadata = vclient.create_data_for_start(trantype.VIOLAS, datatype.V2BM, btc_receiver)
+    vclient._logger.debug(f'''
+    btc receiver = {btc_receiver}
+    send btc address = {from_address}
+    recever mapping receiver = to_address
+    metadata = {metadata}
+            ''')
+
+    ret = vwallet.get_account(from_address)
+    assert ret.state == error.SUCCEED, f"get {from_address} account failed. {ret.message}"
+    map_sender = ret.datas
+
+    ret = vclient.send_coin(map_sender, to_address, map_amount, map_token_id, data = metadata)
+    assert ret.state == error.SUCCEED, f"send coin faild from = {from_address} to_address = {to_address} metadata = {metadata}. {ret.message}"
+    vclient._logger.debug(f"send coin result: {ret}")
+    txn = ret.datas
+
+    start_time = int(time.time())
+    while start_time + max_work_time >= int(time.time()) and work_continue():
+        after_btc_amount = bclient.get_balance(btc_receiver).datas
+        if after_btc_amount > before_btc_amount:
+            vclient._logger.debug(f"mapping ok, mapping to {btc_receiver} amount  {after_btc_amount - before_btc_amount}, input amount is {map_amount}")
+            return
+
+        message_wheel(max_work_time, start_time)
+
+    if work_continue():
+        assert False, f"time out, check bridge server is working...{txn}"
 
 def message_wheel(max_work_time, start_time, sleep_secs = 2)    
         print(f"\r\bRemaining time = {max_work_time - int(time.time() - start_time)}(s) will sleeping... {sleep_secs} s", end = "") 
@@ -385,6 +480,7 @@ if __name__ == "__main__":
     stmanage.set_conf_env("../bvexchange.toml")
     init_signal()
     ##test_e2vm()
-    test_v2em()
+    #test_v2em()
+    test_v2bm()
 
 
