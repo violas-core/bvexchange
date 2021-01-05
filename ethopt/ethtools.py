@@ -5,6 +5,7 @@ import json
 import os
 sys.path.append(os.getcwd())
 sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 import log
 import log.logger
 import traceback
@@ -18,7 +19,10 @@ import comm.result
 from comm.result import result
 from comm.error import error
 from comm.parseargs import parseargs
-from comm.functions import json_print
+from comm.functions import (
+        json_print,
+        root_path
+        )
 from ethopt.ethclient import ethclient, ethwallet
 from enum import Enum
 from vrequest.request_client import requestclient
@@ -338,7 +342,7 @@ def run(argc, argv):
             dataproof.wallets.update_wallet("ethereum", arg)
 
     if stmanage.get_conf_env() is None:
-        stmanage.set_conf_env("../bvexchange.toml") 
+        stmanage.set_conf_env(f"bvexchange.toml") 
 
     global chain
     for opt, arg in opts:

@@ -5,6 +5,7 @@ import json
 import os
 sys.path.append(os.getcwd())
 sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 import log
 import log.logger
 import traceback
@@ -172,7 +173,7 @@ def run(argc, argv):
     try:
         logger.debug("start btc.main")
         if stmanage.get_conf_env() is None:
-            stmanage.set_conf_env("../bvexchange.toml") 
+            stmanage.set_conf_env("bvexchange.toml") 
         pargs = parseargs()
         init_args(pargs)
         pargs.show_help(argv)

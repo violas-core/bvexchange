@@ -123,3 +123,7 @@ def human_address(address):
     except Exception as e:
         pass
     return address
+
+def root_path():
+    return f"{os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')}"
+

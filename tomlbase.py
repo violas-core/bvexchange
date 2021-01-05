@@ -3,7 +3,10 @@ import os, sys
 #import setting
 from comm import result
 from comm.result import parse_except
-from comm.functions import json_print
+from comm.functions import (
+        json_print, 
+        root_path
+        )
 from comm.parseargs import parseargs
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tomlkit"))
@@ -107,6 +110,8 @@ class tomlbase():
 
     @classmethod
     def set_conf_env(self, conffile):
+        if conffile.find("/") == -1:
+            conffile = f"{root_path()}/{conffile}"
         os.environ["BVEXCHANGE_CONFIG"] = conffile
 
     @classmethod

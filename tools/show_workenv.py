@@ -5,6 +5,7 @@ import json
 import os
 sys.path.append(os.getcwd())
 sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 import log
 import log.logger
 import traceback
@@ -191,6 +192,8 @@ def show_local_db():
             confs.append(("libra", key))
         elif key.startswith("b"):
             confs.append(("btc", key))
+        elif key.startswith("e"):
+            confs.append(("ethereum", key))
     infos = {}
     for conf in confs:
         infos[conf[1]] = get_local_info(conf[1], conf[0])
@@ -250,7 +253,7 @@ def run(mods):
 def main(argc, argv):
 
     try:
-        stmanage.set_conf_env("../bvexchange.toml")
+        stmanage.set_conf_env("bvexchange.toml")
         if argc < 1:
             raise Exception(f"argument is invalid. args:{list_valid_mods()}")
         run(argv)
