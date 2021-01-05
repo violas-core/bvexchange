@@ -12,7 +12,8 @@ import comm_funs
 from enum import Enum
 from vlsopt.violasclient import (
         violasclient, 
-        violaswallet
+        violaswallet,
+        violasserver
         )
 from comm.parseargs import parseargs
 from comm.values import (
@@ -29,20 +30,23 @@ token_min_amount = {
         "VLS": 1_00_0000,
         }
 
-parent_vasp_address = "db56a43a2548c10ffc8c5671116f5b9daa0cb601b6ebf8fad96b617ec5173f9f"
-token_list = ["VLS", "USDT", "BTC"]
+default_funds_address = "00000000000000000042524746554e44"
+token_list = ["VLS", "vUSDT", "vBTC"]
 opt_list = ["e2vm", "v2em", "v2bm", "b2vm"]
 
 def get_violasclient():
     if chain == "libra":
         return violasclient(name, stmanage.get_libra_nodes(), chain)
-    return violasclient(name, stmanage.get_violas_nodes(), chain)
+    return violasclient(name, stmanage.get_violas_nodes(), chain, use_faucet_file = True)
+
+def get_violas_server():
+    return violasserver(name, stmanage.get_violas_servers())
 
 def get_violaswallet():
     return violaswallet(name, dataproof.wallets(chain), chain)
 
-def get_parent_address(parent_vasp_address):
-    return parent_vasp_address
+def get_funds_address(funds_address):
+    return funds_address 
 
 def get_token_list(vclient, stmanage):
     global token_list
@@ -67,20 +71,27 @@ def use_opts(*args):
     global opt_list
     opt_list = args
 
-def init_all():
+def str_to_bool(value):
+    if isinstance(value, str):
+        return True if value in ("true", "True") else False
+    return value
+
+def init_all(debug = False, min_amount = 0, funds_address=default_funds_address):
     logger.debug("***************************************init workenv start*****************************")
+    debug = str_to_bool(debug)
     vclient = get_violasclient()
     wclient = get_violaswallet()
+    sclient = get_violas_server()
 
     token_list = get_token_list(vclient, stmanage)
     opt_list = get_opt_list(stmanage)
-    parent_vasp_address = get_parent_address()
+    funds_address = get_funds_address(funds_address)
 
     #get support opt-type list id for chain
 
     logger.debug(f"opt list: {opt_list}")
     logger.debug(f"token_list: {token_list}")
-    logger.debug(f"parent vasp address: {parent_vasp_address}")
+    logger.debug(f"parent vasp address: {funds_address}")
     for opt_type in opt_list:
         logger.debug("start bind dtype = {opt_type} chain = violas receiver")
         senders = stmanage.get_sender_address_list(opt_type, "violas")
@@ -95,42 +106,30 @@ def init_all():
             addresses.extend(combine)
         for token_id in token_list:
             minamount = token_min_amount.get(token_id, 0)
+            minamount = minamount if minamount > 0 else min_amount
             if len(addresses) > 0:
-                comm_funs.init_address_list(vclient, wclient, parent_vasp_address, addresses, token_id, minamount = minamount, gas_token_id = "VLS")
+                comm_funs.init_address_list(vclient, wclient, sclient, funds_address, addresses, token_id, minamount = minamount, gas_token_id = "VLS", debug = debug)
 
 
 #test use: init client address
-def init_one(address, parent_vasp_address = parent_vasp_address):
+def init_one(address, debug = False, min_amount = 0,funds_address = default_funds_address):
+    debug = str_to_bool(debug)
     vclient = get_violasclient()
     wclient = get_violaswallet()
+    sclient = get_violas_server()
 
     token_list= get_token_list(vclient, stmanage)
-    parent_vasp_address = get_parent_address(parent_vasp_address)
+    funds_address = get_funds_address(funds_address)
     btc_token_id = "BTC"
 
     logger.debug(f"token_list: {token_list}")
-    logger.debug(f"parent vasp address: {parent_vasp_address}")
+    logger.debug(f"parent vasp address: {funds_address}")
     print(f"{address} role name: {vclient.get_account_role_name(address)}")
     for token_id in token_list:
         minamount = token_min_amount.get(token_id, 0)
+        minamount = minamount if minamount > 0 else min_amount
         print(f"fill token {token_id} amount to {minamount}")
-        comm_funs.init_address_list(vclient, wclient, parent_vasp_address, [address], token_id, minamount = minamount)
-
-def mint_coin(address, parent_vasp_address = parent_vasp_address):
-    vclient = get_violasclient()
-    wclient = get_violaswallet()
-
-    token_list= get_token_list(vclient, stmanage)
-    parent_vasp_address = get_parent_address(parent_vasp_address)
-    btc_token_id = "BTC"
-
-    logger.debug(f"token_list: {token_list}")
-    logger.debug(f"parent vasp address: {parent_vasp_address}")
-    print(f"{address} role name: {vclient.get_account_role_name(address)}")
-    for token_id in token_list:
-        minamount = token_min_amount.get(token_id, 0)
-        print(f"fill token {token_id} amount to {minamount}")
-        comm_funs.init_address_list(vclient, wclient, parent_vasp_address, [address], token_id, minamount = minamount)
+        comm_funs.init_address_list(vclient, wclient, sclient, funds_address, [address], token_id, minamount = minamount, debug = debug)
 
 def init_args(pargs):
     pargs.append("help", "show arg list.")
