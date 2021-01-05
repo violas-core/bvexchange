@@ -20,7 +20,11 @@ from comm.error import error
 from comm.parseargs import parseargs
 from comm.functions import json_print
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
-from violasclient import violasclient, violaswallet, violasserver
+from violasclient import (
+        violasclient, 
+        violaswallet, 
+        violasserver
+        )
 from enum import Enum
 from vrequest.request_client import requestclient
 from analysis.analysis_filter import afilter
@@ -253,6 +257,25 @@ def swap_remove_liquidity(address, token_a, token_b, liquidity):
     logger.debug(f"out_amount: {ret.datas}")
 
 '''
+*************************************************violas proof oper*******************************************************
+'''
+def get_account_transactions(mtype, address, start = -1, limit = 10, state = "start"):
+    logger.debug(f"start get_account_transactions({address}, {start}, {limit}, {state})")
+    server = get_violasproof(mtype)
+    if state == "start":
+        ret = server.get_transactions_for_start(address, mtype, start, limit)
+    elif state == "end":
+        ret = server.get_transactions_for_end(address, mtype, start, limit)
+    for tran in ret.datas:
+        logger.debug(tran)
+    
+def has_transaction(mtype, tranid):
+    logger.debug("start has_transaction({mtype}, {tranid})")
+    server = get_violasproof(mtype)
+    logger.debug(server.has_transaction(tranid).datas)
+
+
+'''
 *************************************************violaswallet oper*******************************************************
 '''
 def new_account():
@@ -267,40 +290,36 @@ def address_has_token_id(address, token_id):
     client = get_violasclient()
     logger.debug(client.has_token_id(address, token_id).datas)
 
-def show_accounts(all_info = False):
+def show_accounts():
+    show_accounts_specify("std")
+
+def show_accounts_specify(field, merge = False, with_human = False):
     wallet = get_violaswallet()
     i = 0
     account_count = wallet.get_account_count()
     print(f"account count: {account_count}")
+    to_flag = "->" if with_human else ""
     while True and i < account_count:
         ret = wallet.get_account(int(i))
         if ret.state != error.SUCCEED:
            break 
         account = ret.datas
-        print(f"account.address({i:02}): address : {account.address_hex}  auth_key: {account.auth_key_prefix.hex()}")
+        human_addr = human_address(account.address.hex(), False) if with_human else ''
+        if merge:
+            print(f"account.address({i:02}): {account.auth_key_prefix.hex()}{account.address.hex()} {to_flag} {human_addr}")
+        else:
+            print(f"account.address({i:02}): address : {account.address_hex}  auth_key: {account.auth_key_prefix.hex()} {to_flag} {human_addr}")
 
-        if isinstance(all_info, str):
-            all_info = all_info in ("True", "true")
+        if field in ("all", "pri"):
+            print(f"                   : pri__key: {account.private_key_hex}")
+        elif field in ("all", "pub"):
+            print(f"                   : pub__key: {account.public_key_hex}")
 
-        if all_info:
-            print(f"                   : pri__key: {account.private_key_hex}  pub__key: {account.public_key_hex}")
         i += 1
 
-def show_accounts_full(all_info = False):
-    wallet = get_violaswallet()
-    i = 0
-    account_count = wallet.get_account_count()
-    while True and i < account_count:
-        ret = wallet.get_account(i)
-        if ret.state != error.SUCCEED:
-           break 
-        account = ret.datas
-        logger.debug(f"({i:03}): {account.auth_key_prefix.hex()}{account.address.hex()}")
-        if isinstance(all_info, str):
-            all_info = all_info in ("True", "true")
-        if all_info:
-            print(f"------------------------:private key : {account.private_key_hex}    public key: {account.public_key_hex}")
-        i += 1
+
+def show_accounts_full():
+    show_accounts_specify("std", True)
 
 def get_account(address):
     client = get_violasclient()
@@ -328,10 +347,14 @@ def get_account_prefix(address):
     account = wallet.get_account(address).datas
     logger.debug(f"address: {account.address.hex()}, auth_key_prefix: {account.auth_key_prefix.hex()}")
 
-def human_address(address):
-    logger.debug(f"start human_address({address})")
-    h_address = bytes.fromhex(address).decode().replace("\x00","00")
-    logger.debug(f"human address: {h_address}")
+def human_address(address, show = True):
+    try:
+        logger.debug(f"start human_address({address})") if show else ""
+        h_address = bytes.fromhex(address).decode().replace("\x00","00")
+    except Exception as e:
+        h_address = address
+    logger.debug(f"human address: {h_address}") if show else ""
+    return h_address
 
 def get_wallet_address(address):
     logger.debug(f"start get_wallet_address({address})")
@@ -346,25 +369,12 @@ def sign_message(address, message):
 *************************************************violasserver oper*******************************************************
 '''
 def get_violas_server():
-    return violasserver(stmanage.get_violas_servers())
+    return violasserver(name, stmanage.get_violas_servers())
 
-def get_account_transactions(mtype, address, start = -1, limit = 10, state = "start"):
-    logger.debug(f"start get_account_transactions({address}, {start}, {limit}, {state})")
-    #server = get_violas_server()
-    server = get_violasproof(mtype)
-    if state == "start":
-        ret = server.get_transactions_for_start(address, mtype, start, limit)
-    elif state == "end":
-        ret = server.get_transactions_for_end(address, mtype, start, limit)
-    for tran in ret.datas:
-        logger.debug(tran)
-    
-def has_transaction(mtype, tranid):
-    logger.debug("start has_transaction({mtype}, {tranid})")
-    #server = get_violas_server()
-    server = get_violasproof(mtype)
-    logger.debug(server.has_transaction(tranid).datas)
-
+def create_child_vasp_account_from_server(address, auth_key_prefix):
+    logger.debug("start create_child_vasp_account_from_server({address}, {auth_key_prefix})")
+    server = get_violas_server()
+    logger.debug(server.create_child_vasp_account(address, auth_key_prefix).datas)
     
 '''
 *************************************************main oper*******************************************************
@@ -381,6 +391,7 @@ def init_args(pargs):
     pargs.append(has_account, "has target account in wallet.")
     pargs.append(show_accounts, "show all counts address list(local wallet).")
     pargs.append(show_accounts_full, "show all counts address list(local wallet) with auth_key_prefix.")
+    pargs.append(show_accounts_specify, "show all counts address list(local wallet) with specify field[all/pri/pub/std].")
     pargs.append(human_address, "show human address.")
     pargs.append(get_wallet_address, "get wallet address if address is dd address.")
     pargs.append(sign_message, "signing message.")
@@ -402,7 +413,7 @@ def init_args(pargs):
     pargs.append(show_all_token_list, "show token list.")
     pargs.append(get_account_prefix, "get account prefix.")
     pargs.append(address_has_token_id, "check account is published token_id.")
-    pargs.append(create_child_vasp_account, "create child vasp account.")
+    pargs.append(create_child_vasp_account, "create child vasp account, make sure you are owner parent vasp .")
     pargs.append(check_account_is_registered, "check account is registered in violas/libra chain.")
 
     #swap opt
@@ -413,6 +424,8 @@ def init_args(pargs):
     pargs.append(swap_get_liquidity_balances, "get swap liquidity balances .")
     pargs.append(swap_remove_liquidity, "remover swap liquidity .")
 
+    #violas server
+    pargs.append(create_child_vasp_account_from_server, "create child vasp account from violas server, you are't owner of parent vasp")
 
 def run(argc, argv):
     global chain

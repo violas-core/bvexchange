@@ -698,7 +698,7 @@ class violasserver(baseobject):
     __node = None
     def __init__(self, name, nodes):
         baseobject.__init__(self, name)
-        self.__server= None
+        self.__server = None
         assert nodes is not None, "nodes is None"
         if nodes is not None:
             ret = self.conn_node(nodes)
@@ -718,7 +718,7 @@ class violasserver(baseobject):
                     server = ""
                     #server = Client.new(node["host"], node["port"], node["user"], node["password"])
                     self._logger.debug("connect violas server: host= {} port = {} user={} password=******".format( \
-                            node["host"], node["port"], node["user"]))
+                            node.get("host"), node.get("port"), node.get("user")))
                     self.__node = node
                 except Exception as e:
                     parse_except(e)
@@ -735,48 +735,11 @@ class violasserver(baseobject):
     
     def disconn_node(self):
         try:
-            self._logger.debug("start disconn_node")
-            if self.__node is not None:
-                del self.__node
-                self.__node = None
-
-            if self.__server is not None:
-                del self.__server
-                self.__server = None
             ret = result(error.SUCCEED) 
         except Exception as e:
             ret = parse_except(e)
         return ret
    
-    def get_transactions(self, address, module, start):
-        try:
-            datas = []
-            url = "http://{}:{}/1.0/violas/vbtc/transaction?receiver_address={}&module_address={}&start_version={}"\
-                    .format(self.__node["host"], self.__node["port"], address, module, start)
-            response = requests.get(url)
-
-            ret = result(error.FAILED, "", "")
-            if response is None:
-                ret = result(error.FAILED, "", "")
-            else:
-                jret = response.json()
-                code = jret["code"]
-                message = jret["message"]
-                if code != 2000:
-                    return result(error.FAILED, message)
-                
-                for data in jret["data"]:
-                    version     = int(data["version"])
-                    address     = data["sender_address"]
-                    amount      = int(data["amount"])
-                    sequence    = int(data["sequence_number"])
-                    baddress    = data["to_address"]
-                    datas.append({"address": address, "amount":amount, "sequence":sequence,  "version":version, "baddress":baddress})
-                ret = result(error.SUCCEED, message, datas)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
     def has_transaction(self, address, module, baddress, sequence, amount, version, receiver):
         try:
             ret = result(error.FAILED, "", "")
@@ -801,6 +764,30 @@ class violasserver(baseobject):
         except Exception as e:
             ret = parse_except(e)
         return ret
+
+    def create_child_vasp_account(self, address, auth_key_prefix):
+        try:
+            ret = result(error.FAILED, "", "")
+            data = {
+                    "address":address,
+                    "auth_key_prefix":auth_key_prefix,
+                    }
+            #https://api4.violas.io/1.0/violas/mint?address=4ba8309ef7d504851ff0018792756c59&auth_key_perfix=053ee0194d34396f582ddf091ce44de7
+            auth, addr = split_full_address(address)
+            auth = auth_key_prefix if auth is None else auth
+            print(f"auth: {auth}")
+            url = f"https://{self.__node['host']}/1.0/violas/mint?address={addr}&auth_key_perfix={auth}"
+            response = requests.get(url)
+            if response is not None:
+                jret = json.loads(response.text)
+                if jret["code"] == 2000:
+                    ret = result(error.SUCCEED, jret["message"], True)
+                else:
+                    ret = result(error.SUCCEED, jret["message"], False)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
 
 
 

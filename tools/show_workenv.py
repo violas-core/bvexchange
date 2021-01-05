@@ -17,7 +17,12 @@ import comm
 import comm.error
 import comm.result
 import comm.values
-from comm.values import dbindexbase as dbindex
+from comm.values import (
+        dbindexbase as dbindex,
+        trantypebase as trantype,
+        datatypebase as datatype
+        )
+
 from comm.functions import (
         json_print, 
         human_address
@@ -139,6 +144,11 @@ def show_address():
            continue 
         print(f"get {combin} chain = {from_chain} info.")
         comm_funs.list_address_info(cclient, wclient, [combin], ret = infos)
+
+    #funds
+    receivers = stmanage.get_receiver_address_list(datatype.FUNDS, trantype.VIOLAS)
+    print(f"get {receivers} chain = {trantype.VIOLAS.value} info.")
+    comm_funs.list_address_info(cclient, wclient, receivers, ret = infos)
 
     #start get libra address info
 

@@ -81,7 +81,7 @@ class parseargs:
                 callback = name
 
         if arg_name in self.__args:
-            raise Exception("arg is exists.")
+            raise Exception(f"arg({arg_name}) is exists.")
 
         min_args = len(arglist) if arglist else 0
 

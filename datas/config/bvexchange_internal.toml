@@ -48,8 +48,7 @@ exchange_async = true
     name = "libra"
 
 [[violas_servers]]
-    host = "52.27.228.84"
-    port = 4000
+    host = "api4.violas.io"
     user = "violas"
     password = "violas"
 
@@ -97,24 +96,21 @@ exchange_async = true
 [token_info]
     [token_info.tokens]
         [token_info.tokens.violas]
-            token = ["VLSUSD", "VLSEUR", "VLSSGD", "VLSGBP", "VLS"] 
-            mtoken = ["BTC", "USD", "USDT"]
+            token = ["VLS"] 
+            mtoken = ["vBTC", "vUSDT"]
         [token_info.tokens.libra]
-            token = ["Coin1"]
+            token = []
         [token_info.tokens.ethereum]
             token = ["usdt"]
         [token_info.tokens.btc]
             token = ["BTC"]
 
     [[token_info.mapping]]
-        token = "libra.Coin1"
-        mtoken = "violas.USD"
-    [[token_info.mapping]]
         token = "btc.BTC"
-        mtoken = "violas.BTC"
+        mtoken = "violas.vBTC"
     [[token_info.mapping]]
         token = "ethereum.usdt"
-        mtoken = "violas.USDT"
+        mtoken = "violas.vUSDT"
 
 #violas <-> libra token map
 #violas coin:VLSAAA map to libra coin:BBB:  VLSAAA(violas chain) -uniswap-> LBRBBB(violas chain) -map-> BBB(libra chain)
@@ -144,28 +140,6 @@ exchange_async = true
         support = true  
         run = true
         etype  = "funds"
-    [type_opts.v2lusd]
-        ttoken = "Coin1"
-    [type_opts.v2leur]
-        ttoken = "Coin2"
-    [type_opts.l2vusd]
-        ttoken = "VLSUSD"
-    [type_opts.l2veur]
-        ttoken = "VLSEUR"
-    [type_opts.l2vsgd]
-        ttoken = "VLSSGD"
-    [type_opts.l2vgbp]
-        ttoken = "VLSGBP"
-    [type_opts.b2vusd]
-        ttoken = "VLSUSD"
-    [type_opts.b2veur]
-        ttoken = "VLSEUR"
-    [type_opts.b2vsgd]
-        ttoken = "VLSSGD"
-    [type_opts.b2vgbp]
-        ttoken = "VLSGBP"
-    [type_opts.v2b]
-        ttoken = "BTC"
     [type_opts.v2bm]
         etype  = "map"
         support= true  
@@ -412,11 +386,7 @@ exchange_async = true
         type = "e2vm"
         chain = "ethereum"
 
-    #the address of permission request funds from funds-server
-    [[address_list.funds]]
-        address = "00000000000000000042524755534454"
-        type = "map"
-        chain = "violas"
+    #the address of permission request funds from funds-server type = liq/map
     [[address_list.funds]]
         address = "b14bc3286e4b9b41c86022f2e614d721"
         type = "liq"

@@ -86,10 +86,10 @@ def get_ethwallet(chain = "ethereum"):
 btc client
 '''
 
-def getbtcclient():
+def get_btcclient():
     return btcclient(name, stmanage.get_btc_conn())
 
-def getbtcwallet():
+def get_btcwallet():
     return btcwallet(name, dataproof.wallets("btc"))
 
 '''
@@ -330,7 +330,7 @@ def test_b2vm():
 
     #mark currenct BTC amount
     ret = vclient.get_balance(vls_btc_receiver, "BTC", None)
-    assert ret.state == ret.SUCCEED, f"get balance({vls_btc_receiver}, "BTC") failed. {ret.message}"
+    assert ret.state == ret.SUCCEED, f"get balance({vls_btc_receiver}, 'BTC') failed. {ret.message}"
     before_btc_amount = ret.datas
 
     btc_amount = amountconver(map_amount, amountconver.amounttype.BTC).amount(amountconver.amounttype.BTC)
@@ -407,7 +407,7 @@ def test_v2bm():
     map_amount = 1_000 # == 1_00_0000 satoshi
 
     from_address = stmanage.get_sender_address_list(datatype.B2VM, trantype.VIOLAS)[0]
-    found_fa = vwallet.has_account_by_address(vls_btc_receiver).datas
+    found_fa = vwallet.has_account_by_address(from_address).datas
     assert found_fa == True, f"not found violas chain sender({from_address}) of btc token"
 
     to_address = stmanage.get_receiver_address_list(datatype.V2BM, trantype.VIOLAS)[0]
@@ -417,10 +417,6 @@ def test_v2bm():
     #receive BTC in bitcoin chain
     btc_receiver = '2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY'
     assert bwallet.address_is_exists(btc_receiver), f"sender {btc_receiver} is not found in btc wallet"
-
-    #send BTC of the address, get transaction from this account
-    btc_sender = stmanage.get_sender_address_list(datatype.V2BM, trantype.BTC)
-    assert bwallet.address_is_exists(btc_sender), f"sender {btc_sender} is not found in btc wallet"
 
     before_btc_amount = bclient.get_balance(btc_receiver).datas
     metadata = vclient.create_data_for_start(trantype.VIOLAS, datatype.V2BM, btc_receiver)
@@ -452,7 +448,7 @@ def test_v2bm():
     if work_continue():
         assert False, f"time out, check bridge server is working...{txn}"
 
-def message_wheel(max_work_time, start_time, sleep_secs = 2)    
+def message_wheel(max_work_time, start_time, sleep_secs = 2):   
         print(f"\r\bRemaining time = {max_work_time - int(time.time() - start_time)}(s) will sleeping... {sleep_secs} s", end = "") 
         sleep(sleep_secs)
 
@@ -481,6 +477,7 @@ if __name__ == "__main__":
     init_signal()
     ##test_e2vm()
     #test_v2em()
+    #test_b2vm()
     test_v2bm()
 
 
