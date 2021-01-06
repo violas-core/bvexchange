@@ -8,6 +8,7 @@ import sys, os
 import json
 sys.path.append(os.getcwd())
 sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 import log
 import log.logger
 import traceback
@@ -30,11 +31,15 @@ from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient
 import tools.show_workenv
+from webserver.ws_result_sig import (
+        client,
+        get_sign_key_id,
+        sign_message
+        )
 
 #module self.name
 mod_name="webserver"
 logger = log.logger.getLogger(mod_name)
-
 @app.route('/')
 def main():
     try:
@@ -172,8 +177,12 @@ def workstate():
     return tools.show_workenv.show_all()
 
 def receivers(opttype):
+    logger.debug(f"receivers({opttype})")
     ret = result(error.SUCCEED, "", stmanage.get_support_address_info(opttype))
+    ret.sign_key_id = get_sign_key_id(client)
+    ret.sign = sign_message(client, ret.sign_datas())
     return ret.to_json()
+
 
 '''
 with app.test_request_context():
