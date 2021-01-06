@@ -13,25 +13,37 @@ class result:
         state = error.SUCCEED
         message = ""
         datas = ""
+        sign = ""
+        sign_key = ""
+        sign_key_id = ""
         
-        def __init__(self, state = None, message = None, datas = None):
+        def __init__(self, state = None, message = None, datas = None, sign = "", sign_key = "", sign_key_id = ""):
             self.state = state 
             self.message = message
             self.datas = datas
+            self.sign = sign
+            self.sign_key = sign_key
+            self.sign_key_id = sign_key_id
 
         def to_map(self):
-            return {"state": "self.state.name", "message":self.message, "datas":self.datas}
+            return self.to_json()
         
         def __repr__(self):
-            return f"state={self.state.name}, message={self.message}, datas:{self.datas}"
+            return f"state={self.state.name}, message={self.message}, datas:{self.datas}, sign:{self.sign}, sign_key:{self.sign_key}, sign_key_id:{self.sign_key_id}"
 
         def to_json(self):
-            return {"state":self.state.name, "message":self.message, "datas":self.datas}
+            return {"state":self.state.name, "message":self.message, "datas":self.datas, "sign": self.sign, "sign_key": self.sign_key, "sign_key_id": self.sign_key_id}
+
+        def sign_datas(self):
+            return json.dumps(self.to_json())
 
         def load_json(self, data):
             self.state = error(data.get("state").lower())
             self.message = data.get("message")
             self.datas = data.get("datas")
+            self.sign = data.get("sign")
+            self.sign_key = data.get("sign_key")
+            self.sign_key_id = data.get("sign_key_id")
 
 def parse_except(e, msg = None, datas = None):
     try:
