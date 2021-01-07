@@ -34,7 +34,8 @@ import tools.show_workenv
 from webserver.ws_result_sig import (
         client,
         get_sign_key_id,
-        sign_message
+        sign_message,
+        verify_sign
         )
 
 #module self.name
@@ -180,8 +181,10 @@ def receivers(opttype):
     logger.debug(f"receivers({opttype})")
     ret = result(error.SUCCEED, "", stmanage.get_support_address_info(opttype))
     ret.sign_key_id = get_sign_key_id(client)
-    ret.sign = sign_message(client, ret.sign_datas())
-    return ret.to_json()
+    ret.sign = sign_message(client, ret.to_hex())
+    
+    verify_sign(client, ret.to_hex(), ret.sign)
+    return ret.to_json_with_sign()
 
 
 '''

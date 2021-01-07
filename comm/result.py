@@ -17,13 +17,13 @@ class result:
         sign_key = ""
         sign_key_id = ""
         
-        def __init__(self, state = None, message = None, datas = None, sign = "", sign_key = "", sign_key_id = ""):
+        def __init__(self, state = None, message = None, datas = None):
             self.state = state 
             self.message = message
             self.datas = datas
-            self.sign = sign
-            self.sign_key = sign_key
-            self.sign_key_id = sign_key_id
+            self.sign = ""
+            self.sign_key = ""
+            self.sign_key_id = ""
 
         def to_map(self):
             return self.to_json()
@@ -32,10 +32,13 @@ class result:
             return f"state={self.state.name}, message={self.message}, datas:{self.datas}, sign:{self.sign}, sign_key:{self.sign_key}, sign_key_id:{self.sign_key_id}"
 
         def to_json(self):
-            return {"state":self.state.name, "message":self.message, "datas":self.datas, "sign": self.sign, "sign_key": self.sign_key, "sign_key_id": self.sign_key_id}
+            return {"state":self.state.name, "message":self.message, "datas":self.datas}
 
-        def sign_datas(self):
-            return json.dumps(self.to_json())
+        def to_json_with_sign(self):
+            return {"state":self.state.name, "message":self.message, "datas":self.datas, "sign": self.sign, "sign_key": self.sign_key, "sign_key_id": self.sign_key_id, "sign_datas": self.to_hex()}
+
+        def to_hex(self):
+            return json.dumps(self.to_json()).encode().hex()
 
         def load_json(self, data):
             self.state = error(data.get("state").lower())
