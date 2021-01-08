@@ -371,15 +371,18 @@ class exfbase(baseobject):
                         chain = data.get("chain")
                         token_id = data.get("token_id")
                         amount = data.get("amount")
-                        sender = data.get("sender")
+                        sender = data.get("address")
 
                         if not self.has_request_funds_permission(sender):
                             continue
 
                         #get map sender from  senders
                         ret = self.get_map_sender_account(chain, token_id, amount)
-                        self.check_state_raise(ret, f"not found {chain} {token_id} map sender or request amount is too big, " + 
+                        if ret.state != error.SUCCEED:
+                            self._logger.warning(f"not found {chain} {token_id} map sender or request amount is too big, " + 
                                 f"check address and amount({amount})")
+                            continue
+
                         map_sender = ret.datas
 
                         #refund case: 
@@ -475,15 +478,19 @@ class exfbase(baseobject):
                         chain = data.get("chain")
                         token_id = data.get("token_id")
                         amount = data.get("amount")
-                        sender = data.get("sender")
+                        sender = data.get("address")
 
                         if not self.has_request_funds_permission(sender):
+                            self._logger.debug(f"{sender not permission to request funds}")
                             continue
 
                         #get map sender from  senders
                         ret = self.get_map_sender_account(chain, token_id, amount)
-                        self.check_state_raise(ret, f"not found {chain} {token_id} map sender, " + 
+                        if ret.state != error.SUCCEED:
+                            self._logger.warning(f"not found {chain} {token_id} map sender, " + 
                                 f"check address and amount({amount})")
+                            continue
+
                         map_sender = ret.datas
 
                         ret = self.exec_exchange(data, from_sender, map_sender, receiver)
