@@ -150,7 +150,6 @@ class exfbase(baseobject):
                     continue
 
                 if not ret.datas:
-                    self._logger.debug(f"account({sender})'s token({token_id}) amount < request amount({amount})")
                     continue
 
                 return result(error.SUCCEED, datas = sender_account)
@@ -374,6 +373,7 @@ class exfbase(baseobject):
                         sender = data.get("address")
 
                         if not self.has_request_funds_permission(sender):
+                            self._logger.debug(f"sender not permission to request funds")
                             continue
 
                         #get map sender from  senders
@@ -467,7 +467,7 @@ class exfbase(baseobject):
 
                 #get new transaction from server
                 self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver}")
-                ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version, excluded = self.excluded)
+                ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version, self.step(), excluded = self.excluded)
                 self._logger.debug(f"will execute transaction(start) : {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     for data in ret.datas:
@@ -481,13 +481,14 @@ class exfbase(baseobject):
                         sender = data.get("address")
 
                         if not self.has_request_funds_permission(sender):
-                            self._logger.debug(f"{sender not permission to request funds}")
+                            self._logger.debug(f"sender not permission to request funds")
                             continue
 
+                        self.latest_version[receiver] += 1
                         #get map sender from  senders
                         ret = self.get_map_sender_account(chain, token_id, amount)
                         if ret.state != error.SUCCEED:
-                            self._logger.warning(f"not found {chain} {token_id} map sender, " + 
+                            self._logger.warning(f"not found {chain} {token_id} map sender or request amount is too big, " + 
                                 f"check address and amount({amount})")
                             continue
 

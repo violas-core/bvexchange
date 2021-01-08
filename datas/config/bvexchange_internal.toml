@@ -57,7 +57,7 @@ exchange_async = true
 [db_default]
     host = "127.0.0.1"
     port = 6378
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 100
 
 [[db_list]]
