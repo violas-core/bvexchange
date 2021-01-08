@@ -373,6 +373,11 @@ exchange_async = true
         type = "funds"
         chain = "ethereum"
 
+    [[address_list.sender]]
+        address = "2MxBZG7295wfsXaUj69quf8vucFzwG35UWh"
+        type = "funds"
+        chain = "btc"
+
     #combine : reclaim token 
     #default: violas combine
     [[address_list.combine]]

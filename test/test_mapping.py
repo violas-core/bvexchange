@@ -55,6 +55,15 @@ from dataproof import dataproof
 
 name = "testmapping"
 logger = log.logger.getLogger(name)
+class Tokens(Enum):
+    VIOLAS_BTC = "vBTC"
+    VIOLAS_USDT = "vUSDT"
+    BTC_BTC  = "BTC"
+    ETHEREUM_USDT = "usdt"
+
+def get_token_name(chain, token):
+    return Tokens[f"{chain.upper()}_{token.upper()}"].value
+
 '''
 violas or libra client
 '''
@@ -400,7 +409,7 @@ def test_v2bm():
     bclient = get_btcclient()
     vclient = get_violasclient()
     vwallet = get_violaswallet()
-    map_token_id = "BTC"
+    map_token_id = get_token_name("violas", "btc")
     max_work_time = 180
 
     #violas-BTC : bitcoin-BTC = 1 : 100
