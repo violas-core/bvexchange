@@ -121,6 +121,33 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def create_points_key(self, key, path = "./datas/localdbs/points"):
+        dbfile = f"{key}.point"
+        if path is not None:
+            if not os.path.exists(path):
+                os.makedirs(path)
+            dbfile = os.path.join(path, f"{key}.point")
+        return dbfile
+
+    def set_exec_points(self, key, point):
+        try:
+            with open(self.create_points_key(key), 'w+') as pf:
+                pf.write(f"point")
+            ret = result(error.SUCCEED, datas = True)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_exec_points(self, key):
+        try:
+            with open(self.create_points_key(key), "w+") as pf:
+                point = pf.read()
+                point = int(point) if point else -1
+            ret = result(error.SUCCEED, datas = point)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def isexproofcomplete(self, opttype, address, sequence):
         try:
             if(len(address) != 64 or sequence < 0):

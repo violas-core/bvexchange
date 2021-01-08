@@ -77,7 +77,6 @@ class exbase(baseobject):
         '''
 
         baseobject.__init__(self, name)
-        self.latest_version = {}
         self.from_chain = fromchain.value if isinstance(fromchain, trantype) else fromchain
         self.map_chain = mapchain.value if isinstance(mapchain, trantype) else mapchain
     
@@ -710,7 +709,7 @@ class exbase(baseobject):
                 ret  = self.from_wallet.get_account(receiver)
                 self.check_state_raise(ret, f"get receiver({receiver})'s account failed.")
                 from_sender = ret.datas
-                latest_version = self.latest_version.get(receiver, -1) + 1
+                latest_version = self.pserver.get_exec_points(receiver).datas + 1
 
                 #get new transaction from server
                 self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver}")
@@ -721,6 +720,9 @@ class exbase(baseobject):
                         if not self.work() :
                             break
                         self.__set_request_funds_account(from_sender, map_sender)
+
+                        version = data.get("version")
+                        self.pserver.set_exec_points(receiver, version)
                         ret = self.exec_exchange(data, from_sender, map_sender, self.combine_account, receiver)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
