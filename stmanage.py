@@ -50,7 +50,7 @@ class token_info():
             self.__mapping_tokens_unique.update({chain_token[1]:chain_mtoken[1]})
 
     def check_chain_name(self, chain):
-        assert chain in self.__chain_names, "chain is violas/libra/btc/ethereum"
+        assert chain in self.__chain_names, f"{chain} is not in {self.__chain_names}"
 
     def get_tokens(self, chain):
         self.check_chain_name(chain)
@@ -268,7 +268,7 @@ def type_is_map(mtype):
 
 def type_is_funds(mtype):
     mtype = to_str_value(mtype)
-    return mtype == datatype.FUNDS.value
+    return mtype.startswith("funds")
 
 '''
 get type_opts.etype = map/swap info(token map relation, address mtype code(btc) etc..)
@@ -333,11 +333,33 @@ def get_db(mtype):
     assert db_info, f"not found db({mtype})info."
     return db_info
 
+def get_trantype_with_token_id(token_id):
+    for ttype in trantype:
+        if ttype == trantype.UNKOWN:
+            continue
+
+        if token_id in [token.lower() for token in get_support_token_id(ttype)]:
+            return ttype
+    raise ValueError(f"not found support token id({token_id}) in {trantype}")
+
+def get_target_nodes(ttype):
+    target_ttype = ttype
+    if isinstance(ttype, trantype):
+        target_ttype = ttype.value
+    
+    assert isinstance(target_ttype, str), f"input args {ttype} can't convert str type"
+
+    globals()[f"get_{target_ttype}_nodes"]()
+
 def get_libra_nodes():
     return setting.setting.libra_nodes
 
 def get_violas_servers():
     return setting.setting.violas_servers
+
+#get_target_nodes use this func
+def get_ethereum_nodes():
+    return get_eth_nodes()
 
 def get_eth_nodes():
     return setting.setting.ethereum_nodes

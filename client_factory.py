@@ -21,6 +21,7 @@ class clientfactory(baseobject):
 
     @classmethod
     def create(cls, name, chain, nodes):
+
        if chain == trantype.BTC.value:
            return btcclient(name, nodes) if nodes else None
        elif chain == trantype.VIOLAS.value:

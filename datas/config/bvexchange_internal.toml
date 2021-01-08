@@ -136,7 +136,23 @@ exchange_async = true
         run = true
     [type_opts.lfilter]
         support= false
-    [type_opts.funds]
+    [type_opts.fundsvls]
+        support = true  
+        run = true
+        etype  = "funds"
+    [type_opts.fundsbtc]
+        support = true  
+        run = true
+        etype  = "funds"
+    [type_opts.fundsvbtc]
+        support = true  
+        run = true
+        etype  = "funds"
+    [type_opts.fundsusdt]
+        support = true  
+        run = true
+        etype  = "funds"
+    [type_opts.fundsvusdt]
         support = true  
         run = true
         etype  = "funds"

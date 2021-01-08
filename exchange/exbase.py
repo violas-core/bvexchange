@@ -721,8 +721,7 @@ class exbase(baseobject):
                             break
                         self.__set_request_funds_account(from_sender, map_sender)
 
-                        version = data.get("version")
-                        self.pserver.set_exec_points(receiver, version)
+                        self.pserver.set_exec_points(receiver, max(latest_version, int(data.get("version"))))
                         ret = self.exec_exchange(data, from_sender, map_sender, self.combine_account, receiver)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)

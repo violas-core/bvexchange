@@ -18,6 +18,9 @@ from multiprocessing import Lock
 from comm.result import result, parse_except
 from comm.error import error
 from enum import Enum
+from comm.values import (
+        trantypebase as trantype
+        )
 
 getlogger = log.logger.getLogger
 exe_lock = Lock()
@@ -83,14 +86,19 @@ class baseobject(object):
     def get_property(self, name):
         return getattr(self, name.strip())
 
+    def to_str(self, data):
+        if isinstance(data, trantype):
+            return data.value
+        return data
+         
     def create_senders_key(self, chain):
-        return f"{chain}_senders"
+        return f"{self.to_str(chain)}_senders"
 
     def create_wallet_key(self, chain):
-        return f"{chain}_wallet"
+        return f"{self.to_str(chain)}_wallet"
 
     def create_client_key(self, chain):
-        return f"{chain}_client"
+        return f"{self.to_str(chain)}_client"
 
     def create_nodes_key(self, chain):
-        return f"{chain}_nodes"
+        return f"{self.to_str(chain)}_nodes"
