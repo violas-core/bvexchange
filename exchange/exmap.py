@@ -88,9 +88,6 @@ class exmap(exbase):
         ret = result(error.FAILED)
         self._logger.info(f"start exchange {self.dtype}. version={version}, state = {state}, detail = {detail} datas from server.")
 
-        if state is not None:
-            self.latest_version[receiver] = max(version, self.latest_version.get(receiver, -1))
-
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
         if state is None and self.has_info(tran_id):
             return ret

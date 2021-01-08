@@ -40,10 +40,11 @@ from comm.values import (
         workmod as work_mod,
         trantypebase as trantype
         )
+from baseobject import baseobject
 
 name="bvexchange"
 
-class works:
+class works(baseobject):
     __threads = []
     __work_looping = {}
     __work_obj = {}
@@ -693,27 +694,33 @@ class works:
         finally:
             logger.critical(f"stop: {mod}")
 
+    def __get_token_name_from_fundstype(self, funds_type):
+        return funds_type[5:]
+
     def work_fundsex(self, **kargs):
         try:
-            logger.critical("start: fundsex")
+            logger.critical("start: fundsxxxex")
             nsec, mod, dtype = self.__get_input_args(**kargs)
+            token_id = self.__get_token_name_from_fundstype(dtype)
+            print(f"token_id: {token_id} dtype: {dtype}")
+            ttype = stmanage.get_trantype_with_token_id(token_id)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
+                    kwargs = {
+                            "fromchain" : trantype.VIOLAS.value,
+                            "violas_nodes" : stmanage.get_target_nodes(trantype.VIOLAS), 
+                            "violas_senders" : list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
+                            f"{self.create_nodes_key(ttype)}" : stmanage.get_target_nodes(ttype),
+                            f"{self.create_senders_key(ttype)}" : list(set(stmanage.get_sender_address_list(dtype, ttype, False))),
+                            "request_funds_sender" : list(stmanage.get_permission_request_funds_address())
+                            }
+
                     obj = exfunds.exfunds(mod, 
                             dtype,
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
-                            fromchain = trantype.VIOLAS.value,
-                            violas_nodes = stmanage.get_violas_nodes(), 
-                            btc_nodes = stmanage.get_btc_nodes(),
-                            libra_nodes = stmanage.get_libra_nodes(),
-                            ethereum_nodes = stmanage.get_eth_nodes(),
-                            btc_senders = list(set(stmanage.get_sender_address_list(dtype, trantype.BTC.value, False))),
-                            violas_senders = list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
-                            libra_senders = list(set(stmanage.get_sender_address_list(dtype, trantype.LIBRA.value, False))),
-                            ethereum_senders = list(set(stmanage.get_sender_address_list(dtype, trantype.ETHEREUM.value, False))),
-                            request_funds_sender = list(stmanage.get_permission_request_funds_address())
+                            **kwargs
                             )
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
                     [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
@@ -791,6 +798,8 @@ class works:
             lens = fixlen
         elif isinstance(fixlen, int):
             lens.append(fixlen)
+        elif fixlen is None:
+            return name.startswith(startswith) and name.endswith(endswith)
         else:
             raise Exception(f"fixlen type{type(fixlen)} is invalid.")
         return name.startswith(startswith) and len(name) in lens and name.endswith(endswith)
@@ -810,9 +819,9 @@ class works:
                 self.funcs_map.update(self.create_func_dict(item, self.work_efilter))
             elif name == "V2VSWAPPROOF":
                 self.funcs_map.update(self.create_func_dict(item, self.work_swapproof))
-            elif name == "FUNDSPROOF":
+            elif self.is_match(name, "FUNDS", "PROOF", None): 
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2xproof))
-            elif name == "FUNDSEX":
+            elif self.is_match(name, "FUNDS", "EX", None): 
                 self.funcs_map.update(self.create_func_dict(item, self.work_fundsex))
             elif self.is_match(name, "V2L", "PROOF", [11, 9]): #V2LXXXPROOF   V2LMPROOF
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2xproof))

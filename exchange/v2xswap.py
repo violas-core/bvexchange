@@ -96,10 +96,6 @@ class v2xswap(exbase):
         ret = result(error.FAILED)
         self._logger.info(f"start exchange {self.dtype}, version={version}, state(None: new swap) = {state}, detail = {detail} datas from server.")
 
-        #only violas and libra use this , btc can't use version
-        if state is not None:
-            self.latest_version[receiver] = max(version, self.latest_version.get(receiver, -1))
-
         #if found transaction in history.db(state == None), 
         #then get_transactions's latest_version is error(too small or other case)' 
         if state is None and self.has_info(tran_id):

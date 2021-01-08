@@ -96,18 +96,27 @@ class exfbase(baseobject):
         for ttype in trantype:
             if ttype == trantype.UNKOWN:
                 continue
+            senders_name = self.create_senders_key(ttype.value)
+
+            arg_senders_name = kwargs.get(senders_name)
+            arg_chain_nodes = kwargs.get(self.create_nodes_key(ttype.value))
 
             #set property for senders 
-            senders_name = self.create_senders_key(ttype.value)
-            self.append_property(senders_name, kwargs.get(senders_name))
+            self.append_property(senders_name, arg_senders_name)
 
-            #set property for wallet
-            self.append_property(self.create_wallet_key(ttype.value), \
-                    walletfactory.create(self.name(), ttype.value))
+            if arg_senders_name and arg_chain_nodes:
+                #set property for wallet
+                self.append_property(self.create_wallet_key(ttype.value), \
+                        walletfactory.create(self.name(), ttype.value))
 
-            #set property for client
-            self.append_property(self.create_client_key(ttype.value), \
-                    clientfactory.create(self.name(), ttype.value, kwargs.get(self.create_nodes_key(ttype.value))))
+                #set property for client
+                self.append_property(self.create_client_key(ttype.value), \
+                        clientfactory.create(self.name(), ttype.value, arg_chain_nodes))
+            else:
+                self.append_property(self.create_wallet_key(ttype.value), None) 
+                self.append_property(self.create_client_key(ttype.value), None)
+
+
 
     def load_vlsmproof(self, address):
         if self.ethereum_client:
@@ -431,7 +440,6 @@ class exfbase(baseobject):
     def start(self):
         try:
             self._logger.debug("start works")
-            gas = 1000
             receivers = self.receivers
 
             #requirement checks
@@ -480,8 +488,8 @@ class exfbase(baseobject):
                         sender = data.get("address")
                         version = data.get("version")
 
-                        self.pserver.set_exec_points(receiver, version)
                         if not self.has_request_funds_permission(sender):
+                            self.pserver.set_exec_points(receiver, max(latest_version,version))
                             self._logger.debug(f"sender not permission to request funds")
                             continue
 
@@ -491,9 +499,9 @@ class exfbase(baseobject):
                             self._logger.warning(f"not found {chain} {token_id} map sender or request amount is too big, " + 
                                 f"check address and amount({amount})")
                             continue
-
                         map_sender = ret.datas
 
+                        self.pserver.set_exec_points(receiver, max(latest_version,version))
                         ret = self.exec_exchange(data, from_sender, map_sender, receiver)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)

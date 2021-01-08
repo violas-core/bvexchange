@@ -56,7 +56,7 @@ class dbindexbase(enumbase):
     LFILTER = 3
     BFILTER = 4
     EFILTER = 5
-    FUNDS   = 6
+    FUNDSVLS = 6
     #proof datas
     V2LM    = 8
     L2VM    = 9
@@ -81,6 +81,10 @@ class dbindexbase(enumbase):
     V2VSWAP = 60
     E2VM   = 62
     V2EM   = 63
+    FUNDSBTC = 70
+    FUNDSVBTC = 70
+    FUNDSUSDT = 71
+    FUNDSVUSDT = 72
 
 '''
 filter chain type
