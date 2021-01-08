@@ -54,7 +54,6 @@ class exfbase(baseobject):
         '''
 
         baseobject.__init__(self, name)
-        self.latest_version = {}
         self.from_chain = fromchain
         self.excluded = None
 
@@ -463,11 +462,11 @@ class exfbase(baseobject):
                 ret  = self.violas_wallet.get_account(receiver)
                 self.check_state_raise(ret, f"get receiver({receiver})'s account failed.")
                 from_sender = ret.datas
-                latest_version = self.latest_version.get(receiver, -1) + 1
+                latest_version = self.pserver.get_exec_points(receiver).datas + 1
 
                 #get new transaction from server
                 self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver}")
-                ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version, self.step(), excluded = self.excluded)
+                ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version, excluded = self.excluded)
                 self._logger.debug(f"will execute transaction(start) : {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     for data in ret.datas:
@@ -479,12 +478,13 @@ class exfbase(baseobject):
                         token_id = data.get("token_id")
                         amount = data.get("amount")
                         sender = data.get("address")
+                        version = data.get("version")
 
+                        self.pserver.set_exec_points(receiver, version)
                         if not self.has_request_funds_permission(sender):
                             self._logger.debug(f"sender not permission to request funds")
                             continue
 
-                        self.latest_version[receiver] += 1
                         #get map sender from  senders
                         ret = self.get_map_sender_account(chain, token_id, amount)
                         if ret.state != error.SUCCEED:

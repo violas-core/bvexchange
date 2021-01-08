@@ -77,7 +77,6 @@ class dbvproof(dbvbase):
             ret = parse_except(e)
         return ret
 
-
     def get_proof_version(self, version):
         try:
             return self.get(version)
@@ -208,6 +207,16 @@ class dbvproof(dbvbase):
 
     def get_record(self, name, key):
         ret = self.hget(name, key)
+        return ret
+
+    def set_exec_points(self, key, point):
+        ret = self.hset("exec_points", key, point)
+
+    def get_exec_points(self, key):
+        ret = self.hget("exec_points", key)
+        if ret.state == error.SUCCEED:
+            if ret.datas is None:
+                ret = result(error.SUCCEED, "", -1) #first get, not set it ,so return -1
         return ret
 
     def get_records(self, opttype, names, start = 0, limit = 10):

@@ -129,3 +129,9 @@ class requestclient(baseobject):
 
     def get_latest_chain_ver(self):
         return self._rclient.get_latest_chain_ver()
+
+    def set_exec_points(self, key, point):
+        return self.set_exec_points(key, point)
+
+    def get_exec_points(self, key):
+        return self._rclient.get_exec_points(key)
