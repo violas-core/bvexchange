@@ -217,6 +217,8 @@ class dbvproof(dbvbase):
         if ret.state == error.SUCCEED:
             if ret.datas is None:
                 ret = result(error.SUCCEED, "", -1) #first get, not set it ,so return -1
+        
+        ret.datas = int(ret.datas) if ret.state == error.SUCCEED else ret.datas
         return ret
 
     def get_records(self, opttype, names, start = 0, limit = 10):
