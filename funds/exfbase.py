@@ -97,7 +97,6 @@ class exfbase(baseobject):
         self.append_property("pserver", requestclient(self.name(), self.proofdb))
         self.append_property("request_funds_sender", kwargs.get("request_funds_sender"))
 
-        print(kwargs)
         for ttype in trantype:
             if ttype == trantype.UNKOWN:
                 continue
@@ -110,7 +109,6 @@ class exfbase(baseobject):
             self.append_property(senders_name, arg_senders_name)
 
             if arg_senders_name and arg_chain_nodes:
-                print(f"set client ttype : {ttype}")
                 #set property for wallet
                 self.append_property(self.create_wallet_key(ttype.value), \
                         walletfactory.create(self.name(), ttype.value))
@@ -119,7 +117,6 @@ class exfbase(baseobject):
                 self.append_property(self.create_client_key(ttype.value), \
                         clientfactory.create(self.name(), ttype.value, arg_chain_nodes))
             else:
-                print(f"set client ttype : {ttype} = None")
                 self.append_property(self.create_wallet_key(ttype.value), None) 
                 self.append_property(self.create_client_key(ttype.value), None)
 
