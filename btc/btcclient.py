@@ -129,8 +129,9 @@ class btcclient(baseobject):
             dbfile = os.path.join(path, f"{key}.point")
         return dbfile
 
-    def set_exec_points(self, key, point):
+    def set_exec_points(self, key, point, prefix = None):
         try:
+            key = self.create_points_key(key, prefix)
             with open(self.create_points_key(key), 'w+') as pf:
                 pf.write(f"point")
             ret = result(error.SUCCEED, datas = True)
@@ -138,8 +139,9 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def get_exec_points(self, key):
+    def get_exec_points(self, key, prefix = None):
         try:
+            key = self.create_points_key(key, prefix)
             with open(self.create_points_key(key), "w+") as pf:
                 point = pf.read()
                 point = int(point) if point else -1

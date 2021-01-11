@@ -81,10 +81,16 @@ class dbindexbase(enumbase):
     V2VSWAP = 60
     E2VM   = 62
     V2EM   = 63
+
+    '''
+    funds spec type = FUNDS + TOKEN_ID
+    append trantype item when want support new token id
+
+    '''
     FUNDSBTC = 70
-    FUNDSVBTC = 70
-    FUNDSUSDT = 71
-    FUNDSVUSDT = 72
+    FUNDSVBTC = 71
+    FUNDSUSDT = 72
+    FUNDSVUSDT = 73
 
 '''
 filter chain type

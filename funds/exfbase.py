@@ -29,6 +29,7 @@ from comm.values import datatypebase as datatype, trantypebase as trantype
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 class exfbase(baseobject):    
+    PRE_FIX = "funds"
 
     class amountswap(amountconver):
         pass
@@ -385,6 +386,8 @@ class exfbase(baseobject):
                             continue
 
                         #get map sender from  senders
+                        #if token amount is too small, exchange next request, until funds account can payment token to requestor
+                        #Reprocessing error logic is different from main logic ----**********----
                         ret = self.get_map_sender_account(chain, token_id, amount)
                         if ret.state != error.SUCCEED:
                             self._logger.warning(f"not found {chain} {token_id} map sender or request amount is too big, " + 
@@ -470,7 +473,7 @@ class exfbase(baseobject):
                 ret  = self.violas_wallet.get_account(receiver)
                 self.check_state_raise(ret, f"get receiver({receiver})'s account failed.")
                 from_sender = ret.datas
-                latest_version = self.pserver.get_exec_points(receiver).datas + 1
+                latest_version = self.pserver.get_exec_points(receiver, self.PRE_FIX).datas + 1
 
                 #get new transaction from server
                 self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver}")
@@ -489,19 +492,18 @@ class exfbase(baseobject):
                         version = data.get("version")
 
                         if not self.has_request_funds_permission(sender):
-                            self.pserver.set_exec_points(receiver, max(latest_version,version))
+                            self.pserver.set_exec_points(receiver, max(latest_version,version), self.PRE_FIX)
                             self._logger.debug(f"sender not permission to request funds")
                             continue
 
                         #get map sender from  senders
+                        #if token's amount is too small, not exchange next version
                         ret = self.get_map_sender_account(chain, token_id, amount)
-                        if ret.state != error.SUCCEED:
-                            self._logger.warning(f"not found {chain} {token_id} map sender or request amount is too big, " + 
+                        self.check_state_raise(f"not found {chain} {token_id} map sender or request amount is too big, " + 
                                 f"check address and amount({amount})")
-                            continue
                         map_sender = ret.datas
 
-                        self.pserver.set_exec_points(receiver, max(latest_version,version))
+                        self.pserver.set_exec_points(receiver, max(latest_version,version), self.PRE_FIX)
                         ret = self.exec_exchange(data, from_sender, map_sender, receiver)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
