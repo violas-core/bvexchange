@@ -116,12 +116,12 @@ class exfunds(exfbase):
             markdata = target_client.create_data_for_mark(target_chain, self.dtype, \
                     tran_id, version)
 
-            self._logger.debug(f"exec_exchange-2. start send {token_id} to {toaddress} amount = {send_amount}...")
+            self._logger.debug(f"exec_exchange-2. start from {self.get_address_from_account(funds_sender)} send {token_id} to {toaddress} amount = {send_amount}...")
             ret = target_client.send_coin(funds_sender, toaddress, \
                     send_amount, token_id, data=markdata)
 
             if ret.state != error.SUCCEED:
-                self._logger.error(f"exec_exchange-2.result: failed.")
+                self._logger.error(f"exec_exchange-2.result: failed. {ret.message}")
                 self.update_localdb_state_with_check(tran_id, localdb.state.PFAILED, \
                         json.dumps(detail))
                 return ret
