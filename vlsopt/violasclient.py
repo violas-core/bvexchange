@@ -350,8 +350,8 @@ class violasclient(baseobject):
 
     def send_coin(self, from_account, to_address, amount, token_id, module_address = None, data=None, auth_key_prefix = None, is_blocking=True, max_gas_amount = 100_0000, gas_token_id = None, *args, **kwargs):
         try:
-            if (len(to_address) not in VIOLAS_ADDRESS_LEN) or (amount < 1) or ((module_address is not None) and (len(module_address) not in VIOLAS_ADDRESS_LEN)):
-                return result(error.ARG_INVALID)
+            if (len(to_address) not in VIOLAS_ADDRESS_LEN) or amount < 1:
+                return result(error.ARG_INVALID, f"args is invalid check to_address({len(to_address)} is in {VIOLAS_ADDRESS_LEN}): {to_address} and amount(> 0): {amount}")
 
             (_, mod) = self.split_full_address(module_address).datas
             module_address = None
@@ -775,7 +775,6 @@ class violasserver(baseobject):
             #https://api4.violas.io/1.0/violas/mint?address=4ba8309ef7d504851ff0018792756c59&auth_key_perfix=053ee0194d34396f582ddf091ce44de7
             auth, addr = split_full_address(address)
             auth = auth_key_prefix if auth is None else auth
-            print(f"auth: {auth}")
             url = f"https://{self.__node['host']}/1.0/violas/mint?address={addr}&auth_key_perfix={auth}"
             response = requests.get(url)
             if response is not None:
