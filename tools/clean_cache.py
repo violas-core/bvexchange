@@ -69,6 +69,7 @@ def init_args(pargs):
     pargs.clear()
     mods = list_valid_mods()
     pargs.append("help", "show arg list.")
+    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)
     pargs.append("mod", "include infos", True, mods, priority = 20)
     pargs.append("exclude", "exclude infos", True, [ mod for mod in mods if mod not in ("all")], priority = 30)
 
