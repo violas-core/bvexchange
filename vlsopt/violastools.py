@@ -29,6 +29,7 @@ from violasclient import (
 from enum import Enum
 from vrequest.request_client import requestclient
 from analysis.analysis_filter import afilter
+import analysis.parse_transaction as ptran
 from dataproof import dataproof
 
 #module name
@@ -128,14 +129,15 @@ def get_latest_version():
     ret = client.get_latest_transaction_version()
     logger.debug("latest version: {0}".format(ret.datas))
 
-def get_transactions(start_version, limit = 1, fetch_event = True, raw = False):
+def get_transactions(start_version, limit = 1, fetch_event = True, datatype = "filter"):
+    '''
+    @dev get transaction and show info 
+    @param datatype show data info type. raw: rawtransaction data of client, filter: filter will storage datas, proof: proof storage datas
+    '''
     logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
 
     if isinstance(fetch_event, str):
-        fetch_event = fetch_event == "True"
-
-    if isinstance(raw, str):
-        raw = raw == "True"
+        fetch_event = fetch_event in ["true", "True"]
 
     client = get_violasclient()
     client.swap_set_owner_address(stmanage.get_swap_owner())
@@ -150,12 +152,15 @@ def get_transactions(start_version, limit = 1, fetch_event = True, raw = False):
     print(f"count: {len(ret.datas)}")
 
     for data in ret.datas:
-        print(data.to_json())
-        print("******")
-        if raw:
+        if datatype == "raw":
             print(data)
-        else:
+
+        elif datatype in ["filter", "proof"]:
+            print(data.to_json())
+            print(f"******************{datatype}*********************************")
             info = afilter.get_tran_data(data, chain =="violas")
+            if datatype in ["proof"]:
+                info = ptran.parse_tran(info).datas
             json_print(info)
 
 def get_address_version(address):
