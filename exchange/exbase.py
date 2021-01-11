@@ -41,13 +41,14 @@ from analysis.analysis_filter import afilter
 from dataproof import dataproof
 from comm.values import (
         datatypebase, 
-        trantypebase as trantype
+        trantypebase as trantype,
+        VIOLAS_ADDRESS_LEN, 
+        ETH_ADDRESS_LEN
         )
 
 #module self.name
 #name="vbbase"
 
-VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 #load logging
 class exbase(baseobject):    
 
@@ -402,7 +403,7 @@ class exbase(baseobject):
                 self._logger.debug(f"request funds for {tran_id} is existed. ")
                 return result(error.SUCCEED)
 
-            data = self.violas_client.create_data_for_funds(trantype.VIOLAS.value, datatypebase.FUNDS.value, chain, tran_id, token_id, amount, to_address)
+            data = self.violas_client.create_data_for_funds(trantype.VIOLAS.value, "funds", chain, tran_id, token_id, amount, to_address)
 
             #send funds request must be use violas' token, maybe use VLS alwars???
             if chain != trantype.VIOLAS.value:
@@ -515,6 +516,28 @@ class exbase(baseobject):
         return False
 
     def chain_data_is_valid(self, data):
+        try:
+            state = True
+            chain = self.map_chain
+            address = data.get("to_address")
+            if chain == trantype.VIOLAS:
+                state = address in VIOLAS_ADDRESS_LEN
+            elif chain == trantype.LIBRA:
+                state = address in LIBRA_ADDRESS_LEN
+            elif chain == trantype.BTC:
+                pass
+            elif chain == trantype.ETHEREUM:
+                pass
+            else:
+                return False
+
+            return state
+
+        except Exception as e:
+            pass
+        return False
+        
+
         if False: # btc and violas is diff ????????
             self._logger.warning(f"transaction(tran_id = {data['tran_id']})) is invalid. " + 
                     f"ignore it and process next.")

@@ -90,10 +90,10 @@ class exmap(exbase):
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
         if state is None and self.has_info(tran_id):
-            return ret
+           return ret
 
         if not self.chain_data_is_valid(data):
-           return 
+            return result(error.ARG_INVALID, f"transaction data is invalid. data :{data}")
 
         amount_swap = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()], self.from_client.get_decimals(from_token_id))
         map_amount = amount_swap.amount(self.map_chain, self.map_client.get_decimals(map_token_id))

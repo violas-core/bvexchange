@@ -102,3 +102,7 @@ class baseobject(object):
 
     def create_nodes_key(self, chain):
         return f"{self.to_str(chain)}_nodes"
+
+    def create_point_key(self, key, prefix = None):
+        key = f"{prefix}_{key}" if prefix else key
+        return key

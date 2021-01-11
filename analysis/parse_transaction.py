@@ -47,7 +47,7 @@ def json_to_dict(data):
 def get_opttype_from_dtype(dtype):
     if dtype in [datatype.V2LM.value, datatype.L2VM.value, datatype.V2BM.value, datatype.B2VM.value, datatype.V2EM.value, datatype.E2VM.value]:
         return "map"
-    elif dtype in [datatype.FUNDS.value]:
+    elif dtype.startswith("funds"):
         return "funds"
     else:
         return "swap"
@@ -121,7 +121,8 @@ def parse_tran(transaction):
         datas["txid"]           = transaction.get("txid", "")
 
         #funds used
-        if datas["type"] == datatype.FUNDS.value:
+        if datas["type"].startswith("funds"):
+            datas["type"]       = f"funds{datas['type']}"
             datas["chain"]      = data_dict.get("chain")
             datas["amount"]     = data_dict.get("amount")
             datas["token_id"]   = data_dict.get("token_id")

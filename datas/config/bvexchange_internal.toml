@@ -82,7 +82,7 @@ exchange_async = true
 #ethereum contract for mapping erc20 token
 [ethereum_tokens]
     [ethereum_tokens.vlsmproof]
-        address = "0xFFf6458a07bCb69df2EaEbbf9Cf463aB08F3f39B"
+        address = "0xC600601D8F3C3598628ad996Fe0da6C8CF832C02"
         support= true  
 
 # tokens info 
@@ -287,7 +287,7 @@ exchange_async = true
         chain = "violas"
 
     [[address_list.receiver]]
-        address = "0xFFf6458a07bCb69df2EaEbbf9Cf463aB08F3f39B"
+        address = "0xC600601D8F3C3598628ad996Fe0da6C8CF832C02"
         type = "e2vm"
         chain = "ethereum"
 

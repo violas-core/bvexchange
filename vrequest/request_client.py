@@ -130,8 +130,8 @@ class requestclient(baseobject):
     def get_latest_chain_ver(self):
         return self._rclient.get_latest_chain_ver()
 
-    def set_exec_points(self, key, point):
-        return self.set_exec_points(key, point)
+    def set_exec_points(self, key, point, prefix = None):
+        return self._rclient.set_exec_points(self.create_point_key(key, prefix), point)
 
-    def get_exec_points(self, key):
-        return self._rclient.get_exec_points(key)
+    def get_exec_points(self, key, prefix = None):
+        return self._rclient.get_exec_points(self.create_point_key(key, prefix))
