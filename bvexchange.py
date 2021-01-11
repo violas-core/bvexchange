@@ -702,24 +702,31 @@ class works(baseobject):
             logger.critical("start: fundsxxxex")
             nsec, mod, dtype = self.__get_input_args(**kargs)
             token_id = self.__get_token_name_from_fundstype(dtype)
-            print(f"token_id: {token_id} dtype: {dtype}")
             ttype = stmanage.get_trantype_with_token_id(token_id)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
+                    #violas client is fixed
                     kwargs = {
-                            "fromchain" : trantype.VIOLAS.value,
-                            "violas_nodes" : stmanage.get_target_nodes(trantype.VIOLAS), 
-                            "violas_senders" : list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
-                            f"{self.create_nodes_key(ttype)}" : stmanage.get_target_nodes(ttype),
-                            f"{self.create_senders_key(ttype)}" : list(set(stmanage.get_sender_address_list(dtype, ttype, False))),
+                            f"{self.create_nodes_key(trantype.VIOLAS)}" : stmanage.get_target_nodes(trantype.VIOLAS),
+                            f"{self.create_senders_key(trantype.VIOLAS)}" : list(set(stmanage.get_sender_address_list("funds", trantype.VIOLAS, False))),
                             "request_funds_sender" : list(stmanage.get_permission_request_funds_address())
                             }
+
+                    #other chain client
+                    kwargs.update(
+                            {
+                            f"{self.create_nodes_key(ttype)}" : stmanage.get_target_nodes(ttype),
+                            f"{self.create_senders_key(ttype)}" : list(set(stmanage.get_sender_address_list("funds", ttype, False))),
+                            }
+                            )
 
                     obj = exfunds.exfunds(mod, 
                             dtype,
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
+                            list(set(stmanage.get_receiver_address_list("funds", trantype.VIOLAS.value, False))),
+                            trantype.VIOLAS.value,
+                            ttype.value,
                             **kwargs
                             )
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
