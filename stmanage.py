@@ -349,7 +349,7 @@ def get_target_nodes(ttype):
     
     assert isinstance(target_ttype, str), f"input args {ttype} can't convert str type"
 
-    globals()[f"get_{target_ttype}_nodes"]()
+    return globals()[f"get_{target_ttype}_nodes"]()
 
 def get_libra_nodes():
     return setting.setting.libra_nodes

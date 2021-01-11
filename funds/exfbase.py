@@ -37,11 +37,13 @@ class exfbase(baseobject):
     def __init__(self, name, dtype, \
             proofdb, receivers, \
             fromchain = "violas", \
+            tochain = "violas", \
             **kwargs):
         ''' swap token and send coin to payee(metadata's to_address)
             proofdb  : transaction proof source(proof db conf)
-            receivers: receive chain' addresses
+            receivers: addresses of receive funds request 
             fromchain: source chain name: violas
+            tochain: target chain name: violas btc ethereum libra
             kwargs:
                 btc_nodes: connect btc node info
                 violas_nodes: connect violas node info
@@ -56,9 +58,10 @@ class exfbase(baseobject):
 
         baseobject.__init__(self, name)
         self.from_chain = fromchain
+        self.to_chain = tochain
         self.excluded = None
 
-        self.append_property("db", localdb(name, f"{self.from_chain}_{dtype}.db"))
+        self.append_property("db", localdb(name, f"{self.from_chain}_{self.to_chain}_{dtype}.db"))
     
         #violas/libra init
         self.append_property("receivers", receivers)
@@ -94,6 +97,7 @@ class exfbase(baseobject):
         self.append_property("pserver", requestclient(self.name(), self.proofdb))
         self.append_property("request_funds_sender", kwargs.get("request_funds_sender"))
 
+        print(kwargs)
         for ttype in trantype:
             if ttype == trantype.UNKOWN:
                 continue
@@ -106,6 +110,7 @@ class exfbase(baseobject):
             self.append_property(senders_name, arg_senders_name)
 
             if arg_senders_name and arg_chain_nodes:
+                print(f"set client ttype : {ttype}")
                 #set property for wallet
                 self.append_property(self.create_wallet_key(ttype.value), \
                         walletfactory.create(self.name(), ttype.value))
@@ -114,6 +119,7 @@ class exfbase(baseobject):
                 self.append_property(self.create_client_key(ttype.value), \
                         clientfactory.create(self.name(), ttype.value, arg_chain_nodes))
             else:
+                print(f"set client ttype : {ttype} = None")
                 self.append_property(self.create_wallet_key(ttype.value), None) 
                 self.append_property(self.create_client_key(ttype.value), None)
 

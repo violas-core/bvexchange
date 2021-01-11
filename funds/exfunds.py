@@ -19,13 +19,15 @@ class exfunds(exfbase):
             proofdb, 
             receivers, 
             fromchain,
+            tochain,
             **kwargs
             ):
 
         ''' swap token and send coin to payee(metadata's to_address)
             proofdb  : transaction proof source(proof db conf)
-            receivers: receive chain' addresses
+            receivers: addresses of receive funds request 
             fromchain: source chain name: violas
+            tochain: target chain name: violas btc ethereum ethereum
             kwargs:
                 btc_nodes: connect btc node info
                 violas_nodes: connect violas node info
@@ -35,11 +37,13 @@ class exfunds(exfbase):
                 violas_senders: violas chain accounts
                 libra_senders: libra chain accounts
                 ethereum_senders: ethereum chain accounts
+                request_funds_sender: have request funds permission account address.
         '''
 
         exfbase.__init__(self, name, dtype, \
                 proofdb, receivers, \
                 fromchain, \
+                tochain, \
                 **kwargs)
         self.init_exec_states()
 
