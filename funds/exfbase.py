@@ -505,7 +505,7 @@ class exfbase(baseobject):
                         #get map sender from  senders
                         #if token's amount is too small, not exchange next version
                         ret = self.get_map_sender_account(chain, token_id, amount)
-                        self.check_state_raise(f"not found {chain} {token_id} map sender or request amount is too big, " + 
+                        self.check_state_raise(ret, f"not found {chain} {token_id} map sender or request amount is too big, " + 
                                 f"check address and amount({amount})")
                         map_sender = ret.datas
 
