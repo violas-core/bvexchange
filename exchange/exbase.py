@@ -518,12 +518,12 @@ class exbase(baseobject):
     def chain_data_is_valid(self, data):
         try:
             state = True
-            chain = self.map_chain
+            chain = trantype(self.map_chain)
             address = data.get("to_address")
             if chain == trantype.VIOLAS:
-                state = address in VIOLAS_ADDRESS_LEN
+                state = len(address)in VIOLAS_ADDRESS_LEN
             elif chain == trantype.LIBRA:
-                state = address in LIBRA_ADDRESS_LEN
+                state = len(address)in LIBRA_ADDRESS_LEN
             elif chain == trantype.BTC:
                 pass
             elif chain == trantype.ETHEREUM:
@@ -735,7 +735,7 @@ class exbase(baseobject):
                 latest_version = self.pserver.get_exec_points(receiver).datas + 1
 
                 #get new transaction from server
-                self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver}")
+                self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver} start version = {latest_version}")
                 ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version, excluded = self.excluded)
                 self._logger.debug(f"will execute transaction(start) : {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
