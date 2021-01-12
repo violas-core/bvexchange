@@ -54,6 +54,26 @@ class e2vm(exmap):
 def main():
        print("start main")
        stmanage.set_conf_env("../bvexchange.toml")
+       try:
+          dtype = "e2vm"
+          obj = e2vm("e2vm",
+                  dtype,
+                  stmanage.get_eth_nodes(), 
+                  stmanage.get_violas_nodes(),
+                  stmanage.get_db(dtype), 
+                  list(set(stmanage.get_receiver_address_list(dtype, trantype.ETHEREUM.value, False))),
+                  list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
+                  stmanage.get_map_address(dtype, trantype.ETHEREUM.value, False),
+                  funds = stmanage.get_funds_address()
+                  )
+          obj.load_vlsmproof(stmanage.get_vlsmproof_address())
+          [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
+          obj.start()
+       except Exception as e:
+          parse_except(e)
+       finally:
+          print(f"stop: e2vm")
+
 
 if __name__ == "__main__":
     main()
