@@ -97,6 +97,7 @@ class exmap(exbase):
 
         amount_swap = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()], self.from_client.get_decimals(from_token_id))
         map_amount = amount_swap.amount(self.map_chain, self.map_client.get_decimals(map_token_id))
+        combine_amount = amount_swap.amount(self.from_chain, self.from_client.get_decimals(from_token_id))
         micro_amount = amount_swap.microamount(self.map_chain, self.map_client.get_decimals(map_token_id))
 
         self._logger.debug(f"exec_exchange-start...")
@@ -142,7 +143,7 @@ class exmap(exbase):
             self._logger.debug(f"exec_exchange-3. start send_coin_for_update_state_to_end...")
             combine_address = self.get_combine_address(combine_account, receiver)
             ret =  self.send_coin_for_update_state_to_end(from_sender, combine_address, tran_id, \
-                    from_token_id, map_amount, out_amount_real=micro_amount, version=version)
+                    from_token_id, combine_amount, out_amount_real=micro_amount, version=version)
             if ret.state != error.SUCCEED:
                 return ret
 
