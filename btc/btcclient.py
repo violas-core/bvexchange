@@ -121,19 +121,22 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def create_points_key(self, key, path = "./datas/localdbs/points"):
-        dbfile = f"{key}.point"
+    def create_points_key(self, key, prefix = None, path = "./datas/localdbs/points"):
+        if prefix:
+            dbfile = f"{key}_{prefix}.point"
+        else:
+            dbfile = f"{key}.point"
+
         if path is not None:
             if not os.path.exists(path):
                 os.makedirs(path)
-            dbfile = os.path.join(path, f"{key}.point")
+            dbfile = os.path.join(path, dbfile)
         return dbfile
 
     def set_exec_points(self, key, point, prefix = None):
         try:
-            key = self.create_points_key(key, prefix)
-            with open(self.create_points_key(key), 'w+') as pf:
-                pf.write(f"point")
+            with open(self.create_points_key(key, prefix), 'w+') as pf:
+                pf.write(f"{point}")
             ret = result(error.SUCCEED, datas = True)
         except Exception as e:
             ret = parse_except(e)
@@ -141,8 +144,7 @@ class btcclient(baseobject):
 
     def get_exec_points(self, key, prefix = None):
         try:
-            key = self.create_points_key(key, prefix)
-            with open(self.create_points_key(key), "w+") as pf:
+            with open(self.create_points_key(key, prefix), "r") as pf:
                 point = pf.read()
                 point = int(point) if point else -1
             ret = result(error.SUCCEED, datas = point)
@@ -218,9 +220,15 @@ class btcclient(baseobject):
 
     def __map_tran(self, data):
         tran_data = json.dumps({"flag":"btc", \
-            "type":data.get("type"), "state":data.get("state"), "to_address":data.get("address"), "to_module":data.get("vtoken"), \
-            "out_amount":data.get("out_amount"), "out_amount_real":data.get("out_amount_real", data.get("out_amount")), "times":data.get("times"), "tran_id":data.get("tran_id"), \
+            "type":data.get("type"), \
+            "state":data.get("state"), \
+            "to_address":data.get("address"), \
+            "to_module":data.get("vtoken"), \
+            "out_amount":data.get("out_amount"), \
+            "out_amount_real":data.get("out_amount_real", data.get("out_amount")), \
+            "times":data.get("times"), "tran_id":data.get("tran_id"), \
             "sequence":data.get("sequence")})
+
         _, module = split_full_address(data.get("vtoken"))
         return {
                 "version": data.get("index"),\
