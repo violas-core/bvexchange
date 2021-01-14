@@ -335,7 +335,7 @@ def test_b2vm():
     max_work_time = 1200
 
     #violas-BTC : bitcoin-BTC = 1 : 100
-    map_amount = 1_0_0000 #satoshi 1_0000_0000 = 1 BTC
+    map_amount = 1_0000 #satoshi 1_0000_0000 = 1 BTC
     
     #send BTC from this address
     from_address = '2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY'
@@ -448,14 +448,16 @@ def test_b2vm():
             message_wheel(max_work_time, start_time, info = f"fund transaction ... {info}", sleep_secs = 0)
 
             if tran_tran_id == map_tran_id:
-                assert tran_amount == map_amount, "mapping amount is error. eth-{token_id} amount = {map_amount}, but violas-{tran_token_id} amount is {tran_amount}"
+                assert tran_amount == int(map_amount/100), f"mapping amount is error. eth-{token_id} amount = {map_amount}, but violas-{tran_token_id} amount is {tran_amount}"
                 mapping_ok = True
                 print(f'''\n
                 mapping succeed. 
                 check violas address: 
                     version = {new_version}, 
-                    receiver = {vls_receiver}, 
-                    amount = {map_amount}"
+                    receiver = {vls_btc_receiver}, 
+                    {Tokens.BTC_BTC.value} amount = {map_amount}"
+                    {Tokens.VIOLAS_BTC.value} amount = {tran_amount}"
+                    
                 ''')
                 return
 
