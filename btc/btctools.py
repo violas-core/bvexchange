@@ -54,6 +54,11 @@ def gettransaction(tranid):
     assert ret.state == error.SUCCEED, " gettransaction failed"
     print(ret.to_json())
 
+def get_transactions(cursor, limit = 1):
+    client = getbtcclient()
+    ret = client.get_transactions(cursor, limit)
+    [json_print(tran.to_json()) for tran in ret.datas]
+
 def sendtoaddress(address, amount):
     client = getbtcclient()
     ret = client.sendtoaddress(address, amount)
@@ -90,6 +95,11 @@ def listunspent(minconf = 1, maxconf = 9999999, addresses = None, include_unsafe
     assert ret.state == error.SUCCEED, " listunspent failed"
     for data in ret.datas:
         print("address:{}, amount:{}".format(data["address"], data["amount"]))
+
+def get_transactions_for_start(receiver, opttype, start_version = None, excluded = None):
+    client = getbtcclient()
+    ret = client.get_transactions_for_start(receiver, opttype, start_version, excluded)
+    print(ret.to_json())
 
 def listexproofforstart(opttype, receiver, excluded = None):
     client = getbtcclient()
@@ -146,6 +156,11 @@ def getrawtransaction(txid, verbose = True):
     json_print(ret.to_json())
 
 
+def get_latest_transaction_version():
+    client = getbtcclient()
+    ret = client.get_latest_transaction_version()
+    json_print(ret.to_json())
+
 def init_args(pargs):
     pargs.append("help", "show arg list")
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 10)
@@ -156,7 +171,9 @@ def init_args(pargs):
     pargs.append(sendexproofmark, "create new exchange mark proof, subtract fee from toamount.")
     pargs.append(generatetoaddress, "generate new block to address.")
     pargs.append(listunspent, "returns array of unspent transaction outputs.")
-    pargs.append(listexproofforstart, "returns array of proof state is start .")
+    pargs.append(get_transactions_for_start, "returns array of proof state is start .")
+    pargs.append(get_transactions, "returns array of proof  .")
+    pargs.append(get_latest_transaction_version, "return latest version.")
     pargs.append(listexproofforend, "returns array of proof state is end .")
     pargs.append(listexproofforstop, "returns array of proof state is stop.")
     pargs.append(listexproofformark, "returns array of proof state is mark .")
