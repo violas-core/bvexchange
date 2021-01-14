@@ -283,9 +283,11 @@ class btcclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    def sendexproofstart(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, vtoken):
+    def sendexproofstart(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, vtoken, outamount = 0, times = 0):
         try:
-            datas = self.__rpc_connection.violas_sendexproofstart(opttype, fromaddress, toaddress, f"{amount:.8f}", vaddress, sequence, vtoken)
+            outamount = outamount if outamount > 0 else int(float(amount) * pow(10, 8))
+            print(f"outamount = {outamount} times = {times}")
+            datas = self.__rpc_connection.violas_sendexproofstart(opttype, fromaddress, toaddress, f"{amount:.8f}", vaddress, sequence, vtoken, outamount, times)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)

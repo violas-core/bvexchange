@@ -6,14 +6,14 @@ sys.path.append(os.getcwd())
 sys.path.append("..")
 
 from enum import Enum
-from comm.values import DECIMAL_VIOLAS, DECIMAL_BTC
-class amountconver():
-    class amounttype(Enum):
-        LIBRA       = 0
-        VIOLAS      = 1
-        BTC         = 2
-        ETHEREUM    = 3
+from comm.values import (
+    DECIMAL_VIOLAS, 
+    DECIMAL_BTC,
+    trantypebase as trantype
+        )
 
+class amountconver():
+    amounttype = trantype
     def __init__(self, value, atype = amounttype.VIOLAS, decimal = None):
 
         if atype in (self.amounttype.VIOLAS, self.amounttype.LIBRA):
@@ -67,8 +67,11 @@ class amountconver():
             self.__amount = int(value * self.in_decimal)
 
 
+    def amounttype_value(self, chain):
+        return chain if isinstance(chain, str) else chain.value
+
     def amount(self, chain, decimal = None):
-        chain = chain.lower()
+        chain = self.amounttype_value(chain)
         if chain in ("violas", "libra"):
             return self.out_value_micro(DECIMAL_VIOLAS)
         elif chain == "btc":
@@ -79,7 +82,7 @@ class amountconver():
             raise Exception(f"chain({chain}) is invalid.")
 
     def microamount(self, chain, decimal = None):
-        chain = chain.lower()
+        chain = self.amounttype_value(chain)
         if chain in ("violas", "libra"):
             return self.out_value_micro(DECIMAL_VIOLAS)
         elif chain == "btc":

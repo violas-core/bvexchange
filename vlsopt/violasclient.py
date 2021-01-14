@@ -149,6 +149,7 @@ class violaswallet(baseobject):
 
         return (-1, None)
 
+    @output_args
     def has_account_by_address(self, address):
         try:
             _, account = self.find_account_by_address_hex(address)

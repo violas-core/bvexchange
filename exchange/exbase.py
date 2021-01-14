@@ -45,7 +45,9 @@ from comm.values import (
         VIOLAS_ADDRESS_LEN, 
         ETH_ADDRESS_LEN
         )
-
+from comm.functions import (
+        output_args
+        )
 #module self.name
 #name="vbbase"
 
@@ -356,9 +358,8 @@ class exbase(baseobject):
             ret = parse_except(e)
         return ret
 
+    @output_args
     def send_coin_for_update_state_to_end(self, sender, receiver, tran_id, token_id, amount = 1, **kwargs):
-            self._logger.debug(f"start send_coin_for_update_state_to_end(sender={sender},"\
-                    f"recever={receiver}, tran_id={tran_id}, amount={amount})")
             tran_data = self.from_client.create_data_for_end(self.from_chain, self.dtype, tran_id, **kwargs)
             ret = self.from_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
             if ret.state != error.SUCCEED:
