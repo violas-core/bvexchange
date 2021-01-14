@@ -122,7 +122,7 @@ def parse_tran(transaction):
 
         #funds used
         if datas["type"].startswith("funds"):
-            datas["type"]       = f"funds{data_dict['token_id'].lower()}" #set funds type: fundsvls fundsbtc ...
+            datas["type"]       = f"funds{data_dict.get('token_id', '').lower()}" #set funds type: fundsvls fundsbtc ...
             datas["chain"]      = data_dict.get("chain")
             datas["amount"]     = data_dict.get("amount")
             datas["token_id"]   = data_dict.get("token_id")
