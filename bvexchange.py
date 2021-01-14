@@ -694,14 +694,12 @@ class works(baseobject):
         finally:
             logger.critical(f"stop: {mod}")
 
-    def __get_token_name_from_fundstype(self, funds_type):
-        return funds_type[5:]
 
     def work_fundsex(self, **kargs):
         try:
             logger.critical("start: fundsxxxex")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            token_id = self.__get_token_name_from_fundstype(dtype)
+            token_id = stmanage.get_token_id_from_fundstype(dtype)
             ttype = stmanage.get_trantype_with_token_id(token_id)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")

@@ -234,12 +234,12 @@ class violasproxy(baseobject):
 
         return privkeys
 
-    def violas_sendexproofstart(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, vtoken, fromprivkeys = None):#BTC
+    def violas_sendexproofstart(self, opttype, fromaddress, toaddress, amount, vaddress, sequence, vtoken, outamount, times = 0, fromprivkeys = None):#BTC
 
         fromprivkeys = self.get_privkeys(fromaddress, fromprivkeys)
         url = self.create_opt_url(self.opt.SET, self.opttype[opttype.upper()], state="start", \
                 fromaddress=fromaddress, toaddress=toaddress, toamount=amount, \
-                vreceiver=vaddress, sequence=sequence, module=vtoken, fromprivkeys=json.dumps(fromprivkeys))
+                vreceiver=vaddress, sequence=sequence, module=vtoken, fromprivkeys=json.dumps(fromprivkeys), outamount = outamount, times = times)
         return self.run_request(url)
 
     def violas_sendexproofend(self, opttype, fromaddress, toaddress, vaddress, sequence, amount, version, fromprivkeys = None):#BTC

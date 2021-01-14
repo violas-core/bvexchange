@@ -9,7 +9,8 @@ from comm.values import (
         map_chain_name, 
         workmod as work_mod, 
         datatypebase as datatype,
-        trantypebase as trantype
+        trantypebase as trantype,
+        dbindexbase as dbindex,
         )
 from dataproof.dataproof import setting
 
@@ -222,6 +223,10 @@ def get_exchang_chains(mtype):
     try:
         from_chain  = map_chain_name.get(mtype[0])
         to_chain    = map_chain_name.get(mtype[2])
+        token_id = get_token_id_from_fundstype(mtype)
+        to_chain = get_trantype_with_token_id(token_id).value if token_id else to_chain
+        from_chain =trantype.VIOLAS.value if type_is_funds(mtype) else from_chain
+        
     except Exception as e:
         from_chain = None
         to_chain = None
@@ -338,7 +343,7 @@ def get_trantype_with_token_id(token_id):
         if ttype == trantype.UNKOWN:
             continue
 
-        if token_id in [token.lower() for token in get_support_token_id(ttype)]:
+        if token_id and token_id in [token.lower() for token in get_support_token_id(ttype)]:
             return ttype
     raise ValueError(f"not found support token id({token_id}) in {trantype}")
 
@@ -465,18 +470,25 @@ def get_support_dtypes():
     mods = get_support_mods()
     return [mtype.value for mtype in datatype if mtype.value in mods]
 
+def get_token_id_from_fundstype(funds_type):
+    return funds_type[5:] if type_is_funds(funds_type) else None
+
 def get_conf():
     infos = {}
     mtypes = get_support_dtypes()
     for mtype in mtypes:
         info = {}
-        info["receiver"] = get_receiver_address_list(mtype, "violas")
-        info["sender"] = get_sender_address_list(mtype, "violas")
+        (from_chain, to_chain) = get_exchang_chains(mtype)
+        addr_type = "funds" if type_is_funds(mtype) else mtype
+    
+        info["receiver"] = get_receiver_address_list(addr_type, from_chain)
+        info["sender"] = get_sender_address_list(addr_type, to_chain)
         info["db"] = get_db(mtype)
         if info["db"] is not None:
             info["db"]["password"] = "password is keep secret"
+            info["db"]["index"] = dbindex[mtype.upper()].value
         info["loop sleep"] = get_looping_sleep(mtype)
-        info["combine"] = get_combine_address(mtype, "violas")
+        info["combine"] = get_combine_address(mtype, from_chain)
         infos[mtype] = info
     infos["traceback limit"] = get_traceback_limit()
     infos["btc conn"] = get_btc_conn()
