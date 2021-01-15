@@ -262,7 +262,7 @@ class dbvbase(baseobject):
         try:
             datas = self._client.zcard(name)
             ret = result(error.SUCCEED, "", int(datas))
-        except exception as e:
+        except Exception as e:
             ret = parse_except(e)
         return ret
 
@@ -270,7 +270,7 @@ class dbvbase(baseobject):
         try:
             datas = self._client.zcount(name)
             ret = result(error.SUCCEED, "", int(datas))
-        except exception as e:
+        except Exception as e:
             ret = parse_except(e)
         return ret
 
@@ -278,7 +278,7 @@ class dbvbase(baseobject):
         try:
             datas = self._client.zincrby(name, value, amount)
             ret = result(error.SUCCEED, "", datas)
-        except exception as e:
+        except Exception as e:
             ret = parse_except(e)
         return ret
 
@@ -291,7 +291,7 @@ class dbvbase(baseobject):
         try:
             datas = self._client.zrange(name, start, end, desc, withscores, score_cast_func)
             ret = result(error.SUCCEED, "", datas)
-        except exception as e:
+        except Exception as e:
             ret = parse_except(e)
         return ret
 
@@ -299,7 +299,7 @@ class dbvbase(baseobject):
         try:
             datas = self._client.zrank(name, value)
             ret = result(error.SUCCEED, "", datas)
-        except exception as e:
+        except Exception as e:
             ret = parse_except(e)
         return ret
 
@@ -307,7 +307,7 @@ class dbvbase(baseobject):
         try:
             datas = self._client.zrem(name, values)
             ret = result(error.SUCCEED, "", datas)
-        except exception as e:
+        except Exception as e:
             ret = parse_except(e)
         return ret
 
@@ -317,7 +317,7 @@ class dbvbase(baseobject):
         try:
             datas = self._client.zscore(name, value)
             ret = result(error.SUCCEED, "", datas)
-        except exception as e:
+        except Exception as e:
             ret = parse_except(e)
         return ret
 
@@ -327,7 +327,7 @@ class dbvbase(baseobject):
             datas = self._client.zscan(cursor = cursor, match = match, \
                     count = count, score_cast_func = score_cast_func)
             ret = result(error.SUCCEED, "", datas)
-        except exception as e:
+        except Exception as e:
             ret = parse_except(e)
         return ret
 
@@ -337,7 +337,7 @@ class dbvbase(baseobject):
         try:
             datas = self._client.zrevrange(name, start, end, withscores, score_cast_func)
             ret = result(error.SUCCEED, "", datas)
-        except exception as e:
+        except Exception as e:
             ret = parse_except(e)
         return ret
 
@@ -346,7 +346,7 @@ class dbvbase(baseobject):
         try:
             datas = self._client.zrevrangebyscore(name, max, min, start, num, withscores, score_cast_func)
             ret = result(error.SUCCEED, "", datas)
-        except exception as e:
+        except Exception as e:
             ret = parse_except(e)
         return ret
     def save(self):
