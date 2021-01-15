@@ -333,7 +333,7 @@ class exbase(baseobject):
     def rechange_db_state(self, states):
         try:
             ##update violas blockchain state to end, if sendexproofmark is ok
-            self._logger.debug(f"start rechange_db_state({[state.name for state in states]})")
+            self._logger.debug(f"start rechange_db_state({[state.name[0] for state in states]})")
             ret = self.get_record_from_localdb_with_state(states)
             if ret.state != error.SUCCEED:
                 return ret
@@ -592,7 +592,7 @@ class exbase(baseobject):
     def reexchange_data_from_failed(self, states):
         try:
             #get all info from db
-            self._logger.debug(f"start re exchange failed transaction({[state.name for state in states]})")
+            self._logger.debug(f"start re exchange failed transaction({[state.name[0] for state in states]})")
             ret = self.get_record_from_localdb_with_state(states)
             if ret.state != error.SUCCEED:
                 return ret
