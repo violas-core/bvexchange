@@ -58,7 +58,7 @@ def main():
 
         print(f"opt = {opt}")
         if opt is None:
-            raise Exception("opt not found.")
+            ret = result(error.ARG_INVALID, "opt not found")
         if opt == "address":
             return tranaddress(chain, opttype, cursor, limit)
         elif opt == "record":
