@@ -145,36 +145,43 @@ Describe the result struct, json string
  <tr>
   <td><strong>Name</strong></td>
   <td><strong>Type</strong></td>
+  <td><strong>required/optional</strong></td>
   <td><strong>Description</strong></td>
  </tr>
  <tr>
   <td><strong>state</strong></td>
   <td>string</td>
+  <td>required</td>
   <td>request state</td>
  </tr>
  <tr>
   <td><strong>message</strong></td>
   <td>string</td>
+  <td>required</td>
   <td>error info</td>
  </tr>
  <tr>
   <td><strong>datas</strong></td>
   <td>string</td>
+  <td>required</td>
   <td>datas of result</td>
  </tr>
  <tr>
   <td><strong>sign</strong></td>
   <td>string</td>
+  <td>optional</td>
   <td>server signature</td>
  </tr>
  <tr>
   <td><strong>sign_datas</strong></td>
   <td>string</td>
+  <td>optional</td>
   <td>datas of sign, hex string of result, format is json.dumps(dict("state":name, "message":message, "datas":datas)).encode().hex() </td>
  </tr>
  <tr>
   <td><strong>sign_key_id</strong></td>
   <td>string</td>
+  <td>optional</td>
   <td>md5(sign_public_key)</td>
  </tr>
 
