@@ -132,6 +132,9 @@ def get_tran_id(dtype, datas):
     data = json.loads(tran_data.get("data"))
     return data.get("id")
 
+def is_time_in(start_time, max_work_time):
+    return start_time + max_work_time >= int(time.time())
+
 def test_e2vm():
 
     ewallet = get_ethwallet()
@@ -208,10 +211,13 @@ def test_e2vm():
         new_sequence = sequence
         while new_sequence <= sequence and work_continue():
             ret = eclient.get_address_sequence(from_address)
-            assert ret.state == error.SUCCEED, ret.message
+            if ret.state == error.SUCCEED:
+                print(ret.message)
+                continue 
+
             new_sequence = ret.datas
             sleep(2)
-            assert time.time() - start_time < max_work_time, f"time out, {from_address} sequence not changed"
+            assert is_time_in(start_time, max_work_time), f"time out, {from_address} sequence not changed"
 
         #get transaction info with from_address, sequence
         ret = eclient.get_transaction_version(from_address, new_sequence)
@@ -223,7 +229,10 @@ def test_e2vm():
         map_amount = 0 
         while state == "start" and work_continue():
             ret = eclient.get_transactions(version, 1)
-            assert ret.state == error.SUCCEED, ret.message
+            if ret.state == error.SUCCEED:
+                print(ret.message)
+                continue 
+
             tran = ret.datas[0]
             state = tran.get_state()
             map_amount = tran.get_amount()
@@ -231,7 +240,7 @@ def test_e2vm():
             map_tran_id = get_tran_id("e2vm", info)
             
             sleep(2)
-            assert time.time() - start_time < max_work_time, f"time out, eth proof {version} state not changed, check usdt transaction"
+            assert is_time_in(start_time, max_work_time), f"time out, eth proof {version} state not changed, check usdt transaction"
 
         #if state changed to end, check some value
         if state == "end":
@@ -243,15 +252,23 @@ def test_e2vm():
                         break
                     start_sequence = vls_e2vm_senders_sequence.get(sender) + 1
                     ret = vclient.get_address_sequence(sender)
-                    assert ret.state == error.SUCCEED, f"get_address_sequence failed. {ret.message}"
+                    if ret.state == error.SUCCEED:
+                        print(f"get_address_sequence failed. {ret.message}")
+                        continue 
                     latest_sequence = ret.datas
                     while (not mapping_ok) and start_sequence <= latest_sequence and work_continue():
                         ret = vclient.get_transaction_version(sender, start_sequence)
-                        assert ret.state == error.SUCCEED, ret.message
+                        if ret.state == error.SUCCEED:
+                            print(ret.message)
+                            continue 
+
                         new_version = ret.datas
 
                         ret = vclient.get_transactions(new_version, 1, True)
-                        assert ret.state == error.SUCCEED, ret.message
+                        if ret.state == error.SUCCEED:
+                            print(ret.message)
+                            continue 
+
                         tran = ret.datas[0] 
                         info = afilter.get_tran_data(tran, "violas")
 
@@ -271,9 +288,7 @@ def test_e2vm():
                             mapping_ok = True
                             print(f"mapping succeed. check violas address: version = {new_version}, receiver = {vls_receiver}, amount = {map_amount}")
                             return
-                #else:
-                #    assert False, f"not found transaction for mapping {token_id}, check tran_id = {map_tran_id} in {vls_e2vm_senders_sequence}"
-
+                        assert is_time_in(start_time, max_work_time),  f"time out, check bridge server is working...{txn}"
 
 def test_v2em():
     ewallet = get_ethwallet()
@@ -419,7 +434,7 @@ def test_b2vm():
             continue
 
         print(f"\nfound violas account {vls_btc_sender} had new sequence latest sequence {sender_latest_sequence}")
-        while sender_start_sequence <= sender_latest_sequence and work_continue():
+        while sender_start_sequence <= sender_latest_sequence and start_time + max_work_time >= int(time.time()) and work_continue():
             sender_start_sequence += 1
             ret = vclient.get_transaction_version(vls_btc_sender, sender_start_sequence)
             if ret.state != error.SUCCEED:

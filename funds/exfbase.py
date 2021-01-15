@@ -336,7 +336,7 @@ class exfbase(baseobject):
     def reexchange_data_from_failed(self, states):
         try:
             #get all info from db
-            self._logger.debug(f"start re exchange failed transaction({[state.name for state in states]})")
+            self._logger.debug(f"start re exchange failed transaction({[state.name[0] for state in states]})")
             ret = self.get_record_from_localdb_with_state(states)
             if ret.state != error.SUCCEED:
                 return ret
