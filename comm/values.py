@@ -38,6 +38,9 @@ class trantypebase(autoname):
     ETHEREUM    = auto()
     UNKOWN      = auto()
 
+class langtype(autoname):
+    CH      = auto()
+    EN      = auto()
 '''
 init chain dict for first char : chain name
 '''

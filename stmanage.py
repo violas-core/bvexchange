@@ -11,6 +11,7 @@ from comm.values import (
         datatypebase as datatype,
         trantypebase as trantype,
         dbindexbase as dbindex,
+        langtype,
         )
 from dataproof.dataproof import setting
 
@@ -512,6 +513,23 @@ def get_eth_token(name = None):
 def get_vlsmproof_address():
     return get_eth_token("vlsmproof")["address"]
 
+def get_sms_nodes():
+    return setting.setting.sms_conn
+    
+def get_sms_templetes():
+    return list(setting.setting.sms_templete)
+
+def get_sms_templete(lang = "ch"):
+    if isinstance(lang, langtype):
+        lang = lang.value
+
+    for item in setting.setting.sms_templete:
+        if item.get("lang", "") == lang:
+            return item.get("data")
+    raise ValueError("not found {lang} templete. check args and {setting.setting.sms_templete}")
+
+
+
 def main():
     set_conf_env("bvexchange.toml")
     mtypes = ["v2bm", "v2lm", "l2vm", "b2vm", "vfilter", "lfilter"]
@@ -525,6 +543,7 @@ def main():
 
     print(f"get traceback limit: {get_traceback_limit()}")
     print(f"get btc_node: {get_btc_conn()}")
+    print(f"get sms_nodes: {get_sms_nodes()}")
     print(f"get violas nodes: {get_violas_nodes()}")
     print(f"get violas_servers: {get_violas_servers()}")
     print(f"get libra nodes: {get_libra_nodes()}")
@@ -577,6 +596,9 @@ def main():
     print(f"max times = {get_max_times()}")
     print(f"hav permission request funds addresses = {get_permission_request_funds_address()}")
     print(f"get_support_dtypes:{get_support_dtypes()}")
+    print(f"get sms templete(ch): {get_sms_templete('ch')}")
+    print(f"get sms templete(en): {get_sms_templete('en')}")
+
 
 
 if __name__ == "__main__":
