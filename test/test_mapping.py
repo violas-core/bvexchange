@@ -348,7 +348,13 @@ def test_v2em():
     while start_time + max_work_time >= int(time.time()) and work_continue():
         after_usdt_amount = eclient.get_balance(usdt_receiver, eth_token_name).datas
         if after_usdt_amount > before_usdt_amount:
-            vclient._logger.debug(f"mapping ok, mapping to {usdt_receiver} {eth_token_name} amount  {after_usdt_amount - before_usdt_amount}, input amount is {map_amount} . check detail of violas {txn}")
+            print(f'''
+            mapping ok, 
+            mapping to {usdt_receiver} {eth_token_name} 
+            amount  {after_usdt_amount - before_usdt_amount}, 
+            input amount is {map_amount} . 
+            check detail of violas {txn}"
+            ''')
             return
 
         message_wheel(max_work_time, start_time, f"v2em verson = {txn}")
@@ -554,12 +560,12 @@ def test_v2bm():
             vclient._logger.debug(f'''
             \nmapping ok, 
             mapping to {btc_receiver} amount  {int((after_btc_amount - before_btc_amount) * pow(10, 8))} satoshi, 
-            input amount is {map_amount} satoshi 
-            output amount {after_btc_amount} BTC ({int(after_btc_amount * pow(10, 8))} satoshi)")
+            input amount is {map_amount * 100} satoshi 
+            current amount {after_btc_amount} BTC ({int(after_btc_amount * pow(10, 8))} satoshi)")
             {btc_btc_sender} satoshi change
                 before amount(satoshi) of mapping: {int(before_btc_sender_amount * pow(10, 8))} satoshi
                 after amount(satoshi) of mapping: {int(after_btc_sender_amount * pow(10, 8))} satoshi
-                gas(satoshi): {int((after_btc_sender_amount - before_btc_sender_amount) * pow(10, 8))}
+                gas: {map_amount * 100 - int((after_btc_sender_amount - before_btc_sender_amount) * pow(10, 8))}(satoshi)
             ''')
             return
 
@@ -594,9 +600,9 @@ def init_signal():
 
 if __name__ == "__main__":
     init_signal()
-    test_e2vm()
+    #test_e2vm()
     #test_v2em()
-    #test_b2vm()
+    test_b2vm()
     #test_v2bm()
 
 
