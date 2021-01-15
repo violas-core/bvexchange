@@ -24,7 +24,8 @@ from comm.error import error
 from comm.parseargs import parseargs
 from comm.functions import (
     json_print,
-    split_full_address
+    split_full_address,
+    output_args_func
         )
 from vlsopt.violasclient import (
         violaswallet, 
@@ -135,12 +136,13 @@ def get_tran_id(dtype, datas):
 def is_time_in(start_time, max_work_time):
     return start_time + max_work_time >= int(time.time())
 
+@output_args_func
 def test_e2vm():
 
     ewallet = get_ethwallet()
     eclient = get_ethclient()
     vclient = get_violasclient()
-    max_work_time = 180
+    max_work_time = 360
 
     #send usdt token, to mapping violas-USDT
     from_address    = stmanage.get_map_address("e2vm", "ethereum")
@@ -211,7 +213,7 @@ def test_e2vm():
         new_sequence = sequence
         while new_sequence <= sequence and work_continue():
             ret = eclient.get_address_sequence(from_address)
-            if ret.state == error.SUCCEED:
+            if ret.state != error.SUCCEED:
                 print(ret.message)
                 continue 
 
@@ -229,7 +231,7 @@ def test_e2vm():
         map_amount = 0 
         while state == "start" and work_continue():
             ret = eclient.get_transactions(version, 1)
-            if ret.state == error.SUCCEED:
+            if ret.state != error.SUCCEED:
                 print(ret.message)
                 continue 
 
@@ -237,7 +239,6 @@ def test_e2vm():
             state = tran.get_state()
             map_amount = tran.get_amount()
             info = afilter.get_tran_data(tran, False)
-            map_tran_id = get_tran_id("e2vm", info)
             
             sleep(2)
             assert is_time_in(start_time, max_work_time), f"time out, eth proof {version} state not changed, check usdt transaction"
@@ -252,20 +253,20 @@ def test_e2vm():
                         break
                     start_sequence = vls_e2vm_senders_sequence.get(sender) + 1
                     ret = vclient.get_address_sequence(sender)
-                    if ret.state == error.SUCCEED:
+                    if ret.state != error.SUCCEED:
                         print(f"get_address_sequence failed. {ret.message}")
                         continue 
                     latest_sequence = ret.datas
                     while (not mapping_ok) and start_sequence <= latest_sequence and work_continue():
                         ret = vclient.get_transaction_version(sender, start_sequence)
-                        if ret.state == error.SUCCEED:
+                        if ret.state != error.SUCCEED:
                             print(ret.message)
                             continue 
 
                         new_version = ret.datas
 
                         ret = vclient.get_transactions(new_version, 1, True)
-                        if ret.state == error.SUCCEED:
+                        if ret.state != error.SUCCEED:
                             print(ret.message)
                             continue 
 
@@ -282,14 +283,27 @@ def test_e2vm():
                         tran_sender  = info.get("sender")
                         tran_amount = info.get("amount")
                         tran_token_id = info.get("token_id")
+                        vls_version = info.get("version")
 
-                        if tran_tran_id == map_tran_id and vls_receiver == tran_receiver:
+                        message_wheel(start_time, max_work_time, f"violas version = {vls_version} eth tran version = {version} tran_tran_id = {tran_tran_id}  vls_receiver = {vls_receiver} tran_receiver = {tran_receiver}")
+                        if vls_receiver == tran_receiver:
                             assert tran_amount == map_amount, "mapping amount is error. eth-{token_id} amount = {map_amount}, but violas-{tran_token_id} amount is {tran_amount}"
                             mapping_ok = True
-                            print(f"mapping succeed. check violas address: version = {new_version}, receiver = {vls_receiver}, amount = {map_amount}")
+                            print(f'''
+                            mapping succeed. 
+                            check violas transaction: 
+                            receiver = {vls_receiver} 
+                            violas version = {new_version} 
+                            map amount = {map_amount}({Tokens.VIOLAS_USDT.value})
+                            ethereum version = {version}
+                            ethereum sender = {from_address}
+                            ethereum send amount: {amount}({Tokens.ETHEREUM_USDT.value}) 
+                            ethereum chain gas = {amount - map_amount}({Tokens.ETHEREUM_USDT.value}) 
+                            ''')
                             return
-                        assert is_time_in(start_time, max_work_time),  f"time out, check bridge server is working...{txn}"
+                        assert is_time_in(start_time, max_work_time),  f"time out, check bridge server is working...tran_tran_id = {tran_tran_id}"
 
+@output_args_func
 def test_v2em():
     ewallet = get_ethwallet()
     eclient = get_ethclient()
@@ -342,6 +356,7 @@ def test_v2em():
     if work_continue():
         assert False, f"time out, check bridge server is working...{txn}"
 
+@output_args_func
 def test_b2vm():
     bwallet = get_btcwallet()
     bclient = get_btcclient()
@@ -479,6 +494,7 @@ def test_b2vm():
     if work_continue():
         assert False, f"time out, check bridge server is working...{txid}"
 
+@output_args_func
 def test_v2bm():
     bwallet = get_btcwallet()
     bclient = get_btcclient()
@@ -578,9 +594,9 @@ def init_signal():
 
 if __name__ == "__main__":
     init_signal()
-    ##test_e2vm()
+    test_e2vm()
     #test_v2em()
-    test_b2vm()
+    #test_b2vm()
     #test_v2bm()
 
 
