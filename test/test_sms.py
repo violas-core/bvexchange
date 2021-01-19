@@ -3,6 +3,7 @@ import operator
 import sys
 import json
 import os
+import time
 import requests
 sys.path.append(os.getcwd())
 sys.path.append("..")
@@ -21,9 +22,9 @@ def test_smsclient():
             stmanage.get_sms_nodes(),
             stmanage.get_sms_templetes(),
             langtype.CH
-
             )
-    ret = client.send_message("+8618601999980", "testclient")
+    #ret = client.send_message("+8618601999980", f"testclient:{time.strftime('%Y-%m-%d_%H:%M:%S', time.localtime())}")
+    ret = client.send_message("+8618601999980", f"vUSDT#Mint#v{int(time.time()/1000000)}")
     print(ret)
 
 def test_post():

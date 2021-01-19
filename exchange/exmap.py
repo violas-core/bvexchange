@@ -17,8 +17,10 @@ from comm.values import (
         )
 
 from comm.values import (
-        trantypebase as trantype
+        trantypebase as trantype,
+        msgtype
         )
+
 class exmap(exbase):    
     def __init__(self, name, 
             dtype, 
@@ -74,6 +76,16 @@ class exmap(exbase):
     #overwrited exbase.exec_exchange
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
             state = None, detail = {}):
+        '''
+        @dev execute mapping transaction
+        @param data transaction data
+        @param from_sender account of mapping receiver(DD account)
+        @param map_sender account of target chain payer
+        @param combine_account  account of combine, send token to the fund address provided by the association
+        @param receiver address of from_sender
+        @param state exchange state, None or other when state value. None : new transaction, not None: retry exchange(stored in local database)
+        @param detail if state value is not None, detail value is error msg or preexchange value, maybe use it
+        '''
         fromaddress = data["address"]
         amount      = int(data["amount"]) 
         sequence    = data["sequence"] 
@@ -90,10 +102,11 @@ class exmap(exbase):
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
         if state is None and self.has_info(tran_id):
-           return ret
+           return result(error.ARG_INVALID, f"{tran_id} has found in local db")
 
+        
         if not self.chain_data_is_valid(data):
-            return result(error.ARG_INVALID, f"transaction data is invalid. data :{data}")
+            return result(error.ARG_INVALID, f"transaction({tran_id}) data is invalid. data :{data}")
 
         amount_swap = self.amountswap(amount, self.amountswap.amounttype[self.from_chain.upper()], self.from_client.get_decimals(from_token_id))
         map_amount = amount_swap.amount(self.map_chain, self.map_client.get_decimals(map_token_id))
@@ -103,6 +116,21 @@ class exmap(exbase):
         self._logger.debug(f"exec_exchange-start...")
         if self.use_module(state, localdb.state.START):
             self.insert_to_localdb_with_check(version, localdb.state.START, tran_id, receiver)
+
+        #transfer mint msg (datatype: x2vm)
+        if self.is_need_mint_mtoken(self.dtype) and (state is None or self.use_module(state, localdb.state.MSUCCEED)):
+            receiver_msg = self.get_address_from_account(self.funds_address)
+            ret = self.send_violas_msg(map_sender, receiver_msg, msgtype.MINT, map_token_id, map_amount, tran_id, version)
+            if ret.state != error.SUCCEED:
+                detail.update({"mint_mtoken":localdb.MFAILED.name})
+                self.update_localdb_state_with_check(tran_id, localdb.state.MFAILED, \
+                      json.dumps(detail))
+                self._logger.error(f"exec_exchange-0.result: failed. {ret.message}")
+                return ret
+            else:
+                detail.update({"mint_mtoken":localdb.MSUCCEED.name})
+                self.update_localdb_state_with_check(tran_id, localdb.state.MSUCCEED, \
+                      json.dumps(detail))
 
         if self.use_module(state, localdb.state.PSUCCEED) or \
                 self.use_module(state, localdb.state.ESUCCEED) or \
@@ -146,6 +174,21 @@ class exmap(exbase):
                     from_token_id, combine_amount, out_amount_real=micro_amount, version=version)
             if ret.state != error.SUCCEED:
                 return ret
+
+        #transfer burn msg(datatype : v2xm)
+        if self.is_need_burn_mtoken(self.dtype) and (state is None or self.use_module(state, localdb.state.BSUCCEED)):
+            receiver_msg = self.get_address_from_account(self.funds_address)
+            ret = self.send_violas_msg(from_sender, receiver_msg, msgtype.BURN, from_token_id, amount, tran_id, version)
+            if ret.state != error.SUCCEED:
+                detail.update({"burn_mtoken":localdb.BFAILED.name})
+                self.update_localdb_state_with_check(tran_id, localdb.state.BFAILED, \
+                      json.dumps(detail))
+                self._logger.error(f"exec_exchange-0.result: failed. {ret.message}")
+                return ret
+            else:
+                detail.update({"burn_mtoken":localdb.BSUCCEED.name})
+                self.update_localdb_state_with_check(tran_id, localdb.state.BSUCCEED, \
+                      json.dumps(detail))
 
         self._logger.debug(f"exec_exchange-end...")
         return result(error.SUCCEED)

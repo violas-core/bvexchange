@@ -169,6 +169,8 @@ def get_request_funds_address_list(mtype = None, full = True):
 def get_funds_address(full = True):
     return __get_address_list("receiver", "funds", trantype.VIOLAS.value, full)[0]
 
+def get_request_msg_address_list(mtype = None, full = True):
+    return __get_address_list("msg", mtype, trantype.VIOLAS, full)
 '''
    get address for violas account, which have permission for request funds
 '''
@@ -529,6 +531,34 @@ def get_sms_templete(lang = "ch"):
     raise ValueError("not found {lang} templete. check args and {setting.setting.sms_templete}")
 
 
+def get_min_version(chain_name):
+    chain = to_str_value(chain_name)
+    return setting.setting.msg_min_version.get(chain_name, 0)
+
+'''
+   get address for violas account, which have permission for request funds
+'''
+def get_permission_request_msg_address(full = False):
+    addrs = []
+
+    #filter the address where you can apply for a token from bridge server
+    valid_mods = get_support_mods()
+    exchange_mods = [mod.value for mod in datatype]
+    set(exchange_mods).intersection_update(set(valid_mods))
+    for mod in valid_mods:
+        # this mod is mtype(datatype)
+        (from_chain, to_chain) = get_exchang_chains(mod)
+        filter_addrs = []
+        if from_chain and trantype(from_chain) == trantype.VIOLAS:
+            filter_addrs = get_receiver_address_list(mod, trantype.VIOLAS.value, False)
+        elif to_chain and trantype(to_chain) == trantype.VIOLAS:
+            filter_addrs = get_sender_address_list(mod, trantype.VIOLAS.value, False)
+        addrs.extend(filter_addrs)
+
+    #Specify the address where you can apply for a token
+    external_request = get_request_msg_address_list("msg", False)
+    addrs.extend(external_request)
+    return set(addrs)
 
 def main():
     set_conf_env("bvexchange.toml")
@@ -598,6 +628,7 @@ def main():
     print(f"get_support_dtypes:{get_support_dtypes()}")
     print(f"get sms templete(ch): {get_sms_templete('ch')}")
     print(f"get sms templete(en): {get_sms_templete('en')}")
+    print(f"hav permission request msg addresses = {get_permission_request_msg_address()}")
 
 
 

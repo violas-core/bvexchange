@@ -23,6 +23,13 @@ from exchange import (
         e2vm, v2em
         )
 from comm.result import parse_except
+from comm.values import (
+        workmod as work_mod,
+        trantypebase as trantype,
+        msgtype,
+        )
+from baseobject import baseobject
+
 from analysis import (
         analysis_base, 
         analysis_filter, 
@@ -35,13 +42,11 @@ from analysis import (
 from funds import (
         exfunds
         )
-from enum import Enum
-from comm.values import (
-        workmod as work_mod,
-        trantypebase as trantype
+from message import (
+        msgmoblie
         )
-from baseobject import baseobject
 
+from enum import Enum
 name="bvexchange"
 
 class works(baseobject):
@@ -739,6 +744,33 @@ class works(baseobject):
         finally:
             logger.critical(f"stop: {mod}")
 
+    def work_msgmoblieex(self, **kargs):
+        try:
+            logger.critical("start: moblie message")
+            nsec, mod, dtype = self.__get_input_args(**kargs)
+            while (self.__work_looping.get(mod, False)):
+                logger.debug(f"looping: {mod}  interval(s): {nsec}")
+                try:
+                    obj = msgmoblie.msgmoblie(mod, 
+                            stmanage.get_db(dtype), 
+                            list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
+                            list(set(stmanage.get_permission_request_msg_address(dtype))),
+                            list(set(stmanage.get_addressbook(dtype))),
+                            sms_nodes = stmanage.get_target_nodes(trantype.SMS),
+                            sms_templetes = stmanage.get_sms_templetes(),
+                            min_version = stmanage.get_min_version(trantype.VIOLAS)
+                            )
+                    self.set_work_obj(obj)
+                    obj.start()
+                except Exception as e:
+                    parse_except(e)
+                sleep(nsec)
+        except Exception as e:
+            parse_except(e)
+        finally:
+            logger.critical(f"stop: {mod}")
+
+
     def work_comm(self, **kargs):
         try:
             logger.critical("start: comm")
@@ -822,6 +854,8 @@ class works(baseobject):
                 self.funcs_map.update(self.create_func_dict(item, self.work_bfilter))
             elif name == "EFILTER":
                 self.funcs_map.update(self.create_func_dict(item, self.work_efilter))
+            elif name == "MSGPROOF": 
+                self.funcs_map.update(self.create_func_dict(item, self.work_v2xproof))
             elif name == "V2VSWAPPROOF":
                 self.funcs_map.update(self.create_func_dict(item, self.work_swapproof))
             elif self.is_match(name, "FUNDS", "PROOF", None): 
@@ -868,6 +902,8 @@ class works(baseobject):
                 self.funcs_map.update(self.create_func_dict(item, self.work_e2vm))
             elif self.is_match(name, "V2EM", "EX", 6):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2em))
+            elif name == "MSGEX":
+                self.funcs_map.update(self.create_func_dict(item, self.work_msgmoblieex))
             elif name == "COMM":
                 self.funcs_map.update(self.create_func_dict(item, self.work_comm))
             else:
@@ -879,6 +915,7 @@ class works(baseobject):
 
             self.__work_looping = work_mods
 
+            #print(f"work_mods: {work_mods} funcs_map: {self.funcs_map.keys()}")
             for name, state in work_mods.items():
                 if state:
                     self.thread_append(self.funcs_map[name.lower()], work_mod[name.upper()])

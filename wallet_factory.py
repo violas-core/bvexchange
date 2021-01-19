@@ -28,6 +28,8 @@ class walletfactory(baseobject):
            return violaswallet(name, dataproof.wallets(chain), chain)
        elif chain == trantype.ETHEREUM.value:
            return ethwallet(name, dataproof.wallets(chain))
+       elif chain == trantype.SMS.value:
+           return None
        
        raise Exception(f"create wallet failed. chain name({chain}) is invalid.")
 

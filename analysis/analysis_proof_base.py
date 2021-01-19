@@ -101,7 +101,7 @@ class aproofbase(abase):
             return False
 
         if not self.is_valid_datatype(tran_info.get("type")):
-            self._logger.warning(f"type({tran_info.get('type', None)}) is invalid.")
+            self._logger.warning(f"type({tran_info.get('type', None)}) is invalid.  valid dtype is {[dtype.value for dtype in self.get_data_types()]}")
             return False
 
         if not self.is_valid_token_id(tran_info.get("token_id")): 

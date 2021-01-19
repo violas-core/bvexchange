@@ -148,17 +148,26 @@ class exbase(baseobject):
             if ttype == trantype.UNKOWN:
                 continue
 
-            #set property for senders 
             senders_name = self.create_senders_key(ttype.value)
-            self.append_property(senders_name, kwargs.get(senders_name))
 
-            #set property for wallet
-            self.append_property(self.create_wallet_key(ttype.value), \
-                    walletfactory.create(self.name(), ttype.value))
+            arg_senders_name = kwargs.get(senders_name)
+            arg_chain_nodes = kwargs.get(self.create_nodes_key(ttype.value))
 
-            #set property for client
-            self.append_property(self.create_client_key(ttype.value), \
-                    clientfactory.create(self.name(), ttype.value, kwargs.get(self.create_nodes_key(ttype.value))))
+            #set property for senders 
+            self.append_property(senders_name, arg_senders_name)
+
+            if arg_chain_nodes:
+                #set property for wallet
+                self.append_property(self.create_wallet_key(ttype.value), \
+                        walletfactory.create(self.name(), ttype.value))
+
+                #set property for client
+                self.append_property(self.create_client_key(ttype.value), \
+                        clientfactory.create(self.name(), ttype.value, arg_chain_nodes))
+            else:
+                self.append_property(self.create_wallet_key(ttype.value), None) 
+                self.append_property(self.create_client_key(ttype.value), None)
+
 
         if self.swap_module and self.violas_client:
             self.violas_client.swap_set_module_address(self.swap_module)
@@ -561,6 +570,14 @@ class exbase(baseobject):
         assert ret.state == error.SUCCEED, f"is_target_state({tranid}, {state}) failed."
         return ret.datas
 
+    def send_violas_msg(self, from_sender, to_address, opttype, token_id, amount, tranid, version, gas_token_id = "VLS", **kwargs):
+        #send violas msg 
+        markdata = self.violas_client.create_data_for_msg(self.trantype.VIOLAS, opttype, token_id, amount, tranid, version, **kwargs)
+
+        ret = self.map_client.send_coin(from_sender, toaddress, \
+                1, gas_token_id, data=markdata)
+        return ret
+
     def exec_refund(self, data, from_sender):
         amount          = int(data["amount"]) 
         tran_id         = data["tran_id"]
@@ -762,8 +779,8 @@ class exbase(baseobject):
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
     
-            #append recover funds(receiver and combine account) to DD account
-            self._logger.debug(f"************************************************************ 4/5")
+            #append recover(> threshold) funds(receiver and combine account) to DD account
+            self._logger.debug(f"**************************(return funds exceeding the threshold????)********************************** 4/5")
 
             ret = result(error.SUCCEED) 
             self._logger.debug(f"************************************************************ 5/5")
@@ -776,17 +793,17 @@ class exbase(baseobject):
     
         return ret
     
-    '''
-    @dev exchange mapping VIOLAS <-> BTC/ETHEREUM
-    @param data transaction info from proof db
-    @param from_sender receiver account, that receive token from wallet with proof string
-    @param combine_account violas account. swap-exchange:receive mapping token, map-exchange: recover funds account
-    @param receiver receive token account of update state with end, the same to from_sender's address
-    @param state None: new exchange; no-None: last exchange had failed , the state value is obtained from local db
-    @param detail cache data during execution
-    '''
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
             state = None, detail = {}):
+        '''
+        @dev exchange mapping VIOLAS <-> BTC/ETHEREUM
+        @param data transaction info from proof db
+        @param from_sender receiver account, that receive token from wallet with proof string
+        @param combine_account violas account. swap-exchange:receive mapping token, map-exchange: recover funds account
+        @param receiver receive token account of update state with end, the same to from_sender's address
+        @param state None: new exchange; no-None: last exchange had failed , the state value is obtained from local db
+        @param detail cache data during execution
+        '''
         raise Exception("you must be overwrite exec_exchange")
 
 def main():
