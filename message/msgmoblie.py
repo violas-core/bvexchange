@@ -85,12 +85,13 @@ class msgmoblie(msgbase):
 
             self._logger.debug(f"exec_exchange-1. start send message msgdata = {msgdata} sended succeed moblie = {succeed_moblie}...")
 
-            for mobile in addressbook:
+            for item in addressbook:
+                mobile = item.get("mobile")
                 if mobile in succeed_moblie:
                     continue
 
                 self._logger.debug(f"exec_exchange-2. start from  send {mobile} {msgbase}...")
-                ret = self.sms_client.send_message(moblie, msgdata)
+                ret = self.sms_client.send_message(moblie, msgdata, item.get("lang", "ch"))
 
                 if ret.state != error.SUCCEED:
                     self._logger.error(f"exec_exchange-2.result: failed. {ret.message}")
