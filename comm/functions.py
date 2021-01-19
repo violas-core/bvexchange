@@ -117,6 +117,13 @@ def output_args(func):
         return func(self, *args, **kwargs)
     return args_decorate
 
+def output_args_func(func):
+    @wraps(func)
+    def args_decorate(*args, **kwargs):
+        print(f"--------{func.__name__}({','.join(str(arg)for arg in args)}, {kwargs})")
+        return func(*args, **kwargs)
+    return args_decorate
+
 def human_address(address):
     try:
         return bytes.fromhex(address).decode().replace("\x00","00")

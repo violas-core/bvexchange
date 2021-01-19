@@ -19,7 +19,8 @@ from comm.result import result, parse_except
 from comm.error import error
 from enum import Enum
 from comm.values import (
-        trantypebase as trantype
+        trantypebase as trantype,
+        datatypebase as datatype
         )
 
 getlogger = log.logger.getLogger
@@ -87,9 +88,9 @@ class baseobject(object):
         return getattr(self, name.strip())
 
     def to_str(self, data):
-        if isinstance(data, trantype):
-            return data.value
-        return data
+        if isinstance(data, str):
+            return data
+        return data.value
          
     def create_senders_key(self, chain):
         return f"{self.to_str(chain)}_senders"
@@ -106,3 +107,24 @@ class baseobject(object):
     def create_point_key(self, key, prefix = None):
         key = f"{prefix}_{key}" if prefix else key
         return key
+
+    def is_need_mint_mtoken(self, dtype):
+        if not isinstance(dtype, str):
+            dtype = dtype.value
+
+        if dtype and len(len(dtype) > 3):
+            return dtype[1:4] == "2vm" and len(dtype) == 4
+
+        return False
+
+
+    def is_need_burn_mtoken(self, dtype):
+        if not isinstance(dtype, str):
+            dtype = dtype.value
+
+        if dtype and len(len(dtype) > 3):
+            return dtype[0:2] == "v2" and dtype[3] == "m" and len(dtype) == 4
+
+        return False
+
+
