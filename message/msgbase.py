@@ -137,7 +137,7 @@ class msgbase(baseobject):
         return ret.datas
 
     def create_msg_data(self, data):
-        SPLIT_SYMBOL = ":"
+        SPLIT_SYMBOL = "#"
         fields = ["opttype", "flag", "token_id", "amount", "version"]
         return f"{SPLIT_SYMBOL}".join([data.get(field) for field in fields])
 
