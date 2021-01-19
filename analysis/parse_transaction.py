@@ -126,6 +126,9 @@ def parse_tran(transaction):
             datas["chain"]      = data_dict.get("chain")
             datas["amount"]     = data_dict.get("amount")
             datas["token_id"]   = data_dict.get("token_id")
+        if datas["type"].startswith(datatype.MSG.value):
+            datas["amount"]     = data_dict.get("amount")
+            datas["token_id"]   = data_dict.get("token_id")
 
         ret = result(error.SUCCEED, datas = datas)
     except Exception as e:

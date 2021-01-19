@@ -69,6 +69,7 @@ class dblocal(baseobject):
         SSUCCEED    = 71    #stop swap succeed
         BFAILED     = 80    #burn mtoken failed
         BSUCCEED    = 81    #burn mtoken succeed
+        CONTINUE    = 100
         COMPLETE    = 128   #change state is confirmed
     
     #exc_traceback_objle : info

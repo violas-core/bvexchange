@@ -76,10 +76,11 @@ class smsclient(baseobject):
             response = requests.post(url = self.__url, data = data)
             if response is not None:
                 jret = response.json()
+                print(jret)
                 if jret["code"] == 200:
                     ret = result(error.SUCCEED, jret["msg"], True)
                 else:
-                    ret = result(error.SUCCEED, jret["msg"], False)
+                    ret = result(error.FAILED, jret["msg"], False)
         except Exception as e:
             ret = parse_except(e)
         return ret

@@ -43,7 +43,7 @@ from funds import (
         exfunds
         )
 from message import (
-        msgmoblie
+        msgmobile
         )
 
 from enum import Enum
@@ -239,6 +239,8 @@ class works(baseobject):
                     if stmanage.type_is_map(dtype):
                         obj.append_token_id(stmanage.get_support_map_token_id(ttype, dtype))
                     elif stmanage.type_is_funds(dtype):
+                        obj.append_token_id(stmanage.get_support_token_id(ttype))
+                    elif stmanage.type_is_msg(dtype):
                         obj.append_token_id(stmanage.get_support_token_id(ttype))
                     else:
                         obj.append_token_id(stmanage.get_support_stable_token_id(ttype))
@@ -744,9 +746,9 @@ class works(baseobject):
         finally:
             logger.critical(f"stop: {mod}")
 
-    def work_msgmoblieex(self, **kargs):
+    def work_msgmobileex(self, **kargs):
         try:
-            logger.critical("start: moblie message")
+            logger.critical("start: mobile message")
             nsec, mod, dtype = self.__get_input_args(**kargs)
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
@@ -757,10 +759,10 @@ class works(baseobject):
                             "sms_templetes": stmanage.get_sms_templetes(),
                             "min_version": stmanage.get_support_msg_min_version(trantype.VIOLAS)
                             }
-                    obj = msgmoblie.msgmoblie(mod, 
+                    obj = msgmobile.msgmobile(mod, 
                             stmanage.get_db(dtype), 
-                            list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
-                            list(set(stmanage.get_permission_request_msg_address(dtype))),
+                            list(set(stmanage.get_receiver_msg_list(dtype, trantype.VIOLAS.value, False))),
+                            list(set(stmanage.get_permission_request_msg_address(False))),
                             list(stmanage.get_addressbook(dtype)),
                             **kwargs
                             )
@@ -907,7 +909,7 @@ class works(baseobject):
             elif self.is_match(name, "V2EM", "EX", 6):
                 self.funcs_map.update(self.create_func_dict(item, self.work_v2em))
             elif name == "MSGEX":
-                self.funcs_map.update(self.create_func_dict(item, self.work_msgmoblieex))
+                self.funcs_map.update(self.create_func_dict(item, self.work_msgmobileex))
             elif name == "COMM":
                 self.funcs_map.update(self.create_func_dict(item, self.work_comm))
             else:

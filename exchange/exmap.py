@@ -119,6 +119,7 @@ class exmap(exbase):
 
         #transfer mint msg (datatype: x2vm)
         if self.is_need_mint_mtoken(self.dtype) and (state is None or self.use_module(state, localdb.state.MSUCCEED)):
+            print("+++"*300)
             receiver_msg = self.get_address_from_account(self.funds_address)
             ret = self.send_violas_msg(map_sender, receiver_msg, msgtype.MINT, map_token_id, map_amount, tran_id, version)
             if ret.state != error.SUCCEED:
@@ -177,6 +178,7 @@ class exmap(exbase):
 
         #transfer burn msg(datatype : v2xm)
         if self.is_need_burn_mtoken(self.dtype) and (state is None or self.use_module(state, localdb.state.BSUCCEED)):
+            print("---------------------------burn----------------------------")
             receiver_msg = self.get_address_from_account(self.funds_address)
             ret = self.send_violas_msg(from_sender, receiver_msg, msgtype.BURN, from_token_id, amount, tran_id, version)
             if ret.state != error.SUCCEED:

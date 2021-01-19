@@ -127,6 +127,15 @@ class msgbase(baseobject):
             kwargs = {kwargs}
             ''')
 
+    def chain_data_is_valid(self, data):
+        try:
+            state = True
+            return state
+
+        except Exception as e:
+            pass
+        return False
+        
     def is_end(self, tran_id):
         return self.pserver.is_end(tran_id)
 
@@ -206,9 +215,11 @@ class msgbase(baseobject):
         return ret.datas
 
     def create_msg_data(self, data):
-        SPLIT_SYMBOL = "#"
-        fields = ["opttype", "flag", "token_id", "amount", "version"]
-        return f"{SPLIT_SYMBOL}".join([data.get(field) for field in fields])
+        SPLIT_SYMBOL = ""
+        fields = ["opttype", "token_id", "amount"]
+        print(f"data:{data}")
+        #return f"{SPLIT_SYMBOL}".join([f"{data.get(field, '')}" for field in fields])
+        return f"{data.get('opttype')[:1]}{data.get('token_id')[:2]}{data.get('amount')}"
 
     def __checks(self):
         return True
@@ -221,6 +232,14 @@ class msgbase(baseobject):
         else:
             address = account
         return address
+
+    def insert_to_localdb_with_check(self, version, state, tran_id, receiver, detail = json.dumps({"default":"no-use"})):
+        ret = self.db.insert_commit(version, state, tran_id, receiver, detail)
+        assert (ret.state == error.SUCCEED), "db error"
+
+    def update_localdb_state_with_check(self, tran_id, state, detail = json.dumps({"default":"no-use"})):
+        ret = self.db.update_state_commit(tran_id, state, detail = detail)
+        assert (ret.state == error.SUCCEED), "db error"
 
     def reexchange_data_from_failed(self, states):
         try:
@@ -264,7 +283,7 @@ class msgbase(baseobject):
                         data = ret.datas
                         retry = data.get("times")
 
-                        ret = self.exec_exchange(data, receiver, self.addressbook, state = state, detail = detail, min_version = self.min_version)
+                        ret = self.exec_exchange(data, receiver, self.senders, self.addressbook, state = state, detail = detail, min_version = self.min_version)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
 
@@ -320,11 +339,12 @@ class msgbase(baseobject):
             self.lock()
             #db state: FAILED
             #if history datas is found state = failed, exchange it until succeed
-            self._logger.debug(f"************************************************************ 1/5")
+            self._logger.debug(f"************************************************************ 1/3")
             self.reexchange_data_from_failed(self.use_exec_failed_state)
 
             #modulti receiver, one-by-one
-            self._logger.debug(f"************************************************************ 3/5")
+            self._logger.debug(f"************************************************************ 2/3")
+            self._logger.debug(f"receivers: {receivers}")
             for receiver in receivers:
                 if not self.work() :
                     break
@@ -333,7 +353,7 @@ class msgbase(baseobject):
 
                 #get new transaction from server
                 self._logger.debug(f"start exchange(data type: start), datas from violas server.receiver={receiver} start version = {latest_version}")
-                ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version, excluded = self.excluded)
+                ret = self.pserver.get_transactions_for_start(receiver, self.dtype, latest_version)
                 self._logger.debug(f"will execute transaction(start) : count: {len(ret.datas)}")
                 if ret.state == error.SUCCEED and len(ret.datas) > 0:
                     for data in ret.datas:
@@ -347,7 +367,7 @@ class msgbase(baseobject):
 
 
             ret = result(error.SUCCEED) 
-            self._logger.debug(f"************************************************************ 4/5")
+            self._logger.debug(f"************************************************************ 3/3")
     
         except Exception as e:
             ret = parse_except(e)

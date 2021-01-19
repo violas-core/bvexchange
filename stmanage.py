@@ -169,6 +169,9 @@ def get_request_funds_address_list(mtype = None, full = True):
 def get_funds_address(full = True):
     return __get_address_list("receiver", "funds", trantype.VIOLAS.value, full)[0]
 
+def get_receiver_msg_list(mtype, chain, full = True):
+    return __get_address_list("receiver", "funds", trantype.VIOLAS.value, full)
+
 def get_request_msg_address_list(mtype = None, full = True):
     return __get_address_list("msg", mtype, trantype.VIOLAS, full)
 '''
@@ -229,6 +232,8 @@ def get_exchang_chains(mtype):
         token_id = get_token_id_from_fundstype(mtype)
         to_chain = get_trantype_with_token_id(token_id).value if token_id else to_chain
         from_chain =trantype.VIOLAS.value if type_is_funds(mtype) else from_chain
+        from_chain = trantype.VIOLAS.value if type_is_msg(mtype) else from_chain
+        to_chain = trantype.VIOLAS.value if type_is_msg(mtype) else to_chain
         
     except Exception as e:
         from_chain = None
@@ -278,6 +283,9 @@ def type_is_funds(mtype):
     mtype = to_str_value(mtype)
     return mtype.startswith("funds")
 
+def type_is_msg(mtype):
+    mtype = to_str_value(mtype)
+    return mtype.startswith("msg")
 '''
 get type_opts.etype = map/swap info(token map relation, address mtype code(btc) etc..)
 @param etype map/swap/funds
@@ -553,13 +561,13 @@ def get_permission_request_msg_address(full = False):
         (from_chain, to_chain) = get_exchang_chains(mod)
         filter_addrs = []
         if from_chain and trantype(from_chain) == trantype.VIOLAS:
-            filter_addrs = get_receiver_address_list(mod, trantype.VIOLAS.value, False)
+            filter_addrs = get_receiver_address_list(mod, trantype.VIOLAS.value, full)
         elif to_chain and trantype(to_chain) == trantype.VIOLAS:
-            filter_addrs = get_sender_address_list(mod, trantype.VIOLAS.value, False)
+            filter_addrs = get_sender_address_list(mod, trantype.VIOLAS.value, full)
         addrs.extend(filter_addrs)
 
     #Specify the address where you can apply for a token
-    external_request = get_request_msg_address_list("msg", False)
+    external_request = get_request_msg_address_list("msg", full)
     addrs.extend(external_request)
     return set(addrs)
 
