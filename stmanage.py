@@ -534,9 +534,9 @@ def get_addressbook(dtype):
     return setting.setting.address_book
 
     
-def get_min_version(chain_name):
+def get_support_msg_min_version(chain_name):
     chain = to_str_value(chain_name)
-    return setting.setting.msg_min_version.get(chain_name, 0)
+    return setting("msg_min_version").get(chain_name, 0)
 
 '''
    get address for violas account, which have permission for request funds
@@ -632,6 +632,7 @@ def main():
     print(f"get sms templete(ch): {get_sms_templete('ch')}")
     print(f"get sms templete(en): {get_sms_templete('en')}")
     print(f"hav permission request msg addresses = {get_permission_request_msg_address()}")
+    print(f"get msg min version : {get_support_msg_min_version('violas')}")
 
 
 

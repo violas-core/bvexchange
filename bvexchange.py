@@ -751,14 +751,18 @@ class works(baseobject):
             while (self.__work_looping.get(mod, False)):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
+                    kwargs = {
+                            f"{self.create_nodes_key(trantype.VIOLAS)}" : stmanage.get_target_nodes(trantype.VIOLAS),
+                            f"{self.create_nodes_key(trantype.SMS)}" : stmanage.get_target_nodes(trantype.SMS),
+                            "sms_templetes": stmanage.get_sms_templetes(),
+                            "min_version": stmanage.get_support_msg_min_version(trantype.VIOLAS)
+                            }
                     obj = msgmoblie.msgmoblie(mod, 
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
                             list(set(stmanage.get_permission_request_msg_address(dtype))),
-                            list(set(stmanage.get_addressbook(dtype))),
-                            sms_nodes = stmanage.get_target_nodes(trantype.SMS),
-                            sms_templetes = stmanage.get_sms_templetes(),
-                            min_version = stmanage.get_min_version(trantype.VIOLAS)
+                            list(stmanage.get_addressbook(dtype)),
+                            **kwargs
                             )
                     self.set_work_obj(obj)
                     obj.start()

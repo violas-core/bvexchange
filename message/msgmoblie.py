@@ -19,7 +19,7 @@ class msgmoblie(msgbase):
             receivers, 
             senders,
             addressbook,
-            fromchain,
+            fromchain = "violas",
             **kwargs
             ):
         ''' send moblie message (metadata's to_address)
@@ -52,6 +52,8 @@ class msgmoblie(msgbase):
                         localdb.state.VSUCCEED, \
                         localdb.state.SSUCCEED]])
 
+        self.append_property("use_exec_update_db_states", 
+                [localdb.state.VSUCCEED, localdb.state.SSUCCEED])
     def exec_exchange(self, data, receiver, senders, addressbook, \
             state = None, detail = {}, min_version = 1):
         version     = data["version"]

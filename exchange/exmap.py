@@ -128,7 +128,7 @@ class exmap(exbase):
                 self._logger.error(f"exec_exchange-0.result: failed. {ret.message}")
                 return ret
             else:
-                detail.update({"mint_mtoken":localdb.MSUCCEED.name})
+                detail.update({"mint_mtoken":localdb.state.MSUCCEED.name})
                 self.update_localdb_state_with_check(tran_id, localdb.state.MSUCCEED, \
                       json.dumps(detail))
 
