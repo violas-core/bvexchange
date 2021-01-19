@@ -112,7 +112,7 @@ class baseobject(object):
         if not isinstance(dtype, str):
             dtype = dtype.value
 
-        if dtype and len(len(dtype) > 3):
+        if dtype and len(dtype) > 3:
             return dtype[1:4] == "2vm" and len(dtype) == 4
 
         return False
@@ -122,7 +122,7 @@ class baseobject(object):
         if not isinstance(dtype, str):
             dtype = dtype.value
 
-        if dtype and len(len(dtype) > 3):
+        if dtype and len(dtype) > 3:
             return dtype[0:2] == "v2" and dtype[3] == "m" and len(dtype) == 4
 
         return False
