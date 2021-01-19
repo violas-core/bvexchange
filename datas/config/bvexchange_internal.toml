@@ -30,6 +30,11 @@ exchange_async = true
     domain = "violaslayer"
     server = "violaslayer"
 
+[[sms_conn]]
+    host = "http://13.68.141.242"
+    port = 8000
+    subdomain = "sms"
+
 #connect ethereum chain config
 [[ethereum_nodes]]
     host = "https://kovan.infura.io/v3/2645261bd8844d0c9ac042c84606502d"
@@ -177,6 +182,10 @@ exchange_async = true
         run = true
     [type_opts.e2vm]
         etype  = "map"
+        support= true  
+        run = true
+    [type_opts.msg]
+        etype  = "msg"
         support= true  
         run = true
 
@@ -412,6 +421,26 @@ exchange_async = true
         address = "b14bc3286e4b9b41c86022f2e614d721"
         type = "liq"
         chain = "violas"
+
+    #the address of permission request funds from funds-server type = liq/map
+    [[address_list.msg]]
+        address = "0000000000000000004252474255524e"
+        type = "msg"
+        chain = "violas"
+[[address_book]]
+    mobile = "+8618601999980"
+    lang = "ch"
+
+[[sms_templete]]
+    data = "【Violas】您有一条来自 ssss 的数据请求需要处理 。"
+    replace = "ssss"
+    lang = "ch"
+
+[[sms_templete]]
+    data = "[Violas]you have a message ssss request."
+    replace = "ssss"
+    lang = "en"
+
 #thread loopping sleep time(s)
 #db_default is 1 xfilter  xxxproof  xxxex  comm
 [looping_sleep]

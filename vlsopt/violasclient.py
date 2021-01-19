@@ -453,7 +453,6 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    @output_args
     def get_transactions(self, start_version, limit = 1, fetch_event=True):
         try:
             datas = self.__client.get_transactions(int(start_version), limit, fetch_event)

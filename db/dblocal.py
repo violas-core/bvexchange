@@ -52,37 +52,25 @@ class dblocal(baseobject):
     ##FAILED->SUCCEED->VFAILED->SUCCEED->COMPLETE
     class state(Enum):
         START       = 0     #no use
-        FAILED      = 1     #execute before swap failed, this time can re-execute 
-        EFAILED     = 2     #get out amount failed
-        ESUCCEED    = 3
-        QBFAILED    = 4     #get <to_token_id> blance(swap end) with localdb version, calc diff balance 
-        QBSUCCEED   = 5
-        FILLFAILED  = 6     #fill map sender failed
-        FILLSUCCEED = 7
-        PFAILED     = 8     #payment(libra token) failed
-        PSUCCEED    = 9     #payment(libra token) succeed
-        VFAILED     = 10    #send change state transaction failed
-        VSUCCEED    = 11    #send change state transaction succeed
-        SFAILED     = 12    #stop swap failed
-        SSUCCEED    = 13    #stop swap succeed
+        FAILED      = 5     #execute before swap failed, this time can re-execute 
+        MFAILED     = 6     #mint mtoken failed
+        MSUCCEED    = 7     #mint mtoken succeed
+        EFAILED     = 20    #get out amount failed
+        ESUCCEED    = 21
+        QBFAILED    = 30    #get <to_token_id> blance(swap end) with localdb version, calc diff balance 
+        QBSUCCEED   = 31
+        FILLFAILED  = 40    #fill map sender failed
+        FILLSUCCEED = 41
+        PFAILED     = 50    #payment(libra token) failed
+        PSUCCEED    = 51    #payment(libra token) succeed
+        VFAILED     = 60    #send change state transaction failed
+        VSUCCEED    = 61    #send change state transaction succeed
+        SFAILED     = 70    #stop swap failed
+        SSUCCEED    = 71    #stop swap succeed
+        BFAILED     = 80    #burn mtoken failed
+        BSUCCEED    = 81    #burn mtoken succeed
         COMPLETE    = 128   #change state is confirmed
     
-    class statev2b(Enum):
-        START       = 0     #no use
-        FAILED      = 1     #execute before swap failed, this time can re-execute 
-        EFAILED     = 2     #get out amount failed
-        ESUCCEED    = 3
-        QBFAILED    = 4     #get <to_token_id> blance(swap end) with localdb version, calc diff balance 
-        QBSUCCEED   = 5
-        FILLFAILED  = 6     #fill map sender failed
-        FILLSUCCEED = 7
-        PFAILED     = 8     #payment(libra token) failed
-        PSUCCEED    = 9     #payment(libra token) succeed
-        VFAILED     = 10    #send change state transaction failed
-        VSUCCEED    = 11    #send change state transaction succeed
-        SFAILED     = 12    #stop swap failed
-        SSUCCEED    = 13    #stop swap succeed
-        COMPLETE    = 128   #change state is confirmed
     #exc_traceback_objle : info
     class info(__base):
         __tablename__='info'
@@ -238,10 +226,30 @@ class dblocal(baseobject):
     def query_is_vsucceed(self, maxtimes = 999999999):
         return self.__query_state(self.state.VSUCCEED, maxtimes)
 
+    def query_is_mfailed(self, maxtimes = 999999999):
+        return self.__query_state(self.state.MFAILED, maxtimes)
+
+    def query_is_msucceed(self, maxtimes = 999999999):
+        return self.__query_state(self.state.MSUCCEED, maxtimes)
+
+    def query_is_bfailed(self, maxtimes = 999999999):
+        return self.__query_state(self.state.BFAILED, maxtimes)
+
+    def query_is_bsucceed(self, maxtimes = 999999999):
+        return self.__query_state(self.state.BSUCCEED, maxtimes)
+
     def __update(self, tranid, state, detail = ""):
         try:
             inc = 0
-            if state in (self.state.FAILED, self.state.EFAILED, self.state.QBFAILED, self.state.FILLFAILED, self.state.PFAILED, self.state.VFAILED, self.state.SFAILED):
+            if state in (self.state.FAILED, \
+                    self.state.MFAILED, \
+                    self.state.BFAILED, \
+                    self.state.EFAILED, \
+                    self.state.QBFAILED, \
+                    self.state.FILLFAILED,\
+                    self.state.PFAILED, \
+                    self.state.VFAILED, \
+                    self.state.SFAILED):
                 inc = 1
             filter_tranid = (self.info.tranid==tranid)
             if detail:
@@ -297,6 +305,13 @@ def show_state_count(db, logger):
     assert ret.state == error.SUCCEED, "query failed."
     logger.debug(f"query_is_vsucceed:{ret.datas}")
 
+    ret = db.query_is_msucceed()
+    assert ret.state == error.SUCCEED, "query failed."
+    logger.debug(f"query_is_msucceed:{ret.datas}")
+
+    ret = db.query_is_bsucceed()
+    assert ret.state == error.SUCCEED, "query failed."
+    logger.debug(f"query_is_bsucceed:{ret.datas}")
 
 def test_dblocal():
     pass

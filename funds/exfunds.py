@@ -81,10 +81,10 @@ class exfunds(exfbase):
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
         if state is None and self.has_info(tran_id):
-            return ret
+           return result(error.ARG_INVALID, f"{tran_id} has found in local db")
 
         if not self.chain_data_is_valid(data):
-           return 
+           return result(error.ARG_INVALID, f"transaction({tran_id}) data is invalid. data :{data}")
 
         amount_swap = self.amountswap(amount, self.amountswap.amounttype[target_chain.upper()], target_client.get_decimals(token_id))
         send_amount = amount_swap.amount(target_chain, target_client.get_decimals(token_id))

@@ -13,7 +13,7 @@ Nginx + gunicorn + flask
 
 ## Version
 
-v1.0.2
+v2.0.0
 
 
 
@@ -56,6 +56,11 @@ Describe the operation types
   <td><strong>detail</strong></td>
   <td>string</td>
   <td>test. transaction is in libra chain</td>
+ </tr>
+ <tr>
+  <td><strong>receivers</strong></td>
+  <td>string</td>
+  <td>query receiver address info</td>
  </tr>
 </table>
 
@@ -124,6 +129,64 @@ Describe the sub operetion type.
   <td>query mapping record info</td>
  </tr>
 <table>
+
+
+
+## Result - type
+
+**Description**
+
+Describe the result struct, json string
+
+### Attributes
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Type</strong></td>
+  <td><strong>required/optional</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong>state</strong></td>
+  <td>string</td>
+  <td>required</td>
+  <td>request state</td>
+ </tr>
+ <tr>
+  <td><strong>message</strong></td>
+  <td>string</td>
+  <td>required</td>
+  <td>error info</td>
+ </tr>
+ <tr>
+  <td><strong>datas</strong></td>
+  <td>string</td>
+  <td>required</td>
+  <td>datas of result</td>
+ </tr>
+ <tr>
+  <td><strong>sign</strong></td>
+  <td>string</td>
+  <td>optional</td>
+  <td>server signature</td>
+ </tr>
+ <tr>
+  <td><strong>sign_datas</strong></td>
+  <td>string</td>
+  <td>optional</td>
+  <td>datas of sign, hex string of result, format is json.dumps(dict("state":name, "message":message, "datas":datas)).encode().hex() </td>
+ </tr>
+ <tr>
+  <td><strong>sign_key_id</strong></td>
+  <td>string</td>
+  <td>optional</td>
+  <td>md5(sign_public_key)</td>
+ </tr>
+
+<table>
+
 
 ## Parameter - list
 
@@ -365,6 +428,47 @@ result:
 ```
 
 
+## Receivers - map
+
+**Description**
+
+Describe the request mapping addresses info.
+
+
+<table>
+ <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>Value</strong></td>
+  <td><strong>Description</strong></td>
+ </tr>
+ <tr>
+  <td><strong>opt</strong></td>
+  <td>receivers</td>
+  <td>fixed</td>
+ </tr>
+ <tr>
+  <td><strong>opttype</strong></td>
+  <td>map</td>
+  <td>fixed map</td>
+ </tr>
+<table>
+
+```
+'http://52.231.52.107/?opt=receivers&opttype=map'
+
+result: 
+{
+    "state": SUCCEED,
+    "message': "",
+    "datas": {
+        "datas" : [{}, ...]
+    }
+    "sign": "...",
+    "sign_datas": "...",
+    "sign_key_id": "..."
+}
+```
+
 
 
 ---
@@ -373,6 +477,10 @@ result:
 
 
 # version list
+## v2.0.0
+  - append opt = receivers opttype = map | swap
+  - append [Result - type](#Result---type): result struct
+
 ## v1.0.2
   - modified [Opttype - type](#Opttype---type): added fpswap for fund proof records
 

@@ -36,7 +36,16 @@ class trantypebase(autoname):
     LIBRA       = auto()
     BTC         = auto()
     ETHEREUM    = auto()
+    SMS         = auto()
     UNKOWN      = auto()
+
+class langtype(autoname):
+    CH      = auto()
+    EN      = auto()
+
+class msgtype(autoname):
+    MINT    = auto()
+    BURN    = auto()
 
 '''
 init chain dict for first char : chain name
@@ -57,6 +66,7 @@ class dbindexbase(enumbase):
     BFILTER = 4
     EFILTER = 5
     FUNDSVLS = 6
+    MSG      = 7
     #proof datas
     V2LM    = 8
     L2VM    = 9

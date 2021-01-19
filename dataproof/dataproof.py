@@ -86,6 +86,7 @@ class configdatas(dataproof):
         self.set_default_value("eth_usd_chain", False)
         self.set_default_value("retry_maxtimes", sys.maxsize)
         self.set_default_value("exchange_async", True)
+        self.set_default_value("msg_min_version", {})
 
     def __getattr__(self, name):
         print(f"{name}----")
