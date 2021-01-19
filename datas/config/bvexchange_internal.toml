@@ -430,6 +430,12 @@ exchange_async = true
 [[address_book]]
     mobile = "+8618601999980"
     lang = "ch"
+    type = "msg"
+
+[[address_book]]
+    mobile = "+8613811939280"
+    lang = "en"
+    type = "msg"
 
 [[sms_templete]]
     data = "【Violas】您有一条来自 ssss 的数据请求需要处理 。"

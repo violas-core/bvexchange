@@ -530,7 +530,10 @@ def get_sms_templete(lang = "ch"):
             return item.get("data")
     raise ValueError("not found {lang} templete. check args and {setting.setting.sms_templete}")
 
+def get_addressbook(dtype):
+    return setting.setting.address_book
 
+    
 def get_min_version(chain_name):
     chain = to_str_value(chain_name)
     return setting.setting.msg_min_version.get(chain_name, 0)

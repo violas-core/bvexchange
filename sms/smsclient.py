@@ -38,6 +38,8 @@ class smsclient(baseobject):
         self.reset_templete()
 
         lang = self.to_str(lang)
+        if self.__templete and self.__templete["lang"] == lang:
+            return
 
         for item in self.__templetes:
             if item.get("lang", "") == lang:
@@ -62,9 +64,12 @@ class smsclient(baseobject):
             self.__url = url
         return self.__url is not None 
 
-    def send_message(self, mobile, message):
+    def send_message(self, mobile, message, lang = "ch"):
         try:
             ret = result(error.FAILED, "", "")
+
+            self.select_templete(lang)
+
             message = self.__templete["data"].replace(self.__templete.get("replace", self.REPLACE_DATA), message)
             data = {"receiver":mobile, "text":message}
             print(data)

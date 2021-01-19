@@ -23,9 +23,12 @@ def test_smsclient():
             stmanage.get_sms_templetes(),
             langtype.CH
             )
+
     #ret = client.send_message("+8618601999980", f"testclient:{time.strftime('%Y-%m-%d_%H:%M:%S', time.localtime())}")
-    ret = client.send_message("+8618601999980", f"vUSDT#Mint#v{int(time.time()/1000000)}")
-    print(ret)
+    books = stmanage.get_addressbook("msg")
+    for item in books:
+        ret = client.send_message(item["mobile"], f"vUSDT#Mint#v{item['mobile'][:8]}", item["lang"])
+        print(ret)
 
 def test_post():
     try:
