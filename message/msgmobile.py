@@ -13,7 +13,7 @@ from comm.error import error
 from db.dblocal import dblocal as localdb
 from message.msgbase import msgbase
 
-class msgmoblie(msgbase):    
+class msgmobile(msgbase):    
     def __init__(self, name, 
             proofdb, 
             receivers, 
@@ -22,7 +22,7 @@ class msgmoblie(msgbase):
             fromchain = "violas",
             **kwargs
             ):
-        ''' send moblie message (metadata's to_address)
+        ''' send mobile message (metadata's to_address)
             proofdb  : transaction proof source(proof db conf)
             receivers: receive msg requests address
             senders: sender of permission to send message 
@@ -67,7 +67,7 @@ class msgmoblie(msgbase):
             return result(error.ARG_INVALID, f"min version should >= {min_version}")
 
         if sender not in senders:
-           return result(error.ARG_INVALID, f"sender ({sender}) no permission send msg.")
+           return result(error.ARG_INVALID, f"sender ({sender}) no permission send msg. senders({senders})")
 
         if state is None and self.has_info(tran_id):
            return result(error.ARG_INVALID, f"data(version = {version}) is invalid")
@@ -79,21 +79,20 @@ class msgmoblie(msgbase):
         if self.use_module(state, localdb.state.START):
             self.insert_to_localdb_with_check(version, localdb.state.START, tran_id, receiver)
 
+        succeed_mobile = json.loads(detail.get("succeed_mobile", json.dumps(["0"])))
         if self.use_module(state, localdb.state.COMPLETE): 
-            succeed_moblie = detail.get("succeed_moblie", [])
-
             #send violas map token to payee address. P = payee
             msgdata = self.create_msg_data(data)
 
-            self._logger.debug(f"exec_exchange-1. start send message msgdata = {msgdata} sended succeed moblie = {succeed_moblie}...")
+            self._logger.debug(f"exec_exchange-1. start send message msgdata = {msgdata} sended succeed mobile = {succeed_mobile}...")
 
             for item in addressbook:
                 mobile = item.get("mobile")
-                if mobile in succeed_moblie:
+                if mobile in succeed_mobile:
                     continue
 
                 self._logger.debug(f"exec_exchange-2. start from  send {mobile} {msgbase}...")
-                ret = self.sms_client.send_message(moblie, msgdata, item.get("lang", "ch"))
+                ret = self.sms_client.send_message(mobile, msgdata, item.get("lang", "ch"))
 
                 if ret.state != error.SUCCEED:
                     self._logger.error(f"exec_exchange-2.result: failed. {ret.message}")
@@ -101,13 +100,16 @@ class msgmoblie(msgbase):
                             json.dumps(detail))
                 else:
                     self._logger.error(f"exec_exchange-2.result: succeed. next...")
-                    succeed_moblie.append(mobile)
-                    detail.update({"succeed_moblie" : json.dumps(succeed_moblie)})
+                    succeed_mobile.append(mobile)
+                    detail.update({"succeed_mobile" : json.dumps(succeed_mobile)})
+                    self.update_localdb_state_with_check(tran_id, localdb.state.CONTINUE, \
+                            json.dumps(detail))
 
             #check all addressbook is send ok
             complete = True
-            for mobile in addressbook:
-                if mobile in succeed_moblie:
+            for item in addressbook:
+                mobile = item.get("mobile")
+                if mobile in succeed_mobile:
                     continue
                 complete = False
 

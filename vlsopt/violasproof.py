@@ -82,5 +82,5 @@ class violasproof(violasclient):
     def create_data_for_msg(self, flag, opttype, token_id, amount, tranid, version, **kwargs):
         flag = self.__to_str_value(flag)
         opttype = self.__to_str_value(opttype)
-        return json.dumps({"flag": flag, "type":datatype.MSG.value, "opttype": opttype, "token_id": token_id, "amount":amount, "tran_id":tranid, "version":version})
+        return json.dumps({"flag": flag, "type":datatype.MSG.value, "opttype": opttype, "token_id": token_id, "amount":amount, "tran_id":tranid, "version":version, "state":"start"})
             

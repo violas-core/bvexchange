@@ -158,6 +158,7 @@ class dbvproof(dbvbase):
         exp_time = int(tran_info.get("expiration_time")) * 1000000
         if timestamps > exp_time:
             timestamps = exp_time
+        from_chain, to_chain = stmanage.get_exchang_chains(tran_info["type"])
         return {"version":tran_info["version"], \
             "type":tran_info["type"], \
             "opttype":tran_info["opttype"], \
@@ -170,8 +171,8 @@ class dbvproof(dbvbase):
             "in_token" : tran_info.get("token_id"), \
             "out_token": self.get_out_token(tran_info), \
             "timestamps": timestamps, \
-            "from_chain": self.map_chain_name[dtype[:1]] if not tran_info["type"].startswith("funds") else tran_info["chain"], \
-            "to_chain": self.map_chain_name[dtype[2:3]] if not tran_info["type"].startswith("funds") else tran_info["chain"], \
+            "from_chain": from_chain, \
+            "to_chain": to_chain, \
             "times" : tran_info.get("times", 0), \
             }
 

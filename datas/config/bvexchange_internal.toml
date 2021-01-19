@@ -432,11 +432,6 @@ exchange_async = true
     lang = "ch"
     type = "msg"
 
-[[address_book]]
-    mobile = "+8613811939280"
-    lang = "en"
-    type = "msg"
-
 [[sms_templete]]
     data = "【Violas】您有一条来自 ssss 的数据请求需要处理 。"
     replace = "ssss"

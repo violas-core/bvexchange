@@ -101,7 +101,7 @@ class aproofbase(abase):
             return False
 
         if not self.is_valid_datatype(tran_info.get("type")):
-            self._logger.warning(f"type({tran_info.get('type', None)}) is invalid.  valid dtype is {[dtype.value for dtype in self.get_data_types()]}")
+            #self._logger.warning(f"type({tran_info.get('type', None)}) is invalid.  valid dtype is {[dtype.value for dtype in self.get_data_types()]}")
             return False
 
         if not self.is_valid_token_id(tran_info.get("token_id")): 
@@ -230,7 +230,7 @@ class aproofbase(abase):
                     if count >= self.get_step() or not self.work():
                         break
                     #record last version(parse), maybe version is not exists
-                    self._logger.debug(f"parse transaction:{version}")
+                    #self._logger.debug(f"parse transaction:{version}")
 
                     latest_filter_ver = version
 
