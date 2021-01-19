@@ -79,8 +79,8 @@ class violasproof(violasclient):
         flag, dtype = self.__flag_dtype_to_str(flag, dtype)
         return json.dumps({"flag": flag, "type":dtype, "opttype": "map", "chain":chain, "tran_id":tranid, "token_id":tokenid ,"amount":amount, "to_address":to_address, "state":"start"})
 
-    def create_data_for_msg(self, flag, optype, token_id, amount, tranid, version, **kwargs):
-        flag, dtype = self.__flag_dtype_to_str(flag, dtype)
+    def create_data_for_msg(self, flag, opttype, token_id, amount, tranid, version, **kwargs):
+        flag = self.__to_str_value(flag)
         opttype = self.__to_str_value(opttype)
         return json.dumps({"flag": flag, "type":datatype.MSG.value, "opttype": opttype, "token_id": token_id, "amount":amount, "tran_id":tranid, "version":version})
             
