@@ -36,16 +36,15 @@ class smsclient(baseobject):
 
     def select_templete(self, lang):
         self.reset_templete()
-        if isinstance(lang, langtype):
-            lang = lang.value
 
-        self.__lang = lang
+        lang = self.to_str(lang)
+
         for item in self.__templetes:
             if item.get("lang", "") == lang:
-                self.__templete = item.get("data")
-                self.__templete.index(self.REPLACE_DATA)
+                self.__templete = item
+                self.__templete["data"].index(item.get("replace", self.REPLACE_DATA))
                 return True
-        raise ValueError("not found {lang} templete. check args and {self.sms_templetes}")
+        raise ValueError(f"not found {lang} templete. check args and {self.__templetes}")
 
     def conn_node(self, nodes):
         self.__url = None
@@ -66,8 +65,9 @@ class smsclient(baseobject):
     def send_message(self, mobile, message):
         try:
             ret = result(error.FAILED, "", "")
-            message = self.__templete.replace(self.REPLACE_DATA, message)
+            message = self.__templete["data"].replace(self.__templete.get("replace", self.REPLACE_DATA), message)
             data = {"receiver":mobile, "text":message}
+            print(data)
             response = requests.post(url = self.__url, data = data)
             if response is not None:
                 jret = response.json()
