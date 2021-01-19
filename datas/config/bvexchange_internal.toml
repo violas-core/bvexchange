@@ -50,7 +50,7 @@ exchange_async = true
 [[violas_servers]]
     host = "api4.violas.io"
     user = "violas"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
 
 #redis db connect config. this is default config,
 #append db_list for specific value
