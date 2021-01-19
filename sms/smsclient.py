@@ -38,7 +38,7 @@ class smsclient(baseobject):
         self.reset_templete()
 
         lang = self.to_str(lang)
-        if self.__templete and self.__templete["lang"] == lang:
+        if not lang or (self.__templete and self.__templete["lang"] == lang):
             return
 
         for item in self.__templetes:

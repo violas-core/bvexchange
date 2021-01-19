@@ -36,6 +36,7 @@ class clientfactory(baseobject):
 
        '''
 
+       chain = cls.to_str(chain)
        if chain == trantype.BTC.value:
            return btcclient(name, nodes) if nodes else None
        elif chain == trantype.VIOLAS.value:
@@ -45,8 +46,8 @@ class clientfactory(baseobject):
        elif chain == trantype.ETHEREUM.value:
            return ethclient(name, nodes, chain, usd_chain = dataproof.configs("eth_usd_chain")) if nodes else None
        elif chain == trantype.SMS.value:
-           templetes = kwargs.get("templetes")
-           lang = kwargs.get("lang", langtype.CH)
+           templetes = kwargs.get("sms_templetes")
+           lang = kwargs.get("sms_lang", langtype.CH)
            return smsclient(name, nodes, templetes, lang)
        
        raise Exception(f"create client failed. chain name({chain}) is invalid.")

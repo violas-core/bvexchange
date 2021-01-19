@@ -574,7 +574,7 @@ class exbase(baseobject):
         #send violas msg 
         markdata = self.violas_client.create_data_for_msg(trantype.VIOLAS, opttype, token_id, amount, tranid, version, **kwargs)
 
-        ret = self.map_client.send_coin(from_sender, toaddress, \
+        ret = self.map_client.send_coin(from_sender, to_address, \
                 1, gas_token_id, data=markdata)
         return ret
 

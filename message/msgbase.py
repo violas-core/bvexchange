@@ -63,7 +63,7 @@ class msgbase(baseobject):
         '''
 
         baseobject.__init__(self, name)
-        self.from_chain = self.to_str(from_chain)
+        self.from_chain = self.to_str(fromchain)
     
         #violas/libra init
         self.append_property("receivers", receivers)
@@ -82,6 +82,14 @@ class msgbase(baseobject):
     def __del__(self):
         pass
 
+    def stop(self):
+        try:
+            if self.violas_client:
+                self.violas_client.stop()
+
+            self.work_stop()
+        except Exception as e:
+            parse_except(e)
     def set_local_workspace(self, **kwargs):
 
         self.append_property("min_version", int(kwargs.get("min_version", 1)))
@@ -91,17 +99,17 @@ class msgbase(baseobject):
         #block chain 
         ttype = trantype(self.from_chain)
         chain_nodes = kwargs.get(self.create_nodes_key(ttype))
-        self.append_property(self.create_client_key(ttype)), \
-                clientfactory.create(self.name(), ttype, chain_nodes)
+        self.append_property(self.create_client_key(ttype), \
+                clientfactory.create(self.name(), ttype, chain_nodes))
         
-        self.append_property("from_client", self.get_property(self.create_nodes_key(ttype)))
+        self.append_property("from_client", self.get_property(self.create_client_key(ttype)))
 
         #sms client
         ttype = trantype(trantype.SMS)
         chain_nodes = kwargs.get(self.create_nodes_key(ttype))
         self.append_property(self.create_client_key(ttype), \
                 clientfactory.create(self.name(), ttype, chain_nodes, \
-                    templetes = kwargs.get("templetes"), lang = kwargs.get("lang")))
+                    sms_templetes = kwargs.get("sms_templetes"), sms_lang = kwargs.get("sms_lang")))
         
 
     def show_execute_args(self, name, dtype, \
@@ -125,6 +133,67 @@ class msgbase(baseobject):
     def is_stop(self, tran_id):
         return self.pserver.is_stop(tran_id)
 
+    def get_record_from_localdb_with_state(self, states):
+        try:
+            rpcparams = {}
+
+            assert states is not None and len(states) > 0, f"args states is invalid."
+            
+            ## failed 
+            maxtimes = stmanage.get_max_times()
+
+            for state in states:
+                ret = self.load_record_and_merge(rpcparams, state, maxtimes)
+                if(ret.state != error.SUCCEED):
+                    return ret
+            
+            ret = result(error.SUCCEED, datas = rpcparams)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def merge_db_to_rpcparams(self, rpcparams, dbinfos):
+        try:
+            for info in dbinfos:
+                new_data = {
+                        "version":info.version, 
+                        "tran_id":info.tranid, 
+                        "state":info.state, 
+                        "detail":info.detail,
+                        "times":info.times}
+                #server receiver address
+                if info.receiver in rpcparams.keys():
+                    rpcparams[info.receiver].append(new_data)
+                else:
+                    rpcparams[info.receiver] = [new_data]
+    
+            return result(error.SUCCEED, "", rpcparams)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+    
+    def load_record_and_merge(self, rpcparams, state, maxtimes = 999999999):
+        try:
+            ret = self.db.query_with_state(state, maxtimes)
+            if(ret.state != error.SUCCEED):
+                return ret 
+    
+            ret = self.merge_db_to_rpcparams(rpcparams, ret.datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def show_load_record_info(self, rpcparams):
+        infos = {}
+        for key, values in rpcparams.items():
+            for value in values:
+                info_key = f"{localdb.state(value.get('state')).name}"
+                if info_key not in infos:
+                    infos.update({info_key : 1})
+                else:
+                    infos[info_key] = infos[info_key] + 1
+        self._logger.debug(f"record info:{infos}")
+
     def use_module(self, state, module_state):
         return state is None or state.value < module_state.value
 
@@ -140,36 +209,6 @@ class msgbase(baseobject):
         SPLIT_SYMBOL = "#"
         fields = ["opttype", "flag", "token_id", "amount", "version"]
         return f"{SPLIT_SYMBOL}".join([data.get(field) for field in fields])
-
-
-    # local db state is VSUCCEED , update state to COMPLETE
-    def rechange_db_state(self, states):
-        try:
-            ##update violas blockchain state to end, if sendexproofmark is ok
-            self._logger.debug(f"start rechange_db_state({[state.name[0] for state in states]})")
-            ret = self.get_record_from_localdb_with_state(states)
-            if ret.state != error.SUCCEED:
-                return ret
-            rpcparams = ret.datas
-            self.show_load_record_info(rpcparams)
-            
-            for key in rpcparams.keys():
-                datas = rpcparams.get(key)
-                for data in datas:
-                    tran_id = data.get("tran_id")
-                    if tran_id is None:
-                        continue
-                    ret = self.is_end(tran_id)
-                    if ret.state == error.SUCCEED and ret.datas == True:
-                       ret = self.update_localdb_state_with_check(tran_id, localdb.state.COMPLETE, detail = None)
-
-                    ret = self.is_stop(tran_id)
-                    if ret.state == error.SUCCEED and ret.datas == True:
-                       ret = self.update_localdb_state_with_check(tran_id, localdb.state.COMPLETE, detail = None)
-
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
 
     def __checks(self):
         return True
@@ -283,12 +322,6 @@ class msgbase(baseobject):
             #if history datas is found state = failed, exchange it until succeed
             self._logger.debug(f"************************************************************ 1/5")
             self.reexchange_data_from_failed(self.use_exec_failed_state)
-    
-            #db state: SUCCEED
-            #check state from blockchain, and change exchange history data, 
-            ##when change it to complete, can truncature history db
-            self._logger.debug(f"************************************************************ 2/5")
-            self.rechange_db_state(self.use_exec_update_db_states)
 
             #modulti receiver, one-by-one
             self._logger.debug(f"************************************************************ 3/5")
