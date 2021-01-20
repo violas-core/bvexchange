@@ -166,6 +166,23 @@ class exmap(exbase):
                 detail.update({"txid":ret.datas})
                 self.update_localdb_state_with_check(tran_id, localdb.state.PSUCCEED, \
                         json.dumps(detail))
+
+        #transfer burn msg(datatype : v2xm)
+        if self.is_need_burn_mtoken(self.dtype) and (state is None or self.use_module(state, localdb.state.BSUCCEED)):
+            print("---------------------------burn----------------------------")
+            receiver_msg = self.get_address_from_account(self.funds_address)
+            ret = self.send_violas_msg(from_sender, receiver_msg, msgtype.BURN, from_token_id, amount, tran_id, version)
+            if ret.state != error.SUCCEED:
+                detail.update({"burn_mtoken":localdb.state.BFAILED.name})
+                self.update_localdb_state_with_check(tran_id, localdb.state.BFAILED, \
+                      json.dumps(detail))
+                self._logger.error(f"exec_exchange-0.result: failed. {ret.message}")
+                return ret
+            else:
+                detail.update({"burn_mtoken":localdb.state.BSUCCEED.name})
+                self.update_localdb_state_with_check(tran_id, localdb.state.BSUCCEED, \
+                      json.dumps(detail))
+
         #send libra token to toaddress
         #sendexproofmark succeed , send violas coin with data for change tran state
         if self.use_module(state, localdb.state.VSUCCEED):
@@ -175,22 +192,6 @@ class exmap(exbase):
                     from_token_id, combine_amount, out_amount_real=micro_amount, version=version)
             if ret.state != error.SUCCEED:
                 return ret
-
-        #transfer burn msg(datatype : v2xm)
-        if self.is_need_burn_mtoken(self.dtype) and (state is None or self.use_module(state, localdb.state.BSUCCEED)):
-            print("---------------------------burn----------------------------")
-            receiver_msg = self.get_address_from_account(self.funds_address)
-            ret = self.send_violas_msg(from_sender, receiver_msg, msgtype.BURN, from_token_id, amount, tran_id, version)
-            if ret.state != error.SUCCEED:
-                detail.update({"burn_mtoken":localdb.BFAILED.name})
-                self.update_localdb_state_with_check(tran_id, localdb.state.BFAILED, \
-                      json.dumps(detail))
-                self._logger.error(f"exec_exchange-0.result: failed. {ret.message}")
-                return ret
-            else:
-                detail.update({"burn_mtoken":localdb.BSUCCEED.name})
-                self.update_localdb_state_with_check(tran_id, localdb.state.BSUCCEED, \
-                      json.dumps(detail))
 
         self._logger.debug(f"exec_exchange-end...")
         return result(error.SUCCEED)

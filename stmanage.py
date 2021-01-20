@@ -113,7 +113,7 @@ def get_conf_env():
 
 def get_looping_sleep(mtype):
     mtype = to_str_value(mtype)
-    sleep = int(setting.setting.looping_sleep.get(mtype, 1))
+    sleep = int(setting.setting.looping_sleep.get(mtype, 8))
     return sleep
 
 def get_syncing_state():

@@ -81,6 +81,7 @@ class smsclient(baseobject):
                     ret = result(error.SUCCEED, jret["msg"], True)
                 else:
                     ret = result(error.FAILED, jret["msg"], False)
+            self._logger.info(f"send messge {message} to mobile({mobile}) result: {jret}")
         except Exception as e:
             ret = parse_except(e)
         return ret

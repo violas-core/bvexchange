@@ -60,7 +60,7 @@ class msgmobile(msgbase):
         tran_id     = data["tran_id"]
         sender      = data["address"]
 
-        self._logger.info(f"start exfunds {self.dtype}. version={version}, state = {state}, detail = {detail} datas from server.")
+        self._logger.info(f"start msgmobile {self.dtype}. version={version}, state = {state}, detail = {detail} datas from server.")
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
         if version < min_version:
@@ -99,7 +99,7 @@ class msgmobile(msgbase):
                     self.update_localdb_state_with_check(tran_id, localdb.state.FAILED, \
                             json.dumps(detail))
                 else:
-                    self._logger.error(f"exec_exchange-2.result: succeed. next...")
+                    self._logger.debug(f"exec_exchange-2.result: succeed. next...")
                     succeed_mobile.append(mobile)
                     detail.update({"succeed_mobile" : json.dumps(succeed_mobile)})
                     self.update_localdb_state_with_check(tran_id, localdb.state.CONTINUE, \

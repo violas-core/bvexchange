@@ -432,6 +432,11 @@ exchange_async = true
     lang = "ch"
     type = "msg"
 
+[[address_book]]
+    mobile = "+8613811939280"
+    lang = "ch"
+    type = "msg"
+
 [[sms_templete]]
     data = "【Violas】您有一条来自 ssss 的数据请求需要处理 。"
     replace = "ssss"
@@ -445,7 +450,7 @@ exchange_async = true
 #thread loopping sleep time(s)
 #db_default is 1 xfilter  xxxproof  xxxex  comm
 [looping_sleep]
-    vfilter = 1
+    vfilter = 0
     lfilter = 1
     bfilter = 1
     comm = 8
