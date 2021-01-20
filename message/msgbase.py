@@ -330,7 +330,7 @@ class msgbase(baseobject):
 
             #requirement checks
             self.__checks()
-            self.open_lock(dataproof.configs("exchange_async"))
+            self.open_lock(not dataproof.configs("exchange_async"))
     
             #syncing
             if not self.check_syncing():
