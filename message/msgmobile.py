@@ -55,7 +55,7 @@ class msgmobile(msgbase):
         self.append_property("use_exec_update_db_states", 
                 [localdb.state.VSUCCEED, localdb.state.SSUCCEED])
     def exec_exchange(self, data, receiver, senders, addressbook, \
-            state = None, detail = {}, min_version = 1):
+            state = None, detail = None, min_version = 1):
         version     = data["version"]
         tran_id     = data["tran_id"]
         sender      = data["address"]
@@ -89,6 +89,7 @@ class msgmobile(msgbase):
             for item in addressbook:
                 mobile = item.get("mobile")
                 if mobile in succeed_mobile:
+                    self._logger.debug(f"skip {mobile}, next...")
                     continue
 
                 self._logger.debug(f"exec_exchange-2. start from  send {mobile} {msgbase}...")

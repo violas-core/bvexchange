@@ -61,7 +61,7 @@ class exfunds(exfbase):
                         localdb.state.SSUCCEED]])
 
     def exec_exchange(self, data, from_sender, funds_sender, receiver, \
-            state = None, detail = {}):
+            state = None, detail = None):
         fromaddress = data["address"]
         amount      = int(data["amount"]) 
         sequence    = data["sequence"] 

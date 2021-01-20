@@ -507,7 +507,7 @@ class exfbase(baseobject):
                         map_sender = ret.datas
 
                         self.pserver.set_exec_points(receiver, max(latest_version,version), self.PRE_FIX)
-                        ret = self.exec_exchange(data, from_sender, map_sender, receiver)
+                        ret = self.exec_exchange(data, from_sender, map_sender, receiver, None, {})
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
     

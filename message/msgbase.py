@@ -361,7 +361,7 @@ class msgbase(baseobject):
                             break
 
                         self.pserver.set_exec_points(receiver, max(latest_version, int(data.get("version"))))
-                        ret = self.exec_exchange(data, receiver, self.senders, self.addressbook, min_version = self.min_version)
+                        ret = self.exec_exchange(data, receiver, self.senders, self.addressbook, state = None, detail = {}, min_version = self.min_version)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
 
@@ -377,7 +377,7 @@ class msgbase(baseobject):
     
         return ret
     
-    def exec_exchange(self, data, receiver, senders, addressbook, state = None, detail = {}, min_version = 1):
+    def exec_exchange(self, data, receiver, senders, addressbook, state = None, detail = None, min_version = 1):
         '''
         @dev exchange mapping VIOLAS <-> BTC/ETHEREUM
         @param data transaction info from proof db

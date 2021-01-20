@@ -310,7 +310,7 @@ def test_v2em():
     vclient = get_violasclient()
     vwallet = get_violaswallet()
     max_work_time = 180
-    map_amount = 2_10_0000
+    map_amount = 2_11_0018
     map_token_id = Tokens.VIOLAS_USDT.value
     eth_token_name = Tokens.ETHEREUM_USDT.value
 

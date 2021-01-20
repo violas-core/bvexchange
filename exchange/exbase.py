@@ -763,7 +763,7 @@ class exbase(baseobject):
                         self.__set_request_funds_account(from_sender, map_sender)
 
                         self.pserver.set_exec_points(receiver, max(latest_version, int(data.get("version"))))
-                        ret = self.exec_exchange(data, from_sender, map_sender, self.combine_account, receiver)
+                        ret = self.exec_exchange(data, from_sender, map_sender, self.combine_account, receiver, state = None, detail = {})
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
 
@@ -794,7 +794,7 @@ class exbase(baseobject):
         return ret
     
     def exec_exchange(self, data, from_sender, map_sender, combine_account, receiver, \
-            state = None, detail = {}):
+            state = None, detail = None):
         '''
         @dev exchange mapping VIOLAS <-> BTC/ETHEREUM
         @param data transaction info from proof db
