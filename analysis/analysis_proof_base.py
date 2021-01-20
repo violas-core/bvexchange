@@ -23,6 +23,7 @@ from enum import Enum
 from db.dbvfilter import dbvfilter
 from db.dbvproof import dbvproof
 from analysis.analysis_base import abase
+from dataproof import dataproof
 
 #module name
 name="aproofbase"
@@ -182,7 +183,7 @@ class aproofbase(abase):
     def start(self):
         try:
             self._logger.debug(f"start proof work")
-            self.open_lock()
+            self.open_lock(not dataproof.configs("exchange_async"))
             self.lock()
 
             new_state = "start"
