@@ -502,7 +502,7 @@ class exbase(baseobject):
             
             cur_amount = ret.datas
             if cur_amount < amount + gas:
-                micro_amount = self.amountswap(amount + gas, self.amountswap.BTC).microamount("btc", self.btc_client.get_decimals())
+                micro_amount = self.amountswap(amount + gas, self.amountswap.amounttype.BTC).microamount("btc", self.btc_client.get_decimals())
                 ret = self.__send_get_token(account, trantype.BTC.value, tran_id, token_id, micro_amount, address)
                 if ret.state != error.SUCCEED:
                     return ret
