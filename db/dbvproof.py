@@ -222,10 +222,22 @@ class dbvproof(dbvbase):
         ret.datas = int(ret.datas) if ret.state == error.SUCCEED else ret.datas
         return ret
 
+    def set_exec_timestamp(self, key, timestamp):
+        ret = self.hset("exec_timestamp", key, timestamp)
+
+    def get_exec_timestamp(self, key):
+        ret = self.hget("exec_timestamp", key)
+        if ret.state == error.SUCCEED:
+            if ret.datas is None:
+                ret = result(error.SUCCEED, "", 0) #first get, not set it ,so return 0
+        
+        ret.datas = int(ret.datas) if ret.state == error.SUCCEED else ret.datas
+        return ret
+
     def get_records(self, opttype, names, start = 0, limit = 10):
         '''save record to record db
-           @opttype: record type. swap or map
-           @name: hhash name: address_<chain:btc/violas/libra>_<opttype:map/swap>
+           @param opttype record type. swap or map
+           @param names hhash name address_<chain:btc/violas/libra>_<opttype:map/swap>
         '''
         zname = self.record_index_name(opttype)
         ret = self.zrevrange(zname, 0, -1)
@@ -250,6 +262,41 @@ class dbvproof(dbvbase):
                 
                 datas.append(ret.datas)
 
+            if len(datas) >= limit and limit > 0:
+                break
+
+        ret = result(error.SUCCEED, datas = datas)
+        return ret
+
+    def get_records_with_state(self, opttype, state, start = 0, limit = 10):
+        '''save record to record db
+           @param opttype record type. swap or map
+           @param state transaction state is start stop end cancel
+        '''
+        zname = self.record_index_name(opttype)
+        ret = self.zrevrange(zname, 0, -1)
+        if ret.state != error.SUCCEED:
+            return ret
+        datas = []
+        index = -1
+        zvals = ret.datas
+        for zval in zvals:
+            dict_zval = json.loads(zval)
+            hname = dict_zval.get("name")
+            key = dict_zval.get("key")
+
+            ret = self.hget(hname, key)
+            if ret.state != error.SUCCEED:
+                return ret
+
+            tran_info = json.loads(ret.datas) if isinstance(ret.datas, str) else ret.datas 
+            if (state and state == tran_info.get("state")) or not state:
+                index = index + 1
+            else:
+                continue
+
+            if index >= start:
+                datas.append(ret.datas)
             if len(datas) >= limit and limit > 0:
                 break
 

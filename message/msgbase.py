@@ -215,11 +215,10 @@ class msgbase(baseobject):
         return ret.datas
 
     def create_msg_data(self, data):
-        SPLIT_SYMBOL = ""
-        fields = ["opttype", "token_id", "amount"]
-        print(f"data:{data}")
-        #return f"{SPLIT_SYMBOL}".join([f"{data.get(field, '')}" for field in fields])
-        return f"{data.get('opttype')[:1]}{data.get('token_id')[:2]}{data.get('amount')}"
+        SPLIT_SYMBOL = " "
+        fields = ["opttype", "token_id", "version"]
+        return f"{SPLIT_SYMBOL}".join([f"{data.get(field, '')}" for field in fields])
+        #return f"{data.get('opttype')[:1]}{data.get('token_id')[:2]}{data.get('amount')}"
 
     def __checks(self):
         return True
@@ -364,6 +363,8 @@ class msgbase(baseobject):
                         ret = self.exec_exchange(data, receiver, self.senders, self.addressbook, state = None, detail = {}, min_version = self.min_version)
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
+                        else:
+                            self._logger.info(ret.message)
 
 
             ret = result(error.SUCCEED) 
