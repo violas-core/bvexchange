@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import operator
-import sys, os
+import sys, os, time
 import json
 sys.path.append(os.getcwd())
 sys.path.append("..")
@@ -54,17 +54,37 @@ class msgmobile(msgbase):
 
         self.append_property("use_exec_update_db_states", 
                 [localdb.state.VSUCCEED, localdb.state.SSUCCEED])
+
+    def create_exec_timestamp_key(self, *args):
+        return f"_".join([item for item in list(args)])
+
+    def can_send_msg(self, key, sleep_secs):
+        ret = self.pserver.get_exec_timestamp(key)
+        assert ret.state == error.SUCCEED, "get exec timestamp failed"
+        pre_time = ret.datas
+        return int(time.time()) - pre_time >= int(sleep_secs)
+
     def exec_exchange(self, data, receiver, senders, addressbook, \
             state = None, detail = None, min_version = 1):
         version     = data["version"]
         tran_id     = data["tran_id"]
         sender      = data["address"]
+        opttype     = data["opttype"]
 
-        self._logger.info(f"start msgmobile {self.dtype}. version={version}, state = {state}, detail = {detail} datas from server.")
+        #select mobile for opttype or None(receiver all)
+        addressbook = [item for item in addressbook if item.get("opttype", opttype) == opttype]
+
+        #filter can send msg, prevent max freq send
+        addressbook = [item for item in addressbook if self.can_send_msg(self.create_exec_timestamp_key(item.get("mobile"), opttype), item.get("interval", 3600))]
+
+        self._logger.info(f"start msgmobile {self.dtype}. version={version}, state = {state}, detail = {detail} addressbook = {addressbook} opttype = {opttype} datas from server.")
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
         if version < min_version:
             return result(error.ARG_INVALID, f"min version should >= {min_version}")
+
+        if len(addressbook) == 0:
+           return result(error.SUCCEED, f"no found mobile had permission receive msg({opttype}). senders({senders})")
 
         if sender not in senders:
            return result(error.ARG_INVALID, f"sender ({sender}) no permission send msg. senders({senders})")
@@ -105,6 +125,9 @@ class msgmobile(msgbase):
                     detail.update({"succeed_mobile" : json.dumps(succeed_mobile)})
                     self.update_localdb_state_with_check(tran_id, localdb.state.CONTINUE, \
                             json.dumps(detail))
+
+                    self.pserver.set_exec_timestamp(self.create_exec_timestamp_key(mobile, opttype), int(time.time()))
+
 
             #check all addressbook is send ok
             complete = True

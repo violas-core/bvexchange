@@ -427,14 +427,22 @@ exchange_async = true
         address = "0000000000000000004252474255524e"
         type = "msg"
         chain = "violas"
+
+#receive msg 
+#lang is sms_templete lang
+#opttype is msg opttype, value is null, receive all msg. ex. mint   burn
 [[address_book]]
     mobile = "+8618601999980"
     lang = "ch"
+    opttype = "mint"
+    interval = 3600
     type = "msg"
 
 [[address_book]]
     mobile = "+8613811939280"
     lang = "ch"
+    opttype = "burn"
+    interval = 3900
     type = "msg"
 
 [[sms_templete]]

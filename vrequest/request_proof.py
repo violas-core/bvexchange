@@ -79,6 +79,15 @@ class requestproof(requestbase):
             ret = parse_except(e)
         return ret
 
+    def get_transaction_records_with_state(self, state, opttype = "swap", cursor = 0, limit = 10):
+        try:
+            ret = self.get_records_with_state(opttype, state, cursor, limit)
+            if ret.state != error.SUCCEED:
+                return ret
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def list_keys_for_substr(self, substr, cursor = 0, limit = 10):
         try:
             ret = self.scan(cursor, sbustr, limit)

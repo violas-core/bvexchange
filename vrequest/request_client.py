@@ -124,6 +124,9 @@ class requestclient(baseobject):
     def get_transaction_records(self, senders, opttype = "swap", cursor = 0, match=None, limit = 10):
         return self._rclient.get_transaction_records(senders, opttype.lower(), cursor, limit)
 
+    def get_transaction_records_with_state(self, state, opttype = "swap", cursor = 0, match=None, limit = 10):
+        return self._rclient.get_transaction_records_with_state(state, opttype.lower(), cursor, limit)
+
     def list_record_address_for_chain(self, chain, opttype = "swap", cursor = 0, limit = 10):
         return self._rclient.scan(cursor, f"*_{chain.lower()}_{opttype.lower()}", limit)
 
@@ -135,3 +138,9 @@ class requestclient(baseobject):
 
     def get_exec_points(self, key, prefix = None):
         return self._rclient.get_exec_points(self.create_point_key(key, prefix))
+
+    def set_exec_timestamp(self, key, point, prefix = None):
+        return self._rclient.set_exec_timestamp(self.create_point_key(key, prefix), point)
+
+    def get_exec_timestamp(self, key, prefix = None):
+        return self._rclient.get_exec_timestamp(self.create_point_key(key, prefix))
