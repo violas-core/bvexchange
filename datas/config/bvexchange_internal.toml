@@ -460,5 +460,6 @@ exchange_async = true
 [looping_sleep]
     vfilter = 0
     lfilter = 1
-    bfilter = 1
+    bfilter = 10
+    efilter = 10
     comm = 8
