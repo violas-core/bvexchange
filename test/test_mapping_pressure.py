@@ -369,10 +369,10 @@ def run_pressure(sleep_secs = 2):
             message_wheel(sleep_secs)
             test_v2em()
             message_wheel(sleep_secs)
-            test_b2vm()
-            message_wheel(sleep_secs)
-            test_v2bm()
-            message_wheel(sleep_secs)
+            #test_b2vm()
+            #message_wheel(sleep_secs)
+            #test_v2bm()
+            #message_wheel(sleep_secs)
         except Exception as e:
             pass
         message_wheel(sleep_secs = 10)
