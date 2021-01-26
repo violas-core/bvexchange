@@ -112,6 +112,7 @@ class works(baseobject):
                             )
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -138,6 +139,7 @@ class works(baseobject):
                             )
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -166,6 +168,7 @@ class works(baseobject):
                             )
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -193,6 +196,7 @@ class works(baseobject):
                             )
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -200,6 +204,11 @@ class works(baseobject):
             parse_except(e)
         finally:
             logger.critical(f"stop: {mod}")
+
+    def work_looping(self, obj, mod, nsec = 8):
+        while (self.__work_looping.get(mod, False)):
+            obj.start()
+            sleep(nsec)
 
     def work_vfilter(self, **kargs):
         try:
@@ -216,6 +225,7 @@ class works(baseobject):
                     obj.set_swap_module(stmanage.get_swap_module())
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -249,6 +259,7 @@ class works(baseobject):
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -270,6 +281,7 @@ class works(baseobject):
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -295,6 +307,7 @@ class works(baseobject):
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -321,6 +334,7 @@ class works(baseobject):
                     obj.set_min_valid_version(self.__violas_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -348,6 +362,7 @@ class works(baseobject):
                             )
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -374,6 +389,7 @@ class works(baseobject):
                             )
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -403,6 +419,7 @@ class works(baseobject):
                             )
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -430,6 +447,7 @@ class works(baseobject):
                             )
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -450,6 +468,7 @@ class works(baseobject):
                     obj.set_min_valid_version(self.__btc_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -475,6 +494,7 @@ class works(baseobject):
                     obj.set_min_valid_version(self.__btc_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -500,6 +520,7 @@ class works(baseobject):
                     obj.set_min_valid_version(self.__btc_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -530,6 +551,7 @@ class works(baseobject):
                             )
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -555,6 +577,7 @@ class works(baseobject):
                     obj.set_min_valid_version(self.__libra_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -585,6 +608,7 @@ class works(baseobject):
                             )
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -609,6 +633,7 @@ class works(baseobject):
 
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -635,6 +660,7 @@ class works(baseobject):
                     obj.set_min_valid_version(self.__ethereum_min_valid_version - 1)
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -664,6 +690,7 @@ class works(baseobject):
                     [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -693,6 +720,7 @@ class works(baseobject):
                     [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -738,6 +766,7 @@ class works(baseobject):
                     [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
@@ -768,6 +797,7 @@ class works(baseobject):
                             )
                     self.set_work_obj(obj)
                     obj.start()
+                    self.work_looping(obj, mod, nsec)
                 except Exception as e:
                     parse_except(e)
                 sleep(nsec)
