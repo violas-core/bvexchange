@@ -89,10 +89,9 @@ class baseobject(object):
 
     @classmethod
     def to_str(self, data):
-
         if not data:
-            print(f"to_str({data})")
             return data
+
         if isinstance(data, str):
             return data
         return data.value
