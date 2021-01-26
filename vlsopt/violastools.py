@@ -358,6 +358,7 @@ def human_address(address, show = True):
         logger.debug(f"start human_address({address})") if show else ""
         h_address = bytes.fromhex(address).decode().replace("\x00","00")
     except Exception as e:
+        print(e)
         h_address = address
     logger.debug(f"human address: {h_address}") if show else ""
     return h_address
