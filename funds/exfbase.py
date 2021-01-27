@@ -279,11 +279,11 @@ class exfbase(baseobject):
             ret = parse_except(e)
         return ret
 
-    def send_coin_for_update_state_to_end(self, sender, receiver, tran_id, token_id, amount = 1, **kwargs):
+    def send_coin_for_update_state_to_end(self, sender, receiver, tran_id, vls_token_id, amount = 1, **kwargs):
             self._logger.debug(f"start send_coin_for_update_state_to_end(sender={sender},"\
                     f"recever={receiver}, tran_id={tran_id}, amount={amount})")
             tran_data = self.violas_client.create_data_for_end(self.from_chain, self.dtype, tran_id, **kwargs)
-            ret = self.violas_client.send_coin(sender, receiver, amount, token_id, data = tran_data)
+            ret = self.violas_client.send_coin(sender, receiver, amount, vls_token_id, data = tran_data)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.VFAILED, detail = None)
             else:
