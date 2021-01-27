@@ -180,7 +180,7 @@ class ethwallet(baseobject):
             raise AttributeError
 
 class ethclient(baseobject):
-    def __init__(self, name, nodes, chain = "ethereum", usd_chain = False):
+    def __init__(self, name, nodes, chain = "ethereum", usd_chain = True):
         baseobject.__init__(self, name, chain)
         self.__client = None
         self.__node = None
