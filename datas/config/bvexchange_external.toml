@@ -5,12 +5,23 @@ traceback_limit = 4
 #db logging echo(False, True) default: False
 db_echo=false
 
-#v2b max replay exchange count(state = faild)
-v2b_maxtimes = 99
+#max retry exchange count(state = faild)
+#retry_maxtimes = 0
 
 #syncing proof flag ; default true
-syncing_mod = true
+#false state is no-safe
+syncing_mod = false
 
+#true : get decimals contract-datas ... info from ethereum chain, 
+#false: get from local contract abi files; default: false. 
+#infura request count 10_0000, so set it false, but true is safer
+
+#eth_usd_chain = false
+
+#exchange asynchronous state. default: true
+exchange_async = true 
+
+#connect btc chain config
 [btc_conn]
     user = "btc"
     password = "btc"
@@ -19,22 +30,35 @@ syncing_mod = true
     domain = "violaslayer"
     server = "violaslayer"
 
-[[violas_nodes]]
-    host = "http://ac.testnet.violas.io"
-    port = 50001
-    name = "violas 4"
-    faucet = "mint_test.key"
+[[sms_conn]]
+    host = "http://13.68.141.242"
+    port = 8000
+    subdomain = "sms"
 
+#connect ethereum chain config
+[[ethereum_nodes]]
+    host = "https://kovan.infura.io/v3/2645261bd8844d0c9ac042c84606502d"
+    name = "ethereum 1"
+
+#connect violas chain config
+[[violas_nodes]]
+    host = "13.77.137.84"
+    port = 50001
+    faucet = "mint_test.key"
+    name = "violas external"
+
+#connect libra chain config
 [[libra_nodes]]
     host = "http://client.testnet.libra.org"
     name = "libra"
 
 [[violas_servers]]
-    host = "52.27.228.84"
-    port = 4000
+    host = "api.violas.io"
     user = "violas"
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
 
+#redis db connect config. this is default config,
+#append db_list for specific value
 [db_default]
     host = "127.0.0.1"
     port = 6378
@@ -43,15 +67,55 @@ syncing_mod = true
 
 [[db_list]]
     db = "lfilter"
-    step = 100
-
-[[db_list]]
-    db = "vfilter"
     step = 300
 
 [[db_list]]
+    db = "vfilter"
+    step = 200
+
+[[db_list]]
     db = "bfilter"
-    step = 500
+    step = 30
+
+[[db_list]]
+    db = "efilter"
+    step = 1
+
+[[db_list]]
+    db = "record"
+
+#ethereum contract for mapping erc20 token
+[ethereum_tokens]
+    [ethereum_tokens.vlsmproof]
+        address = "0xC600601D8F3C3598628ad996Fe0da6C8CF832C02"
+        support= true  
+
+# tokens info 
+# token_info.tokens chain support token. ex. token_info.tokens.violas is violas chain support token
+# token_info.tokens.CHAIN_NAME.token is chain token
+# token_info.tokens.CHAIN_NAME.mtoken is chain mapping token for thd chain. only violas 
+#
+# token_info.mapping is two chain token mapping. ex violas-USD <-> libra-Coin1
+# token_info.mapping.token is chain token, value is token path CHAIN_NAME.TOKEN
+# token_info.mapping.mtoken is violas mapping token for thd chain, value is token path CHAIN_NAME.TOKEN
+[token_info]
+    [token_info.tokens]
+        [token_info.tokens.violas]
+            token = ["VLS"] 
+            mtoken = ["vBTC", "vUSDT"]
+        [token_info.tokens.libra]
+            token = []
+        [token_info.tokens.ethereum]
+            token = ["usdt"]
+        [token_info.tokens.btc]
+            token = ["BTC"]
+
+    [[token_info.mapping]]
+        token = "btc.BTC"
+        mtoken = "violas.vBTC"
+    [[token_info.mapping]]
+        token = "ethereum.usdt"
+        mtoken = "violas.vUSDT"
 
 #violas <-> libra token map
 #violas coin:VLSAAA map to libra coin:BBB:  VLSAAA(violas chain) -uniswap-> LBRBBB(violas chain) -map-> BBB(libra chain)
@@ -61,93 +125,71 @@ syncing_mod = true
 
 #
 #type : metadata's type; token is violas/libra token
-#stoken : target chain stable token
-#mtoken : violas chain map token only from violas chain swap use this field
-#mtoken : stoken = 1:1
-#support   : type is support #default = true
+#ttoken : target chain stable token(Violas stable token, BTC, Ethereum erc20 token)
+#support   : type is support #default = false
 #run    : execute analysis proof and exchange, default false
-#etype  : exchange transaction type: map  swap, default swap
+#etype  : map funds or swap(default) 
 [type_opts]
-    [type_opts.v2lusd]
-        stoken = "Coin1"
-        mtoken = "USD"
+    [type_opts.vfilter]
         support= true  
-        run    = true
-    [type_opts.v2leur]
-        stoken = "Coin2"
-        mtoken = "EUR"
+        run = true
+    [type_opts.efilter]
         support= true  
-        run    = true
-    [type_opts.l2vusd]
-        stoken = "VLSUSD"
+        run = true
+    [type_opts.bfilter]
         support= true  
-        run    = true
-    [type_opts.l2veur]
-        stoken = "VLSEUR"
-        support= true  
-        run    = true
-    [type_opts.l2vsgd]
-        stoken = "VLSSGD"
-        support= true  
-        run    = true
-    [type_opts.l2vgbp]
-        stoken = "VLSGBP"
-        support= true  
-        run    = true
-    [type_opts.b2vusd]
-        stoken = "VLSUSD"
-        support= true 
-        run    = true
-    [type_opts.b2veur]
-        stoken = "VLSEUR"
-        support= true  
-        run    = true
-    [type_opts.b2vsgd]
-        stoken = "VLSSGD"
-        support= true  
-        run    = true
-    [type_opts.b2vgbp]
-        stoken = "VLSGBP"
-        support= true  
-        run    = true
-    [type_opts.b2lusd]
-        stoken = "Coin1"
-        mtoken = "USD"
-        support= false  
-        run    = false
-    [type_opts.b2leur]
-        stoken = "Coin2"
-        mtoken = "EUR"
-        support= false  
-        run    = false
-    [type_opts.l2b]
-        stoken = "BTC"
-        mtoken = "BTC"
-        support= false  
-        run    = false
-    [type_opts.v2b]
-        stoken = "BTC"
-        mtoken = "BTC"
+        run = true
+    [type_opts.lfilter]
+        support= false
+    [type_opts.fundsvls]
+        support = true  
+        run = true
+        etype  = "funds"
+    [type_opts.fundsbtc]
+        support = true  
+        run = true
+        etype  = "funds"
+    [type_opts.fundsvbtc]
+        support = true  
+        run = true
+        etype  = "funds"
+    [type_opts.fundsusdt]
+        support = true  
+        run = true
+        etype  = "funds"
+    [type_opts.fundsvusdt]
+        support = true  
+        run = true
+        etype  = "funds"
     [type_opts.v2bm]
-        stoken = "BTC"
-        mtoken = "BTC"
         etype  = "map"
-    [type_opts.v2lm]
         support= true  
-        run    = false
+        run = true
+    [type_opts.v2lm]
         etype  = "map"
     [type_opts.l2vm]
-        support= true  
-        run    = false
         etype  = "map"
     [type_opts.b2vm]
-        support= true  
-        run    = true
         etype  = "map"
+        support= true  
+        run = true
     [type_opts.v2vswap]
         support= true  
-        run    = false
+        run = true
+    [type_opts.v2em]
+        etype  = "map"
+        support= true  
+        run = true
+    [type_opts.e2vm]
+        etype  = "map"
+        support= true  
+        run = true
+    [type_opts.msg]
+        etype  = "msg"
+        support= true  
+        run = true
 
+#btc opt code (state = start), web interface for auto-create
 [type_code]
     b2vm    = "0x3000"
     b2vusd  = "0x4000"
@@ -162,9 +204,11 @@ syncing_mod = true
     address = "00000000000000000000000000000001"
 
 [swap_owner]
-    address = "0000000000000000000000000a550c18"
+    address = "00000000000000000000000045584348"
 
 #swap rule:
+#  thd chain ->(map) violas chain : x2vm--- . ex l2vm is libra token to map violas token(usd)
+#  violas chain ->(map) thd chain : v2xm--- . ex v2lm is violas token to map libra token(coin1)
 #  thd chain -> violas chain : x2v--- . ex l2vusd is libra token to swap violas token(usd)
 #  violas chain -> thd chain : v2x--- . ex v2lusd is violas token to swap libra token(coin1)
 #  l2vusd:
@@ -172,7 +216,7 @@ syncing_mod = true
 #             a. libra transaction: send coinX to address_list.receiver.address(type = l2vusd and chain = "libra")
 #             b. bs(bvexchange server) get transaction(type = l2vusd and receiver = a.address) info(amount toaddress ex..)
 #             c. bs get address(address_list.sender.address(type = l2vusd and chain = "violas"))
-#             d. bs mint map-token(name = usd  amount = b.amount)
+#             d. bs new exchange transaction map-token(name = usd  amount = b.amount)
 #             e. bs execute swap to vlsusd and designated address(b.toaddress)
 #             f. bs change transaction state to end(libra transaction and use a.address)
 #  v2lusd:
@@ -180,239 +224,237 @@ syncing_mod = true
 #             a. violas transaction: send vlsXXX to address_list.receiver.address(type = v2lusd and chain = "violas")
 #             b. bs get transaction(type = v2lusd and receiver = a.address) info(amount toaddress ex..)
 #             c. bs get address_list.combine.address(type = v2lusd and chain = "violas") for swap use to receiver usd token
-#             d. bs execute swap, if succeed , get c.address token(usd) changed amount.
+#             d. bs execute swap, if succeed , get out_amount of transaction(version from a.address) value, and get swap token amount.
 #             e. libra transaction: send Coin1 to b.toaddress(amount = d.amount)
 #             f. bs change transaction state to end(violas transaction and use a.address)
 #             g. bs burn c.address's changed token(usd , amount)
 #
-# note:
+#note:
 #  1. swap server is single thread(one-token -> one-token), so receiver is multi, but traget token only one address, 
 #     in this configure, we can work multi thread(every-type has only one thread)
 #  2. libra chain has't swap, so can use the same address(testnet mod), maybe transaction will failed(libra support multi thread 
 #     for thread???), anyway wo first ignore it for fast work
-#  3. combine address must be difference, because we will calaculation swap result with combine address's token changed
+#  3. combine address is receive the swap token, v2xxxswap , is get mapping token for other chain, 
+#     ex: btc usdt ..., burn token(violas), only violas account can recover funds
 #  4. address_list.sender.address(type = X2vXXX and chain = "violas") must be difference, because we will execute mint token to it
 #     and execute swap function with this address. 
+#  5. ethereum chain's receiver is main contract, so set map(manage) address for contract address for change state
+#  6. map address is ethereum wallet address, send erc20 token to ethereum account, 
+#     because e2vm' receiver is contract address, so use map address to mapping contract address
+#
+#address_list child section:
+#  receiver: receive token and proof from wallect    
+#  sender : from this account payment token to request map or swap
+#  combine : recover funds to this account
+#  map : ethereum receiver contract address mapping to wallet address
+#
+#  keys(address, type, chain):
+#   address: account's address
+#   type: exchange type, reference type_opts, format is v2x or x2v and fixed default. 
+#         x is chain symbol, default: if not specify address, use this; funds: recover and request funds
+#   chain: which chain the account belongs to. value(violas btc ethereum libra etc...)
+#
 [address_list]
     #receiver addresses
     ##violas chain receiver address
     [[address_list.receiver]]
-        address = "ef6d1304e6efaf36c3cc46a0f37361fb6ff4223c41fb9063b42ecdca4b8c4aa8"
+        address = "4f93ec275410e8be891ff0fd5da41c43aee27591e222fb466654b4f983d8adbb"
         type = "v2b"
         chain = "violas"
 
     [[address_list.receiver]]
-        address = "8b4ff62db5b643571507f732ae5c710068e830016798aaa8f27daf1abd5f3c4c"
+        address = "7cd40d7664d5523d360e8a1e0e2682a2dc49a7c8979f83cde4bc229fb35fd27f"
         type = "v2lusd"
         chain = "violas"
     
     [[address_list.receiver]]
-        address = "e20124639b047de7285d8b733279c4750ef253cace5bf9505658a7b904a0a2c1"
+        address = "a239632a99a92e38eeade27b5e3023e22ab774f228b719991463adf0515688a9"
         type = "v2leur"
         chain = "violas"
 
-    ##btc chain receiver address
+    ##default: btc receiver
     [[address_list.receiver]]
-        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
-        type = "b2v"
+        address = "2MxBZG7295wfsXaUj69quf8vucFzwG35UWh"
+        type = "default"
         chain = "btc"
-    [[address_list.receiver]]
-        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
-        type = "b2vusd"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
-        type = "b2veur"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
-        type = "b2vsgd"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
-        type = "b2vgbp"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
-        type = "b2lusd"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
-        type = "b2leur"
-        chain = "btc"
+
     ##libra chain receiver address
+    #default: libra receiver
     [[address_list.receiver]]
-        address = "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
-        type = "l2vusd"
+        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+        type = "default"
         chain = "libra"
 
     [[address_list.receiver]]
-        address = "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
-        type = "l2veur"
-        chain = "libra"
-
-    [[address_list.receiver]]
-        address = "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
-        type = "l2vgbp"
-        chain = "libra"
-
-    [[address_list.receiver]]
-        address = "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
-        type = "l2vsgd"
-        chain = "libra"
-
-    [[address_list.receiver]]
-        address = "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
-        type = "l2vm"
-        chain = "libra"
-
-    [[address_list.receiver]]
-        address = "206b0fadc0ef84e7fdf0340a9d4f7cf1aee72ef73449197b1bc7daf94b5e47f3"
+        address = "81d0e3818e6ffda1336b7b2aff9496b7148cea4f3ea38d2b602dc8997592fe79"
         type = "v2lm"
         chain = "violas"
 
     [[address_list.receiver]]
-        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
-        type = "b2vm"
-        chain = "btc"
-    [[address_list.receiver]]
-        address = "055959c647573dd59e2b9a47dc89657b876928fc4c594f2d1e88affca1ee3add"
+        address = "0000000000000000004252472d425443"
         type = "v2bm"
+        chain = "violas"
+
+    [[address_list.receiver]]
+        address = "0xC600601D8F3C3598628ad996Fe0da6C8CF832C02"
+        type = "e2vm"
+        chain = "ethereum"
+
+    [[address_list.receiver]]
+        address = "00000000000000000042524755534454"
+        type = "v2em"
+        chain = "violas"
+
+    #receive funds request
+    [[address_list.receiver]]
+        address = "00000000000000000042524746554e44"
+        type = "funds"
         chain = "violas"
 
     #sender address
     ##send btc
     [[address_list.sender]]
-        address = "c139e83b114e2a49be6fcc8b376f42fb602ea75ca90536bcec337e611b9b1838"
+        address = "b5040b893ecd306434e1c19598078ed3a496cc1e3bff5ca139ee50f014c71ad0"
         type = "b2vm"
         chain = "violas"
 
-    ##send btc
+    #*default: btc-sender
     [[address_list.sender]]
-        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
-        type = "v2b"
+        address = "2MxBZG7295wfsXaUj69quf8vucFzwG35UWh"
+        type = "default"
         chain = "btc"
 
-    [[address_list.sender]]
-        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
-        type = "v2bm"
-        chain = "btc"
-
-    [[address_list.sender]]
-        address = "2N94SmLyWdM4TehJERqKmA2mtZ5zbbdDCTS"
-        type = "l2b"
-        chain = "btc"
     ##send violas tokens
     [[address_list.sender]]
-        address = "8a6b13ef1589a09d25f0459f19825aeca6fc1064a4076e7e58c326621820195f"
+        address = "a6c512b59c7e2501ebe2556259e345444036899620db1efcbe2a8301ed00a842"
         type = "l2vm"
         chain = "violas"
 
     [[address_list.sender]]
-        address = "b7bba851dd080e9134178a4700595998be8f93db66d8f81dd2d84fccdef2118f"
+        address = "ea6649bcbe1377106201f3829902748278a69a80e181f0c4eefff64a589883aa"
         type = "l2vusd"
         chain = "violas"
 
     [[address_list.sender]]
-        address = "8460fbe6de05ea45091239df404cb04e87e8eaaece895b687199e95d63fe44f0"
+        address = "15abf1617d7dd113dd86a7c8ba93dc8841e9a2834bd51cbb0d51a18a8bc75ae4"
         type = "l2veur"
         chain = "violas"
 
     [[address_list.sender]]
-        address = "af99bd0e9454009b5099ac45f5fb72cf58ded34be4fbe683fe0c11803d0f8418"
+        address = "8f713a7908d15e0745cb997761eeb9ec0c1fcbc4b88106c2e00159da6e5d3ad1"
         type = "l2vgbp"
         chain = "violas"
 
     [[address_list.sender]]
-        address = "17d653796c73e4ce2d452a3690000cd285f3171584cbf295b757912bb363dd67"
+        address = "4a73cfd0365c641341a7a3bc376423480a82179351b8ecb6c5e68ab7b08622de"
         type = "l2vsgd"
         chain = "violas"
 
+    #*default: sender libra
     [[address_list.sender]]
-        address = "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
-        type = "v2lm"
+        address = "da4250b95f4d7f82d9f95ac45ea084b3c5e53097c9f82f81513d02eeb515ecce"
+        type = "default"
         chain = "libra"
 
     [[address_list.sender]]
-        address = "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
-        type = "v2lusd"
-        chain = "libra"
-
-    [[address_list.sender]]
-        address = "9da9b3888a469223005830a81624882456dfe238b35e1cb468d6e98a70252c00"
-        type = "v2leur"
-        chain = "libra"
-
-    [[address_list.sender]]
-        address = "e840f26a78a26975c88d697c0b5338eb34ee5568d80f0d2a3575a9fa3fc64354"
+        address = "98cd4e572f88b780e485a187fd8088d831ff3012cef45601b1e2abf670d619e5"
         type = "b2vusd"
         chain = "violas"
 
     [[address_list.sender]]
-        address = "228892c117b2fc65329a3386dab7462fdb2b53b0d331273f6b9978abff40aa0a"
+        address = "47535b0273d05a3689680409b18c76db4a5d8ad92880cf11fcbed74310b67bfc"
         type = "b2veur"
         chain = "violas"
 
     [[address_list.sender]]
-        address = "a1b5fea63bb86e69fbea64020497f11a328075a125488dcc386ceef1e2bb8ff7"
+        address = "ed997d48192d313deda1d0335722a9bf231bded0afc5ff71c3882b4865cc2f0b"
         type = "b2vsgd"
         chain = "violas"
 
     [[address_list.sender]]
-        address = "1cf677d6821c068ef8f7344f896001b4bf6186382576532b3ec380ba8d0f49b2"
+        address = "607586552150ab702006dd1731f0a9169326aa2ff707002c6bab92b8c8fd4dd3"
         type = "b2vgbp"
         chain = "violas"
-    #combine 
-    [[address_list.combine]]
-        address = "1da6c7e887f730bd88cfa64ef7ae10d2ca4f99568224fc5d4f16bd131c66eafe"
-        type = "v2lusd"
+    [[address_list.sender]]
+        address = "534d9a3264eb8475edaa2eff7406df51bca6a80719ad60106aa35683a98d389e"
+        type = "e2vm"
         chain = "violas"
-    [[address_list.combine]]
-        address = "1c93d8bc1c389b6a3f3065a0203e5514805fc4a9db681d6408f986812c978b06"
-        type = "v2leur"
+
+    [[address_list.sender]]
+        address = "0x49999B466D7d139f88E8eFea87A6D4D227Fb243e"
+        type = "v2em"
+        chain = "ethereum"
+
+    #FUNDS server use: payment funds violas-DD ethereum-account
+    ##violas DD account
+    [[address_list.sender]]
+        address = "00000000000000000042524746554e44"
+        type = "funds"
         chain = "violas"
-    [[address_list.combine]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
-        type = "l2b"
+
+    ##ethereum main account: ERC20 token
+    [[address_list.sender]]
+        address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
+        type = "funds"
+        chain = "ethereum"
+
+    [[address_list.sender]]
+        address = "2N9gZbqRiLKAhYCBFu3PquZwmqCBEwu1ien"
+        type = "funds"
         chain = "btc"
+
+    #combine : reclaim token 
+    #default: violas combine
     [[address_list.combine]]
-        address = "d79dfb2248d8186b767097a7891759d8bdf28314580fc4ccee16390e0c040ed5"
-        type = "v2b"
+        address = "0000000000000000004252474255524e"
+        type = "default"
         chain = "violas"
-    [[address_list.combine]]
-        address = "e7924b894e7c249b7348de8dcc566364929683665c7a3ebc50c27567fd48f06e"
-        type = "l2b"
+
+    #map is use this account to change usdt(eth) mapping state to end, manager role 
+    [[address_list.map]]
+        address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
+        type = "e2vm"
+        chain = "ethereum"
+
+    #the address of permission request funds from funds-server type = liq/map
+    [[address_list.funds]]
+        address = "b14bc3286e4b9b41c86022f2e614d721"
+        type = "liq"
         chain = "violas"
-    [[address_list.combine]]
-        address = "ed830d56c0b278e3897bddbf6e85c6dd1dbca1a510acc4985203d24286b840ef"
-        type = "b2lusd"
+
+    #the address of permission request funds from funds-server type = liq/map
+    [[address_list.msg]]
+        address = "0000000000000000004252474255524e"
+        type = "msg"
         chain = "violas"
-    [[address_list.combine]]
-        address = "d67c6c21a14e4a7cd974b1a7d272913c324078029d08ada29518d7c603e5f1ae"
-        type = "b2leur"
-        chain = "violas"
-    [[address_list.combine]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
-        type = "b2vm"
-        chain = "btc"
-    [[address_list.combine]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
-        type = "b2vusd"
-        chain = "btc"
-    [[address_list.combine]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
-        type = "b2veur"
-        chain = "btc"
-    [[address_list.combine]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
-        type = "b2vsgd"
-        chain = "btc"
-    [[address_list.combine]]
-        address = "2MyMHV6e4wA2ucV8fFKzXSEFCwrUGr2HEmY"
-        type = "b2vgbp"
-        chain = "btc"
+
+#receive msg 
+#lang is sms_templete lang
+#opttype is msg opttype, value is null, receive all msg. ex. mint   burn
+#interval(s) next send message (s)
+#type is msg
+[[address_book]]
+    mobile = "+8618601999980"
+    lang = "ch"
+    opttype = "mint"
+    interval = 1
+    type = "msg"
+
+[[sms_templete]]
+    data = "【Violas】您有一条来自 ssss 的数据请求需要处理 。"
+    replace = "ssss"
+    lang = "ch"
+
+[[sms_templete]]
+    data = "[Violas]you have a message ssss request."
+    replace = "ssss"
+    lang = "en"
+
+#thread loopping sleep time(s)
+#db_default is 1 xfilter  xxxproof  xxxex  comm
 [looping_sleep]
-    vfilter = 1
+    vfilter = 0
     lfilter = 1
-    bfilter = 1
+    bfilter = 10
+    efilter = 10
     comm = 8
