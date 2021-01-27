@@ -249,7 +249,9 @@ class works(baseobject):
                     if stmanage.type_is_map(dtype):
                         obj.append_token_id(stmanage.get_support_map_token_id(ttype, dtype))
                     elif stmanage.type_is_funds(dtype):
-                        obj.append_token_id(stmanage.get_support_token_id(ttype))
+                        token_id = stmanage.get_token_id_from_fundstype(dtype)
+                        target_ttype = stmanage.get_trantype_with_token_id(token_id)
+                        obj.append_token_id(stmanage.get_support_token_id(target_ttype))
                     elif stmanage.type_is_msg(dtype):
                         obj.append_token_id(stmanage.get_support_token_id(ttype))
                     else:
