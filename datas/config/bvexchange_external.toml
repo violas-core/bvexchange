@@ -430,13 +430,12 @@ exchange_async = true
 
 #receive msg 
 #lang is sms_templete lang
-#opttype is msg opttype, value is null, receive all msg. ex. mint   burn
+#opttype is msg opttype, not set opttype, receive all msg. ex. mint   burn
 #interval(s) next send message (s)
 #type is msg
 [[address_book]]
     mobile = "+8618601999980"
     lang = "ch"
-    opttype = ""
     interval = 1
     type = "msg"
 
