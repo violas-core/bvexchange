@@ -72,7 +72,6 @@ class smsclient(baseobject):
 
             message = self.__templete["data"].replace(self.__templete.get("replace", self.REPLACE_DATA), message)
             data = {"receiver":mobile, "text":message}
-            print(data)
             response = requests.post(url = self.__url, data = data)
             if response is not None:
                 jret = response.json()
