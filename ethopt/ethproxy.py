@@ -131,7 +131,6 @@ class ethproxy():
         return contract
 
     def __get_token_decimals_with_name(self, erc20_token, name):
-        contract = self.__get_contract_info(name)
         key = f"{name}_decimals"
         decimals= dataproof.configs(key)
         if decimals is None or decimals <= 0 or self.__usd_chain_contract_info:
@@ -141,17 +140,14 @@ class ethproxy():
         
 
     def __get_token_address_with_name(self, name):
-        contract = self.__get_contract_info(name)
         key = f"{name}_address"
         address = dataproof.configs(key)
-        #address = contract.get("address")
         if address is None or len(address) <= 0 or self.__usd_chain_contract_info:
             address = self.tokens[VLSMPROOF_MAIN_NAME].token_address(name)
             dataproof.configs.set_config(key, address)
         return address
 
     def __get_contract_address_with_name(self, vmpslot, name):
-        contract = self.__get_contract_info(name)
         key = f"{name}_address"
         address = dataproof.configs(key)
         if address is None or len(address) <= 0 or self.__usd_chain_contract_info:
