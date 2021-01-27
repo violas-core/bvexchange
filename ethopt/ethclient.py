@@ -54,10 +54,12 @@ VLSMPROOF_MAIN_ADDRESS = contract_codes[VLSMPROOF_MAIN_NAME]["address"]
 ETH_ADDRESS_LEN = comm.values.ETH_ADDRESS_LEN
 class ethwallet(baseobject):
     
-    def __init__(self, name, wallet, chain="ethereum"):
+    def __init__(self, name, wallet, chain="ethereum", main_address = None):
         assert wallet is not None, "wallet is None"
         baseobject.__init__(self, name)
         self.__wallet = None
+        self.set_vlsmproof_main_address(main_address)
+
         if wallet is not None:
             ret = self.__load_wallet(wallet, chain)
             if ret.state != error.SUCCEED:
@@ -65,6 +67,10 @@ class ethwallet(baseobject):
 
     def __del__(self):
         pass
+
+    def set_vlsmproof_main_address(self, main_address):
+        if main_address:
+            VLSMPROOF_MAIN_ADDRESS = main_address
 
     def __load_wallet(self, wallet, chain="ethereum"):
         try:
