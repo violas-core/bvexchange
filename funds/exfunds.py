@@ -135,7 +135,7 @@ class exfunds(exfbase):
         if self.use_module(state, localdb.state.VSUCCEED):
             self._logger.debug(f"exec_exchange-3. start send_coin_for_update_state_to_end...")
             ret =  self.send_coin_for_update_state_to_end(from_sender, receiver, tran_id, \
-                    token_id, 1, out_amount_real=micro_amount, version=version)
+                    "VLS", 1, out_amount_real=micro_amount, version=version)
             if ret.state != error.SUCCEED:
                 return ret
 
