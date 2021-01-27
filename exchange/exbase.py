@@ -420,9 +420,9 @@ class exbase(baseobject):
                 usd_token = token_id
             else:
                 usd_token = stmanage.get_token_map(token_id)
-
+            usd_token = "VLS"
         
-            ret = self.violas_client.send_coin(self.request_funds_account, self.funds_address, 1, stmanage.get_violas_mtoken(token_id, chain), data = data)
+            ret = self.violas_client.send_coin(self.request_funds_account, self.funds_address, 1, usd_token, data = data)
             if ret.state != error.SUCCEED:
                 return ret
 
