@@ -24,9 +24,6 @@ update_ln_fils(){
 
 use_comm() {
     update_ln_fils "datas/abis/usdt_abi.py" "usdt_abi.py"
-    update_ln_fils "datas/abis/vmp_main_abi.py" "vmp_main_abi.py"
-    update_ln_fils "datas/abis/vmp_datas_abi.py" "vmp_datas_abi.py"
-    update_ln_fils "datas/abis/vmp_state_abi.py" "vmp_state_abi.py"
     update_ln_fils "datas/wallet/bwallet" "bwallet"
     update_ln_fils "datas/wallet/ewallet" "ewallet"
 }
@@ -37,6 +34,12 @@ use_internal(){
     update_ln_fils "datas/keys/mint_internal.key" "mint_test.key"
     update_ln_fils "datas/redis/redis_internal.conf" "redis.conf"
     update_ln_fils "datas/redis/redis_internal_start.sh" "redis_start"
+    update_ln_fils "datas/abis/vmp_main_abi.py" "vmp_main_abi.py"
+    update_ln_fils "datas/abis/vmp_datas_abi.py" "vmp_datas_abi.py"
+    update_ln_fils "datas/abis/vmp_state_abi.py" "vmp_state_abi.py"
+    update_ln_fils "datas/abis/vmp_main_abi_internal.py" "vmp_main_abi.py"
+    update_ln_fils "datas/abis/vmp_datas_abi_internal.py" "vmp_datas_abi.py"
+    update_ln_fils "datas/abis/vmp_state_abi_internal.py" "vmp_state_abi.py"
     use_comm
 }
 
@@ -47,6 +50,9 @@ use_test(){
     update_ln_fils "datas/wallet/vwallet_test" "vwallet"
     update_ln_fils "datas/redis/redis_test.conf" "redis.conf"
     update_ln_fils "datas/redis/redis_test_start.sh" "redis_start"
+    update_ln_fils "datas/abis/vmp_main_abi_internal.py" "vmp_main_abi.py"
+    update_ln_fils "datas/abis/vmp_datas_abi_internal.py" "vmp_datas_abi.py"
+    update_ln_fils "datas/abis/vmp_state_abi_internal.py" "vmp_state_abi.py"
     use_comm
 }
 
@@ -57,6 +63,9 @@ use_external(){
     update_ln_fils "datas/keys/mint_external.key" "mint_test.key"
     update_ln_fils "datas/redis/redis_external.conf" "redis.conf"
     update_ln_fils "datas/redis/redis_external_start.sh" "redis_start"
+    update_ln_fils "datas/abis/vmp_main_abi_external.py" "vmp_main_abi.py"
+    update_ln_fils "datas/abis/vmp_datas_abi_external.py" "vmp_datas_abi.py"
+    update_ln_fils "datas/abis/vmp_state_abi_external.py" "vmp_state_abi.py"
     use_comm
 }
 
