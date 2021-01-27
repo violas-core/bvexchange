@@ -144,9 +144,12 @@ class btcclient(baseobject):
 
     def get_exec_points(self, key, prefix = None):
         try:
-            with open(self.create_points_key(key, prefix), "r") as pf:
-                point = pf.read()
-                point = int(point) if point else -1
+            points_key = self.create_points_key(key, prefix)
+            point = -1
+            if os.path.exists(points_key):
+                with open(points_key, "r") as pf:
+                    point = pf.read()
+                    point = int(point) if point else -1
             ret = result(error.SUCCEED, datas = point)
         except Exception as e:
             ret = parse_except(e)
