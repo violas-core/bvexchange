@@ -460,6 +460,7 @@ class exbase(baseobject):
                 return ret
             bdiff_token, token_amount, gas_amount = ret.datas
 
+            address = self.get_address_from_account(account)
             if bdiff_token and (gas_amount <= gas or token_amount < amount):
                 msg = None
                 if gas_amount < gas:
