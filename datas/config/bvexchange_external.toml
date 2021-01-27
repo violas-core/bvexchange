@@ -65,7 +65,7 @@ exchange_async = true
     password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 100
 
-
+[[db_list]]
     db = "lfilter"
     step = 300
 
