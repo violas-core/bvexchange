@@ -65,7 +65,7 @@ exchange_async = true
     password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 100
 
-[[db_list]]
+
     db = "lfilter"
     step = 300
 
@@ -87,7 +87,7 @@ exchange_async = true
 #ethereum contract for mapping erc20 token
 [ethereum_tokens]
     [ethereum_tokens.vlsmproof]
-        address = "0xC600601D8F3C3598628ad996Fe0da6C8CF832C02"
+       address = "0x045B0Dc3908B0c00001E35871250cA3D598E3F32"
         support= true  
 
 # tokens info 
@@ -296,7 +296,7 @@ exchange_async = true
         chain = "violas"
 
     [[address_list.receiver]]
-        address = "0xC600601D8F3C3598628ad996Fe0da6C8CF832C02"
+        address = "0x045B0Dc3908B0c00001E35871250cA3D598E3F32"
         type = "e2vm"
         chain = "ethereum"
 
@@ -381,7 +381,7 @@ exchange_async = true
         chain = "violas"
 
     [[address_list.sender]]
-        address = "0x49999B466D7d139f88E8eFea87A6D4D227Fb243e"
+        address = "0x9382690D0B835b69FD9C0bc23EB772a0Ddb3613F"
         type = "v2em"
         chain = "ethereum"
 
@@ -394,7 +394,7 @@ exchange_async = true
 
     ##ethereum main account: ERC20 token
     [[address_list.sender]]
-        address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
+        address = "0x64a5E8e26084Fd9ec9BcA5B080dD6ae071A2D44e"
         type = "funds"
         chain = "ethereum"
 
@@ -412,7 +412,7 @@ exchange_async = true
 
     #map is use this account to change usdt(eth) mapping state to end, manager role 
     [[address_list.map]]
-        address = "0x89fF4a850e39A132614dbE517F80603b4A96fa0A"
+        address = "0x9F0b251F152dd4adc9df1493DE2f7005f8b1b433"
         type = "e2vm"
         chain = "ethereum"
 
@@ -436,7 +436,7 @@ exchange_async = true
 [[address_book]]
     mobile = "+8618601999980"
     lang = "ch"
-    opttype = "mint"
+    opttype = ""
     interval = 1
     type = "msg"
 
