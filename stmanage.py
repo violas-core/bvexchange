@@ -105,11 +105,15 @@ def set_conf_env(conffile):
 def reset():
     setting.setting.reset()
     global token_manage
+
     token_manage = token_info(setting.setting.token_info)
     check_setting()
 
 def get_conf_env():
     return setting.setting.get_conf_env()
+
+def is_loaded_conf():
+    return setting.setting.is_loaded
 
 def get_looping_sleep(mtype):
     mtype = to_str_value(mtype)

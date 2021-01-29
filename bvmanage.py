@@ -3,22 +3,22 @@ import sys, getopt, os
 import log 
 import json
 import log.logger
-import bvexchange
 import stmanage
+import work_main
 from comm.parseargs import parseargs
 from comm.version import version
 from comm.functions import json_print
 from tools import show_workenv
 from dataproof import dataproof
 
-name = "bvexchange"
+name = "bvmanage"
 logger = log.logger.getLogger(name)
 
 def init_args(pargs):
     pargs.clear()
     pargs.append("help", "show args info", priority = 11)
     pargs.append("version", "show version info")
-    pargs.append("mod", "run mod", True, bvexchange.list_valid_mods())
+    pargs.append("mod", "run mod", True, work_main.list_valid_mods() if stmanage.is_loaded_conf() else "args from conf file")
     pargs.append("info", "show info", True, show_workenv.list_valid_mods())
     pargs.append("show_conf", "show data proof info for config", True, "[all/target config]", priority = 30)
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 10)
@@ -30,7 +30,15 @@ def init_args(pargs):
     pargs.append("bwallet", "file or address:privkey list for btc wallet, format: \"ADDRESS:PRIVKEY,ADDRESS:PRIVKEY\"", True, "[file/address:privkey]", priority= 20, argtype = parseargs.argtype.STR)
 
 def show_exec_args():
-    logger.debug(f'"eth_usd_chain": dataproof.configs("eth_usd_chain")')
+    logger.info(f"conf -- conf file(toml): {stmanage.get_conf_env()}")
+    [logger.info(f'conf -- {key}: {dataproof.configs(key)}') for key in dataproof.configs.default_values()]
+    fields = []
+    for field in fields:
+        logger.info(f'conf -- {field}: dataproof.configs({field})')
+
+def raise_with_check_conf():
+    if not stmanage.is_loaded_conf():
+        raise Exception(f"not found conf file")
 
 def main(argc, argv):
 
@@ -38,8 +46,7 @@ def main(argc, argv):
     try:
         logger.debug("start manage.main")
         #--conf must be first
-        if stmanage.get_conf_env() is None:
-            stmanage.set_conf_env_default() 
+        #stmanage.set_conf_env_default() 
 
         init_args(pargs)
         pargs.show_help(argv)
@@ -64,7 +71,10 @@ def main(argc, argv):
             stmanage.set_conf_env(arg)
         elif pargs.is_matched(opt, ["help"]):
             init_args(pargs)
-            pargs.show_help(argv)
+            if arg:
+                pargs.show_help(argv)
+            else:
+                pargs.show_args()
             return
         elif pargs.is_matched(opt, ["show_conf"]):
             if count == 0 or (count == 1 and arg_list[0] == "all"):
@@ -92,26 +102,30 @@ def main(argc, argv):
             logger.debug(f"version:{version()}")
             return
         elif pargs.is_matched(opt, ["mod"]) :
+            raise_with_check_conf()
             pargs.exit_check_opt_arg_min(opt, arg, 1)
             logger.debug(f"arg_list:{arg_list}")
             show_exec_args()
-            bvexchange.run(arg_list)
+            work_main.run(arg_list)
             return
         elif pargs.is_matched(opt, ["info"]) :
+            raise_with_check_conf()
             pargs.exit_check_opt_arg_min(opt, arg, 1)
             logger.debug(f"arg_list:{arg_list}")
             show_workenv.run(arg_list)
             return
             
+
+    raise_with_check_conf()
     #get run mods from config file
     run_mods = []
     dtypes = stmanage.get_run_mods()
     for dtype in dtypes:
-        for mod in bvexchange.list_valid_mods():
+        for mod in work_main.list_valid_mods():
             if mod.startswith(dtype):
                 run_mods.append(mod)
     if run_mods:
-        bvexchange.run(run_mods)
+        work_main.run(run_mods)
 
     logger.debug("end manage.main")
 
