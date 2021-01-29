@@ -92,6 +92,9 @@ class exbase(baseobject):
 
         #use the above property, so call set_local_workspace here
         self.set_local_workspace(**kwargs)
+        self.show_execute_args(name, dtype, proofdb, receivers, senders, \
+                fromchain, mapchain, \
+                **kwargs)
 
     def __del__(self):
         pass

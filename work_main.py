@@ -1019,6 +1019,7 @@ def list_valid_mods():
 def run(mods):
     stmanage.reset()
     
+    
     valid_mods = list_valid_mods()
     for mod in mods:
         if mod is None or mod not in valid_mods:

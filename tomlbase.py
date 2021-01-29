@@ -14,6 +14,9 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tomlki
 from tomlkit.toml_document import TOMLDocument
 from tomlkit.toml_file import TOMLFile
 from pathlib import Path
+from comm.values import (
+        PROJECT_NAME
+        )
 
 
 class tomlbase():
@@ -28,7 +31,7 @@ class tomlbase():
 
         self.__dataproof = {}
         filename = self.__get_conf_file()
-        if filename is None:
+        if filename is None or not self.get_conf_env():
             self.is_loaded = False
             return 
 
@@ -46,14 +49,15 @@ class tomlbase():
     def __get_conf_file(self):
         release_path = ""
         conffile = self.get_conf_env()
+        print(conffile)
         #default toml. local or /etc/bvexchange
-        if conffile is None:
+        if conffile is None or not os.path.exists(conffile):
             return None
         toml_file = conffile
 
         path = Path(toml_file)
         if not path.is_file() or not path.exists():
-            raise Exception(f"not found toml file: {toml_file} in ({os.path.dirname(__file__)}  {release_path})")
+            raise Exception(f"not found toml file: {toml_file}")
         return toml_file
 
     
@@ -120,9 +124,10 @@ class tomlbase():
 
     @classmethod
     def set_conf_env_default(self):
-        splits = os.path.split(os.path.dirname(os.path.abspath(__file__)))
-        basename = splits[-1]
-        os.environ["BVEXCHANGE_CONFIG"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{basename}.toml")
+        basename = PROJECT_NAME
+        print(basename)
+        #os.environ["BVEXCHANGE_CONFIG"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{basename}.toml")
+        os.environ["BVEXCHANGE_CONFIG"] = os.path.join(f"/etc/{basename}/", f"{basename}.toml")
 
 def main():
     tomlbase.set_conf_env_default()
