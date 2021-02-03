@@ -32,16 +32,22 @@ from web3 import Web3
 
 #module name
 name="ethproxy"
-import usdt_abi
-import vmp_main_abi
-import vmp_datas_abi
-import vmp_state_abi
+from . import (
+    vmp_main_abi,
+    vmp_datas_abi,
+    vmp_state_abi,
+    usdt_abi,
+    wbtc_abi,
+    erc20_std_abi,
+        )
 
 VLSMPROOF_MAIN_NAME = "vlsmproof"
 VLSMPROOF_DATAS_NAME = "vmpdatas"
 VLSMPROOF_STATE_NAME = "vmpstate"
 contract_codes = {
-        "usdt" : {"abi":usdt_abi.ABI, "bytecode":usdt_abi.BYTECODE, "token_type": "erc20", "address": usdt_abi.ADDRESS, "decimals": 6},
+        "erc20" : {"abi":erc20_std_abi.ABI, "bytecode":erc20_std_abi.BYTECODE, "token_type": "erc20"},
+        #"usdt" : {"abi":usdt_abi.ABI, "bytecode":usdt_abi.BYTECODE, "token_type": "erc20", "address": usdt_abi.ADDRESS, "decimals": 6},
+        #"wbtc" : {"abi":wbtc_abi.ABI, "bytecode":wbtc_abi.BYTECODE, "token_type": "erc20", "address": wbtc_abi.ADDRESS, "decimals": 8},
         VLSMPROOF_MAIN_NAME: {"abi": vmp_main_abi.ABI, "bytecode": vmp_main_abi.BYTECODE, "token_type": "main", "address":vmp_main_abi.ADDRESS},
         VLSMPROOF_DATAS_NAME: {"abi":vmp_datas_abi.ABI, "bytecode": vmp_datas_abi.BYTECODE, "token_type": "datas", "address":vmp_datas_abi.ADDRESS},
         VLSMPROOF_STATE_NAME: {"abi":vmp_state_abi.ABI, "bytecode": vmp_state_abi.BYTECODE, "token_type": "state", "address":vmp_state_abi.ADDRESS},
@@ -126,7 +132,7 @@ class ethproxy():
             self.load_contract(token)
 
     def __get_contract_info(self, name):
-        contract = contract_codes[name]
+        contract = contract_codes.get(name, contract_codes["erc20"])
         assert contract is not None, f"contract name({name}) is invalid."
         return contract
 
@@ -168,7 +174,7 @@ class ethproxy():
         if address == self.tokens_address.get(VLSMPROOF_MAIN_NAME, ""):
             return
 
-        contract = contract_codes[name]
+        contract = self.__get_contract_info(name)
         if name == VLSMPROOF_MAIN_NAME:
             vmpslot = vlsmproofmainslot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))
             datas_address = self.__get_contract_address_with_name(vmpslot, VLSMPROOF_DATAS_NAME)
@@ -184,13 +190,10 @@ class ethproxy():
         self.tokens[name] = vmpslot
 
     def load_contract(self, name):
-        if name not in contract_codes:
-            raise Exception(f"contract({name}) is invalid.")
-
         if name in (VLSMPROOF_MAIN_NAME, VLSMPROOF_DATAS_NAME, VLSMPROOF_STATE_NAME):
             return
 
-        contract = contract_codes[name]
+        contract = self.__get_contract_info(name)
         address = self.__get_token_address_with_name(name)
         assert contract is not None, f"not support token({name})"
         erc20_token = erc20slot(self._w3.eth.contract(Web3.toChecksumAddress(address), abi=contract["abi"]))

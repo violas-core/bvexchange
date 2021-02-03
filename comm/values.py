@@ -102,6 +102,8 @@ class dbindexbase(enumbase):
     FUNDSVBTC = 71
     FUNDSUSDT = 72
     FUNDSVUSDT = 73
+    FUNDSWBTC = 74
+    FUNDSVWBTC = 75
 
 '''
 filter chain type
