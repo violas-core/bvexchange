@@ -10,3 +10,6 @@
 [submodule "lbsafemsg"]
 	path = lbsafemsg
 	url = https://github.com/palliums-developers/safetymsg.git
+[submodule "lbparseargs"]
+	path = lbparseargs
+	url = https://github.com/palliums-developers/parseargs
