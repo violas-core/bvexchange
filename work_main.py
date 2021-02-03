@@ -47,7 +47,7 @@ from message import (
         )
 
 from enum import Enum
-name="bvexchange"
+name="work_main"
 
 class works(baseobject):
     __threads = []

@@ -24,6 +24,8 @@ update_ln_fils(){
 
 use_comm() {
     update_ln_fils "datas/abis/usdt_abi.py" "usdt_abi.py"
+    update_ln_fils "datas/abis/wbtc_abi.py" "wbtc_abi.py"
+    update_ln_fils "datas/abis/wbtc_abi.py" "erc20_std_abi.py"
     update_ln_fils "datas/wallet/bwallet" "bwallet"
     update_ln_fils "datas/wallet/ewallet" "ewallet"
 }
