@@ -172,16 +172,11 @@ def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = T
     vls_e2vm_senders  = {vls_e2vm_senders}
             ''')
 
-    ret = eclient.get_token_list()
-    assert ret.state == error.SUCCEED, "get tokens failed."
-    token_ids = ret.datas
-
-    
     ret = ewallet.get_account(from_address)
     assert ret.state == error.SUCCEED, f"get account(from_address) failed"
     account = ret.datas
 
-    for token_id in token_ids:
+    for token_id in [eth_token_name]:
         if not work_continue():
             break
 
@@ -295,7 +290,10 @@ def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = T
 
                         message_wheel(start_time, max_work_time, f"violas version = {vls_version} eth tran version = {version} tran_tran_id = {tran_tran_id}  vls_receiver = {vls_receiver} tran_receiver = {tran_receiver}")
                         if vls_receiver == tran_receiver:
-                            assert tran_amount == map_amount, "mapping amount is error. eth-{token_id} amount = {map_amount}, but violas-{tran_token_id} amount is {tran_amount}"
+
+                            amount_swap = (amount, self.amountswap.amounttype[self.from_chain.upper()], self.from_client.get_decimals(from_token_id))
+                            to_amount = amountconver(map_amount, amountconver.amounttype.ETHEREUM, eclient.get_decimals(eth_token_name)).amount(amountconver.amounttype.VIOLAS, eclient.get_decimals(eth_token_name))
+                            assert tran_amount == to_amount, f"mapping amount is error. eth-{token_id} amount = {map_amount}, but violas-{tran_token_id} amount is {tran_amount}, decimals = {eclient.get_decimals(eth_token_name)}"
                             mapping_ok = True
                             print(f'''
                             mapping succeed. 
@@ -613,10 +611,12 @@ def init_signal():
 if __name__ == "__main__":
     init_signal()
     #test_e2vm_usdt()
-    test_e2vm_wbtc()
+    #test_e2vm_wbtc()
     #test_v2em_vusdt()
     #test_v2em_vwbtc()
     #test_b2vm()
     #test_v2bm()
+    pa = parseargs(globals())
+    pa.test(sys.argv)
 
 

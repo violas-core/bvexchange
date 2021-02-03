@@ -49,6 +49,7 @@ def main(argc, argv):
         #stmanage.set_conf_env_default() 
 
         init_args(pargs)
+        print(argv)
         pargs.show_help(argv)
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
