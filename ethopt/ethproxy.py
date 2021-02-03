@@ -15,6 +15,12 @@ import comm
 import comm.error
 import comm.result
 import comm.values
+import vmp_main_abi
+import vmp_datas_abi
+import vmp_state_abi
+import usdt_abi
+import wbtc_abi
+import erc20_std_abi
 from comm import version
 from comm.result import result, parse_except
 from comm.error import error
@@ -32,14 +38,6 @@ from web3 import Web3
 
 #module name
 name="ethproxy"
-from . import (
-    vmp_main_abi,
-    vmp_datas_abi,
-    vmp_state_abi,
-    usdt_abi,
-    wbtc_abi,
-    erc20_std_abi,
-        )
 
 VLSMPROOF_MAIN_NAME = "vlsmproof"
 VLSMPROOF_DATAS_NAME = "vmpdatas"
