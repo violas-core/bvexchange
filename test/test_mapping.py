@@ -62,8 +62,10 @@ logger = log.logger.getLogger(name)
 class Tokens(Enum):
     VIOLAS_BTC = "vBTC"
     VIOLAS_USDT = "vUSDT"
+    VIOLAS_WBTC= "vWBTC"
     BTC_BTC  = "BTC"
     ETHEREUM_USDT = "usdt"
+    ETHEREUM_WBTC= "wbtc"
 
 def get_token_name(chain, token):
     return Tokens[f"{chain.upper()}_{token.upper()}"].value
@@ -136,8 +138,14 @@ def get_tran_id(dtype, datas):
 def is_time_in(start_time, max_work_time):
     return start_time + max_work_time >= int(time.time())
 
+def test_e2vm_usdt():
+    test_e2vm(Tokens.ETHEREUM_USDT.value, Tokens.VIOLAS_USDT.value)
+
+def test_e2vm_wbtc():
+    test_e2vm(Tokens.ETHEREUM_WBTC.value, Tokens.VIOLAS_WBTC.value)
+
 @output_args_func
-def test_e2vm():
+def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = Tokens.VIOLAS_USDT.value):
 
     ewallet = get_ethwallet()
     eclient = get_ethclient()
@@ -294,49 +302,53 @@ def test_e2vm():
                             check violas transaction: 
                             receiver = {vls_receiver} 
                             violas version = {new_version} 
-                            map amount = {map_amount}({Tokens.VIOLAS_USDT.value})
+                            map amount = {map_amount}({violas_token_name})
                             ethereum version = {version}
                             ethereum sender = {from_address}
-                            ethereum send amount: {amount}({Tokens.ETHEREUM_USDT.value}) 
-                            ethereum chain gas = {amount - map_amount}({Tokens.ETHEREUM_USDT.value}) 
+                            ethereum send amount: {amount}({eth_token_name}) 
+                            ethereum chain gas = {amount - map_amount}({eth_token_name}) 
                             ''')
-                            return
+                            continue
                         assert is_time_in(start_time, max_work_time),  f"time out, check bridge server is working...tran_tran_id = {tran_tran_id}"
 
+def test_v2em_vusdt():
+    test_v2em(map_token_id = Tokens.VIOLAS_USDT.value, eth_token_name = Tokens.ETHEREUM_USDT.value)
+    
+def test_v2em_vwbtc():
+    test_v2em(map_token_id = Tokens.VIOLAS_WBTC.value, eth_token_name = Tokens.ETHEREUM_WBTC.value)
+
 @output_args_func
-def test_v2em():
+def test_v2em(map_token_id = Tokens.VIOLAS_USDT.value, eth_token_name = Tokens.ETHEREUM_USDT.value):
     ewallet = get_ethwallet()
     eclient = get_ethclient()
     vclient = get_violasclient()
     vwallet = get_violaswallet()
     max_work_time = 180
     map_amount = 2_11_0018
-    map_token_id = Tokens.VIOLAS_USDT.value
-    eth_token_name = Tokens.ETHEREUM_USDT.value
 
-    #received eth-usdt address(mapping result)
-    usdt_receiver = '0xf3FE0CB3b0c8Ab01631971923CEcDd14D857358A'
+    #received eth-erc20 address(mapping result)
+    erc20_receiver = '0xf3FE0CB3b0c8Ab01631971923CEcDd14D857358A'
     
     #from this address send v2em request(violas transaction)
     from_address = stmanage.get_sender_address_list(datatype.E2VM, trantype.VIOLAS)[0]
 
     #receive v2em request, DD-account
     to_address = stmanage.get_receiver_address_list(datatype.V2EM, trantype.VIOLAS)[0]
-    metadata = vclient.create_data_for_start(trantype.VIOLAS, datatype.V2EM, usdt_receiver)
+    metadata = vclient.create_data_for_start(trantype.VIOLAS, datatype.V2EM, erc20_receiver)
 
     vclient._logger.debug(f'''
-    usdt receiver = {usdt_receiver}
-    send usdt address = {from_address}
+    {eth_token_name} receiver = {erc20_receiver}
+    send {eth_token_name} address = {from_address}
     recever mapping receiver = {to_address}
     metadata = {metadata}
     map_amount = {map_amount}
-    usdt receiver amount: {eclient.get_balance(usdt_receiver, eth_token_name).datas} {eth_token_name}
+    {eth_token_name} receiver amount: {eclient.get_balance(erc20_receiver, eth_token_name).datas} {eth_token_name}
             ''')
     ret = vwallet.get_account(from_address)
     assert ret.state == error.SUCCEED, f"get {from_address} account failed. {ret.message}"
     map_sender = ret.datas
 
-    before_usdt_amount = eclient.get_balance(usdt_receiver, eth_token_name).datas
+    before_usdt_amount = eclient.get_balance(erc20_receiver, eth_token_name).datas
     ret = vclient.send_coin(map_sender, to_address, map_amount, map_token_id, data = metadata)
     assert ret.state == error.SUCCEED, f"send coin({map_token_id}) faild from = {from_address} to_address = {to_address} metadata = {metadata}. {ret.message}"
     vclient._logger.debug(f"send coin result: {ret}")
@@ -346,11 +358,11 @@ def test_v2em():
 
     start_time = int(time.time())
     while start_time + max_work_time >= int(time.time()) and work_continue():
-        after_usdt_amount = eclient.get_balance(usdt_receiver, eth_token_name).datas
+        after_usdt_amount = eclient.get_balance(erc20_receiver, eth_token_name).datas
         if after_usdt_amount > before_usdt_amount:
             print(f'''
             mapping ok, 
-            mapping to {usdt_receiver} {eth_token_name} 
+            mapping to {erc20_receiver} {eth_token_name} 
             amount  {after_usdt_amount - before_usdt_amount}, 
             input amount is {map_amount} . 
             check detail of violas {txn}"
@@ -600,8 +612,10 @@ def init_signal():
 
 if __name__ == "__main__":
     init_signal()
-    test_e2vm()
-    #test_v2em()
+    #test_e2vm_usdt()
+    test_e2vm_wbtc()
+    #test_v2em_vusdt()
+    #test_v2em_vwbtc()
     #test_b2vm()
     #test_v2bm()
 

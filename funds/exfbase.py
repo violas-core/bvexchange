@@ -61,7 +61,7 @@ class exfbase(baseobject):
         self.to_chain = tochain
         self.excluded = None
 
-        self.append_property("db", localdb(name, f"{self.from_chain}_{self.to_chain}_{dtype}.db"))
+        self.append_property("db", localdb(name, f"funds_{self.from_chain}_{self.to_chain}_{dtype}.db"))
     
         #violas/libra init
         self.append_property("receivers", receivers)
