@@ -443,7 +443,6 @@ exchange_async = true
 [[address_book]]
     mobile = "+8613811939280"
     lang = "ch"
-    opttype = "burn"
     interval = 1
     type = "msg"
 

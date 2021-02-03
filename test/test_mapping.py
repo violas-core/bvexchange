@@ -601,7 +601,7 @@ def init_signal():
 if __name__ == "__main__":
     init_signal()
     test_e2vm()
-    test_v2em()
+    #test_v2em()
     #test_b2vm()
     #test_v2bm()
 
