@@ -169,6 +169,10 @@ exchange_async = true
         support = true  
         run = true
         etype  = "funds"
+    [type_opts.fundsvwbtc]
+        support = true  
+        run = true
+        etype  = "funds"
     [type_opts.v2bm]
         etype  = "map"
         support= true  
