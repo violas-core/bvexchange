@@ -170,10 +170,10 @@ def init_address(vclient, wclient, address):
     for token_id in violas_token_id_list:
         comm_funs.init_address_list(vclient, wclient, [address], token_id, minamount = 1000_000000)
 
+def init_stmanage():
+    stmanage.set_conf_env("../bvexchange.toml")
 
 if __name__ == "__main__":
-    stmanage.set_conf_env("../bvexchange.toml")
-    if len(sys.argv) == 1:
-        reg_run()
-    else:
-        raise Exception(f"argument is None or address(violas)")
+    init_signal()
+    pa = parseargs(globals())
+    pa.test(sys.argv)
