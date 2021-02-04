@@ -17,6 +17,9 @@ from sms.smsclient import (
 from comm.values import (
         langtype
         )
+from comm.parseargs import (
+        parseargs
+        )
 def test_smsclient():
     client = smsclient("smsclient", 
             stmanage.get_sms_nodes(),
@@ -50,6 +53,6 @@ def init_stmanage():
 
 if __name__ == "__main__":
     init_stmanage()
-    #test_post()
+    pa = parseargs(globals())
+    pa.test(sys.argv)
 
-    test_smsclient()

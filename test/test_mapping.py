@@ -610,12 +610,6 @@ def init_signal():
 
 if __name__ == "__main__":
     init_signal()
-    #test_e2vm_usdt()
-    #test_e2vm_wbtc()
-    #test_v2em_vusdt()
-    #test_v2em_vwbtc()
-    #test_b2vm()
-    #test_v2bm()
     pa = parseargs(globals())
     pa.test(sys.argv)
 
