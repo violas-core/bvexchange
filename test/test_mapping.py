@@ -291,19 +291,19 @@ def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = T
                         message_wheel(start_time, max_work_time, f"violas version = {vls_version} eth tran version = {version} tran_tran_id = {tran_tran_id}  vls_receiver = {vls_receiver} tran_receiver = {tran_receiver}")
                         if vls_receiver == tran_receiver:
 
-                            amount_swap = (amount, self.amountswap.amounttype[self.from_chain.upper()], self.from_client.get_decimals(from_token_id))
                             to_amount = amountconver(map_amount, amountconver.amounttype.ETHEREUM, eclient.get_decimals(eth_token_name)).amount(amountconver.amounttype.VIOLAS, eclient.get_decimals(eth_token_name))
                             assert tran_amount == to_amount, f"mapping amount is error. eth-{token_id} amount = {map_amount}, but violas-{tran_token_id} amount is {tran_amount}, decimals = {eclient.get_decimals(eth_token_name)}"
                             mapping_ok = True
                             print(f'''
                             mapping succeed. 
                             check violas transaction: 
-                            receiver = {vls_receiver} 
+                            violas receiver = {vls_receiver} 
                             violas version = {new_version} 
-                            map amount = {map_amount}({violas_token_name})
+                            violas map amount = {tran_amount}({violas_token_name})
                             ethereum version = {version}
                             ethereum sender = {from_address}
                             ethereum send amount: {amount}({eth_token_name}) 
+                            ethereum send map amount: {map_amount}({eth_token_name}) 
                             ethereum chain gas = {amount - map_amount}({eth_token_name}) 
                             ''')
                             continue
@@ -361,8 +361,8 @@ def test_v2em(map_token_id = Tokens.VIOLAS_USDT.value, eth_token_name = Tokens.E
             print(f'''
             mapping ok, 
             mapping to {erc20_receiver} {eth_token_name} 
-            amount  {after_usdt_amount - before_usdt_amount}, 
-            input amount is {map_amount} . 
+            eth amount  {after_usdt_amount - before_usdt_amount}{eth_token_name}, 
+            input amount is {map_amount}{map_token_id} . 
             check detail of violas {txn}"
             ''')
             return
