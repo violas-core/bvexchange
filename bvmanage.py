@@ -45,11 +45,8 @@ def main(argc, argv):
     pargs = parseargs()
     try:
         logger.debug("start manage.main")
-        #--conf must be first
-        #stmanage.set_conf_env_default() 
 
         init_args(pargs)
-        print(argv)
         pargs.show_help(argv)
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:

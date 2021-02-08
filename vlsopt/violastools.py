@@ -48,6 +48,8 @@ logger = log.logger.getLogger(name)
 def get_violasclient():
     if chain == "libra":
         return violasclient(name, stmanage.get_libra_nodes(), chain, use_faucet_file = True)
+    elif chain == "diem":
+        return violasclient(name, stmanage.get_diem_nodes(), chain, use_faucet_file = True)
 
     return violasclient(name, stmanage.get_violas_nodes(), chain, use_faucet_file = True)
 
@@ -152,6 +154,7 @@ def get_transactions(start_version, limit = 1, fetch_event = True, datatype = "f
     print(f"count: {len(ret.datas)}")
 
     for data in ret.datas:
+        print(f"txn type: {type(data)}")
         if datatype == "raw":
             print(data)
 
@@ -388,7 +391,7 @@ def create_child_vasp_account_from_server(address, auth_key_prefix):
 '''
 def init_args(pargs):
     pargs.append("help", "show arg list.")
-    pargs.append("chain", "work chain name(violas/libra, default : violas). must be first argument", True, ["chain=violas"], priority = 10)
+    pargs.append("chain", "work chain name(violas/libra/diem, default : violas). must be first argument", True, ["chain=violas"], priority = 10)
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)
     pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
     #wallet 
@@ -421,7 +424,7 @@ def init_args(pargs):
     pargs.append(get_account_prefix, "get account prefix.")
     pargs.append(address_has_token_id, "check account is published token_id.")
     pargs.append(create_child_vasp_account, "create child vasp account, make sure you are owner parent vasp .")
-    pargs.append(check_account_is_registered, "check account is registered in violas/libra chain.")
+    pargs.append(check_account_is_registered, "check account is registered in violas/libra/diem chain.")
 
     #swap opt
     pargs.append(show_swap_registered_tokens, "show registered tokens for module.")
@@ -459,7 +462,6 @@ def run(argc, argv):
     #--conf must be first
     if stmanage.get_conf_env() is None:
         stmanage.set_conf_env("bvexchange.toml") 
-
     
     for opt, arg in opts:
 

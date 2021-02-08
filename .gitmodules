@@ -13,3 +13,6 @@
 [submodule "lbparseargs"]
 	path = lbparseargs
 	url = https://github.com/palliums-developers/parseargs
+[submodule "lbdiemsdk"]
+	path = lbdiemsdk
+	url = https://github.com/libra/client-sdk-python.git
