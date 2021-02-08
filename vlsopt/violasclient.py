@@ -225,6 +225,8 @@ class violasclient(baseobject):
                 from vlsopt.violasproxy import violasproxy as clientproxy
             elif chain in ("libra"):
                 from vlsopt.libraproxy import libraproxy as clientproxy
+            elif chain in ("diem"):
+                from vlsopt.diemproxy import diemproxy as clientproxy
             else:
                 raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas node")
 

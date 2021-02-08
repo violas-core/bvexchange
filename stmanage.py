@@ -374,6 +374,9 @@ def get_target_nodes(ttype):
 def get_libra_nodes():
     return setting.setting.libra_nodes
 
+def get_diem_nodes():
+    return setting.setting.diem_nodes
+
 def get_violas_servers():
     return setting.setting.violas_servers
 
@@ -510,6 +513,7 @@ def get_conf():
     infos["violas nodes"] = get_violas_nodes()
     infos["violas server"] = get_violas_servers()
     infos["libra nodes"] = get_libra_nodes()
+    infos["diem nodes"] = get_diem_nodes()
     infos["max times"] = get_max_times()
     return infos
 
@@ -592,6 +596,7 @@ def main():
     print(f"get violas nodes: {get_violas_nodes()}")
     print(f"get violas_servers: {get_violas_servers()}")
     print(f"get libra nodes: {get_libra_nodes()}")
+    print(f"get diem nodes: {get_diem_nodes()}")
     print(f"get db echo :{get_db_echo()}")
     print(f"get token_map: ")
     print(f"get type_stable_token: ")
