@@ -40,6 +40,7 @@ from diem import (
 
 from vlsopt.data_factory import (
         account_factory,
+        transaction_factory
         )
 name="diemproxy"
 
@@ -120,6 +121,9 @@ class diemproxy(jsonrpc.Client):
         account_state = self.get_account_state(address)
         return account_state.sequence_number
 
+    def get_transactions(self, start_version, limit, include_events = None):
+        transactions = super().get_transactions(start_version, limit, include_events)
+        return [transaction_factory(transaction) for transaction in transactions]
 
     def __getattr__(self, name):
         try:
