@@ -38,7 +38,9 @@ from diem import (
     LocalAccount,
 )
 
-
+from vlsopt.data_factory import (
+        account_factory,
+        )
 name="diemproxy"
 
 class walletproxy(proxybase):
@@ -60,22 +62,6 @@ class walletproxy(proxybase):
         return (-1, None)
 
 
-class account_state():
-    def __init__(self, account):
-        self.__account = account
-
-    def __getattr__(self, name):
-        return getattr(self.__account, name)
-
-    def is_published(self, token_id):
-        for balance in self.__account.balances:
-            if token_id == balance.currency:
-                return True
-        return False
-
-
-    def __repr__(self):
-        return self.__account.__repr__()
 
 class diemproxy(jsonrpc.Client):
     def clientname(self):
@@ -112,17 +98,15 @@ class diemproxy(jsonrpc.Client):
     def get_latest_version(self):
         metadata = self.get_metadata()
         state = self.get_last_known_state()
-        print(state)
         return state.version
 
     def get_registered_currencies(self):
         currencies = self.get_currencies()
-        print(type(currencies[0]))
         return [currency.code for currency in currencies]
 
     def get_account_state(self, address):
         account = self.get_account(address)
-        return account_state(account)
+        return account_factory(account)
 
     def get_balance(self, account_address, currency_code, *args, **kwargs):
         balances = self.get_balances(account_address)
@@ -131,6 +115,10 @@ class diemproxy(jsonrpc.Client):
     def get_balances(self, account_address, *args, **kwargs):
         account_state = self.get_account_state(account_address)
         return {balance.currency:balance.amount for balance in account_state.balances}
+
+    def get_sequence_number(self, address):
+        account_state = self.get_account_state(address)
+        return account_state.sequence_number
 
 
     def __getattr__(self, name):
