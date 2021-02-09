@@ -48,12 +48,9 @@ class tomlbase():
 
     def __get_conf_file(self):
         release_path = ""
-        conffile = self.get_conf_env()
-        print(conffile)
-        #default toml. local or /etc/bvexchange
-        if conffile is None or not os.path.exists(conffile):
-            return None
-        toml_file = conffile
+        toml_file = self.get_conf_env()
+        if toml_file is None or not os.path.exists(toml_file):
+            return toml_file
 
         path = Path(toml_file)
         if not path.is_file() or not path.exists():
@@ -76,8 +73,8 @@ class tomlbase():
     def reset(self):
         self.__load_conf()
         if not self.is_loaded:
-            print("not found configure file(toml).")
-            sys.exit(-1)
+            toml_file = self.get_conf_env()
+            raise Exception(f"not found toml file: {toml_file}")
 
     @property
     def datas(self):

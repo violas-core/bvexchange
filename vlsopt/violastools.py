@@ -392,7 +392,7 @@ def create_child_vasp_account_from_server(address, auth_key_prefix):
 def init_args(pargs):
     pargs.append("help", "show arg list.")
     pargs.append("chain", "work chain name(violas/libra/diem, default : violas). must be first argument", True, ["chain=violas"], priority = 10)
-    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)
+    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bridge/", True, "toml file", priority = 5)
     pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
     #wallet 
     pargs.append(new_account, "new account and save to local wallet.")
@@ -458,10 +458,6 @@ def run(argc, argv):
 
     names = [opt for opt, arg in opts]
     pargs.check_unique(names)
-
-    #--conf must be first
-    if stmanage.get_conf_env() is None:
-        stmanage.set_conf_env("bvexchange.toml") 
     
     for opt, arg in opts:
 
@@ -483,6 +479,7 @@ def run(argc, argv):
                 pargs.exit_error_opt(opt)
             dataproof.wallets.update_wallet(chain, arg_list[0])
         elif pargs.has_callback(opt):
+            stmanage.reset()
             pargs.callback(opt, *arg_list)
         else:
             raise Exception(f"not found matched opt: {opt}")
