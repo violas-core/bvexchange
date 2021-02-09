@@ -114,8 +114,6 @@ class tomlbase():
 
     @classmethod
     def set_conf_env(self, conffile):
-        if conffile.find("/") == -1:
-            conffile = f"{root_path()}/{conffile}"
         os.environ["BVEXCHANGE_CONFIG"] = conffile
 
     @classmethod
@@ -126,7 +124,6 @@ class tomlbase():
     def set_conf_env_default(self):
         basename = PROJECT_NAME
         print(basename)
-        #os.environ["BVEXCHANGE_CONFIG"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{basename}.toml")
         os.environ["BVEXCHANGE_CONFIG"] = os.path.join(f"/etc/{basename}/", f"{basename}.toml")
 
 def main():

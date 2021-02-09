@@ -414,7 +414,7 @@ def init_args(pargs):
     pargs.append(get_balances, "get address's tokens.")
     pargs.append(get_account_transactions, "get account's transactions from violas server.")
     pargs.append(has_transaction, "check transaction is valid from violas server.")
-    pargs.append(get_transactions, "get transactions from violas nodes.")
+    pargs.append(get_transactions, "get transactions from violas nodes. datatype = [filter | raw | proof]")
     pargs.append(get_latest_version, "show latest transaction version.")
     pargs.append(get_address_version, "get address's latest version.")
     pargs.append(get_address_sequence, "get address's latest sequence.")
