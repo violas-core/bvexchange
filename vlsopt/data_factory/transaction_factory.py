@@ -86,4 +86,9 @@ class transaction_factory(factory_base):
         return output
 
         
+    def get_field(self, name):
+        return self.__tran_fields[name]
+
+    def get_version(self):
+        return self.get_attr_with_path(self.get_field("version").path)
 

@@ -125,6 +125,10 @@ class diemproxy(jsonrpc.Client):
         transactions = super().get_transactions(start_version, limit, include_events)
         return [transaction_factory(transaction) for transaction in transactions]
 
+    def get_account_transaction(self, address, sequence, include_events = None):
+        transaction = super().get_account_transaction(address, sequence, include_events)
+        return transaction_factory(transaction)
+
     def __getattr__(self, name):
         try:
             if name.startswith('__') and name.endswith('__'):
