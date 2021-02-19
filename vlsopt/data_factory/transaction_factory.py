@@ -46,6 +46,7 @@ class transaction_factory(factory_base):
                 self.field("amount",            "transaction.script.amount"),
                 self.field("sequence_number",   "transaction.sequence_number"),
                 self.field("vm_status",         "vm_status.type"),
+                self.field("state",             "vm_status.type", self.parse_state),
                 self.field("gas_used",          "gas_used"),
                 self.field("version",           "version"),
                 self.field("events",            "events", self.parse_events),
@@ -61,22 +62,27 @@ class transaction_factory(factory_base):
     @staticmethod
     def parse_events(events):
         datas = []
-        for event in events:
-            datas.append({
-                "key":event.key,
-                "sequence_number": event.sequence_number,
-                "data": {
-                    "type": event.data.type,
-                    "amount": {
-                        "amount": event.data.amount.amount,
-                        "currency": event.data.amount.currency,
-                        },
-                    "sender" : event.data.sender,
-                    "receiver": event.data.receiver,
-                    }
-                })
+        if events:
+            for event in events:
+                datas.append({
+                    "key":event.key,
+                    "sequence_number": event.sequence_number,
+                    "data": {
+                        "type": event.data.type,
+                        "amount": {
+                            "amount": event.data.amount.amount,
+                            "currency": event.data.amount.currency,
+                            },
+                        "sender" : event.data.sender,
+                        "receiver": event.data.receiver,
+                        }
+                    })
         return datas
 
+
+    @staticmethod
+    def parse_state(state):
+        return state == "executed"
 
     def to_json(self):
         output = dict(self.__default_output)

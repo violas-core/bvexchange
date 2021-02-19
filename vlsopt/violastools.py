@@ -131,12 +131,29 @@ def get_latest_version():
     ret = client.get_latest_transaction_version()
     logger.debug("latest version: {0}".format(ret.datas))
 
+def __show_transactions(datas, datatype):
+    if datas is None or len(datas) == 0:
+        print(f"count: {len(datas)}")
+        return
+    print(f"count: {len(datas)}")
+
+    for data in datas:
+        print(f"txn type: {type(data)}")
+        if datatype == "raw":
+            print(data)
+        elif datatype in ["filter", "proof"]:
+            print(f"******************{datatype}*********************************")
+            info = afilter.get_tran_data(data, chain =="violas")
+            if datatype in ["proof"]:
+                info = ptran.parse_tran(info).datas
+            json_print(info)
+
 def get_transactions(start_version, limit = 1, fetch_event = True, datatype = "filter"):
     '''
     @dev get transaction and show info 
     @param datatype show data info type. raw: rawtransaction data of client, filter: filter will storage datas, proof: proof storage datas
     '''
-    logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event})")
+    logger.debug(f"start get_transactions(start_version={start_version}, limit={limit}, fetch_event={fetch_event}, datatype = {datatype})")
 
     if isinstance(fetch_event, str):
         fetch_event = fetch_event in ["true", "True"]
@@ -148,23 +165,26 @@ def get_transactions(start_version, limit = 1, fetch_event = True, datatype = "f
     if ret.state != error.SUCCEED:
         logger.debug(f"{ret.message}")
         return
-    if ret.datas is None or len(ret.datas) == 0:
-        print(f"count: {len(ret.datas)}")
+
+    __show_transactions(ret.datas, datatype)
+
+def get_account_transactions(address, start, limit = 1, fetch_event = True, datatype = "filter"):
+    '''
+    @dev get account transactions and show info 
+    @param datatype show data info type. raw: rawtransaction data of client, filter: filter will storage datas, proof: proof storage datas
+    '''
+    logger.debug(f"start get_account_transactions(address = {address}, start={start}, limit={limit}, fetch_event={fetch_event}, datatype = {datatype})")
+
+    if isinstance(fetch_event, str):
+        fetch_event = fetch_event in ["true", "True"]
+
+    client = get_violasclient()
+    ret = client.get_account_transactions(address, start, limit, fetch_event)
+    if ret.state != error.SUCCEED:
+        logger.debug(f"{ret.message}")
         return
-    print(f"count: {len(ret.datas)}")
 
-    for data in ret.datas:
-        print(f"txn type: {type(data)}")
-        if datatype == "raw":
-            print(data)
-
-        elif datatype in ["filter", "proof"]:
-            print(data.to_json())
-            print(f"******************{datatype}*********************************")
-            info = afilter.get_tran_data(data, chain =="violas")
-            if datatype in ["proof"]:
-                info = ptran.parse_tran(info).datas
-            json_print(info)
+    __show_transactions(ret.datas, datatype)
 
 def get_address_version(address):
     logger.debug(f"start get_address_version({address})")
@@ -193,6 +213,21 @@ def create_child_vasp_account(parent_vasp_address, child_address, auth_key_prefi
 
     ret = client.create_child_vasp_account(parent_vasp_account, child_address, auth_key_prefix)
     logger.debug("result: {0}".format(ret.datas))
+
+def get_events(key, start = 0, limit = 10):
+    client = get_violasclient()
+    ret = client.get_events(key, start, limit)
+    print(ret.datas)
+
+def get_events_with_proof(key, start = 0, limit = 10):
+    client = get_violasclient()
+    ret = client.get_events_with_proof(key, start, limit)
+    print(ret.datas)
+
+def get_metadata(version = None):
+    client = get_violasclient()
+    ret = client.get_metadata(version)
+    print(ret.datas)
 
 '''
 *************************************************violas swap oper*******************************************************
@@ -268,8 +303,8 @@ def swap_remove_liquidity(address, token_a, token_b, liquidity):
 '''
 *************************************************violas proof oper*******************************************************
 '''
-def get_account_transactions(mtype, address, start = -1, limit = 10, state = "start"):
-    logger.debug(f"start get_account_transactions({address}, {start}, {limit}, {state})")
+def get_account_transactions_with_state(mtype, address, start = -1, limit = 10, state = "start"):
+    logger.debug(f"start get_account_transactions_with_state({address}, {start}, {limit}, {state})")
     server = get_violasproof(mtype)
     if state == "start":
         ret = server.get_transactions_for_start(address, mtype, start, limit)
@@ -412,9 +447,10 @@ def init_args(pargs):
     pargs.append(send_coin, "send token(coin) to target address")
     pargs.append(get_balance, "get address's token(module) amount.")
     pargs.append(get_balances, "get address's tokens.")
-    pargs.append(get_account_transactions, "get account's transactions from violas server.")
+    pargs.append(get_account_transactions_with_state, "get account's transactions from violas server.")
     pargs.append(has_transaction, "check transaction is valid from violas server.")
     pargs.append(get_transactions, "get transactions from violas nodes. datatype = [filter | raw | proof]")
+    pargs.append(get_account_transactions, "get account transactions from violas nodes. datatype = [filter | raw | proof]")
     pargs.append(get_latest_version, "show latest transaction version.")
     pargs.append(get_address_version, "get address's latest version.")
     pargs.append(get_address_sequence, "get address's latest sequence.")
@@ -425,6 +461,9 @@ def init_args(pargs):
     pargs.append(address_has_token_id, "check account is published token_id.")
     pargs.append(create_child_vasp_account, "create child vasp account, make sure you are owner parent vasp .")
     pargs.append(check_account_is_registered, "check account is registered in violas/libra/diem chain.")
+    pargs.append(get_events, "fetch the events for a given event stream.")
+    pargs.append(get_events_with_proof, "fetch the events for a given event stream along with the necessary cryptographic proofs required to validate them.")
+    pargs.append(get_metadata, "get the blockchain / ledger metadata")
 
     #swap opt
     pargs.append(show_swap_registered_tokens, "show registered tokens for module.")

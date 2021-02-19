@@ -42,6 +42,10 @@ from vlsopt.data_factory import (
         account_factory,
         transaction_factory
         )
+
+from vlsopt.faucet import (
+        Faucet
+        )
 name="diemproxy"
 
 class walletproxy(proxybase):
@@ -121,14 +125,43 @@ class diemproxy(jsonrpc.Client):
         account_state = self.get_account_state(address)
         return account_state.sequence_number
 
-    def get_transactions(self, start_version, limit, include_events = None):
+    #def get_events(self, key, start = 0, limit = 10):
+    #    return self.get_events(key, start, limit)
+
+    def get_transactions(self, start_version, limit, include_events = True):
         transactions = super().get_transactions(start_version, limit, include_events)
         return [transaction_factory(transaction) for transaction in transactions]
 
-    def get_account_transaction(self, address, sequence, include_events = None):
+    def get_account_transaction(self, address, sequence, include_events = True):
         transaction = super().get_account_transaction(address, sequence, include_events)
         return transaction_factory(transaction)
 
+    def get_account_transactions(self, address, start, limit, include_events = True):
+        transactions = super().get_account_transactions(address, start, limit, include_events)
+        return [transaction_factory(transaction) for transaction in transactions]
+
+    def gen_account(self, dd_account: bool = False, base_url: typing.Optional[str] = None):
+        """generates a Testnet onchain account"""
+    
+        account = Faucet(self).gen_account(dd_account=dd_account)
+        if base_url:
+            account.rotate_dual_attestation_info(client, base_url)
+        return account
+    
+    def gen_child_vasp(self, parent_vasp: LocalAccount, initial_balance: int = 10_000_000_000, currency: str = TEST_CURRENCY_CODE,) -> LocalAccount:
+        child_vasp = LocalAccount.generate()
+        parent_vasp.submit_and_wait_for_txn(
+            client,
+            stdlib.encode_create_child_vasp_account_script(
+                coin_type=utils.currency_code(currency),
+                child_address=child_vasp.account_address,
+                auth_key_prefix=child_vasp.auth_key.prefix(),
+                add_all_currencies=False,
+                child_initial_balance=initial_balance,
+            ),
+        )
+        return child_vasp
+    
     def __getattr__(self, name):
         try:
             if name.startswith('__') and name.endswith('__'):
