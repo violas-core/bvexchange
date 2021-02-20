@@ -55,7 +55,7 @@ exchange_async = true
 #connect libra chain config
 [[diem_nodes]]
     host = "http://testnet.diem.com/v1"
-    name = "libra"
+    name = "diem"
 
 [[violas_servers]]
     host = "api4.violas.io"

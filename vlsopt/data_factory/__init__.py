@@ -5,3 +5,7 @@ from . account_factory import (
 from . transaction_factory import (
         transaction_factory,
         )
+
+from . metadata_factory import (
+        metadata_factory,
+        )

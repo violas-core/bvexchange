@@ -3,6 +3,7 @@ import operator
 import sys
 import json
 import os
+import typing
 sys.path.append("..")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../lbdiemsdk/src"))
 import log.logger
@@ -40,7 +41,8 @@ from diem import (
 
 from vlsopt.data_factory import (
         account_factory,
-        transaction_factory
+        transaction_factory,
+        metadata_factory,
         )
 
 from vlsopt.faucet import (
@@ -67,7 +69,6 @@ class walletproxy(proxybase):
         return (-1, None)
 
 
-
 class diemproxy(jsonrpc.Client):
     def clientname(self):
         return name
@@ -84,6 +85,9 @@ class diemproxy(jsonrpc.Client):
             url += f":{port}"
 
         return diemproxy(url)
+
+    def __init_matedata(self):
+        pass
 
     def send_coin(self, sender_account, receiver_address, micro_coins, token_id=None, module_address=None, \
             data=None, auth_key_prefix=None, is_blocking=False, max_gas_amount=400_000, unit_price=0, txn_expiration=13, gas_token_id = None):
@@ -136,10 +140,15 @@ class diemproxy(jsonrpc.Client):
         transaction = super().get_account_transaction(address, sequence, include_events)
         return transaction_factory(transaction)
 
+    def get_metadata(self, version = None):
+        data = super().get_metadata(version)
+        return metadata_factory(data)
+
     def get_account_transactions(self, address, start, limit, include_events = True):
         transactions = super().get_account_transactions(address, start, limit, include_events)
         return [transaction_factory(transaction) for transaction in transactions]
 
+    
     def gen_account(self, dd_account: bool = False, base_url: typing.Optional[str] = None):
         """generates a Testnet onchain account"""
     
@@ -148,20 +157,34 @@ class diemproxy(jsonrpc.Client):
             account.rotate_dual_attestation_info(client, base_url)
         return account
     
-    def gen_child_vasp(self, parent_vasp: LocalAccount, initial_balance: int = 10_000_000_000, currency: str = TEST_CURRENCY_CODE,) -> LocalAccount:
-        child_vasp = LocalAccount.generate()
-        parent_vasp.submit_and_wait_for_txn(
-            client,
-            stdlib.encode_create_child_vasp_account_script(
-                coin_type=utils.currency_code(currency),
-                child_address=child_vasp.account_address,
-                auth_key_prefix=child_vasp.auth_key.prefix(),
-                add_all_currencies=False,
-                child_initial_balance=initial_balance,
-            ),
-        )
-        return child_vasp
-    
+    #def gen_child_vasp(self, parent_vasp: LocalAccount, initial_balance: int = 10_000_000_000, currency: str = TEST_CURRENCY_CODE,) -> LocalAccount:
+    #    child_vasp = LocalAccount.generate()
+    #    parent_vasp.submit_and_wait_for_txn(
+    #        self,
+    #        stdlib.encode_create_child_vasp_account_script(
+    #            coin_type=utils.currency_code(currency),
+    #            child_address=child_vasp.account_address,
+    #            auth_key_prefix=child_vasp.auth_key.prefix(),
+    #            add_all_currencies=False,
+    #            child_initial_balance=initial_balance,
+    #        ),
+    #    )
+    #    return child_vasp
+    #
+    def make_diem_account_dict(self, account, hrp = "tdm"):
+        config = {
+            "private_key": account.private_key,
+            "compliance_key": "f75b74a94250bda7abfab2045205e05c56e5dcba24ecea6aff75aac9463cdc2f",
+            "hrp": "tdm",
+            "txn_gas_currency_code": "XDX",
+            "txn_max_gas_amount": 1000000,
+            "txn_gas_unit_price": 0,
+            "txn_expire_duration_secs": 30,
+        }
+
+    def convert_to_diem_account(self, account):
+        return LocalAccount()
+
     def __getattr__(self, name):
         try:
             if name.startswith('__') and name.endswith('__'):
@@ -174,9 +197,6 @@ class diemproxy(jsonrpc.Client):
         
     def __call__(self, *args, **kwargs):
         pass
-
-
-
 
 def main():
     client = clientproxy.connect("https://client.testnet.libra.org")
