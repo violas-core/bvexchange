@@ -227,7 +227,8 @@ def get_events_with_proof(key, start = 0, limit = 10):
 def get_metadata(version = None):
     client = get_violasclient()
     ret = client.get_metadata(version)
-    print(ret.datas)
+    print(type(ret.datas))
+    json_print(ret.datas.to_json())
 
 '''
 *************************************************violas swap oper*******************************************************
