@@ -480,8 +480,9 @@ def get_support_mods_info(etype = None):
     
 def get_support_mods():
     mods = []
-    for typename, opts in setting.setting.type_token.items():
-        mods.append(typename)
+    if setting.setting.type_token:
+        for typename, opts in setting.setting.type_token.items():
+            mods.append(typename)
     return mods
 
 def get_support_dtypes():
