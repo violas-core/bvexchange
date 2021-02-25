@@ -20,7 +20,6 @@ from comm.result import result
 from comm.error import error
 from comm.parseargs import parseargs
 from comm.functions import json_print
-from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from violasclient import (
         violasclient, 
         violaswallet, 

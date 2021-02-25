@@ -189,10 +189,9 @@ def init_args(pargs):
 def run(argc, argv):
     try:
         logger.debug("start btc.main")
-        if stmanage.get_conf_env() is None:
-            stmanage.set_conf_env("bvexchange.toml") 
         pargs = parseargs()
         init_args(pargs)
+        print(f"temp-")
         pargs.show_help(argv)
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
@@ -208,10 +207,6 @@ def run(argc, argv):
 
     names = [opt for opt, arg in opts]
     pargs.check_unique(names)
-
-    #--conf must be first
-    if stmanage.get_conf_env() is None:
-        stmanage.set_conf_env_default() 
 
     for opt, arg in opts:
         count, arg_list = pargs.split_arg(opt, arg)

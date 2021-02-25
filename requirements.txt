@@ -1,1 +1,9 @@
+python-bitcoinrpc
+pytest
+requests==2.20.0
+sqlalchemy
+flask>=1.0.1
+web3
+redis-server
+requests==2.20.0
 
