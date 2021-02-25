@@ -44,8 +44,7 @@ class Faucet:
         self._retry: jsonrpc.Retry = retry or jsonrpc.Retry(5, 0.2, Exception)
         self._session: requests.Session = requests.Session()
 
-    def gen_account(self, currency_code: str = TEST_CURRENCY_CODE, dd_account: bool = False) -> LocalAccount:
-        account = LocalAccount.generate()
+    def gen_account(self, authkey, currency_code: str = TEST_CURRENCY_CODE, dd_account: bool = False) -> LocalAccount:
         self.mint(account.auth_key.hex(), 100_000_000_000, currency_code, dd_account)
         return account
 

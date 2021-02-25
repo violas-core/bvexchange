@@ -30,13 +30,17 @@ from vlsopt.proxybase import (
         )
 
 from diem import (
-    jsonrpc,
-    diem_types,
-    stdlib,
-    testnet,
-    utils,
-    InvalidAccountAddressError,
-    LocalAccount,
+        identifier,
+        jsonrpc,
+        diem_types,
+        stdlib,
+        testnet,
+        utils,
+        InvalidAccountAddressError,
+        LocalAccount,
+        InvalidSubAddressError,
+        InvalidAccountAddressError,
+        AuthKey,
 )
 
 from vlsopt.data_factory import (
@@ -46,7 +50,8 @@ from vlsopt.data_factory import (
         )
 
 from vlsopt.faucet import (
-        Faucet
+        Faucet,
+        TEST_CURRENCY_CODE,
         )
 name="diemproxy"
 
@@ -68,6 +73,10 @@ class walletproxy(proxybase):
 
         return (-1, None)
 
+    @staticmethod
+    def get_id_with_chain_id(self, chain_id):
+        return identifier.HRPS[chain_id]
+
 
 class diemproxy(jsonrpc.Client):
     def clientname(self):
@@ -75,6 +84,7 @@ class diemproxy(jsonrpc.Client):
 
     def __init__(self, url):
         jsonrpc.Client.__init__(self, url)
+        self.__init_matedata()
 
     @classmethod
     def connect(self, host, port = None, *args, **kwargs):
@@ -87,7 +97,10 @@ class diemproxy(jsonrpc.Client):
         return diemproxy(url)
 
     def __init_matedata(self):
-        pass
+        for key, value in self.get_metadata().to_json().items():
+            print(f"key = {key}, value = {value}")
+            setattr(self, key, value)
+
 
     def send_coin(self, sender_account, receiver_address, micro_coins, token_id=None, module_address=None, \
             data=None, auth_key_prefix=None, is_blocking=False, max_gas_amount=400_000, unit_price=0, txn_expiration=13, gas_token_id = None):
@@ -147,43 +160,59 @@ class diemproxy(jsonrpc.Client):
     def get_account_transactions(self, address, start, limit, include_events = True):
         transactions = super().get_account_transactions(address, start, limit, include_events)
         return [transaction_factory(transaction) for transaction in transactions]
-
     
-    def gen_account(self, dd_account: bool = False, base_url: typing.Optional[str] = None):
-        """generates a Testnet onchain account"""
+    def gen_account(self, account, dd_account: bool = False, base_url: typing.Optional[str] = None):
+        """generates a Testnet onchain account from violas account"""
     
-        account = Faucet(self).gen_account(dd_account=dd_account)
+        account = self.convert_to_diem_account(account)
+        account = Faucet(self).gen_account(account, dd_account=dd_account)
         if base_url:
             account.rotate_dual_attestation_info(client, base_url)
         return account
     
-    #def gen_child_vasp(self, parent_vasp: LocalAccount, initial_balance: int = 10_000_000_000, currency: str = TEST_CURRENCY_CODE,) -> LocalAccount:
-    #    child_vasp = LocalAccount.generate()
-    #    parent_vasp.submit_and_wait_for_txn(
-    #        self,
-    #        stdlib.encode_create_child_vasp_account_script(
-    #            coin_type=utils.currency_code(currency),
-    #            child_address=child_vasp.account_address,
-    #            auth_key_prefix=child_vasp.auth_key.prefix(),
-    #            add_all_currencies=False,
-    #            child_initial_balance=initial_balance,
-    #        ),
-    #    )
-    #    return child_vasp
-    #
-    def make_diem_account_dict(self, account, hrp = "tdm"):
+    def create_child_vasp_account(self, 
+            parent_vasp,
+            child_vasp_address,
+            child_vasp_auth_key, 
+            currency: str = TEST_CURRENCY_CODE, 
+            add_all_currencies = False,
+            initial_balance: int = 10_000_000_000, 
+            gas_currenty = None,
+            ,) -> LocalAccount:
+        parent_vasp = self.convert_to_diem_account(parent_vasp)
+        parent_vasp.submit_and_wait_for_txn(
+            self,
+            stdlib.encode_create_child_vasp_account_script(
+                coin_type=utils.currency_code(currency),
+                child_address=utils.account_address(child_vasp_address),
+                auth_key_prefix=AuthKey(bytes.fromhex(child_vasp_auth_key)).prefix(),
+                add_all_currencies=add_all_currencies,
+                child_initial_balance=initial_balance,
+            ),
+        )
+        return child_vasp
+    
+
+    def make_diem_account_dict(self, account, 
+            compliance_key = "",
+            hrp = None, 
+            txn_gas_currency_code = "XDX", 
+            txn_max_gas_amount = 100_0000, 
+            txn_gas_unit_price = 0, 
+            txn_expire_duration_secs = 30):
         config = {
-            "private_key": account.private_key,
-            "compliance_key": "f75b74a94250bda7abfab2045205e05c56e5dcba24ecea6aff75aac9463cdc2f",
-            "hrp": "tdm",
-            "txn_gas_currency_code": "XDX",
-            "txn_max_gas_amount": 1000000,
-            "txn_gas_unit_price": 0,
-            "txn_expire_duration_secs": 30,
+            "private_key": account.private_key_hex,
+            "compliance_key": compliance_key,
+            "hrp": hrp if hrp else walletproxy.get_id_with_chain_id(self.chain_id) ,
+            "txn_gas_currency_code": txn_gas_currency_code,
+            "txn_max_gas_amount": txn_max_gas_amount,
+            "txn_gas_unit_price": txn_gas_unit_price,
+            "txn_expire_duration_secs": txn_expire_duration_secs,
         }
+        return config
 
     def convert_to_diem_account(self, account):
-        return LocalAccount()
+        return LocalAccount.from_dict(self.make_diem_account_dict(account))
 
     def __getattr__(self, name):
         try:
