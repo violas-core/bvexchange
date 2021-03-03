@@ -8,7 +8,7 @@ Mapping Protocol is based on the [OP_RETURN](https://github.com/bitcoin/bitcoin/
 
 ## Version
 
-v1.4.2
+v1.5.0
 
 
 
@@ -181,6 +181,12 @@ size = len(mark) + len(datas)
       times > 0: refund token to payer when retry number of times is max 
   </td>
  </tr>
+ <tr>
+  <td><strong>chain_id</strong></td>
+  <td>uint8</td>
+  <td>big-endian</td>
+  <td>violas chain id</td>
+ </tr>
 </table>
 
 
@@ -210,6 +216,10 @@ transaction version code
  <tr>
   <td><strong>0x0003</strong></td>
   <td>violas chain version is v0.18.0 or up</td>
+ </tr>
+ <tr>
+  <td><strong>0x0003</strong></td>
+  <td>violas chain version is v0.20.0 or up, added chain id for start transaction</td>
  </tr>
 </table>
 
@@ -438,7 +448,7 @@ btc transaction's OP_RETURN datas
 
 
 
-### mapping violas btc - start
+### mapping - start
 
 **Description**
 
@@ -489,24 +499,30 @@ btc mapping violas token(btc) request
   <td>0</td>
   <td>retry map violas btc token number of times, this field no-use, Format alignment</td>
  </tr>
+ <tr>
+  <td><strong>chain_id</strong></td>
+  <td>4</td>
+  <td>want to mapping violas chain id</td>
+ </tr>
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300033000c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000000000000
+hex-Vstr: 6a3c76696f6c617300033000c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb20000000000000000000004
 
 fields:
     OP_RETURN head:
         6a : OP_RETURN(0x6a)
-        3c : data len(60)
+        3d : data len(61)
     payload datas:
         76696f6c6173 : mark(violas)
-        0003 : version(0x0003)
+        0004 : version(0x0004)
         3000 : type(0x3000)
         c91806cabcd5b2b5fa25ae1c50bed3c6 : payee_address
         00000004b40537b6 : sequence(20200110006)
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
         0000000000002710 : out_amount(10000)
         0000 : times(0)
+        04 : chain_id(4)
 ```
 
 ### mapping - cancel
@@ -797,15 +813,20 @@ btc swap violas token(vlsusd) request
   <td>0</td>
   <td>retry swap violas btc token number of times</td>
  </tr>
+ <tr>
+  <td><strong>chain_id</strong></td>
+  <td>4</td>
+  <td>want to mapping violas chain id</td>
+ </tr>
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300034000c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300034000c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb20000000000002710000004
 
 fields:
     OP_RETURN head:
         6a : OP_RETURN(0x6a)
-        3c : data len(60)
+        3d : data len(61)
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
@@ -815,6 +836,7 @@ fields:
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
         0000000000002710 : out_amount(10000)
         0000 : times(0)
+        04: chain_id(4)
 ```
 
 ### swap violas vlseur - start
@@ -868,15 +890,20 @@ btc swap violas token(vlseur) request
   <td>0</td>
   <td>retry swap violas btc token number of times</td>
  </tr>
+ <tr>
+  <td><strong>chain_id</strong></td>
+  <td>4</td>
+  <td>want to mapping violas chain id</td>
+ </tr>
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300034010c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300034010c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb20000000000002710000004
 
 fields:
     OP_RETURN head:
         6a : OP_RETURN(0x6a)
-        3c : data len(60)
+        3d : data len(61)
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
@@ -886,6 +913,7 @@ fields:
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
         0000000000002710 : out_amount(10000)
         0000 : times(0)
+        04 : chain_id(4)
 ```
 
 ### swap violas vlssgd - start
@@ -939,15 +967,20 @@ btc swap violas token(vlssgd) request
   <td>0</td>
   <td>retry swap violas btc token number of times</td>
  </tr>
+ <tr>
+  <td><strong>chain_id</strong></td>
+  <td>4</td>
+  <td>want to mapping violas chain id</td>
+ </tr>
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300034020c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300034020c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb20000000000002710000004
 
 fields:
     OP_RETURN head:
         6a : OP_RETURN(0x6a)
-        3c : data len(60)
+        3d : data len(61)
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
@@ -957,6 +990,7 @@ fields:
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
         0000000000002710 : out_amount(10000)
         0000 : times(0)
+        04 : chain_id(4)
 ```
 
 ### swap violas vlsgbp - start
@@ -1010,15 +1044,20 @@ btc swap violas token(vlsgbp) request
   <td>0</td>
   <td>retry swap violas btc token number of times</td>
  </tr>
+ <tr>
+  <td><strong>chain_id</strong></td>
+  <td>4</td>
+  <td>want to mapping violas chain id</td>
+ </tr>
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300034030c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300034030c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb20000000000002710000004
 
 fields:
     OP_RETURN head:
         6a : OP_RETURN(0x6a)
-        3c : data len(60)
+        3d : data len(61)
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
@@ -1028,6 +1067,7 @@ fields:
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
         0000000000002710 : out_amount(10000)
         0000:times(0)
+        04 : chain_id(4)
 ```
 
 ### swap libra usd - start
@@ -1081,15 +1121,20 @@ btc swap libra token(usd) request
   <td>0</td>
   <td>retry swap violas btc token number of times</td>
  </tr>
+ <tr>
+  <td><strong>chain_id</strong></td>
+  <td>4</td>
+  <td>want to mapping violas chain id</td>
+ </tr>
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300035000c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300035000c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb20000000000002710000004
 
 fields:
     OP_RETURN head:
         6a : OP_RETURN(0x6a)
-        3c : data len(60)
+        3d : data len(61)
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
@@ -1099,6 +1144,7 @@ fields:
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
         0000000000002710 : out_amount(10000)
         0000:times(0)
+        04:chain_id(4)
 ```
 
 ### swap libra eur - start
@@ -1152,15 +1198,20 @@ btc swap libra token(eur) request
   <td>0</td>
   <td>retry swap violas btc token number of times</td>
  </tr>
+ <tr>
+  <td><strong>chain_id</strong></td>
+  <td>4</td>
+  <td>want to mapping violas chain id</td>
+ </tr>
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300035010c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300035010c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb20000000000002710000004
 
 fields:
     OP_RETURN head:
         6a : OP_RETURN(0x6a)
-        3c : data len(60)
+        3d : data len(61)
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
@@ -1170,6 +1221,7 @@ fields:
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
         0000000000002710 : out_amount(10000)
         0000:times(0)
+        04:chain_id(4)
 ```
 
 ### swap libra sgd - start
@@ -1223,15 +1275,20 @@ btc swap libra token(sgd) request
   <td>0</td>
   <td>retry swap violas btc token number of times</td>
  </tr>
+ <tr>
+  <td><strong>chain_id</strong></td>
+  <td>4</td>
+  <td>want to mapping violas chain id</td>
+ </tr>
 </table>
 
 ```
-hex-Vstr: 6a3c76696f6c617300035020c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-Vstr: 6a3c76696f6c617300035020c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb20000000000002710000004
 
 fields:
     OP_RETURN head:
         6a : OP_RETURN(0x6a)
-        3c : data len(60)
+        3d : data len(61)
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
@@ -1241,6 +1298,7 @@ fields:
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
         0000000000002710 : out_amount(10000)
         0000:times(0)
+        04:chain_id(4)
 ```
 
 ### swap libra gbp - start
@@ -1294,15 +1352,20 @@ btc swap libra token(gbp) request
   <td>0</td>
   <td>retry swap violas btc token number of times</td>
  </tr>
+ <tr>
+  <td><strong>chain_id</strong></td>
+  <td>4</td>
+  <td>want to mapping violas chain id</td>
+ </tr>
 </table>
 
 ```
-hex-str: 6a3c76696f6c617300035030c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb200000000000027100000
+hex-str: 6a3c76696f6c617300035030c91806cabcd5b2b5fa25ae1c50bed3c600000004b40537b6524689a4f870c46d6a5d901b5ac1fdb20000000000002710000004
 
 fields:
     OP_RETURN head:
         6a : OP_RETURN(0x6a)
-        3c : data len(60)
+        3d : data len(61)
     payload datas:
         76696f6c6173 : mark(violas)
         0003 : version(0x0003)
@@ -1312,6 +1375,7 @@ fields:
         524689a4f870c46d6a5d901b5ac1fdb2 : module_address
         0000000000002710 : out_amount(10000)
         0000:times(0)
+        04:chain_id(4)
 ```
 
 ### swap - cancel(no-use)
@@ -1361,6 +1425,9 @@ Attributes refer to [mapping - stop](#mapping---stop)
 
 
 # version list
+## v1.5.0
+  - modified [mapping-start](#mapping---start): added "chain_id" for format alignment
+
 ## v1.4.2
   - modified [mapping-start](#mapping---start): added "out_amount" and "times" for format alignment
 
