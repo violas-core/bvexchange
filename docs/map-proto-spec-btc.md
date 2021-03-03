@@ -762,7 +762,7 @@ fields:
         76696f6c617300 : mark_name(violas + '\0')
 ``` 
 
-### swap violas vlsusd - start
+### vlsusd - start
 
 **Description**
 
@@ -839,7 +839,7 @@ fields:
         04: chain_id(4)
 ```
 
-### swap violas vlseur - start
+### vlseur - start
 
 **Description**
 
@@ -916,7 +916,7 @@ fields:
         04 : chain_id(4)
 ```
 
-### swap violas vlssgd - start
+### vlssgd - start
 
 **Description**
 
@@ -993,7 +993,7 @@ fields:
         04 : chain_id(4)
 ```
 
-### swap violas vlsgbp - start
+### vlsgbp - start
 
 **Description**
 
@@ -1070,7 +1070,7 @@ fields:
         04 : chain_id(4)
 ```
 
-### swap libra usd - start
+### librausd - start
 
 **Description**
 
@@ -1147,7 +1147,7 @@ fields:
         04:chain_id(4)
 ```
 
-### swap libra eur - start
+### libraeur - start
 
 **Description**
 
@@ -1224,7 +1224,7 @@ fields:
         04:chain_id(4)
 ```
 
-### swap libra sgd - start
+### librasgd - start
 
 **Description**
 
@@ -1301,7 +1301,7 @@ fields:
         04:chain_id(4)
 ```
 
-### swap libra gbp - start
+### libragbp - start
 
 **Description**
 
@@ -1427,6 +1427,7 @@ Attributes refer to [mapping - stop](#mapping---stop)
 # version list
 ## v1.5.0
   - modified [mapping-start](#mapping---start): added "chain_id" for format alignment
+  - modified [swap-start] : added "chain_id" for format alignment
 
 ## v1.4.2
   - modified [mapping-start](#mapping---start): added "out_amount" and "times" for format alignment
