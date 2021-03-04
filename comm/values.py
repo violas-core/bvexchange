@@ -8,7 +8,7 @@ name="values"
 COINS = 1000000  # map to satoshi/100
 MIN_EST_GAS = 1000 * COINS / 100000000  #estimate min gas value(satoshi), check wallet address's balance is enough 
 
-PROJECT_NAME        = "bridge"
+PROJECT_NAME        = "violasbridge"
 EX_TYPE_PROOF       = "proof"
 EX_TYPE_PROOF_BASE  = "proofbase"
 EX_TYPE_MARK        = "mark"

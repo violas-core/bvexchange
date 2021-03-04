@@ -15,16 +15,19 @@ import comm
 import comm.error
 import comm.result
 import comm.values
+import asyncio
 from comm.result import result, parse_except
 from comm.error import error
 from comm.functions import split_full_address
-from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
-#from .models import BtcRpc
 from baseobject import baseobject
 from enum import Enum
 from btc.violasproxy import violasproxy
 import analysis.parse_transaction as ptran
 from comm.values import DECIMAL_BTC
+from bitcoinrpc.bitcoin_rpc import (
+        BitcoinRPC
+        )
+from dataproof import dataproof
 
 #module name
 name="bclient"
@@ -33,6 +36,23 @@ name="bclient"
 
 COINS = 1_0000_0000
 class btcclient(baseobject):
+
+    class BitcoinRPCProxy:
+        def __init__(self, btc_rpc):
+            self.__btc_rpc = btc_rpc
+            self.__loop = dataproof.configs("btc_client_loop")
+            asyncio.set_event_loop(self.__loop)
+
+        def __del__(self):
+            self.__loop.run_until_complete(self.__btc_rpc.client.aclose())
+            pass
+
+        def __getattr__(self, name):
+            self.__name = name
+            return self
+
+        def __call__(self, *args, **kwargs):
+            return self.__loop.run_until_complete(self.__btc_rpc.acall(self.__name, list(args), **kwargs))
 
     class transaction(object):
         class codetype(Enum):
@@ -80,11 +100,11 @@ class btcclient(baseobject):
             self.__host = btc_conn.get("host")
             self.__port = btc_conn.get("port")
             self.__domain = btc_conn.get("domain")
-            server = btc_conn.get("server", "btc")
+            self.__server = btc_conn.get("server", "btc")
 
         self._logger.debug("connect btc server(host={self.__host}, port={self.__port})")
-        if server == "btc":
-            self.__rpc_connection = AuthServiceProxy(self.__btc_url%(self.__user, self.__password, self.__host, self.__port))
+        if self.__server == "btc":
+            self.__rpc_connection = self.BitcoinRPCProxy(BitcoinRPC(self.__rpcip, self.__rpcport, self.__rpcuser, self.__rpcpassword))
         else:
             self.__rpc_connection = violasproxy(name, self.__host, self.__port, self.__user, self.__password, self.__domain)
         self._logger.debug(f"connection succeed.")

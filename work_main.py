@@ -1017,8 +1017,6 @@ def list_valid_mods():
     return valid_mods
 
 def run(mods):
-    stmanage.reset()
-    
     
     valid_mods = list_valid_mods()
     for mod in mods:
