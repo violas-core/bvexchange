@@ -19,7 +19,6 @@ from comm.result import result
 from comm.error import error
 from comm.parseargs import parseargs
 from comm.functions import json_print
-from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from btc.btcclient import btcclient
 from btc.btcwallet import btcwallet
 from dataproof import dataproof
