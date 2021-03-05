@@ -30,10 +30,6 @@ from ethopt.ethclient import (
 from btc.btcclient import btcclient
 from btc.btcwallet import btcwallet
 from vlsopt.violasproof import violasproof
-from bitcoinrpc.authproxy import (
-        AuthServiceProxy, 
-        JSONRPCException
-        )
 from baseobject import baseobject
 from enum import Enum
 from vrequest.request_client import requestclient

@@ -34,7 +34,6 @@ from db.dblocal import dblocal as localdb
 from db.dbvfilter import dbvfilter
 from db.dbvproof import dbvproof
 from db.dbvbase import dbvbase
-from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 from baseobject import baseobject
 from vlsopt.violasclient import violasclient, violaswallet
