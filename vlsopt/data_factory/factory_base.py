@@ -37,16 +37,17 @@ class factory_base:
         self.__default_output = {}
 
     def set_fields(self, fields):
-        self.__fields = fields
+        self.clear_fields()
+        for field in fields: self.__fields.update({field.name : field})
 
     def append_fields(self, key, path, callback = None):
-        self.__fields.append(self.field(key , path, callback))
+        self.__fields.update({key : self.field(key , path, callback)})
 
     def extend_fields(self, fields : typing.List[field]):
-        self.__fields.extend(fields)
+        for field in fields: self.__fields.update({field.name : field})
 
     def clear_fields(self):
-        self.__fields = []
+        self.__fields = {}
 
     def append_default_output(self, key, value):
         self.__default_output.update({key:value})
@@ -90,15 +91,16 @@ class factory_base:
 
     def to_json(self):
         output = dict(self.__default_output)
-        datas = {field.name: field.parse(self.get_attr_with_path(field.path)) for field in self.__fields}
+        datas = {field.name: field.parse(self.get_attr_with_path(field.path)) for key, field in self.__fields.items()}
         output.update(datas)
         return output
         
     def get_field(self, name):
-        return self.__fields[name]
+        return self.__fields.get(name)
 
     def get(name, default = None):
-        return self.__fields.get(name, default)
+        field = self.get_field(name)
+        return field if field else default
 
     @staticmethod
     def parse_list(datas):
