@@ -22,7 +22,6 @@ from tools import comm_funs
 from comm.result import result, parse_except
 from comm.error import error
 from db.dbb2v import dbb2v
-from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from enum import Enum
 from baseobject import baseobject
 from vlsopt.violasclient import violasclient, violaswallet
