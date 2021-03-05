@@ -44,7 +44,7 @@ logger = log.logger.getLogger(mod_name)
 @app.route('/')
 def main():
     try:
-        stmanage.set_conf_env_default()
+        stmanage.set_conf_env("./bvexchange.toml")
         args    = request.args
         opt     = args.get("opt")
         chain   = args.get("chain")
