@@ -2,37 +2,38 @@
 btc violas token exchange
 
 ## depends
-####use bvlscore[discard] or violaslayer
+####use bitcoin >= 0.18 or violaslayer
 ##### btc opt
-bvlscore: [https://github.com/palliums-developers/bvlscore.git]
-violas nodes:[]
-version:v0.5.0
+[bitcoin](https://github.com/bitcoin/bitcoin/tree/0.20)
+violas nodes
+[violaslayer](https://github.com/palliums-developers/violaslayer)
 
 violaslayer:[https://github.com/palliums-developers/violaslayer]
 
 ##### violas or libra opt
 violas-client: [https://github.com/palliums-developers/violas-client.git]
-version:v0.9.x
+version:v0.30+
 
-## To run
+## To run (manual)
 git clone https://github.com/palliums-developers/bvexchange
 cd bvexchnge
-./redis_start.sh
-./bvmanage.py --mod "all" :all  vfilter vproof v2b b2v ...
+git submodule init
+git submodule update
+./bvworkspace.sh
+./bvmanage.py --conf ./bvexchange.toml --mod "all" ...
 
 ## Ubuntu
 ##Build requirements
-sudo apt install python3.6 sqlite3 redis-server python3
-python3 install python3.6-dev
-pip3 install python-bitcoinrpc sqlalchemy redis5.0.7
-python3 -m pip install web3
+sudo apt install python3.8 sqlite3 libsqlite3-dev redis
+sudo python3 -m pip install bitcoinrpc sqlalchemy redis web3 sqlalchemy flask requests sqlite3 python3.8-dev gunicorn
 
+## or 
 cd violas-client/
 pip3 install -r requirements.txt
 
 git clone https://github.com/palliums-developers/bvexchange.git
 cd bvexchange
-./bvexchnge.py  or python3 bvexchange.py
+sudo ./bvmanage.py --conf ./bvexchange.toml --mod "all"
 
 # catalog
 ### bvmanage.py
@@ -90,13 +91,14 @@ cd bvexchange
     violas chain init   
 
 ### webserver
-    transaction record webserver(flask)
+    transaction record and address info webserver(flask)
     
 ####frame: nginx + gunicorn + flask
 ##### install
     install gunicorn: apt install gunicorn
     install flask: apt install flask==1.1.1
     install nginx: apt install nginx
+
 ##### config
 ###### nginx: 
     cp  violas_tranrecord  /etc/nginx/sites-available
