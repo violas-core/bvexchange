@@ -98,7 +98,6 @@ class diemproxy(jsonrpc.Client):
 
     def __init_matedata(self):
         for key, value in self.get_metadata().to_json().items():
-            print(f"key = {key}, value = {value}")
             setattr(self, key, value)
 
 
@@ -178,7 +177,7 @@ class diemproxy(jsonrpc.Client):
             add_all_currencies = False,
             initial_balance: int = 10_000_000_000, 
             gas_currenty = None,
-            ,) -> LocalAccount:
+            ) -> LocalAccount:
         parent_vasp = self.convert_to_diem_account(parent_vasp)
         parent_vasp.submit_and_wait_for_txn(
             self,

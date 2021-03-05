@@ -603,13 +603,13 @@ def signal_stop(signal, frame):
 def work_continue():
     return _work_continue
 
-def init_signal():
+def setup():
     signal.signal(signal.SIGINT, signal_stop)
     signal.signal(signal.SIGTSTP, signal_stop)
     signal.signal(signal.SIGTERM, signal_stop)
 
 if __name__ == "__main__":
-    init_signal()
+    setup()
     pa = parseargs(globals())
     pa.test(sys.argv)
 

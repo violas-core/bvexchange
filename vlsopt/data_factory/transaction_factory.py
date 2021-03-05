@@ -67,8 +67,7 @@ class transaction_factory(factory_base):
         self.__init_show_fields()
 
     def __init_show_fields(self):
-        global tran_fields
-        self.set_fields(tran_fields)
+        self.set_fields(self.tran_fields)
 
         default_outputs = {"state": "not support",
                 "events_len" : len(self.events)}
