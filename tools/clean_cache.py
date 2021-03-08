@@ -91,10 +91,6 @@ def main(argc, argv):
     pargs = parseargs()
     try:
         logger.debug("start manage.main")
-        #--conf must be first
-        if stmanage.get_conf_env() is None:
-            stmanage.set_conf_env_default() 
-
         init_args(pargs)
         pargs.show_help(argv)
         opts, err_args = pargs.getopt(argv)
@@ -121,7 +117,7 @@ def main(argc, argv):
             stmanage.set_conf_env(arg)
         elif pargs.is_matched(opt, ["help"]):
             init_args(pargs)
-            pargs.show_help(argv)
+            pargs.show_args()
             return
         elif pargs.is_matched(opt, ["exclude"]):
             pargs.exit_check_opt_arg_min(opt, arg, 1)

@@ -148,7 +148,7 @@ def run(argc, argv):
         logger.debug("start violas.main")
         #--conf must be first
         if stmanage.get_conf_env() is None:
-            stmanage.set_conf_env("bvexchange.toml") 
+            stmanage.set_conf_env("./bvexchange.toml") 
 
         pargs = parseargs()
         init_args(pargs)
