@@ -214,6 +214,9 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             stmanage.set_conf_env(arg_list[0])
+        elif pargs.is_matched(opt, ["help"]):
+            pargs.show_args()
+            return
         elif pargs.is_matched(opt, ["wallet"]):
             pargs.exit_check_opt_arg(opt, arg, 1)
             dataproof.wallets.update_wallet("btc", arg_list[0])
