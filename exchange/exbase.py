@@ -767,17 +767,17 @@ class exbase(baseobject):
                         if ret.state != error.SUCCEED:
                             self._logger.error(ret.message)
 
-                #get cancel transaction, this version not support
-                self._logger.debug(f"start exchange(data type: cancel), datas from violas server.receiver={receiver}")
-                ret = self.pserver.get_transactions_for_cancel(receiver, self.dtype, 0, excluded = None)
-                self._logger.debug(f"will execute transaction(cancel) count: {len(ret.datas)}")
-                if ret.state == error.SUCCEED and len(ret.datas) > 0:
-                    for data in ret.datas:
-                        if not self.work() :
-                            break
-                        ret = self.exec_refund(data, from_sender)
-                        if ret.state != error.SUCCEED:
-                            self._logger.error(ret.message)
+                ##get cancel transaction, this version not support
+                #self._logger.debug(f"start exchange(data type: cancel), datas from violas server.receiver={receiver}")
+                #ret = self.pserver.get_transactions_for_cancel(receiver, self.dtype, 0, excluded = None)
+                #self._logger.debug(f"will execute transaction(cancel) count: {len(ret.datas)}")
+                #if ret.state == error.SUCCEED and len(ret.datas) > 0:
+                #    for data in ret.datas:
+                #        if not self.work() :
+                #            break
+                #        ret = self.exec_refund(data, from_sender)
+                #        if ret.state != error.SUCCEED:
+                #            self._logger.error(ret.message)
     
             #append recover(> threshold) funds(receiver and combine account) to DD account
             self._logger.debug(f"**************************(return funds exceeding the threshold????)********************************** 4/5")

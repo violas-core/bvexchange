@@ -44,8 +44,6 @@ VLSMPROOF_DATAS_NAME = "vmpdatas"
 VLSMPROOF_STATE_NAME = "vmpstate"
 contract_codes = {
         "erc20" : {"abi":erc20_std_abi.ABI, "bytecode":erc20_std_abi.BYTECODE, "token_type": "erc20"},
-        #"usdt" : {"abi":usdt_abi.ABI, "bytecode":usdt_abi.BYTECODE, "token_type": "erc20", "address": usdt_abi.ADDRESS, "decimals": 6},
-        #"wbtc" : {"abi":wbtc_abi.ABI, "bytecode":wbtc_abi.BYTECODE, "token_type": "erc20", "address": wbtc_abi.ADDRESS, "decimals": 8},
         VLSMPROOF_MAIN_NAME: {"abi": vmp_main_abi.ABI, "bytecode": vmp_main_abi.BYTECODE, "token_type": "main", "address":vmp_main_abi.ADDRESS},
         VLSMPROOF_DATAS_NAME: {"abi":vmp_datas_abi.ABI, "bytecode": vmp_datas_abi.BYTECODE, "token_type": "datas", "address":vmp_datas_abi.ADDRESS},
         VLSMPROOF_STATE_NAME: {"abi":vmp_state_abi.ABI, "bytecode": vmp_state_abi.BYTECODE, "token_type": "state", "address":vmp_state_abi.ADDRESS},
