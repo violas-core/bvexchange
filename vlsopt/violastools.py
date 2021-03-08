@@ -509,16 +509,17 @@ def run(argc, argv):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             chain = arg_list[0]
+        elif pargs.is_matched(opt, ["help"]):
+            pargs.show_args()
+            return
         elif pargs.is_matched(opt, ["conf"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             stmanage.set_conf_env(arg_list[0])
         elif pargs.is_matched(opt, ["wallet"]):
-            if len(arg_list) != 1:
-                pargs.exit_error_opt(opt)
+            pargs.exit_check_opt_arg(opt, arg, 1)
             dataproof.wallets.update_wallet(chain, arg_list[0])
         elif pargs.has_callback(opt):
-            stmanage.reset()
             pargs.callback(opt, *arg_list)
         else:
             raise Exception(f"not found matched opt: {opt}")
