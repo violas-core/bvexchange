@@ -28,6 +28,7 @@ from vlsopt.violasproof import violasproof
 from ethopt.ethclient import ethclient, ethwallet
 from baseobject import baseobject
 from enum import Enum
+from flask import render_template
 
 #module self.name
 name="faucet"
@@ -105,6 +106,20 @@ def mint_eth_coin(token_id, receiver, amount = 100):
     return ret.to_json()
 
 
+@app.route("/hello")
+@app.route("/hello/<name>")
+def hello(name = None):
+    show_request()
+    return render_template("hello.html", name = name)
+
+with app.test_request_context() as trc:
+    print(url_for("hello"))
+    print(url_for("hello", name = "jiuge"))
+
+def show_request():
+    print(f'''
+    url_root: {request.url_root}
+          ''')
 
 if __name__ == "__main__":
     from werkzeug.contrib.fixers import ProxyFix
