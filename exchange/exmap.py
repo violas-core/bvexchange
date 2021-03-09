@@ -137,7 +137,7 @@ class exmap(exbase):
                 self.use_module(state, localdb.state.FILLSUCCEED):
 
             #mint LBRXXX to sender(type = LBRXXX), or check sender's token amount is enough
-            self._logger.debug(f"exec_exchange-1. start fill_address_token {map_token_id} to {map_sender} amount = {map_amount}...")
+            self._logger.debug(f"exec_exchange-1. start fill_address_token {map_token_id} to {self.get_address_from_account(map_sender)} amount = {map_amount}...")
             ret = self.fill_address_token[self.map_chain](map_sender, map_token_id, map_amount, tran_id)
             if ret.state != error.SUCCEED:
                 self.update_localdb_state_with_check(tran_id, localdb.state.FILLFAILED, \
