@@ -166,7 +166,7 @@ class exfbase(baseobject):
 
                 return result(error.SUCCEED, datas = sender_account)
 
-            return result(error.FAILED, f"amount({amount}){token_id} is too big" if len(senders) > 0 else "not found sender account " )
+            return result(error.FAILED, f"{senders} amount({amount}){token_id} is too big" if len(senders) > 0 else "not found sender account " )
         except Exception as e:
             ret = parse_except(e)
         return ret
