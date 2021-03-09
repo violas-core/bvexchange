@@ -78,7 +78,7 @@ class baseobject(object):
 
     def check_state_raise(self, result, message):
         if result.state != error.SUCCEED:
-            raise Exception(message)
+            raise Exception(f"{message} error: {result.message}")
 
     def append_property(self, name, value, new = True):
         if new:

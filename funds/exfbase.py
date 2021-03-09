@@ -393,8 +393,8 @@ class exfbase(baseobject):
                         #Reprocessing error logic is different from main logic ----**********----
                         ret = self.get_map_sender_account(chain, token_id, amount)
                         if ret.state != error.SUCCEED:
-                            self._logger.warning(f"not found {chain} {token_id} map sender or request amount is too big, " + 
-                                f"check address and amount({amount})")
+                            self._logger.warning(f"get map sender failed(chain = {chain}  token_id={token_id} amount={amount}). " + 
+                                f"{ret.message}")
                             continue
 
                         map_sender = ret.datas
@@ -502,8 +502,7 @@ class exfbase(baseobject):
                         #get map sender from  senders
                         #if token's amount is too small, not exchange next version
                         ret = self.get_map_sender_account(chain, token_id, amount)
-                        self.check_state_raise(ret, f"not found {chain} {token_id} map sender or request amount is too big, " + 
-                                f"check address({receiver}) and amount({amount})")
+                        self.check_state_raise(ret, f"get map sender failed(chain = {chain}  token_id={token_id} amount={amount}).")
                         map_sender = ret.datas
 
                         self.pserver.set_exec_points(receiver, max(latest_version,version), self.PRE_FIX)
