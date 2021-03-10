@@ -89,6 +89,8 @@ class configdatas(dataproof):
         self.set_default_value("retry_maxtimes", sys.maxsize)
         self.set_default_value("exchange_async", True)
         self.set_default_value("msg_min_version", {})
+        self.set_default_value("gas_token_id", {"violas":"VLS"})
+        self.set_default_value("gas", {"violas": 0})
 
     def __getattr__(self, name):
         print(f"{name}----")

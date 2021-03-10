@@ -66,7 +66,7 @@ class aproofvls(aproofbase):
 
             self._logger.debug(f"new proof: {new_proof}")
             if new_proof:
-                ret  = self._dbclient.key_is_exists(version)
+                ret  = self._dbclient.key_is_exists(tran_id)
                 if ret.state != error.SUCCEED:
                     return ret
                 found = ret.datas
