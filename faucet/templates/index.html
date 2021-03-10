@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html >
+    <head >
+        <meta charset="utf-8">
+        <title >faucet</title>
+        <link type="text/css" rel="stylesheet" href={{ url_for('static', filename='css/index.css') }}> </link> 
+        <style>
+            body {
+                bgcolor : "black";
+                text-align : center;
+                background-color:DarkSlateGray;
+            }
+            .desc {
+                text-align : center;
+                height : 150px;
+                font-size : 30px;
+            }
+            .main{
+                text-align : center;
+                height : 50px;
+            }
+        </style>
+
+    </head>
+    <body background="">
+        <form class = "info">
+            <p>...</p>
+        </form>
+        <form class = "desc">
+            <p>erc20 token on ethereum chain</p>
+        </form>
+        <form action="/faucet/" method="post" class="main">
+            <p><input name="address" size = 66 value="{{ address }}"><button type="subbmit">submit</button></p>
+        </form>
+        <form class = "message" >
+            {% if ret.get("state") == "SUCCEED" %}
+            {% if ret.get("token_id") %}
+            <p >token_id        : {{ ret.get("token_id", "")}} </p>
+            {% endif %}
+            {% if ret.get("curent_amount") %}
+            <p >account amount  : {{ ret.get("curent_amount", "")}} </p>
+            {% endif %}
+            {% if ret.get("faucet_amount")%}
+            <p >faucet  amount  : {{ ret.get("faucet_amount", "")}} </p>
+            {% endif %}
+            {% else %}
+            <p style="color:red">{{ ret.get("message")}} </p>
+            {% endif %}
+        </form>
+    </body>
+</html>
