@@ -21,6 +21,9 @@ from comm.values import (
         msgtype
         )
 
+form dataproof import (
+        dataproof
+        )
 class exmap(exbase):    
     def __init__(self, name, 
             dtype, 
