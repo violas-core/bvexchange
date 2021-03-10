@@ -132,4 +132,5 @@ def main(argc, argv):
     run(run_mods)
     return
 if __name__ == "__main__":
+    stmanage.set_conf_env("../bvexchange.toml")
     main(len(sys.argv) - 1, sys.argv[1:])
