@@ -21,7 +21,7 @@ from comm.values import (
         msgtype
         )
 
-form dataproof import (
+from dataproof import (
         dataproof
         )
 class exmap(exbase):    
