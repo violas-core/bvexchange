@@ -59,7 +59,9 @@ class aproofvls(aproofbase):
             self._logger.debug(f"start update_proof_info tran info: {tran_info}")
             version = tran_info.get("version", None)
 
-            tran_id = None
+            #create tran id
+            tran_id = self.get_tran_id(tran_info)
+
             new_proofstate = self.proofstate_name_to_value(tran_info.get("state", ""))
 
             new_proof = new_proofstate == self.proofstate.START
@@ -70,9 +72,6 @@ class aproofvls(aproofbase):
                 if ret.state != error.SUCCEED:
                     return ret
                 found = ret.datas
-
-                #create tran id
-                tran_id = self.get_tran_id(tran_info)
 
                 #found key = version info, db has old datas , must be flush db?
                 if found: 
