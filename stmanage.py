@@ -203,6 +203,8 @@ def get_permission_request_funds_address(full = False):
     addrs.extend(external_request)
     external_request = get_request_funds_address_list("liq", False)
     addrs.extend(external_request)
+    external_request = get_request_funds_address_list("swp", False)
+    addrs.extend(external_request)
     return set(addrs)
 
 def get_address_info(atype):
