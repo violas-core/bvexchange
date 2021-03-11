@@ -35,7 +35,6 @@ name="faucet"
 @app.route('/')
 def main():
     try:
-        stmanage.set_conf_env("../bvexchange.toml")
         args    = request.args
         token   = args.get("token", "usdt")
         receiver = args.get("receiver")
@@ -99,26 +98,43 @@ def mint_eth_coin(token_id, receiver, amount = 100):
 
     ret = client.send_coin_erc20(account, receiver, amount * decimals, token_id)
     assert ret.state == error.SUCCEED, ret.message
+    message = ret.message
     
 
+    ret = client.get_balance(receiver, token_id, None)
+    current_amount = ret.datas
     ret = client.get_balance(faucet_address, token_id, None)
-    ret.message = f"faucet account amount: {ret.datas / decimals}({token_id})"
-    return ret.to_json()
+    faucet_amount = ret.datas
+    return {
+            "token_id" : token_id, 
+            "curent_amount":current_amount / decimals,
+            "faucet_amount":faucet_amount / decimals,
+            "chain_id":stmanage.get_chain_id(),
+            "state": "SUCCEED",
+            "message" : message
+            }
 
 
-@app.route("/hello")
-@app.route("/hello/<name>")
-def hello(name = None):
+@app.route("/faucet/", methods = ['GET','POST'])
+def faucet():
     show_request()
-    return render_template("hello.html", name = name)
+    address = ""
+    message = "here show message"
+    ret = {"state" : "SUCCEED", "message": message}
+    if request.method == "POST":
+
+        stmanage.set_conf_env("../bvexchange.toml")
+        address = request.form['address']
+        ret = mint_eth_coin("usdt", address)
+    return render_template("index.html", address = address, ret = ret)
 
 with app.test_request_context() as trc:
-    print(url_for("hello"))
-    print(url_for("hello", name = "jiuge"))
+    print(url_for("faucet"))
 
 def show_request():
     print(f'''
     url_root: {request.url_root}
+    args    : {request.args}
           ''')
 
 if __name__ == "__main__":
