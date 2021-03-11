@@ -73,6 +73,8 @@ class factory_base:
         if name.startswith("__"):
             return self.__data
 
+        if not self.__data:
+            return {}
         return getattr(self.__data, name)
 
     def __repr__(self):

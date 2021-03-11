@@ -115,6 +115,20 @@ def mint_eth_coin(token_id, receiver, amount = 100):
             }
 
 
+def mint_diem_coin(amount, currency_code, auth_key, return_txns = True, is_designated_dealer = True):
+    #curl -X POST http://faucet.testnet.diem.com/mint\?amount\=1000000\&currency_code\=XUS\&auth_key\=459c77a38803bd53f3adee52703810e3a74fd7c46952c497e75afb0a7932586d\&return_txns\=true
+    return_txns = "true" if return_txns else "false" 
+    is_designated_dealer = "true" if is_designated_dealer else "false"
+    url = f"http://faucet.testnet.diem.com/mint?amount={amount}&currency_code={currency_code}&auth_key={auth_key}&return_txns={return_txns}&is_designated_dealer={is_designated_dealer}"
+    response = requests.get(url)
+    if response is not None:
+        jret = json.loads(response.text)
+        return {
+                "state": "SUCCEED",
+                "message": jret["message"]
+                }
+    return {"state": "FAILED"}
+
 @app.route("/faucet/", methods = ['GET','POST'])
 def faucet():
     show_request()
