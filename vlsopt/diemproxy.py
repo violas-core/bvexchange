@@ -162,13 +162,23 @@ class diemproxy(jsonrpc.Client):
     
     def gen_account(self, account, dd_account: bool = False, base_url: typing.Optional[str] = None):
         """generates a Testnet onchain account from violas account"""
-    
         account = self.convert_to_diem_account(account)
         account = Faucet(self).gen_account(account, dd_account=dd_account)
         if base_url:
             account.rotate_dual_attestation_info(client, base_url)
         return account
     
+    def create_dd_account(self, address, auth_key):
+        """generates a Testnet onchain account"""
+        return Faucet(self).gen_account(f"{address}{auth_key}", dd_account = True)
+
+    def create_parent_vasp_account(self, address, auth_key, currency_code = TEST_CURRENCY_CODE, amount = 10_00_0000):
+        """generates a Testnet onchain account"""
+        return Faucet(self).gen_account(f"{address}{auth_key}", dd_account = True)
+
+    def mint_coin(receiver_address, micro_coins, currency_code, currency_module_address, auth_key_prefix, is_blocking):
+        Faucet(self).mint(f"{receiver_address}{auth_key_prefix}", micro_coins, currency_code)
+
     def create_child_vasp_account(self, 
             parent_vasp,
             child_vasp_address,

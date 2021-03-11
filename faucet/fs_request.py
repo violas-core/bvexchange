@@ -115,7 +115,7 @@ def mint_eth_coin(token_id, receiver, amount = 100):
             }
 
 
-def mint_diem_coin(amount, currency_code, auth_key, return_txns = True, is_designated_dealer = True):
+def mint_diem_coin(currency_code, auth_key, amount = 100_00_0000, return_txns = True, is_designated_dealer = False):
     #curl -X POST http://faucet.testnet.diem.com/mint\?amount\=1000000\&currency_code\=XUS\&auth_key\=459c77a38803bd53f3adee52703810e3a74fd7c46952c497e75afb0a7932586d\&return_txns\=true
     return_txns = "true" if return_txns else "false" 
     is_designated_dealer = "true" if is_designated_dealer else "false"
@@ -136,10 +136,15 @@ def faucet():
     message = "here show message"
     ret = {"state" : "SUCCEED", "message": message}
     if request.method == "POST":
-
         stmanage.set_conf_env("../bvexchange.toml")
         address = request.form['address']
-        ret = mint_eth_coin("usdt", address)
+        chain = request.form['chain']
+        if chain == "ethereum":
+            ret = mint_eth_coin("usdt", address)
+        elif chain == "diem":
+            ret = mint_diem_coin("XDX", receiver)
+        else:
+            ret = {"state" : "FAILED", "message": "not found chain name"}
     return render_template("index.html", address = address, ret = ret)
 
 with app.test_request_context() as trc:

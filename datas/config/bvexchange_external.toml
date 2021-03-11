@@ -422,6 +422,11 @@ exchange_async = true
         type = "liq"
         chain = "violas"
 
+    [[address_list.funds]]
+        address = "716abbc60eb9158cf1909ad23fae8475"
+        type = "swp"
+        chain = "violas"
+
     #the address of permission request funds from funds-server type = liq/map
     [[address_list.msg]]
         address = "0000000000000000004252474255524e"
