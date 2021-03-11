@@ -3,7 +3,6 @@
     <head >
         <meta charset="utf-8">
         <title >faucet</title>
-        <link type="text/css" rel="stylesheet" href={{ url_for('static', filename='css/index.css') }}> </link> 
         <style>
             body {
                 bgcolor : "black";
@@ -19,6 +18,11 @@
                 text-align : center;
                 height : 50px;
             }
+            message{
+                text-align : left;
+                width: 150px;
+                height : 50px;
+            }
         </style>
 
     </head>
@@ -27,10 +31,14 @@
             <p>...</p>
         </form>
         <form class = "desc">
-            <p>erc20 token on ethereum chain</p>
+            <p>token on ethereum/diem chain </p>
         </form>
         <form action="/faucet/" method="post" class="main">
-            <p><input name="address" size = 66 value="{{ address }}"><button type="subbmit">submit</button></p>
+            <p><input name = "chain" list="chain_names" size = 10 value="{{chain}}"><input name="address" size = 75 value="{{ address }}"><button type="subbmit">submit</button></p>
+            <datalist id = "chain_names">
+                <option value = "ethereum"></option>
+                <option value = "diem"></option>
+            </datalist>
         </form>
         <form class = "message" >
             {% if ret.get("state") == "SUCCEED" %}
@@ -43,6 +51,7 @@
             {% if ret.get("faucet_amount")%}
             <p >faucet  amount  : {{ ret.get("faucet_amount", "")}} </p>
             {% endif %}
+            <p>{{ ret.get("message")}} </p>
             {% else %}
             <p style="color:red">{{ ret.get("message")}} </p>
             {% endif %}

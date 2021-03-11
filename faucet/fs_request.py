@@ -48,6 +48,8 @@ def main():
         ret = parse_except(e)
     return ret.to_json()
 
+def get_violas_client(chain):
+    return violasclient(name, stmanage.get_target_nodes(chain), chain)
 
 def get_ethclient(token = "usdt", chain = "ethereum"):
 
@@ -115,45 +117,62 @@ def mint_eth_coin(token_id, receiver, amount = 100):
             }
 
 
-def mint_diem_coin(currency_code, auth_key, amount = 100_00_0000, return_txns = True, is_designated_dealer = False):
+def mint_diem_coin(currency_code, auth_key, amount = 100_00_0000, return_txns = False, is_designated_dealer = False):
     #curl -X POST http://faucet.testnet.diem.com/mint\?amount\=1000000\&currency_code\=XUS\&auth_key\=459c77a38803bd53f3adee52703810e3a74fd7c46952c497e75afb0a7932586d\&return_txns\=true
     return_txns = "true" if return_txns else "false" 
-    is_designated_dealer = "true" if is_designated_dealer else "false"
-    url = f"http://faucet.testnet.diem.com/mint?amount={amount}&currency_code={currency_code}&auth_key={auth_key}&return_txns={return_txns}&is_designated_dealer={is_designated_dealer}"
-    response = requests.get(url)
+    response = requests.post("http://faucet.testnet.diem.com/mint", 
+            params={
+                "amount": amount,
+                "auth_key": auth_key,
+                "currency_code": currency_code,
+                "return_txns": return_txns,
+                "is_designated_dealer": "true" if is_designated_dealer else "false",
+            },
+            )
+    response.raise_for_status()
     if response is not None:
-        jret = json.loads(response.text)
+        client = get_violas_client("diem")
+        ret = client.get_balance(auth_key, currency_code)
+        current_amount = ret.datas
+        ret = client.get_balance("000000000000000000000000000000dd", currency_code)
+        faucet_amount = ret.datas
+        decimals = client.get_decimals()
         return {
                 "state": "SUCCEED",
-                "message": jret["message"]
+                "token_id":currency_code,
+                "curent_amount":current_amount / decimals,
+                "faucet_amount":faucet_amount / decimals,
+                "message": response.text
                 }
-    return {"state": "FAILED"}
+        return {"state": "FAILED", message:f"mint diem {XUS} failed"}
 
 @app.route("/faucet/", methods = ['GET','POST'])
 def faucet():
     show_request()
     address = ""
-    message = "here show message"
+    message = ""
     ret = {"state" : "SUCCEED", "message": message}
+    stmanage.set_conf_env("../bvexchange.toml")
+    chain = ""
     if request.method == "POST":
-        stmanage.set_conf_env("../bvexchange.toml")
         address = request.form['address']
         chain = request.form['chain']
+        print(f"chain={chain} address = {address}")
         if chain == "ethereum":
             ret = mint_eth_coin("usdt", address)
         elif chain == "diem":
-            ret = mint_diem_coin("XDX", receiver)
+            ret = mint_diem_coin("XUS", address)
         else:
             ret = {"state" : "FAILED", "message": "not found chain name"}
-    return render_template("index.html", address = address, ret = ret)
+        print(ret)
+    return render_template("index.html", chain = chain, address = address, ret = ret)
 
 with app.test_request_context() as trc:
     print(url_for("faucet"))
 
 def show_request():
     print(f'''
-    url_root: {request.url_root}
-    args    : {request.args}
+    url_root:{request.url_root}
           ''')
 
 if __name__ == "__main__":
