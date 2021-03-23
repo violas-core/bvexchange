@@ -74,9 +74,33 @@ class walletproxy(proxybase):
         return (-1, None)
 
     @staticmethod
-    def get_id_with_chain_id(self, chain_id):
+    def get_id_with_chain_id(chain_id):
         return identifier.HRPS[chain_id]
 
+    @classmethod
+    def decode_address(self, address, chain_id):
+        if address[:2] in ("tm", "td", "pd") and len(address) not in self.ADDRESS_LEN:
+            return identifier.decode_account(address, self.get_id_with_chain_id(chain_id))
+        elif len(address) in self.ADDRESS_LEN:
+            return (address, None)
+        else:
+            raise Exception(f"address {address} is invalid.")
+
+    def __getattr__(self, name):
+        return self
+
+    def __call__(self, *args, **kwargs):
+        return self
+
+    @classmethod
+    def load(self, filename):
+        print("load")
+        return self
+
+    @classmethod
+    def loads(cls, datas):
+        print("loads")
+        return self
 
 class diemproxy(jsonrpc.Client):
     def clientname(self):
@@ -125,7 +149,11 @@ class diemproxy(jsonrpc.Client):
         currencies = self.get_currencies()
         return [currency.code for currency in currencies]
 
+    def decode_address(self, address):
+        return  walletproxy.decode_address(address, self.chain_id)
+
     def get_account_state(self, address):
+        address, subaddr = self.decode_address(address)
         account = self.get_account(address)
         return account_factory(account)
 
@@ -149,6 +177,7 @@ class diemproxy(jsonrpc.Client):
         return [transaction_factory(transaction) for transaction in transactions]
 
     def get_account_transaction(self, address, sequence, include_events = True):
+        address, _= self.decode_address(address)
         transaction = super().get_account_transaction(address, sequence, include_events)
         return transaction_factory(transaction)
 
@@ -157,6 +186,7 @@ class diemproxy(jsonrpc.Client):
         return metadata_factory(data)
 
     def get_account_transactions(self, address, start, limit, include_events = True):
+        address, _= self.decode_address(address)
         transactions = super().get_account_transactions(address, start, limit, include_events)
         return [transaction_factory(transaction) for transaction in transactions]
     

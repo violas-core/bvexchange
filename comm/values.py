@@ -35,6 +35,7 @@ class autoname(enumbase):
 class trantypebase(autoname):
     VIOLAS      = auto()
     LIBRA       = auto()
+    DIEM        = auto()
     BTC         = auto()
     ETHEREUM    = auto()
     SMS         = auto()

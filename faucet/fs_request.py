@@ -168,7 +168,7 @@ def faucet():
     return render_template("index.html", chain = chain, address = address, ret = ret)
 
 with app.test_request_context() as trc:
-    print(url_for("faucet"))
+    print("faucet url %s" % url_for("faucet"))
 
 def show_request():
     print(f'''

@@ -7,6 +7,7 @@ import os
 class proxybase():
 
     ASSIGNMENT = "="
+    DELIMITER = ";"
     wallet_dd_map = {}
     dd_wallet_map = {}
 

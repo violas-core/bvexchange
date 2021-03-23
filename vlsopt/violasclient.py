@@ -29,7 +29,12 @@ from comm.functions import (
         )
 from comm.values import (
         DECIMAL_VIOLAS,
-        VIOLAS_ADDRESS_LEN
+        VIOLAS_ADDRESS_LEN,
+        trantypebase as trantype,
+        )
+
+from dataproof import (
+        dataproof,
         )
 import redis
 
@@ -41,7 +46,7 @@ class violaswallet(baseobject):
     
     def __init__(self, name, wallet_name, chain="violas"):
         assert wallet_name is not None, "wallet_name is None"
-        baseobject.__init__(self, name)
+        baseobject.__init__(self, name, chain = chain)
         self.__wallet = None
         if wallet_name is not None:
             ret = self.__load_wallet(wallet_name, chain)
@@ -57,6 +62,8 @@ class violaswallet(baseobject):
                 from vlsopt.violasproxy import walletproxy
             elif chain in ("libra"):
                 from vlsopt.libraproxy import walletproxy
+            elif chain in ("diem"):
+                from vlsopt.diemproxy import walletproxy
             else:
                 raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas wallet")
 
@@ -71,7 +78,6 @@ class violaswallet(baseobject):
             else:
                 ret = result(error.SUCCEED, "not found wallet file", "")
                 raise Exception(f"not found {self.name()} wallet file({self.__wallet_name})")
-                self.__wallet = walletproxy.new()
 
         except Exception as e:
             ret = parse_except(e)
@@ -172,7 +178,7 @@ class violaswallet(baseobject):
 
     def split_full_address(self, address, auth_key_prefix = None):
         try:
-            (auth, addr) = split_full_address(address, auth_key_prefix)
+            auth, addr = split_full_address(address, auth_key_prefix)
             ret = result(error.SUCCEED, datas = (auth, addr))
         except Exception as e:
             ret = parse_except(e)
@@ -193,6 +199,14 @@ class violaswallet(baseobject):
             ret = parse_except(e)
         return ret
 
+    def __getattr__(self, name):
+        self.__call = getattr(self.__wallet, name)
+        return self.__call
+
+    def __call__(self, *args, **kwargs):
+        #return self.__call(*args, **kwargs)
+        pass
+
 class violasclient(baseobject):
     class role_id(Enum):
         DD_ACCOUNT  = 2
@@ -201,7 +215,7 @@ class violasclient(baseobject):
         UNKOWN      = sys.maxsize
 
     def __init__(self, name, nodes, chain = "violas", use_faucet_file = False):
-        baseobject.__init__(self, name, chain)
+        baseobject.__init__(self, name, chain = chain)
         self.__client = None
         self.__node = None
         if nodes is not None:
@@ -211,6 +225,7 @@ class violasclient(baseobject):
 
     def __del__(self):
         self.disconn_node()
+
 
     def clientname(self):
         return self.__client.clientname()
@@ -224,7 +239,7 @@ class violasclient(baseobject):
                 from vlsopt.violasproxy import violasproxy as clientproxy
             elif chain in ("libra"):
                 from vlsopt.libraproxy import libraproxy as clientproxy
-            elif chain in ("diem"):
+            elif chain in (trantype.DIEM.value):
                 from vlsopt.diemproxy import diemproxy as clientproxy
             else:
                 raise Exception(f"chain name[{chain}] unkown. can't connect libra/violas node")
@@ -314,8 +329,12 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    @output_args
     def split_full_address(self, address, auth_key_prefix = None):
         try:
+            if address and self.chain == trantype.DIEM.value and len(address) not in VIOLAS_ADDRESS_LEN:
+                return result(error.SUCCEED, datas = (None, address))
+
             datas = split_full_address(address, auth_key_prefix)
             ret = result(error.SUCCEED, datas = datas)
         except Exception as e:
@@ -360,6 +379,9 @@ class violasclient(baseobject):
 
             (auth, addr) = self.split_full_address(to_address, auth_key_prefix).datas
             (_, module_addr) = self.split_full_address(module_address).datas
+
+            #set gas_token_id, default : Violas = VLS
+            gas_token_id = gas_token_id if gas_token_id else dataproof.configs("gas_token_id").get(self.chain)
 
             self._logger.debug(f"send_coin(from_account={from_account.address.hex()} to_address={to_address} amount = {amount} token_id = {token_id} module_address={module_address} data = {data} auth_key_prefix = {auth_key_prefix} max_gas_amount = {max_gas_amount}, gas_token_id = {gas_token_id})")
 

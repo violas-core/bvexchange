@@ -170,6 +170,11 @@ class dblocal(baseobject):
             ret = parse_except(e)
         return ret
 
+    def has_info_with_assert(self, tranid):
+        ret = self.has_info(tranid)
+        assert ret.state == error.SUCCEED, f"has_info({tranid}) failed."
+        return ret.datas
+
     def is_target_state(self, tranid, state):
         try:
             filter_tranid = (self.info.tranid==tranid)
@@ -281,6 +286,67 @@ class dblocal(baseobject):
     def flushinfo(self):
         self.__session.execute("delete from info")
 
+    #ext
+    def merge_db_to_rpcparams(self, rpcparams, dbinfos):
+        try:
+            for info in dbinfos:
+                new_data = {
+                        "version":info.version, 
+                        "tran_id":info.tranid, 
+                        "state":info.state, 
+                        "detail":info.detail,
+                        "times":info.times}
+                #server receiver address
+                if info.receiver in rpcparams.keys():
+                    rpcparams[info.receiver].append(new_data)
+                else:
+                    rpcparams[info.receiver] = [new_data]
+    
+            return result(error.SUCCEED, "", rpcparams)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+    
+    def load_record_and_merge(self, rpcparams, state, maxtimes = 999999999):
+        try:
+            ret = self.query_with_state(state, maxtimes)
+            if(ret.state != error.SUCCEED):
+                return ret 
+    
+            ret = self.merge_db_to_rpcparams(rpcparams, ret.datas)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def get_record_from_localdb_with_state(self, states, maxtimes = sys.maxsize):
+        try:
+            rpcparams = {}
+
+            assert states is not None and len(states) > 0, f"args states is invalid."
+
+            for state in states:
+                ret = self.load_record_and_merge(rpcparams, state, maxtimes)
+                if(ret.state != error.SUCCEED):
+                    return ret
+            
+            ret = result(error.SUCCEED, datas = rpcparams)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
+    def format_record_info(self, rpcparams):
+        infos = {}
+        for key, values in rpcparams.items():
+            for value in values:
+                info_key = f"{localdb.state(value.get('state')).name}"
+                if info_key not in infos:
+                    infos.update({info_key : 1})
+                else:
+                    infos[info_key] = infos[info_key] + 1
+        return infos
+
+
+    
 def show_state_count(db, logger):
     ret = db.query_is_start()
     assert ret.state == error.SUCCEED, "query failed."
