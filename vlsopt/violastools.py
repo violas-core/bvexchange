@@ -229,6 +229,13 @@ def get_metadata(version = None):
     print(type(ret.datas))
     json_print(ret.datas.to_json())
 
+def decode_address(address, chain_id = 2):
+    wallet = get_violaswallet()
+    addr, subaddr = wallet.decode_address(address, chain_id)
+    print(f"addr:{addr.to_hex()} subaddr = {subaddr}")
+
+
+
 '''
 *************************************************violas swap oper*******************************************************
 '''
@@ -429,6 +436,7 @@ def init_args(pargs):
     pargs.append("chain", "work chain name(violas/libra/diem, default : violas). must be first argument", True, ["chain=violas"], priority = 10)
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bridge/", True, "toml file", priority = 5)
     pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
+
     #wallet 
     pargs.append(new_account, "new account and save to local wallet.")
     pargs.append(get_account, "show account info.")
@@ -440,6 +448,7 @@ def init_args(pargs):
     pargs.append(human_address, "show human address.")
     pargs.append(get_wallet_address, "get wallet address if address is dd address.")
     pargs.append(sign_message, "signing message.")
+    pargs.append(decode_address, "decode address from identifier.")
 
     #client
     pargs.append(bind_token_id, "bind address to token_id.")

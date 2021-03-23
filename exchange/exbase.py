@@ -253,74 +253,15 @@ class exbase(baseobject):
             ret = parse_except(e)
         return ret
 
-
-    def merge_db_to_rpcparams(self, rpcparams, dbinfos):
-        try:
-            for info in dbinfos:
-                new_data = {
-                        "version":info.version, 
-                        "tran_id":info.tranid, 
-                        "state":info.state, 
-                        "detail":info.detail,
-                        "times":info.times}
-                #server receiver address
-                if info.receiver in rpcparams.keys():
-                    rpcparams[info.receiver].append(new_data)
-                else:
-                    rpcparams[info.receiver] = [new_data]
-    
-            return result(error.SUCCEED, "", rpcparams)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-    
-    def load_record_and_merge(self, rpcparams, state, maxtimes = 999999999):
-        try:
-            ret = self.db.query_with_state(state, maxtimes)
-            if(ret.state != error.SUCCEED):
-                return ret 
-    
-            ret = self.merge_db_to_rpcparams(rpcparams, ret.datas)
-        except Exception as e:
-            ret = parse_except(e)
-        return ret
-
-    def show_load_record_info(self, rpcparams):
-        infos = {}
-        for key, values in rpcparams.items():
-            for value in values:
-                info_key = f"{localdb.state(value.get('state')).name}"
-                if info_key not in infos:
-                    infos.update({info_key : 1})
-                else:
-                    infos[info_key] = infos[info_key] + 1
-        self._logger.debug(f"record info:{infos}")
-
-
     def get_record_from_localdb_with_state(self, states):
         try:
-            rpcparams = {}
-
-            assert states is not None and len(states) > 0, f"args states is invalid."
-            
             ## failed 
             maxtimes = stmanage.get_max_times()
+            ret = self.db.get_record_from_localdb_with_state(states, maxtimes)
 
-            for state in states:
-                ret = self.load_record_and_merge(rpcparams, state, maxtimes)
-                if(ret.state != error.SUCCEED):
-                    return ret
-            
-            ret = result(error.SUCCEED, datas = rpcparams)
         except Exception as e:
             ret = parse_except(e)
         return ret
-
-    def is_end(self, tran_id):
-        return self.pserver.is_end(tran_id)
-
-    def is_stop(self, tran_id):
-        return self.pserver.is_stop(tran_id)
 
     def get_swap_balance(self, version):
         try:
@@ -346,7 +287,7 @@ class exbase(baseobject):
             if ret.state != error.SUCCEED:
                 return ret
             rpcparams = ret.datas
-            self.show_load_record_info(rpcparams)
+            self._logger.debug(f"record info:{self.db.format_record_info(rpcparams)}")
             
             for key in rpcparams.keys():
                 datas = rpcparams.get(key)
@@ -354,11 +295,11 @@ class exbase(baseobject):
                     tran_id = data.get("tran_id")
                     if tran_id is None:
                         continue
-                    ret = self.is_end(tran_id)
+                    ret = self.pserver.is_end(tran_id)
                     if ret.state == error.SUCCEED and ret.datas == True:
                        ret = self.update_localdb_state_with_check(tran_id, localdb.state.COMPLETE, detail = None)
 
-                    ret = self.is_stop(tran_id)
+                    ret = self.psverver.is_stop(tran_id)
                     if ret.state == error.SUCCEED and ret.datas == True:
                        ret = self.update_localdb_state_with_check(tran_id, localdb.state.COMPLETE, detail = None)
 
@@ -379,22 +320,6 @@ class exbase(baseobject):
     def __checks(self):
         return True
     
-    def get_combine_address(self, combine_account, receiver):
-        if combine_account:
-            return self.get_address_from_account(combine_account)
-
-        if receiver:
-            return self.get_address_from_account(receiver)
-        return None
-
-    def get_address_from_account(self, account):
-        if not isinstance(account, str):
-            address = account.address
-            if not isinstance(address, str):
-                address = address.hex()
-        else:
-            address = account
-        return address
 
     def __set_request_funds_account(self, from_sender, map_sender):
         if trantype(self.from_chain) == trantype.VIOLAS:
@@ -517,14 +442,6 @@ class exbase(baseobject):
         return self.check_and_send_get_token(self.ethereum_client, trantype.ETHEREUM.value, \
                 account, token_id, amount, tran_id, gas, gas_token_id)
 
-    def db_data_is_valid(self, data):
-        try:
-            toaddress   = data["receiver"]
-            self._logger.debug(f"check address{toaddress}. len({toaddress}) in {VIOLAS_ADDRESS_LEN}?")
-        except Exception as e:
-            pass
-        return False
-
     def chain_data_is_valid(self, data):
         try:
             state = True
@@ -555,15 +472,14 @@ class exbase(baseobject):
         return True
 
     def has_info(self, tranid):
+        ret = self.db.has_info_with_assert(tranid)
+        return ret.datas
         ret = self.db.has_info(tranid)
         assert ret.state == error.SUCCEED, f"has_info({tranid}) failed."
         if ret.datas == True:
             self._logger.warning(f"found transaction(tran_id = {tranid})) in db(maybe first run {self.dtype}). " + 
                     f"ignore it and process next.")
         return ret.datas
-
-    def use_module(self, state, module_state):
-        return state is None or state.value < module_state.value
 
     def is_target_state(self, tranid, state):
         ret = self.db.is_target_state(tranid, state)

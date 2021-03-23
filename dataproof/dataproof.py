@@ -51,6 +51,7 @@ class walletdatas(dataproof):
     def __init_wallet_info(self):
         self.set_default_value(f"{self.__wallet_key('violas')}", "vwallet")
         self.set_default_value(f"{self.__wallet_key('libra')}", "vwallet")
+        self.set_default_value(f"{self.__wallet_key('diem')}", "vwallet")
         self.set_default_value(f"{self.__wallet_key('btc')}", "bwallet")
         self.set_default_value(f"{self.__wallet_key('ethereum')}", "ewallet")
         self.set_default_value("btc_client_loop", asyncio.new_event_loop())

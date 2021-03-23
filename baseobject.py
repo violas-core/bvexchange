@@ -26,17 +26,22 @@ from comm.values import (
 getlogger = log.logger.getLogger
 exe_lock = Lock()
 class baseobject(object):
-    def __init__(self, name = 'base', work = True):
+    def __init__(self, name = 'base', work = True, chain = None):
         self._name = None
         self._logger = None
         self._from_chain = None
         self._map_chain = None
+        self.__chain = chain
         self._work = work
         self._name = name
         self.append_property("usd_exe_lock", False)
 
         if self._logger is None:
             self._logger = getlogger(name) 
+
+    @property
+    def chain(self):
+        return self.__chain
 
     def work(self):
         return self._work
@@ -131,4 +136,24 @@ class baseobject(object):
 
         return False
 
+    def get_address_from_account(self, account):
+        if not isinstance(account, str):
+            address = account.address
+            if not isinstance(address, str):
+                address = address.hex()
+        else:
+            address = account
+        return address
+
+    def get_combine_address(self, combine_account, receiver):
+        if combine_account:
+            return self.get_address_from_account(combine_account)
+
+        if receiver:
+            return self.get_address_from_account(receiver)
+        return None
+
+    #check local db module
+    def use_module(self, state, module_state):
+        return state is None or state.value < module_state.value
 

@@ -81,7 +81,7 @@ class exfunds(exfbase):
 
         #if found transaction in history.db, then get_transactions's latest_version is error(too small or other case)'
         if state is None and self.has_info(tran_id):
-           return result(error.ARG_INVALID, f"{tran_id} has found in local db")
+           return result(error.ARG_INVALID, f"found transaction(tran_id = {tranid})) in local db(maybe first run {self.dtype}). ignore it and process next.")
 
         if not self.chain_data_is_valid(data):
            return result(error.ARG_INVALID, f"transaction({tran_id}) data is invalid. data :{data}")
