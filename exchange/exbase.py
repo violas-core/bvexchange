@@ -299,7 +299,7 @@ class exbase(baseobject):
                     if ret.state == error.SUCCEED and ret.datas == True:
                        ret = self.update_localdb_state_with_check(tran_id, localdb.state.COMPLETE, detail = None)
 
-                    ret = self.psverver.is_stop(tran_id)
+                    ret = self.pserver.is_stop(tran_id)
                     if ret.state == error.SUCCEED and ret.datas == True:
                        ret = self.update_localdb_state_with_check(tran_id, localdb.state.COMPLETE, detail = None)
 
