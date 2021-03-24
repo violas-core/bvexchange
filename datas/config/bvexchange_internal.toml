@@ -10,7 +10,7 @@ db_echo=false
 
 #syncing proof flag ; default true
 #false state is no-safe
-syncing_mod = false
+syncing_mod = true
 
 #true : get decimals contract-datas ... info from ethereum chain, 
 #false: get from local contract abi files; default: false. 
@@ -107,7 +107,7 @@ exchange_async = true
     [token_info.tokens]
         [token_info.tokens.violas]
             token = ["VLS"] 
-            mtoken = ["vBTC", "vUSDT", "vWBTC"]
+            mtoken = ["vBTC", "vUSDT"]
         [token_info.tokens.libra]
             token = []
         [token_info.tokens.ethereum]
@@ -121,9 +121,6 @@ exchange_async = true
     [[token_info.mapping]]
         token = "ethereum.usdt"
         mtoken = "violas.vUSDT"
-    [[token_info.mapping]]
-        token = "ethereum.wbtc"
-        mtoken = "violas.vWBTC"
 
 
 #violas <-> libra token map
@@ -171,10 +168,6 @@ exchange_async = true
         run = true
         etype  = "funds"
     [type_opts.fundswbtc]
-        support = true  
-        run = true
-        etype  = "funds"
-    [type_opts.fundsvwbtc]
         support = true  
         run = true
         etype  = "funds"
