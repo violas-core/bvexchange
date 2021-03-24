@@ -214,6 +214,8 @@ def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = T
             new_sequence = ret.datas
             sleep(2)
             assert is_time_in(start_time, max_work_time), f"time out, {from_address} sequence not changed"
+        else:
+            print("map proof is saved ethereum.")
 
         #get transaction info with from_address, sequence
         ret = eclient.get_transaction_version(from_address, new_sequence)
@@ -234,8 +236,9 @@ def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = T
             map_amount = tran.get_amount()
             info = afilter.get_tran_data(tran, False)
             
-            sleep(2)
+            message_wheel(start_time, max_work_time, f"check state change, eth proof {version} state not changed, check usdt transaction")
             assert is_time_in(start_time, max_work_time), f"time out, eth proof {version} state not changed, check usdt transaction"
+
 
         #if state changed to end, check some value
         if state == "end":
