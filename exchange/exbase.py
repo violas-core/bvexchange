@@ -472,14 +472,7 @@ class exbase(baseobject):
         return True
 
     def has_info(self, tranid):
-        ret = self.db.has_info_with_assert(tranid)
-        return ret.datas
-        ret = self.db.has_info(tranid)
-        assert ret.state == error.SUCCEED, f"has_info({tranid}) failed."
-        if ret.datas == True:
-            self._logger.warning(f"found transaction(tran_id = {tranid})) in db(maybe first run {self.dtype}). " + 
-                    f"ignore it and process next.")
-        return ret.datas
+        return self.db.has_info_with_assert(tranid)
 
     def is_target_state(self, tranid, state):
         ret = self.db.is_target_state(tranid, state)
