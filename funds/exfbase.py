@@ -263,7 +263,7 @@ class exfbase(baseobject):
 
     def has_info(self, tranid):
         ret = self.db.has_info_with_assert(tranid)
-        return ret.datas
+        return ret
 
     def reexchange_data_from_failed(self, states):
         try:

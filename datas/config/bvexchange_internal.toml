@@ -110,6 +110,8 @@ exchange_async = true
             mtoken = ["vBTC", "vUSDT"]
         [token_info.tokens.libra]
             token = []
+        [token_info.tokens.diem]
+            token = ['XUS']
         [token_info.tokens.ethereum]
             token = ["usdt", "wbtc"]
         [token_info.tokens.btc]

@@ -338,7 +338,7 @@ class dblocal(baseobject):
         infos = {}
         for key, values in rpcparams.items():
             for value in values:
-                info_key = f"{self.localdb.state(value.get('state')).name}"
+                info_key = f"{self.state(value.get('state')).name}"
                 if info_key not in infos:
                     infos.update({info_key : 1})
                 else:
