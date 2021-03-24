@@ -74,35 +74,29 @@ def get_token_name(chain, token):
 violas or libra client
 '''
 
-def init_stmanage():
-    stmanage.set_conf_env("../bvexchange.toml")
 
 def get_violasclient(chain = "violas"):
-    init_stmanage()
     if chain == "libra":
         return violasproof(name, stmanage.get_libra_nodes(), chain)
     return violasproof(name, stmanage.get_violas_nodes(), chain)
 
 def get_violaswallet(chain = "violas"):
-    init_stmanage()
     return violaswallet(name, dataproof.wallets(chain), chain)
 
 '''
 ethereum client
 '''
 def get_ethclient(usd_erc20 = True, chain = "ethereum"):
-    init_stmanage()
     client = ethclient(name, stmanage.get_eth_nodes(), chain)
     client.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
     if usd_erc20:
         tokens = client.get_token_list().datas
-        logger.debug(f"support tokens: {tokens}")
+        logger.debug(f"ethereum support tokens: {tokens}")
         for token in tokens:
             client.load_contract(token)
     return client
     
 def get_ethwallet(chain = "ethereum"):
-    init_stmanage()
     return ethwallet(name, dataproof.wallets("ethereum"), chain)
 
 '''
@@ -110,18 +104,15 @@ btc client
 '''
 
 def get_btcclient():
-    init_stmanage()
     return btcclient(name, stmanage.get_btc_conn())
 
 def get_btcwallet():
-    init_stmanage()
     return btcwallet(name, dataproof.wallets("btc"))
 
 '''
 proof client
 '''
 def get_proofclient(dtype = "e2vm"):
-    init_stmanage()
     return requestclient(name, stmanage.get_db(dtype))
 
 def is_violas_tran_mark(dtype, datas):
@@ -604,6 +595,8 @@ def work_continue():
     return _work_continue
 
 def setup():
+    stmanage.set_conf_env("../bvexchange.toml")
+
     signal.signal(signal.SIGINT, signal_stop)
     signal.signal(signal.SIGTSTP, signal_stop)
     signal.signal(signal.SIGTERM, signal_stop)

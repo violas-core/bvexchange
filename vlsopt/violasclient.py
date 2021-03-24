@@ -329,7 +329,6 @@ class violasclient(baseobject):
             ret = parse_except(e)
         return ret
 
-    @output_args
     def split_full_address(self, address, auth_key_prefix = None):
         try:
             if address and self.chain == trantype.DIEM.value and len(address) not in VIOLAS_ADDRESS_LEN:

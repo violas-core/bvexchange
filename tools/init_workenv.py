@@ -114,7 +114,7 @@ def init_all(debug = False, min_amount = 0, funds_address=default_funds_address)
 
 
 #test use: init client address
-def init_one(address, debug = False, min_amount = 0,funds_address = default_funds_address):
+def init_one(address, debug = False, min_amount = 0, token_id = None, funds_address = default_funds_address):
     debug = str_to_bool(debug)
     vclient = get_violasclient()
     wclient = get_violaswallet()
@@ -122,11 +122,16 @@ def init_one(address, debug = False, min_amount = 0,funds_address = default_fund
 
     token_list= get_token_list(vclient, stmanage)
     funds_address = get_funds_address(funds_address)
-    btc_token_id = "BTC"
+
+    
+    if token_id:
+        assert token_id in token_list, "token_id({}) is invalid".format(token_id)
+        token_list = [token_id]
 
     logger.debug(f"token_list: {token_list}")
     logger.debug(f"parent vasp address: {funds_address}")
     print(f"{address} role name: {vclient.get_account_role_name(address)}")
+
     for token_id in token_list:
         minamount = token_min_amount.get(token_id, 0)
         minamount = minamount if minamount > 0 else min_amount
@@ -148,7 +153,7 @@ def run(argc, argv):
         logger.debug("start violas.main")
         #--conf must be first
         if stmanage.get_conf_env() is None:
-            stmanage.set_conf_env("./bvexchange.toml") 
+            stmanage.set_conf_env("../bvexchange.toml") 
 
         pargs = parseargs()
         init_args(pargs)
