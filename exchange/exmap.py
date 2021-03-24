@@ -125,7 +125,7 @@ class exmap(exbase):
             receiver_msg = self.get_address_from_account(self.funds_address)
             ret = self.send_violas_msg(map_sender, receiver_msg, msgtype.MINT, map_token_id, map_amount, tran_id, version)
             if ret.state != error.SUCCEED:
-                detail.update({"mint_mtoken":localdb.MFAILED.name})
+                detail.update({"mint_mtoken":localdb.state.MFAILED.name})
                 self.update_localdb_state_with_check(tran_id, localdb.state.MFAILED, \
                       json.dumps(detail))
                 self._logger.error(f"exec_exchange-0.result: failed. {ret.message}")
