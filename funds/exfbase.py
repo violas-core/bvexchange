@@ -273,7 +273,7 @@ class exfbase(baseobject):
             if ret.state != error.SUCCEED:
                 return ret
             rpcparams = ret.datas
-            self.show_load_record_info(rpcparams)
+            self._logger.debug(f"record info:{self.db.format_record_info(rpcparams)}")
 
             receivers = self.receivers
 
