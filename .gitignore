@@ -15,8 +15,6 @@ exchange/code_bak/
 bv_optimized.toml
 bvexchange.toml
 libviolas/
-lbviolasclient/
-lblibraclient/
 redis.conf
 redis_start
 *.wlt
