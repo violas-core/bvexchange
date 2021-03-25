@@ -10,7 +10,7 @@ db_echo=false
 
 #syncing proof flag ; default true
 #false state is no-safe
-syncing_mod = false
+syncing_mod = true
 
 #true : get decimals contract-datas ... info from ethereum chain, 
 #false: get from local contract abi files; default: false. 
@@ -110,6 +110,8 @@ exchange_async = true
             mtoken = ["vBTC", "vUSDT"]
         [token_info.tokens.libra]
             token = []
+        [token_info.tokens.diem]
+            token = ['XUS']
         [token_info.tokens.ethereum]
             token = ["usdt"]
         [token_info.tokens.btc]
