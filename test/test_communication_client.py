@@ -24,6 +24,7 @@ cli.send("msg 1")
 time.sleep(1)
 cli.send("msg 2")
 time.sleep(1)
+cli.send("shutdown")
 cli.close()
 
 
