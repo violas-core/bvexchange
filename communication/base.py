@@ -15,7 +15,6 @@ class base(object):
         self.port = port
         self.address = (self.host, self.port)
         self.authkey = authkey
-        self.connected = False
         self.working = False
         print(f"start communication host = {self.host} port = {self.port} authkey = {self.authkey}")
         
@@ -46,7 +45,7 @@ class base(object):
 
     def __setattr__(self, name, value):
         if not self.can_write(name):
-            raise ReadonlyException()
+            raise ReadonlyException(name)
         else:
             object.__setattr__(self, name, value)
 
@@ -57,7 +56,8 @@ class base(object):
     def is_working(self):
         return self.working
 
-    def close(self):
+    def stop_work(self):
+        print("base.stop_work")
         self.working = False
 
     def call(self, cmd, conn = None, listener = None, **kwargs):

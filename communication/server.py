@@ -27,39 +27,55 @@ class server(base):
         self.listener = Listener(self.address, authkey = self.authkey)
 
     def __del__(self):
-        self.listen_thread.join()
-        print("close server")
-        pass
+        if self.listend:
+            self.listener.close()
 
-    def listen(self, call, **kwargs):
+        self.listen_thread.join()
+
+    def listend(self):
+        return self.listend and not self.listener.closed
+
+    def parse_msg(self, cmd, conn, listener):
+        if cmd == "disconnect":
+            if not conn.closed:
+                conn.close()
+            return True
+        elif cmd == "shutdown":
+            if not conn.closed:
+                conn.close()
+            if self.listend:
+                self.listener.close()
+            self.close()
+            return True
+        return False 
+        
+    def work(self, call, **kwargs):
         try:
-            self.working = self.listener is not None
+            self.working = self.listend
             while self.is_working():
                 with self.listener.accept() as conn:
                       print('connection accepted from', self.listener.last_accepted)
-                      while self.is_working():
+                      while not conn.closed:
                           try:
                             cmd = conn.recv()
-                            call(cmd, conn = conn, listener = self.listener)
+                            ret = call(cmd, conn = conn, listener = self.listener)
+                            if not ret:
+                                self.parse_msg(cmd, conn, self.listener)
                           except Exception as e:
                               print(f"connect error: {e}")
                               break
         except Exception as e:
             parse_except(e)
-
-
     
     def start_listen(self, call, **kwargs):
         try:
-            self.listen_thread = self.work_thread(self.listen, call, **kwargs)
+            self.listen_thread = self.work_thread(self.work, call, **kwargs)
             
             self.listen_thread.start()
         except Exception as e:
             ret = parse_except(e)
 
-    def stop(self):
-        self.working = False
-        if self.listener:
-            self.listener.close()
+    def close(self):
+        self.stop_work()
 
 
