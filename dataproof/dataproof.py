@@ -92,6 +92,7 @@ class configdatas(dataproof):
         self.set_default_value("msg_min_version", {})
         self.set_default_value("gas_token_id", {"violas":"VLS"})
         self.set_default_value("gas", {"violas": 0})
+        self.set_default_value("cmd_listen", {"host":"127.0.0.1", "port": 8055, "authkey":b"violas bridge communication"})
 
     def __getattr__(self, name):
         print(f"{name}----")

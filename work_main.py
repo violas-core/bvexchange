@@ -47,6 +47,9 @@ from message import (
         )
 
 from enum import Enum
+from command.parse_cmd import (
+        parse_cmd
+        )
 name="work_main"
 
 class works(baseobject):
@@ -813,9 +816,27 @@ class works(baseobject):
         try:
             logger.critical("start: comm")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while(self.__work_looping.get(mod, False)):
-                logger.debug(f"looping: {mod}  interval(s): {nsec}")
-                sleep(nsec)
+
+            from lbcommunication import (
+                    comm_server,
+                    )
+
+
+            kwargs = dict(
+                    manager = self, 
+                    support_mods = list_support_mods(),
+                    shutdown = self.stop,
+                    logger = logger,
+                    )
+            listen = stmanage.get_cmd_listen()
+            obj = comm_server(listen.get("host"), 
+                    listen.get("port"), 
+                    listen.get("authkey"),
+                    **kwargs
+                    )
+            self.set_work_obj(obj)
+            obj.start(parse_cmd)
+
         except Exception as e:
             parse_except(e)
         finally:
@@ -984,7 +1005,7 @@ class works(baseobject):
 
         for key in self.__work_obj:
             obj = self.__work_obj.get(key)
-            if obj is not None:
+            if obj is not None and key not in ("COMM"):
                 logger.info(f"send stop cmd to {key}")
                 obj.stop()
 
