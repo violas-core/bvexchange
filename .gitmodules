@@ -16,3 +16,6 @@
 [submodule "lbdiemsdk"]
 	path = lbdiemsdk
 	url = https://github.com/libra/client-sdk-python.git
+[submodule "lbcommunication"]
+	path = lbcommunication
+	url = https://github.com/palliums-developers/communication.git
