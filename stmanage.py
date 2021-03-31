@@ -398,6 +398,9 @@ def get_btc_nodes():
 def get_btc_conn():
     return setting.setting.btc_conn
 
+def get_cmd_listen():
+    return setting("cmd_listen")
+
 def get_traceback_limit():
     return setting.setting.traceback_limit
 
