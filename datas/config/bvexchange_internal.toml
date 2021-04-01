@@ -138,6 +138,9 @@ exchange_async = true
 #run    : execute analysis proof and exchange, default false
 #etype  : map funds or swap(default) 
 [type_opts]
+    [type_opts.comm]
+        support= true  
+        run = true
     [type_opts.vfilter]
         support= true  
         run = true
