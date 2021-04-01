@@ -99,7 +99,7 @@ class works(baseobject):
         try:
             logger.critical("start: b2vxxx")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = b2v.b2v(mod,
@@ -129,7 +129,7 @@ class works(baseobject):
         try:
             logger.critical("start: b2vm")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = b2vm.b2vm(mod,
@@ -155,7 +155,7 @@ class works(baseobject):
         try:
             logger.critical("start: v2b")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = v2b.v2b(mod, 
@@ -185,7 +185,7 @@ class works(baseobject):
         try:
             logger.critical("start: v2bm")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = v2bm.v2bm(mod, 
@@ -210,7 +210,7 @@ class works(baseobject):
             logger.critical(f"stop: {mod}")
 
     def work_looping(self, obj, mod, nsec = 8):
-        while (self.__work_looping.get(mod, False)):
+        while self.__work_looping.get(mod, False):
             obj.start()
             sleep(nsec)
 
@@ -218,7 +218,7 @@ class works(baseobject):
         try:
             logger.critical("start: violas filter")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = analysis_filter.afilter(name=mod, ttype=trantype.VIOLAS.value, \
@@ -242,7 +242,7 @@ class works(baseobject):
         try:
             logger.critical("start: violas v2x proof")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "vfilter"
@@ -278,7 +278,7 @@ class works(baseobject):
         try:
             logger.critical("start: libra filter")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = analysis_filter.afilter(name=mod, ttype=trantype.LIBRA.value, \
@@ -299,7 +299,7 @@ class works(baseobject):
     def work_l2vproof(self, **kargs):
         try:
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "lfilter"
@@ -326,7 +326,7 @@ class works(baseobject):
         try:
             logger.critical("start: violas swap proof")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "vfilter"
@@ -352,7 +352,7 @@ class works(baseobject):
         try:
             logger.critical("start: l2v")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = l2v.l2v(mod, 
@@ -381,7 +381,7 @@ class works(baseobject):
         try:
             logger.critical("start: l2vm")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = l2vm.l2vm(mod, 
@@ -408,7 +408,7 @@ class works(baseobject):
         try:
             logger.critical("start: v2l")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = v2l.v2l(mod, 
@@ -438,7 +438,7 @@ class works(baseobject):
         try:
             logger.critical("start: v2lm")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = v2lm.v2lm(mod, 
@@ -465,7 +465,7 @@ class works(baseobject):
         try:
             logger.critical("start: btc filter")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = analysis_filter.afilter(name=mod, ttype=trantype.BTC.value, \
@@ -486,7 +486,7 @@ class works(baseobject):
     def work_b2vproof(self, **kargs):
         try:
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "bfilter"
@@ -512,7 +512,7 @@ class works(baseobject):
     def work_b2lproof(self, **kargs):
         try:
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "bfilter"
@@ -539,7 +539,7 @@ class works(baseobject):
         try:
             logger.critical("start: b2lxxx")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = b2l.b2l(mod,
@@ -569,7 +569,7 @@ class works(baseobject):
     def work_l2bproof(self, **kargs):
         try:
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "lfilter"
@@ -596,7 +596,7 @@ class works(baseobject):
         try:
             logger.critical("start: l2b")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = l2b.l2b(mod,
@@ -627,7 +627,7 @@ class works(baseobject):
         try:
             logger.critical("start: ethereum filter")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = analysis_filter.afilter(name=mod, ttype=trantype.ETHEREUM.value, \
@@ -652,7 +652,7 @@ class works(baseobject):
         try:
             logger.critical("start: ethereum map proof")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     basedata = "efilter"
@@ -679,7 +679,7 @@ class works(baseobject):
         try:
             logger.critical("start: e2vm")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = e2vm.e2vm(mod,
@@ -709,7 +709,7 @@ class works(baseobject):
         try:
             logger.critical("start: v2em")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     obj = v2em.v2em(mod, 
@@ -742,7 +742,7 @@ class works(baseobject):
             nsec, mod, dtype = self.__get_input_args(**kargs)
             token_id = stmanage.get_token_id_from_fundstype(dtype)
             ttype = stmanage.get_trantype_with_token_id(token_id)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     #violas client is fixed
@@ -785,7 +785,7 @@ class works(baseobject):
         try:
             logger.critical("start: mobile message")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            while (self.__work_looping.get(mod, False)):
+            while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
                     kwargs = {
@@ -827,7 +827,8 @@ class works(baseobject):
                     smods = list_support_mods,
                     shutdown = self.stop,
                     logger = logger,
-                    name = self.__comm_name
+                    name = self.__comm_name,
+                    running = self.running,
                     )
             listen = stmanage.get_cmd_listen()
             obj = comm_server(listen.get("host"), 
@@ -999,6 +1000,9 @@ class works(baseobject):
         finally:
             logger.critical("end join")
 
+    def running(self):
+        return [key for key, obj in self.__work_obj.items() if obj]
+
     def stop(self, signal = False):
         logger.debug("stop works")
         for mod in self.__work_looping.keys():
@@ -1006,8 +1010,13 @@ class works(baseobject):
 
         for key in self.__work_obj:
             obj = self.__work_obj.get(key)
-            if obj is not None and (key != self.__comm_name or signal):
+            if obj is not None and key != self.__comm_name:
                 logger.info(f"send stop cmd to {key}")
+                obj.stop()
+
+        if signal:
+            obj = self.__work_obj.get(self.__comm_name)
+            if obj: 
                 obj.stop()
 
 logger = log.logger.getLogger(name)
