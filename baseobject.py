@@ -44,13 +44,16 @@ class baseobject(object):
         return self.__chain
 
     def work(self):
+        #print(f"work: {self.name()} state = {self._work}")
         return self._work
 
     def work_stop(self):
+        #print(f"work_stop: {self.name()} state = {self._work}")
         self._work = False
 
     def work_start(self):
         self._work = True
+        #print(f"work_start: {self.name()} state = {self._work}")
 
     def open_lock(self, value = False):
         self.usd_exe_lock = value
