@@ -53,6 +53,7 @@ from command.parse_cmd import (
 name="work_main"
 
 class works(baseobject):
+    __comm_name = "comm"
     __threads = []
     __work_looping = {}
     __work_obj = {}
@@ -821,12 +822,12 @@ class works(baseobject):
                     comm_server,
                     )
 
-
             kwargs = dict(
                     manager = self, 
-                    support_mods = list_support_mods(),
+                    smods = list_support_mods,
                     shutdown = self.stop,
                     logger = logger,
+                    name = self.__comm_name
                     )
             listen = stmanage.get_cmd_listen()
             obj = comm_server(listen.get("host"), 
@@ -998,17 +999,16 @@ class works(baseobject):
         finally:
             logger.critical("end join")
 
-    def stop(self):
+    def stop(self, signal = False):
         logger.debug("stop works")
         for mod in self.__work_looping.keys():
             self.__work_looping[mod] = False
 
         for key in self.__work_obj:
             obj = self.__work_obj.get(key)
-            if obj is not None and key not in ("COMM"):
+            if obj is not None and (key != self.__comm_name or signal):
                 logger.info(f"send stop cmd to {key}")
                 obj.stop()
-
 
 logger = log.logger.getLogger(name)
 work_manage = works()
@@ -1016,7 +1016,7 @@ def signal_stop(signal, frame):
     try:
         logger.debug("start signal : %i", signal )
         global work_manage
-        work_manage.stop()
+        work_manage.stop(True)
     except Exception as e:
         parse_except(e)
     finally:
