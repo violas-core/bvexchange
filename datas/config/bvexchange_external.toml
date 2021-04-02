@@ -42,7 +42,7 @@ exchange_async = true
 
 #connect violas chain config
 [[violas_nodes]]
-    host = "13.77.137.84"
+    host = "ac.testnet.violas.io"
     port = 50001
     faucet = "mint_test.key"
     name = "violas external"

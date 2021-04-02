@@ -20,7 +20,7 @@ from comm.result import result
 from comm.error import error
 from comm.parseargs import parseargs
 from comm.functions import json_print
-from violasclient import (
+from vlsopt.violasclient import (
         violasclient, 
         violaswallet, 
         violasserver
@@ -50,6 +50,7 @@ def get_violasclient():
     elif chain == "diem":
         return violasclient(name, stmanage.get_diem_nodes(), chain, use_faucet_file = True)
 
+    print(stmanage.get_violas_nodes())
     return violasclient(name, stmanage.get_violas_nodes(), chain, use_faucet_file = True)
 
 def get_violaswallet():
@@ -432,6 +433,7 @@ def create_child_vasp_account_from_server(address, auth_key_prefix):
 *************************************************main oper*******************************************************
 '''
 def init_args(pargs):
+    pargs.clear()
     pargs.append("help", "show arg list.")
     pargs.append("chain", "work chain name(violas/libra/diem, default : violas). must be first argument", True, ["chain=violas"], priority = 10)
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bridge/", True, "toml file", priority = 5)
@@ -485,23 +487,28 @@ def init_args(pargs):
     #violas server
     pargs.append(create_child_vasp_account_from_server, "create child vasp account from violas server, you are't owner of parent vasp")
 
-def run(argc, argv):
+def run(argc, argv, exit = True):
     global chain
     try:
+        print(argv)
         logger.debug("start violas.main")
-        pargs = parseargs()
+        pargs = parseargs(exit = exit)
         init_args(pargs)
         pargs.show_help(argv)
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
         logger.error(e)
-        sys.exit(2)
+        if exit:
+            sys.exit(2)
+        return 
     except Exception as e:
         logger.error(e)
-        sys.exit(2)
+        if exit:
+            sys.exit(2)
+        return
 
     #argument start for --
-    if len(err_args) > 0:
+    if err_args and len(err_args) > 0:
         pargs.show_args()
 
     names = [opt for opt, arg in opts]
