@@ -10,5 +10,5 @@ from lbparseargs import (
 #module name
 
 class parseargs(parseargsbase):
-    def __init__(self, globals = None):
-        parseargsbase.__init__(self, globals)
+    def __init__(self, globals = None, exit = True):
+        parseargsbase.__init__(self, globals = globals, exit = exit)
