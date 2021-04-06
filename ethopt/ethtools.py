@@ -41,7 +41,12 @@ logger = log.logger.getLogger(name)
 *************************************************ethclient oper*******************************************************
 '''
 
+client = None
+
 def get_ethclient(usd_erc20 = True):
+    global client
+    if client:
+        return client
 
     client = ethclient(name, stmanage.get_eth_nodes(), chain)
     client.load_vlsmproof(stmanage.get_eth_token("vlsmproof")["address"])
@@ -52,8 +57,13 @@ def get_ethclient(usd_erc20 = True):
             client.load_contract(token)
     return client
     
+ewclient = None
 def get_ethwallet():
-    return ethwallet(name, dataproof.wallets("ethereum"), chain)
+    global ewclient
+    if ewclient:
+        return eclient
+    ewclient = ethwallet(name, dataproof.wallets("ethereum"), chain)
+    return ewclient
 
 def get_ethproof(dtype = "v2b"):
 
@@ -276,6 +286,7 @@ def has_account(address):
 *************************************************main oper*******************************************************
 '''
 def init_args(pargs):
+    pargs.clear()
     pargs.append("help", "show arg list.")
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 10)
     pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
@@ -310,20 +321,24 @@ def init_args(pargs):
     pargs.append(show_proof_contract_address, "show proof main address(args = main datas state).")
 
 
-def run(argc, argv):
+def run(argc, argv, exit = True):
     try:
         logger.debug("start eth.main")
-        pargs = parseargs()
+        pargs = parseargs(exit = exit)
         init_args(pargs)
         pargs.show_help(argv)
 
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
         logger.error(e)
-        sys.exit(2)
+        if exit:
+            sys.exit(2)
+        return 
     except Exception as e:
         logger.error(e)
-        sys.exit(2)
+        if exit:
+            sys.exit(2)
+        return 
 
     #argument start for --
     if len(err_args) > 0:

@@ -57,6 +57,16 @@ class aproofbase(abase):
             self._fdbclient = dbvfilter(name, fdbconf.get("host"), fdbconf.get("port"), \
                     fdbconf.get("db"), fdbconf.get("password"))
 
+        self.work_context.update(dict(
+            ttype = ttype,
+            dtype = dtype,
+            dbconf = dbconf,
+            fdbconf = fdbconf,
+            rdbconf = rdbconf,
+            nodes = nodes,
+            chain = chain,
+            ))
+
         self.init_valid_state()
 
     def __del__(self):

@@ -35,6 +35,7 @@ class baseobject(object):
         self._work = work
         self._name = name
         self.append_property("usd_exe_lock", False)
+        self.append_property("work_context", {})
 
         if self._logger is None:
             self._logger = getlogger(name) 

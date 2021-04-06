@@ -510,6 +510,7 @@ def run(argc, argv, exit = True):
     #argument start for --
     if err_args and len(err_args) > 0:
         pargs.show_args()
+        return
 
     names = [opt for opt, arg in opts]
     pargs.check_unique(names)

@@ -6,6 +6,8 @@ import os
 import time
 import requests
 import getopt
+import readline
+import signal
 sys.path.append(os.getcwd())
 sys.path.append("..")
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
@@ -20,51 +22,62 @@ from lbcommunication import (
         comm_client as client,
         )
 
-def show_call(func):
-    def call_args(*args, **kwargs):
-        print(f"args = {args}, kwargs = {kwargs}")
-        return func(*args, **kwargs)
-    return call_args
 
-def bridge():
-    def parse_msg(cmd, conn = None, listener = None, **kwargs):
-        print("received msg: {}".format(cmd))
-    
-    
-    cli = client("127.0.0.1", 8055, call = parse_msg)
-    #cli.start(parse_msg)
-    time.sleep(1)
-    cli.send("smods")
-    time.sleep(1)
-    #cli.send("disconnect")
-    cli.send("running")
-    cli.send("shutdown")
-    time.sleep(1)
-    cli.close()
 
+def __run_with_cmd(name, client):
+    while True:
+        cmd = input(f"client.{name}$: ")
+        state, cmd, args = parse_cmd(cmd)
+        if state:
+            if cmd in ("exit"):
+                return
+
+            argv = [cmd] + args
+            try:
+                client.run(len(argv), argv, exit = False)
+            except Exception as e:
+                print(e)
+                pass
+        else:
+            try:
+                argv = ["--help"]
+                client.run(len(argv), argv, exit = False)
+            except Exception as e:
+                print(e)
+                pass
+
+def __use_chain(name, client):
+    try:
+        print(client)
+        show_module_info(name)
+        client.chain = name
+        print(client.chain)
+        __run_with_cmd(name, client)
+
+    except Exception as e:
+        print(e)
+        pass
+
+def comm():
+    import commtools
+    __use_chain("comm", commtools)
 
 def violas():
-    show_module_info("violas")
     from vlsopt import violastools
-    violas.chain = "violas"
-    while True:
-        cmd = input("client.violas$: ")
-        state, cmd, args = parse_cmd(cmd)
-        argv = [cmd] + args
-        violastools.run(len(argv), argv, exit = False)
-
+    __use_chain("violas", violastools)
 
 def libra():
-    show_module_info("libra")
     from vlsopt import violastools
-    violas.chain = "libra"
-    violastools.run(0, [])
+    __use_chain("libra", violastools)
+
+def diem():
+    from vlsopt import violastools
+    __use_chain("diem", violastools)
 
 def ethereum():
-    show_module_info("ethereum")
-    from vlsopt import violastools
-    violas.chain = "ethereum"
-    violastools.run(0, [])
+    from ethopt import ethtools
+    print("eth")
+    __use_chain("ethereum", ethtools)
 
 def init_args(pargs):
     pargs.clear()
@@ -76,7 +89,7 @@ def show_module_info(module):
     print(f"switch to {module}")
 
 def use(module = None):
-    support_module = ("violas", "libra", "ethereum", "btc", "bridge")
+    support_module = ("violas", "libra", "ethereum", "btc", "comm")
     if not module or module not in support_module:
         return support_module
 
@@ -104,6 +117,9 @@ def parse_cmd(cmd):
     args = None
     state = True
     try:
+        if not cmd:
+            return (True, "help", [])
+
         cmd_arg = cmd.split(' ')
         cmd = cmd_arg[0]
         args = cmd_arg[1:]
@@ -113,32 +129,35 @@ def parse_cmd(cmd):
         pass
 
 
-
     return (state, cmd, args)
 
 def process():
     pargs = process_args()
     while True:
-        cmd = input("client$: ")
-        state, cmd, args = parse_cmd(cmd)
-        if state:
-            if cmd == "help":
-                help(pargs, args)
-                continue
-            if pargs.has_callback(cmd):
-                pargs.callback(cmd, *args)
-
+        try:
+            cmd = input("client$: ")
+            state, cmd, args = parse_cmd(cmd)
+            if state:
+                if cmd == "help":
+                    help(pargs, args)
+                    continue
+                if pargs.has_callback(cmd):
+                    pargs.callback(cmd, *args)
+        except Exception as e:
+            print(e)
+            pass
 
 def main(argc, argv):
     try:
+        init_signal()
         pargs = parseargs()
         init_args(pargs)
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
-        logger.error(e)
+        print(e)
         sys.exit(2)
     except Exception as e:
-        logger.error(e)
+        print(e)
         sys.exit(2)
 
     #argument start for --
@@ -166,6 +185,19 @@ def main(argc, argv):
 
 
     logger.debug("end manage.main")
+
+def init_signal():
+    signal.signal(signal.SIGINT, signal_stop)
+    signal.signal(signal.SIGTSTP, signal_stop)
+    signal.signal(signal.SIGTERM, signal_stop)
+
+def signal_stop(signal, frame):
+    try:
+        sys.exit(2)
+    except Exception as e:
+        parse_except(e)
+    finally:
+        print("closed")
 
 if __name__ == "__main__":
     main(len(sys.argv) - 1, sys.argv[1:])
