@@ -116,15 +116,18 @@ class msgbase(baseobject):
             proofdb, receivers, senders, \
             fromchain, \
             **kwargs):
+        self.work_context.update(dict(
+            name = name,
+            dtype = dtype,
+            proofdb = proofdb,
+            receivers = receivers,
+            fromchain = fromchain,
+            kwargs = kwargs,
+            ))
         if dataproof.configs("help_exe_args"):
             self._logger.debug(
             f'''
-            name = {name}
-            dtype = {dtype}
-            proofdb = {proofdb}
-            receivers = {receivers}
-            fromchain : {fromchain}
-            kwargs = {kwargs}
+            {self.work_context}
             ''')
 
     def chain_data_is_valid(self, data):

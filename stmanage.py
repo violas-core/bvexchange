@@ -500,6 +500,9 @@ def get_support_dtypes():
 def get_token_id_from_fundstype(funds_type):
     return funds_type[5:] if type_is_funds(funds_type) else None
 
+def get_caches():
+    return setting.datas
+
 def get_conf():
     infos = {}
     mtypes = get_support_dtypes()

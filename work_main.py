@@ -50,6 +50,8 @@ from enum import Enum
 from command.parse_cmd import (
         parse_cmd
         )
+
+from dataproof import dataproof
 name="work_main"
 
 class works(baseobject):
@@ -829,6 +831,8 @@ class works(baseobject):
                     logger = logger,
                     name = self.__comm_name,
                     running = self.running,
+                    context = self.get_context,
+                    contexts = self.get_contexts,
                     )
             listen = stmanage.get_cmd_listen()
             obj = comm_server(listen.get("host"), 
@@ -969,6 +973,21 @@ class works(baseobject):
                 self.funcs_map.update(self.create_func_dict(item, self.work_comm))
             else:
                 logger.warning(f"not matched function:{item}")
+
+
+    def get_context(self, name):
+        for key in self.__work_obj:
+            print(key)
+            obj = self.__work_obj.get(key)
+            if (obj is not None and key != self.__comm_name and name == key):
+                return obj.work_context
+        return {}
+
+    def get_contexts(self, key = None):
+        if key and key != "all":
+            return dataproof.configs(key)
+        else:
+            return stmanage.get_caches()
 
     def start(self, work_mods):
         try:

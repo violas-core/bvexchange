@@ -40,6 +40,18 @@ class result:
         def to_hex(self):
             return json.dumps(self.to_json()).encode().hex()
 
+        def dumps(self):
+            return json.dumps(self.to_json())
+
+        def loads(self, datas):
+            if isinstance(datas, str):
+                self.load_json(json.loads(datas))
+            elif isinstance(datas, dict):
+                self.load_json(datas)
+            else:
+                raise ValueError("datas type invalid")
+            return self
+
         def load_json(self, data):
             self.state = error(data.get("state").lower())
             self.message = data.get("message")

@@ -99,18 +99,19 @@ class exbase(baseobject):
             proofdb, receivers, senders, \
             fromchain, mapchain, \
             **kwargs):
+
+        self.work_context.update(dict(
+            name = name,
+            dtype = dtype,
+            proofdb = proofdb,
+            receivers = receivers,
+            senders = senders,
+            fromchain = fromchain.value if isinstance(fromchain, trantype) else fromchain,
+            mapchain = mapchain.value if isinstance(mapchain, trantype) else mapchain,
+            kwargs = kwargs,
+            ))
         if dataproof.configs("help_exe_args"):
-            self._logger.debug(
-            f'''
-            name = {name}
-            dtype = {dtype}
-            proofdb = {proofdb}
-            receivers = {receivers}
-            senders = {senders}
-            fromchain : {fromchain}
-            mapchain = {mapchain}
-            kwargs = {kwargs}
-            ''')
+            self._logger.debug(self.work_context)
 
     def stop(self):
         try:
