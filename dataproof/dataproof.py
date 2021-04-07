@@ -55,7 +55,6 @@ class walletdatas(dataproof):
         self.set_default_value(f"{self.__wallet_key('btc')}", "bwallet")
         self.set_default_value(f"{self.__wallet_key('ethereum')}", "ewallet")
         self.set_default_value("btc_client_loop", asyncio.new_event_loop())
-        self.set_default_value("datas_root_path", "./datas/")
 
     def get_wallet(self, chain):
         key = self.__wallet_key(chain)
@@ -94,6 +93,7 @@ class configdatas(dataproof):
         self.set_default_value("gas_token_id", {"violas":"VLS"})
         self.set_default_value("gas", {"violas": 0})
         self.set_default_value("cmd_listen", {"host":"127.0.0.1", "port": 8055, "authkey":b"violas bridge communication"})
+        self.set_default_value("datas_root_path", "./datas/")
 
     def __getattr__(self, name):
         print(f"{name}----")
