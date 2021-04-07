@@ -1,21 +1,25 @@
 import logging
 import logging.config
 import log.config
-import os
+import os,sys
 import threading
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.pardir))
+from comm.values import (
+        PACKAGE_ROOT_PATH,
+        )
 
 lock = threading.Lock()
 
-log_path = "./datas/logs"
 def __init__():
     print("logger.__init__")
 
 def getLogger(name, path = None):
 
-    global log_path
     lock.acquire()
+    log_path = "."
     if path:
-        log_path = os.path.join(path, "logs")
+        log_path = os.path.abspath(os.path.join(path, "logs"))
 
     if not os.path.exists(log_path):
         os.makedirs(log_path)
