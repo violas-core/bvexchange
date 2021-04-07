@@ -97,7 +97,7 @@ class dblocal(baseobject):
     def __init_db(self, dbfile, create = True, path = None):
         db_echo = False
 
-        path = os.path.join(path, "localdbs")
+        path =  path + "localdbs" if path else None
         if path is not None:
             if not os.path.exists(path):
                 os.makedirs(path)
