@@ -69,7 +69,7 @@ class blbase(baseobject):
         self.append_property("btc_client", btcclient(name, btcnodes))
         self.append_property("violas_client", violasproof(name, vlsnodes, "violas"))
         self.append_property("libra_client", violasproof(name, lbrnodes, "libra"))
-        self.append_property("db", localdb(name, f"{self.from_chain}_{self.name()}.db"), path = dataproof.configs("datas_root_path"))
+        self.append_property("db", localdb(name, f"{self.from_chain}_{self.name()}.db"), dataproof.configs("datas_root_path"))
     
         #violas/libra init
         self.append_property("payee", payee)

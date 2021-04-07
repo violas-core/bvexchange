@@ -62,7 +62,7 @@ class exfbase(baseobject):
         self.to_chain = tochain
         self.excluded = None
 
-        self.append_property("db", localdb(name, f"funds_{self.from_chain}_{self.to_chain}_{dtype}.db"), path = dataproof.configs("datas_root_path"))
+        self.append_property("db", localdb(name, f"funds_{self.from_chain}_{self.to_chain}_{dtype}.db"), dataproof.configs("datas_root_path"))
     
         #violas/libra init
         self.append_property("receivers", receivers)
