@@ -35,7 +35,7 @@ class dblocal(baseobject):
     __session = ""
     __engine = ""
 
-    def __init__(self, name, dbfile, create = True, path = "./datas/localdbs"):
+    def __init__(self, name, dbfile, create = True, path = None):
         baseobject.__init__(self, name)
         self.__init_db(dbfile, create, path)
 
@@ -97,6 +97,7 @@ class dblocal(baseobject):
     def __init_db(self, dbfile, create = True, path = None):
         db_echo = False
 
+        path = os.path.join(path, "localdbs")
         if path is not None:
             if not os.path.exists(path):
                 os.makedirs(path)

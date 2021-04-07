@@ -95,7 +95,7 @@ class msgbase(baseobject):
         self.append_property("min_version", int(kwargs.get("min_version", 1)))
         self.append_property("pserver", requestclient(self.name(), self.proofdb))
         self.append_property(f"{self.from_chain}_chain", self.from_chain)
-        self.append_property("db", localdb(self.name(), f"message_{self.from_chain}_{self.dtype}.db"))
+        self.append_property("db", localdb(self.name(), f"message_{self.from_chain}_{self.dtype}.db"), dataproof.configs("datas_root_path"))
         #block chain 
         ttype = trantype(self.from_chain)
         chain_nodes = kwargs.get(self.create_nodes_key(ttype))

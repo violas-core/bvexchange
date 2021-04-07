@@ -18,6 +18,7 @@ from comm.parseargs import parseargs
 #module name
 name="cleancache"
 
+
 logger = log.logger.getLogger(name)
 class dbvclean(dbvbase):
     def __init__(self, name, host, port, db, passwd = None):
@@ -26,12 +27,20 @@ class dbvclean(dbvbase):
     def __del__(self):
         dbvbase.__del__(self)
 
+class dbvrequest(dbvbase):
+    def __init__(self, name, host, port, db, passwd = None):
+        dbvbase.__init__(self, name, host, port, db, passwd)
+
+    def __del__(self):
+        dbvbase.__del__(self)
+
 work_mod  = dbvbase.dbindex 
 def clean_db(name, db):
-    logger.debug(f"clean db: {db}")
+    logger.info(f"start clean db: {db}")
     dbconf = stmanage.get_db(db)
     dbclient = dbvclean(name, dbconf.get("host"), dbconf.get("port"), dbconf.get("db"), dbconf.get("password"))
     dbclient.flush_db()
+    logger.info(f"clean succeed db: {db}")
 
 
 def list_valid_mods():
@@ -41,7 +50,7 @@ def list_valid_mods():
     return valid_mods
 
 
-def run(mods):
+def run_mods(mods):
     valid_mods = list_valid_mods()
     for mod in mods:
         if mod is None or mod not in valid_mods:
@@ -86,23 +95,28 @@ def get_include_mods(mods):
         work_mods.append(mod)
     return work_mods
 
-def main(argc, argv):
+def run(argc, argv, exit = True):
 
-    pargs = parseargs()
+    pargs = parseargs(exit = exit)
     try:
-        logger.debug("start manage.main")
         init_args(pargs)
-        pargs.show_help(argv)
+        if pargs.show_help(argv): 
+            return
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
         logger.error(str(e))
-        sys.exit(2)
+        if exit:
+            sys.exit(2)
+        return
     except Exception as e:
         logger.error(str(e))
-        sys.exit(2)
+        if exit:
+            sys.exit(2)
+        return
 
     if err_args is None or len(err_args) > 0:
         pargs.show_args()
+        return
 
     names = [opt for opt, arg in opts]
     pargs.check_unique(names)
@@ -127,10 +141,10 @@ def main(argc, argv):
             pargs.exit_check_opt_arg_min(opt, arg, 1)
             include_mods = get_include_mods(arg_list)
 
-    run_mods = set(include_mods).difference(set(exclude_mods))
+    target_mods = set(include_mods).difference(set(exclude_mods))
     show_exec_args()
-    run(run_mods)
+    run_mods(target_mods)
     return
 if __name__ == "__main__":
     stmanage.set_conf_env("../bvexchange.toml")
-    main(len(sys.argv) - 1, sys.argv[1:])
+    run(len(sys.argv) - 1, sys.argv[1:])

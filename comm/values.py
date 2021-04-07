@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys
+import sys, os
 from enum import Enum, auto
 
 name="values"
@@ -21,6 +21,8 @@ DECIMAL_BTC     = 1_0000_0000
 VIOLAS_ADDRESS_LEN = [32, 34, 64]
 ETH_ADDRESS_LEN = [42]
 BTC_ADDRESS_LEN = []
+
+PACKAGE_ROOT_PATH = os.path.abspath(os.path.dirname(__file__)).split(os.path.dirname(__file__))[0]
 class enumbase(Enum):
     @property
     def info(self):
