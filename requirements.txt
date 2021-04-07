@@ -6,4 +6,5 @@ flask>=1.0.1
 web3
 redis
 gunicorn
+readline
 
