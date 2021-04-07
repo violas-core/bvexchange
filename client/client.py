@@ -46,38 +46,50 @@ def __run_with_cmd(name, client):
                 print(e)
                 pass
 
-def __use_chain(name, client):
+def __use_module(name, client):
     try:
-        print(client)
         show_module_info(name)
         client.chain = name
-        print(client.chain)
         __run_with_cmd(name, client)
 
     except Exception as e:
         print(e)
         pass
 
-def comm():
+def __md_comm():
     import commtools
-    __use_chain("comm", commtools)
+    __use_module("comm", commtools)
 
-def violas():
+def __md_violas():
     from vlsopt import violastools
-    __use_chain("violas", violastools)
+    __use_module("violas", violastools)
 
-def libra():
+def __md_libra():
     from vlsopt import violastools
-    __use_chain("libra", violastools)
+    __use_module("libra", violastools)
 
-def diem():
+def __md_diem():
     from vlsopt import violastools
-    __use_chain("diem", violastools)
+    __use_module("diem", violastools)
 
-def ethereum():
+def __md_ethereum():
     from ethopt import ethtools
-    print("eth")
-    __use_chain("ethereum", ethtools)
+    __use_module("ethereum", ethtools)
+
+def __md_cleanproof():
+    from tools import clean_proof
+    __use_module("cleanproof", clean_proof)
+    
+def use(module = None):
+    START_SYMBOL = "__md_"
+    #support_module = ("violas", "libra", "ethereum", "btc", "comm", "localdb")
+    support_module = [key[len(START_SYMBOL):] for key in globals() if key.startswith(START_SYMBOL)]
+    if not module:
+        return support_module
+    if module not in support_module:
+        print(f"module must be only one of {support_module}")
+
+    globals()[f"{START_SYMBOL}{module}"]()
 
 def init_args(pargs):
     pargs.clear()
@@ -88,12 +100,6 @@ def init_args(pargs):
 def show_module_info(module):
     print(f"switch to {module}")
 
-def use(module = None):
-    support_module = ("violas", "libra", "ethereum", "btc", "comm")
-    if not module or module not in support_module:
-        return support_module
-
-    globals()[module]()
 
 def exit():
     sys.exit()

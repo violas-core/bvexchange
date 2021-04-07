@@ -22,6 +22,7 @@ from db.dblocal import dblocal as localdb
 from baseobject import baseobject
 from vrequest.request_client import requestclient
 from comm.values import datatypebase as datatype, trantypebase as trantype
+from dataproof import dataproof
 
 #module self.name
 #name="exfbase"
@@ -61,7 +62,7 @@ class exfbase(baseobject):
         self.to_chain = tochain
         self.excluded = None
 
-        self.append_property("db", localdb(name, f"funds_{self.from_chain}_{self.to_chain}_{dtype}.db"))
+        self.append_property("db", localdb(name, f"funds_{self.from_chain}_{self.to_chain}_{dtype}.db"), path = dataproof.configs("datas_root_path"))
     
         #violas/libra init
         self.append_property("receivers", receivers)

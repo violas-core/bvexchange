@@ -10,9 +10,13 @@ log_path = "./datas/logs"
 def __init__():
     print("logger.__init__")
 
-def getLogger(name):
+def getLogger(name, path = None):
 
+    global log_path
     lock.acquire()
+    if path:
+        log_path = os.path.join(path, "logs")
+
     if not os.path.exists(log_path):
         os.makedirs(log_path)
 

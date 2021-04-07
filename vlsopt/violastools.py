@@ -490,11 +490,11 @@ def init_args(pargs):
 def run(argc, argv, exit = True):
     global chain
     try:
-        print(argv)
         logger.debug("start violas.main")
         pargs = parseargs(exit = exit)
         init_args(pargs)
-        pargs.show_help(argv)
+        if pargs.show_help(argv):
+            return 
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
         logger.error(e)

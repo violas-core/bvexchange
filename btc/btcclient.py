@@ -270,6 +270,7 @@ class btcclient(baseobject):
                 "confirm":int(data.get("confirm", 1)), \
                 "module_address":module, \
                 "token_id":"BTC", \
+                "chain_id": data.get("chain_id"), \
                 "expiration_time": data.get("expiration_time", 0)
                 }
 

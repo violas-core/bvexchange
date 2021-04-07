@@ -22,6 +22,7 @@ from comm.values import (
         trantypebase as trantype,
         datatypebase as datatype
         )
+from dataproof import dataproof
 
 getlogger = log.logger.getLogger
 exe_lock = Lock()
@@ -38,7 +39,7 @@ class baseobject(object):
         self.append_property("work_context", {})
 
         if self._logger is None:
-            self._logger = getlogger(name) 
+            self._logger = getlogger(name, path = dataproof.configs("datas_root_path")) 
 
     @property
     def chain(self):
