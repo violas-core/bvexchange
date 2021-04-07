@@ -570,14 +570,14 @@ class exbase(baseobject):
                         data = ret.datas
                         retry = data.get("times")
 
-                        #refund case: 
-                        #   case 1: failed times check(metadata: times > 0 (0 = always))  
-                        #   case 2: pre exec_refund is failed
-                        if (retry != 0 and retry <= times) or state == localdb.state.SFAILED:
-                            ret = self.exec_refund(data, from_sender)
-                            if ret.state != error.SUCCEED:
-                                self._logger.error(ret.message)
-                            continue
+                        ##refund case: 
+                        ##   case 1: failed times check(metadata: times > 0 (0 = always))  
+                        ##   case 2: pre exec_refund is failed
+                        #if (retry != 0 and retry <= times) or state == localdb.state.SFAILED:
+                        #    ret = self.exec_refund(data, from_sender)
+                        #    if ret.state != error.SUCCEED:
+                        #        self._logger.error(ret.message)
+                        #    continue
 
                         self.__set_request_funds_account(from_sender, map_sender)
                         ret = self.exec_exchange(data, from_sender, map_sender, \
