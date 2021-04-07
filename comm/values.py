@@ -22,7 +22,7 @@ VIOLAS_ADDRESS_LEN = [32, 34, 64]
 ETH_ADDRESS_LEN = [42]
 BTC_ADDRESS_LEN = []
 
-PACKAGE_ROOT_PATH = os.path.abspath(os.path.dirname(__file__)).split(os.path.dirname(__file__))[0]
+PACKAGE_ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname('__file__'),os.path.pardir))
 class enumbase(Enum):
     @property
     def info(self):
