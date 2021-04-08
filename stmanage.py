@@ -12,8 +12,13 @@ from comm.values import (
         trantypebase as trantype,
         dbindexbase as dbindex,
         langtype,
+        PACKAGE_ROOT_PATH,
         )
-from dataproof.dataproof import setting
+
+from dataproof.dataproof import (
+        setting,
+        DATAS_ROOT_PATH,
+        )
 
 VIOLAS_ADDRESS_LEN = comm.values.VIOLAS_ADDRESS_LEN
 
@@ -503,6 +508,9 @@ def get_token_id_from_fundstype(funds_type):
 def get_caches():
     return setting.datas
 
+def get_datas_root_path():
+    return setting(DATAS_ROOT_PATH)
+
 def get_conf():
     infos = {}
     mtypes = get_support_dtypes()
@@ -662,6 +670,8 @@ def main():
     print(f"get sms templete(en): {get_sms_templete('en')}")
     print(f"hav permission request msg addresses = {get_permission_request_msg_address()}")
     print(f"get msg min version : {get_support_msg_min_version('violas')}")
+    print(f"DATAS_ROOT_PATH : {DATAS_ROOT_PATH}")
+    print(f"datas_root_path : {get_datas_root_path()}")
 
 
 
