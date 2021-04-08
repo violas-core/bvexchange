@@ -65,7 +65,6 @@ class violasproxy(Client):
         if not use_faucet_file:
             faucet_file = None
 
-        print(url)
         return self.new(url = url, faucet_file = faucet_file, faucet_server = faucet_server, waypoint = waypoint)
 
     def send_coin(self, sender_account, receiver_address, micro_coins, token_id=None, module_address=None, data=None, \

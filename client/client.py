@@ -82,9 +82,12 @@ def __md_cleanlocaldbs():
     from tools import clean_localdbs
     __use_module("cleanlocaldbs", clean_localdbs)
 
+def __md_initworkenv():
+    from tools import init_workenv
+    __use_module("initworkenv", init_workenv)
+
 def use(module = None):
     START_SYMBOL = "__md_"
-    #support_module = ("violas", "libra", "ethereum", "btc", "comm", "localdb")
     support_module = [key[len(START_SYMBOL):] for key in globals() if key.startswith(START_SYMBOL)]
     if not module:
         return support_module

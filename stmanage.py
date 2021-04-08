@@ -672,6 +672,7 @@ def main():
     print(f"get msg min version : {get_support_msg_min_version('violas')}")
     print(f"DATAS_ROOT_PATH : {DATAS_ROOT_PATH}")
     print(f"datas_root_path : {get_datas_root_path()}")
+    print(f"funds receiver: {stmanage.get_receiver_address_list('funds', trantype.VIOLAS)}")
 
 
 

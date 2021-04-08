@@ -18,6 +18,9 @@ import comm
 import comm.error
 import comm.result
 import comm.values
+import stmanage
+import redis
+from comm.parseargs import parseargs
 from comm.values import (
         dbindexbase as dbindex,
         trantypebase as trantype,
@@ -43,8 +46,6 @@ from ethopt.ethclient import (
         )
 
 from dataproof import dataproof
-import stmanage
-import redis
 from tools import comm_funs
 #module name
 name="showworkenv"
@@ -105,18 +106,16 @@ def show_address():
         cclient = cclients.get(to_chain)
         wclient = wclients.get(to_chain)
         if not cclient or not wclient or not to_chain:
-            print(f"not found {to_chain} in {dtype}, continue next...")
+            logger.debug(f"not found {to_chain} in {dtype}, continue next...")
             continue
 
-        print(f"get chain = {to_chain}  dtype = {dtype} info.")
+        logger.debug(f"get chain = {to_chain}  dtype = {dtype} info.")
         senders = stmanage.get_sender_address_list(dtype, to_chain)
-        print(f"get {senders} chain = {to_chain} info.")
         comm_funs.list_address_info(cclient, wclient, senders, ret = infos)
 
         combin = stmanage.get_combine_address(dtype, to_chain)
         if not combin:
            continue 
-        print(f"get {combin} chain = {to_chain} info.")
         comm_funs.list_address_info(cclient, wclient, [combin], ret = infos)
 
 
@@ -126,28 +125,25 @@ def show_address():
         cclient = cclients.get(from_chain)
         wclient = wclients.get(from_chain)
         if not cclient or not wclient or not to_chain:
-            print(f"not found {from_chain}, continue next...")
+            logger.debug(f"not found {from_chain}, continue next...")
             continue
 
-        print(f"get chain = {from_chain}  dtype = {dtype} info.")
+        logger.debug(f"get chain = {from_chain}  dtype = {dtype} info.")
         if dtype == "e2vm":
             receivers = [stmanage.get_map_address(dtype, from_chain)]
         else:
             receivers = stmanage.get_receiver_address_list(dtype, from_chain)
 
-        print(f"get {receivers} chain = {from_chain} info.")
         comm_funs.list_address_info(cclient, wclient, receivers, ret = infos)
 
         #uniswap use combine
         combin = stmanage.get_combine_address(dtype, from_chain)
         if not combin:
            continue 
-        print(f"get {combin} chain = {from_chain} info.")
         comm_funs.list_address_info(cclient, wclient, [combin], ret = infos)
 
     #funds
-    receivers = stmanage.get_receiver_address_list(datatype.FUNDS, trantype.VIOLAS)
-    print(f"get {receivers} chain = {trantype.VIOLAS.value} info.")
+    receivers = stmanage.get_receiver_address_list("funds", trantype.VIOLAS)
     comm_funs.list_address_info(cclient, wclient, receivers, ret = infos)
 
     #start get libra address info
@@ -216,7 +212,10 @@ def start(work_mods):
         show_local_db()
 
     if work_mods.get(work_mod.RDB.name, False):
-        show_db()
+        try:
+           show_db()
+        except Exception as e:
+            pass
 
     if work_mods.get(work_mod.CONF.name, False):
         show_config()
@@ -224,16 +223,7 @@ def start(work_mods):
     if work_mods.get(work_mod.ADDR.name, False):
         show_address()
 
-def show_all():
-    infos = {}
-    infos["local db"] = show_local_db()
-    infos["exchange db"] = show_db()
-    #infos.append(show_config())
-    #infos.append(show_address())
-    return infos
-
-
-def run(mods):
+def show(mods):
     valid_mods = list_valid_mods()
     for mod in mods:
         if mod is None or mod not in valid_mods:
@@ -249,17 +239,64 @@ def run(mods):
 
     start(work_mods)
 
+def init_args(pargs):
+    pargs.clear()
+    pargs.append("help", "show arg list.")
+    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)
+    pargs.append("vwallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
+    pargs.append("ewallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
+    pargs.append("show", f"show env info args = {list_valid_mods()}.", True, list_valid_mods())
+
+
 def main(argc, argv):
 
     try:
-        stmanage.set_conf_env("../bvexchange.toml")
-        if argc < 1:
-            raise Exception(f"argument is invalid. args:{list_valid_mods()}")
-        run(argv)
+        pargs = parseargs(exit = exit)
+        init_args(pargs)
+        if pargs.show_help(argv):
+            return
+        opts, err_args = pargs.getopt(argv)
     except Exception as e:
-        parse_except(e)
-    finally:
-        logger.critical("main end")
+        logger.error(e)
+        if exit:
+            sys.exit(2)
+        return
+
+    #argument start for --
+    if len(err_args) > 0:
+        pargs.show_args()
+        return 
+
+    names = [opt for opt, arg in opts]
+    pargs.check_unique(names)
+
+    for opt, arg in opts:
+
+        arg_list = []
+        if len(arg) > 0:
+            count, arg_list = pargs.split_arg(opt, arg)
+
+        if pargs.is_matched(opt, ["conf"]):
+            if len(arg_list) != 1:
+                pargs.exit_error_opt(opt)
+            stmanage.set_conf_env(arg_list[0])
+        elif pargs.is_matched(opt, ["vwallet"]):
+            if not pargs.exit_check_opt_arg(opt, arg, 1):
+                return
+            dataproof.wallets.update_wallet("violas", arg_list[0])
+        elif pargs.is_matched(opt, ["ewallet"]):
+            if not pargs.exit_check_opt_arg(opt, arg, 1):
+                return
+            dataproof.wallets.update_wallet("ethereum", arg_list[0])
+        elif pargs.is_matched(opt, ["show"]):
+            if not pargs.exit_check_opt_arg_min(opt, arg, 1):
+                return
+            show(arg_list)
+            return
+        elif pargs.has_callback(opt):
+            pargs.callback(opt, *arg_list)
+        else:
+            raise Exception(f"not found matched opt: {opt}")
 
 if __name__ == "__main__":
     main(len(sys.argv) - 1, sys.argv[1:])

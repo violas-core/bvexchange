@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 import log
 import log.logger
 import stmanage
-import comm_funs
+from tools import comm_funs
 from enum import Enum
 from vlsopt.violasclient import (
         violasclient, 
@@ -139,6 +139,7 @@ def init_one(address, debug = False, min_amount = 0, token_id = None, funds_addr
         comm_funs.init_address_list(vclient, wclient, sclient, funds_address, [address], token_id, minamount = minamount, debug = debug)
 
 def init_args(pargs):
+    pargs.clear()
     pargs.append("help", "show arg list.")
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)
     pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
@@ -147,33 +148,34 @@ def init_args(pargs):
     pargs.append(init_all, "init all address.")
     pargs.append(init_one, "init target address")
 
-def run(argc, argv):
+def run(argc, argv, exit = True):
     global chain
     try:
         logger.debug("start violas.main")
-        #--conf must be first
-        if stmanage.get_conf_env() is None:
-            stmanage.set_conf_env("../bvexchange.toml") 
-
-        pargs = parseargs()
+        pargs = parseargs(exit = exit)
         init_args(pargs)
-        pargs.show_help(argv)
+        if pargs.show_help(argv):
+            return
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
         logger.error(e)
-        sys.exit(2)
+        if exit:
+            sys.exit(2)
+        return
     except Exception as e:
         logger.error(e)
-        sys.exit(2)
+        if exit:
+            sys.exit(2)
+        return
 
     #argument start for --
     if len(err_args) > 0:
         pargs.show_args()
+        return 
 
     names = [opt for opt, arg in opts]
     pargs.check_unique(names)
 
-    print(opts)
     for opt, arg in opts:
 
         arg_list = []
