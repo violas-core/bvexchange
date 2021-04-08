@@ -22,8 +22,6 @@ from lbcommunication import (
         comm_client as client,
         )
 
-
-
 def __run_with_cmd(name, client):
     while True:
         cmd = input(f"client.{name}$: ")
@@ -80,6 +78,10 @@ def __md_cleanproof():
     from tools import clean_proof
     __use_module("cleanproof", clean_proof)
     
+def __md_cleanlocaldbs():
+    from tools import clean_localdbs
+    __use_module("cleanlocaldbs", clean_localdbs)
+
 def use(module = None):
     START_SYMBOL = "__md_"
     #support_module = ("violas", "libra", "ethereum", "btc", "comm", "localdb")
