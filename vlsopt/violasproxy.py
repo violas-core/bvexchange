@@ -72,6 +72,19 @@ class violasproxy(Client):
         return self.transfer_coin(sender_account = sender_account, receiver_address = receiver_address, micro_coins = micro_coins, \
                 currency_code = token_id, currency_module_address = module_address, data = data, is_blocking = is_blocking, gas_currency_code = gas_token_id)
 
+    def get_account_transactions(self, address, start, limit, include_events = True):
+        latest_seq = self.get_sequence_number(address)
+        sequence = start
+        datas = []
+        while start < latest_seq and len(datas) <= limit:
+            ver = self.get_account_transaction(address, sequence).get_version()
+            data = self.get_transactions(ver, 1 , include_events)
+            if data:
+                datas.append(data[0])
+            sequence += 1
+
+        return datas
+
 def main():
     #client = clientproxy.connect(host="52.27.228.84", port=40001)
     #json_print(client.get_latest_version())
