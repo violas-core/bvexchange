@@ -288,7 +288,7 @@ def has_account(address):
 def init_args(pargs):
     pargs.clear()
     pargs.append("help", "show arg list.")
-    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 10)
+    pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)
     pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
 
     #wallet 
@@ -326,7 +326,8 @@ def run(argc, argv, exit = True):
         logger.debug("start eth.main")
         pargs = parseargs(exit = exit)
         init_args(pargs)
-        pargs.show_help(argv)
+        if pargs.show_help(argv):
+            return
 
         opts, err_args = pargs.getopt(argv)
     except getopt.GetoptError as e:
@@ -343,34 +344,29 @@ def run(argc, argv, exit = True):
     #argument start for --
     if len(err_args) > 0:
         pargs.show_args()
+        return
 
     names = [opt for opt, arg in opts]
     pargs.check_unique(names)
 
-    #--conf must be first
-    for opt, arg in opts:
-        if pargs.is_matched(opt, ["conf"]):
-            stmanage.set_conf_env(arg)
-        elif pargs.is_matched(opt, ["wallet"]):
-            if not arg:
-                pargs.exit_error_opt(opt)
-            dataproof.wallets.update_wallet("ethereum", arg)
-
-    if stmanage.get_conf_env() is None:
-        stmanage.set_conf_env(f"bvexchange.toml") 
-
     global chain
     for opt, arg in opts:
-        
-        if opt in ["--conf", "--wallet"]:
-            continue
         
         arg_list = []
         if len(arg) > 0:
             count, arg_list = pargs.split_arg(opt, arg)
 
             print("opt = {}, arg = {}".format(opt, arg_list))
-        if pargs.is_matched(opt, ["chain"]):
+        if pargs.is_matched(opt, ["conf"]):
+            stmanage.set_conf_env(arg)
+        elif pargs.is_matched(opt, ["help"]):
+            pargs.show_args()
+            return
+        elif pargs.is_matched(opt, ["wallet"]):
+            if not arg:
+                pargs.exit_error_opt(opt)
+            dataproof.wallets.update_wallet("ethereum", arg)
+        elif pargs.is_matched(opt, ["chain"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             chain = arg_list[0]
