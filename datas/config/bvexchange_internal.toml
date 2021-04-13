@@ -152,7 +152,7 @@ exchange_async = true
         run = true
     [type_opts.lfilter]
         support= false
-    [type_opts.fundsvls]
+    [type_opts.fundsviolas]
         support = true  
         run = true
         etype  = "funds"
@@ -160,19 +160,7 @@ exchange_async = true
         support = true  
         run = true
         etype  = "funds"
-    [type_opts.fundsvbtc]
-        support = true  
-        run = true
-        etype  = "funds"
-    [type_opts.fundsusdt]
-        support = true  
-        run = true
-        etype  = "funds"
-    [type_opts.fundsvusdt]
-        support = true  
-        run = true
-        etype  = "funds"
-    [type_opts.fundswbtc]
+    [type_opts.fundsethereum]
         support = true  
         run = true
         etype  = "funds"
@@ -442,7 +430,7 @@ exchange_async = true
         type = "swp"
         chain = "violas"
 
-    #the address of permission request funds from funds-server type = liq/map
+    #the address of permission request msg from message-server type = msg
     [[address_list.msg]]
         address = "0000000000000000004252474255524e"
         type = "msg"

@@ -44,8 +44,22 @@ def json_to_dict(data):
         ret = result(error.FAILED, "data is not json format.")
     return ret
 
+map_mods = []
+def get_map_mods():
+    global map_mods
+    if not map_mods:
+        chain_marks = [chain.value[0] for chain in trantype if chain not in (trantype.VIOLAS, trantype.SMS, trantype.UNKOWN)]
+        def create_v2x(mark):
+            return f"v2{mark}m"
+
+        def create_x2v(mark):
+            return f"{mark}2vm"
+        map_mods.extend(list(map(create_v2x, chain_marks)))
+        map_mods.extend(list(map(create_x2v, chain_marks)))
+    return map_mods
+        
 def get_opttype_from_dtype(dtype):
-    if dtype in [datatype.V2LM.value, datatype.L2VM.value, datatype.V2BM.value, datatype.B2VM.value, datatype.V2EM.value, datatype.E2VM.value]:
+    if dtype in get_map_mods():
         return "map"
     elif dtype.startswith("funds"):
         return "funds"
@@ -122,7 +136,7 @@ def parse_tran(transaction):
 
         #funds used
         if datas["type"].startswith("funds"):
-            datas["type"]       = f"funds{data_dict.get('token_id', '').lower()}" #set funds type: fundsvls fundsbtc ...
+            datas["type"]       = f"funds{data_dict.get('chain', '').lower()}" #set funds type: fundsbtc fundsviolas ...
             datas["chain"]      = data_dict.get("chain")
             datas["amount"]     = data_dict.get("amount")
             datas["token_id"]   = data_dict.get("token_id")

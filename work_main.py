@@ -77,6 +77,9 @@ class works(baseobject):
     def __del__(self):
         del self.__threads
 
+    def __init_work_contexts(self):
+        self.receiver_fund_address = stmanage.get_funds_address()
+
     def record_db_name(self):
         return self.__record_db
     
@@ -114,7 +117,7 @@ class works(baseobject):
                             stmanage.get_combine_address(dtype, trantype.BTC.value, True),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
-                            funds = stmanage.get_funds_address()
+                            funds = self.receiver_fund_address
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -141,7 +144,7 @@ class works(baseobject):
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, trantype.BTC.value, False))),
                             list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
-                            funds = stmanage.get_funds_address()
+                            funds = self.receiver_fund_address
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -170,7 +173,7 @@ class works(baseobject):
                             stmanage.get_combine_address(dtype, trantype.VIOLAS.value),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
-                            funds = stmanage.get_funds_address()
+                            funds = self.receiver_fund_address
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -197,7 +200,7 @@ class works(baseobject):
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
                             list(set(stmanage.get_sender_address_list(dtype, trantype.BTC.value, False))),
-                            funds = stmanage.get_funds_address(),
+                            funds = self.receiver_fund_address,
                             combine = stmanage.get_combine_address(dtype, trantype.VIOLAS.value),
                             )
                     self.set_work_obj(obj)
@@ -255,8 +258,7 @@ class works(baseobject):
                     if stmanage.type_is_map(dtype):
                         obj.append_token_id(stmanage.get_support_map_token_id(ttype, dtype))
                     elif stmanage.type_is_funds(dtype):
-                        token_id = stmanage.get_token_id_from_fundstype(dtype)
-                        target_ttype = stmanage.get_trantype_with_token_id(token_id)
+                        target_ttype = stmanage.get_trantype_from_fundstype(dtype)
                         obj.append_token_id(stmanage.get_support_token_id(target_ttype))
                     elif stmanage.type_is_msg(dtype):
                         obj.append_token_id(stmanage.get_support_token_id(ttype))
@@ -366,7 +368,7 @@ class works(baseobject):
                             list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
-                            funds = stmanage.get_funds_address()
+                            funds = self.receiver_fund_address,
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -393,7 +395,7 @@ class works(baseobject):
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, trantype.LIBRA.value, False))),
                             list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
-                            funds = stmanage.get_funds_address()
+                            funds = self.receiver_fund_address,
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -423,7 +425,7 @@ class works(baseobject):
                             stmanage.get_combine_address(dtype, trantype.VIOLAS.value),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
-                            funds = stmanage.get_funds_address()
+                            funds = self.receiver_fund_address,
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -450,7 +452,7 @@ class works(baseobject):
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
                             list(set(stmanage.get_sender_address_list(dtype, trantype.LIBRA.value, False))),
-                            funds = stmanage.get_funds_address(),
+                            funds = self.receiver_fund_address,
                             combine = stmanage.get_combine_address(dtype, trantype.VIOLAS.value),
                             )
                     self.set_work_obj(obj)
@@ -555,7 +557,7 @@ class works(baseobject):
                             stmanage.get_combine_address(dtype, trantype.VIOLAS.value, True),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
-                            funds = stmanage.get_funds_address()
+                            funds = self.receiver_fund_address,
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -612,7 +614,7 @@ class works(baseobject):
                             stmanage.get_combine_address(dtype, trantype.VIOLAS.value, True),
                             stmanage.get_swap_module(),
                             stmanage.get_swap_owner(),
-                            funds = stmanage.get_funds_address()
+                            funds = self.receiver_fund_address,
                             )
                     self.set_work_obj(obj)
                     obj.start()
@@ -692,7 +694,7 @@ class works(baseobject):
                             list(set(stmanage.get_receiver_address_list(dtype, trantype.ETHEREUM.value, False))),
                             list(set(stmanage.get_sender_address_list(dtype, trantype.VIOLAS.value, False))),
                             stmanage.get_map_address(dtype, trantype.ETHEREUM.value, False),
-                            funds = stmanage.get_funds_address()
+                            funds = self.receiver_fund_address,
                             )
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
                     [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
@@ -721,7 +723,7 @@ class works(baseobject):
                             stmanage.get_db(dtype), 
                             list(set(stmanage.get_receiver_address_list(dtype, trantype.VIOLAS.value, False))),
                             list(set(stmanage.get_sender_address_list(dtype, trantype.ETHEREUM.value, False))),
-                            funds = stmanage.get_funds_address(),
+                            funds = self.receiver_fund_address,
                             combine = stmanage.get_combine_address(dtype, trantype.VIOLAS.value),
                             )
                     obj.load_vlsmproof(stmanage.get_vlsmproof_address())
@@ -742,8 +744,7 @@ class works(baseobject):
         try:
             logger.critical("start: fundsxxxex")
             nsec, mod, dtype = self.__get_input_args(**kargs)
-            token_id = stmanage.get_token_id_from_fundstype(dtype)
-            ttype = stmanage.get_trantype_with_token_id(token_id)
+            ttype = stmanage.get_trantype_from_fundstype(dtype)
             while self.__work_looping.get(mod, False):
                 logger.debug(f"looping: {mod}  interval(s): {nsec}")
                 try:
@@ -754,7 +755,7 @@ class works(baseobject):
                             "request_funds_sender" : list(stmanage.get_permission_request_funds_address())
                             }
 
-                    #other chain client
+                    #target chain client
                     kwargs.update(
                             {
                             f"{self.create_nodes_key(ttype)}" : stmanage.get_target_nodes(ttype),
@@ -770,8 +771,9 @@ class works(baseobject):
                             ttype.value,
                             **kwargs
                             )
-                    obj.load_vlsmproof(stmanage.get_vlsmproof_address())
-                    [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
+                    if ttype == trantype.ETHEREUM:
+                        obj.load_vlsmproof(stmanage.get_vlsmproof_address())
+                        [obj.append_contract(token) for token in stmanage.get_support_token_id(trantype.ETHEREUM.value)]
                     self.set_work_obj(obj)
                     obj.start()
                     self.work_looping(obj, mod, nsec)
@@ -994,6 +996,8 @@ class works(baseobject):
             logger.debug("start works")
 
             self.__work_looping = work_mods
+
+            self.__init_work_contexts()
 
             #print(f"work_mods: {work_mods} funcs_map: {self.funcs_map.keys()}")
             for name, state in work_mods.items():
