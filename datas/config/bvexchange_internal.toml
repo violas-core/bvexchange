@@ -37,7 +37,7 @@ exchange_async = true
 
 #connect ethereum chain config
 [[ethereum_nodes]]
-    host = "https://kovan.infura.io/v3/2645261bd8844d0c9ac042c84606502d"
+    host = "https://kovan.infura.io/v3/e1ac6790237a4044bff3b676bae7e257"
     name = "ethereum 1"
 
 #connect violas chain config
