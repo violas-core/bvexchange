@@ -69,7 +69,6 @@ class dbindexbase(enumbase):
     LFILTER = 3
     BFILTER = 4
     EFILTER = 5
-    FUNDSVLS = 6
     MSG      = 7
     #proof datas
     V2LM    = 8
@@ -97,16 +96,14 @@ class dbindexbase(enumbase):
     V2EM   = 63
 
     '''
-    funds spec type = FUNDS + TOKEN_ID
+    funds spec type = FUNDS + CHAIN
     append trantype item when want support new token id
 
     '''
-    FUNDSBTC = 70
-    FUNDSVBTC = 71
-    FUNDSUSDT = 72
-    FUNDSVUSDT = 73
-    FUNDSWBTC = 74
-    FUNDSVWBTC = 75
+    FUNDSVIOLAS     = 70
+    FUNDSBTC        = 71
+    FUNDSETHEREUM   = 72
+    FUNDSLIBRA      = 73
 
 '''
 filter chain type

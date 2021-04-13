@@ -156,6 +156,12 @@ def __get_address_list(atype, mtype, chain_name, full = True):
     return []
 
 
+def __get_type_list(atype, chain_name):
+    chain = to_str_value(chain_name)
+    types =  [info.get("type") for info in setting.setting.address_list.get(atype) \
+            if chain is None or info["chain"] == chain]
+    return types
+
 #maybe use. so keep it until libra support usd eur ...
 #def __get_tokenid_list(atype, mtype, chain = None):
 #    try:
@@ -183,6 +189,10 @@ def get_receiver_msg_list(mtype, chain, full = True):
 
 def get_request_msg_address_list(mtype = None, full = True):
     return __get_address_list("msg", mtype, trantype.VIOLAS, full)
+
+def get_request_funds_address_types():
+    return __get_type_list("funds", trantype.VIOLAS) + ["map"]
+
 '''
    get address for violas account, which have permission for request funds
 '''
@@ -204,12 +214,8 @@ def get_permission_request_funds_address(full = False):
         addrs.extend(filter_addrs)
 
     #Specify the address where you can apply for a token
-    external_request = get_request_funds_address_list("map", False)
-    addrs.extend(external_request)
-    external_request = get_request_funds_address_list("liq", False)
-    addrs.extend(external_request)
-    external_request = get_request_funds_address_list("swp", False)
-    addrs.extend(external_request)
+    for rtype in get_request_funds_address_types():
+        addrs.extend(get_request_funds_address_list(rtype, False))
     return set(addrs)
 
 def get_address_info(atype):
@@ -240,8 +246,8 @@ def get_exchang_chains(mtype):
     try:
         from_chain  = map_chain_name.get(mtype[0])
         to_chain    = map_chain_name.get(mtype[2])
-        token_id = get_token_id_from_fundstype(mtype)
-        to_chain = get_trantype_with_token_id(token_id).value if token_id else to_chain
+        ttype = get_trantype_from_fundstype(mtype)
+        to_chain = ttype.value if ttype else to_chain
         from_chain =trantype.VIOLAS.value if type_is_funds(mtype) else from_chain
         from_chain = trantype.VIOLAS.value if type_is_msg(mtype) else from_chain
         to_chain = trantype.VIOLAS.value if type_is_msg(mtype) else to_chain
@@ -502,8 +508,8 @@ def get_support_dtypes():
     mods = get_support_mods()
     return [mtype.value for mtype in datatype if mtype.value in mods]
 
-def get_token_id_from_fundstype(funds_type):
-    return funds_type[5:] if type_is_funds(funds_type) else None
+def get_trantype_from_fundstype(funds_type):
+    return trantype(funds_type[5:]) if type_is_funds(funds_type) else None
 
 def get_caches():
     return setting.datas
@@ -569,7 +575,6 @@ def get_sms_templete(lang = "ch"):
 def get_addressbook(dtype):
     return setting.setting.address_book
 
-    
 def get_support_msg_min_version(chain_name):
     chain = to_str_value(chain_name)
     return setting("msg_min_version").get(chain_name, 0)
@@ -665,6 +670,7 @@ def main():
     json_print(get_vlsmproof_address())
     print(f"max times = {get_max_times()}")
     print(f"hav permission request funds addresses = {get_permission_request_funds_address()}")
+    print(f"request funds addresses types = {get_request_funds_address_types()}")
     print(f"get_support_dtypes:{get_support_dtypes()}")
     print(f"get sms templete(ch): {get_sms_templete('ch')}")
     print(f"get sms templete(en): {get_sms_templete('en')}")
@@ -672,7 +678,7 @@ def main():
     print(f"get msg min version : {get_support_msg_min_version('violas')}")
     print(f"DATAS_ROOT_PATH : {DATAS_ROOT_PATH}")
     print(f"datas_root_path : {get_datas_root_path()}")
-    print(f"funds receiver: {stmanage.get_receiver_address_list('funds', trantype.VIOLAS)}")
+    print(f"funds receiver: {get_receiver_address_list('funds', trantype.VIOLAS)}")
 
 
 
