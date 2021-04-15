@@ -57,6 +57,9 @@ class vlsmproofdatasslot():
     def proof_info_with_version(self, version):
         return self._functions.proofInfo(version).call()
 
+    def address_is_exists(self, address):
+        return self._functions.accountIsExists(address).call()
+
     def proof_address_sequence(self, address):
         return self._functions.accountSequence(address).call()
 

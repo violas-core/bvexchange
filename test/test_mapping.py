@@ -176,9 +176,16 @@ def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = T
         assert ret.state == error.SUCCEED, f"get {token_id} min amount failed"
         amount = max(2000000, ret.datas)
 
-        ret = eclient.get_address_sequence(from_address)
+        ret = eclient.address_is_exists(from_address)
         assert ret.state == error.SUCCEED, ret.message
-        sequence = ret.datas
+        found = ret.datas
+
+        if found:
+            ret = eclient.get_address_sequence(from_address)
+            assert ret.state == error.SUCCEED, ret.message
+            sequence = ret.datas
+        else: 
+            sequence = -1
 
         ret = eclient.allowance(from_address, to_address, token_id)
         assert ret.state == error.SUCCEED, ret.message
