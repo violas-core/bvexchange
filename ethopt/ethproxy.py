@@ -306,6 +306,9 @@ class ethproxy():
 
         return balances
 
+    def account_is_exists(self, address):
+        return self.tokens[VLSMPROOF_DATAS_NAME].address_is_exists(address)
+
     def get_sequence_number(self, address):
         return self.tokens[VLSMPROOF_DATAS_NAME].proof_address_sequence(address)
 
