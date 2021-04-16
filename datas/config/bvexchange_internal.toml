@@ -92,7 +92,7 @@ exchange_async = true
 #ethereum contract for mapping erc20 token
 [ethereum_tokens]
     [ethereum_tokens.vlsmproof]
-        address = "0x8FC1392F990A9EFfB5B9Ac5A49e2790B4B091EC8"
+        address = "0xb2afe089427f0c31E705DF80F73487cBFdEB28c3"
         support= true  
 
 # tokens info 
