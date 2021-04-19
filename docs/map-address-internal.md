@@ -14,17 +14,16 @@ violas: internal chain
 v1.0.1
 
 ## Tokens
-
-    * BTC : bitcoin token
-    * vBTC : violas token of BTC
-    * usdt : ethereum erc20 token (USDT)
-    * vUSDT : violas token of usdt
+* BTC : bitcoin token
+* vBTC : violas token of BTC
+* usdt : ethereum erc20 token (USDT)
+* vUSDT : violas token of usdt
 
 ## Support mapping type
-    * BTC -> vBTC
-    * vBTC -> BTC
-    * usdt -> vUSDT
-    * vUSDT -> usdt
+* BTC -> vBTC
+* vBTC -> BTC
+* usdt -> vUSDT
+* vUSDT -> usdt
 
 ## receiver or contract address list
 
