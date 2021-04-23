@@ -372,6 +372,7 @@ class ethproxy():
                     "sender": metadata[4],
                     "receiver":self.tokens_address[VLSMPROOF_MAIN_NAME],
                     "amount": metadata[5],
+                    "fee": metadata[7],
                     "token_owner": metadata[3],
                     "sequence_number":metadata[1],
                     "version":start,

@@ -7,4 +7,9 @@ web3
 redis
 gunicorn
 readline
+pylama
+black
+pyre-check==0.0.58
+pytest-cov
+pdoc3
 
