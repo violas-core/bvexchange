@@ -140,7 +140,7 @@ def allowance(from_address, to_address, token_id):
     assert ret.state == error.SUCCEED, ret.message
     print(f"allowance balance :{ret.datas}")
 
-def get_balance(address, token_id, module):
+def get_balance(address, token_id, module = ""):
     logger.debug(f"start get_balance address= {address} module = {module} token_id= {token_id}")
     client = get_ethclient()
     ret = client.get_balance(address, token_id, module)
