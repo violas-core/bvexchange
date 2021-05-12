@@ -75,6 +75,9 @@ def mint_eth_coin(token_id, receiver, amount = 100):
     now = int(time.time())
     wait = 60
 
+    if not token_id:
+        raise Exception("token_id({token_id}) is invalid")
+
     #wait diff
     diff = int(time.time()) - wait - receiver_wait.get(receiver, 0)
     #if diff < 0: return result(error.FAILED, f"wait {0 - diff}s").to_json()
@@ -153,19 +156,26 @@ def faucet():
     message = ""
     ret = {"state" : "SUCCEED", "message": message}
     stmanage.set_conf_env("../bvexchange.toml")
-    chain = ""
+    chain = "ethereum"
+    token = "usdt"
+    token_list = ["wbtc", "usdt", "hbtc"]
     if request.method == "POST":
-        address = request.form['address']
-        chain = request.form['chain']
-        print(f"chain={chain} address = {address}")
+        address     = request.form['address']
+        chain       = request.form['chain']
+        token       = request.form['token_id']
+        print(f"chain={chain} token = {token} address = {address}")
         if chain == "ethereum":
-            ret = mint_eth_coin("usdt", address)
+            ret = mint_eth_coin(token, address)
         elif chain == "diem":
             ret = mint_diem_coin("XUS", address)
+            token= "XUS"
         else:
             ret = {"state" : "FAILED", "message": "not found chain name"}
-        print(ret)
-    return render_template("index.html", chain = chain, address = address, ret = ret)
+    else:
+        client = get_ethclient();
+        token_list = client.get_token_list().datas
+
+    return render_template("index.html", chain = chain, address = address, token= token, token_list = token_list, ret = ret)
 
 with app.test_request_context() as trc:
     print("faucet url %s" % url_for("faucet"))
