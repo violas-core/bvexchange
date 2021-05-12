@@ -69,15 +69,8 @@ def get_ethproof(dtype = "v2b"):
 
     return requestclient(name, stmanage.get_db(dtype))
 
-def show_token_list(module = None):
-    logger.debug(f"start show_token_name({module})")
-    client = get_ethclient()
-    ret = client.get_token_list(module)
-    assert ret.state == error.SUCCEED, "get tokens failed."
-    json_print(ret.datas)
-
-def show_all_token_list():
-    logger.debug(f"start show_all_token_list()")
+def show_token_list():
+    logger.debug(f"start show_token_name()")
     client = get_ethclient()
     ret = client.get_token_list()
     assert ret.state == error.SUCCEED, "get tokens failed."
@@ -317,7 +310,6 @@ def init_args(pargs):
     pargs.append(get_token_min_amount, "get token min amount of main contract.")
     pargs.append(get_token_max_amount, "get token min amount of main contract.")
     pargs.append(show_token_list, "show token list.")
-    pargs.append(show_all_token_list, "show token list.")
     pargs.append(show_proof_contract_address, "show proof main address(args = main datas state).")
 
 

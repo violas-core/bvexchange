@@ -107,13 +107,13 @@ exchange_async = true
     [token_info.tokens]
         [token_info.tokens.violas]
             token = ["VLS"] 
-            mtoken = ["vBTC", "vUSDT"]
+            mtoken = ["vBTC", "vUSDT", "vWBTC"]
         [token_info.tokens.libra]
             token = []
         [token_info.tokens.diem]
             token = ['XUS']
         [token_info.tokens.ethereum]
-            token = ["usdt"]
+            token = ["usdt", "wbtc"]
         [token_info.tokens.btc]
             token = ["BTC"]
 
@@ -123,6 +123,9 @@ exchange_async = true
     [[token_info.mapping]]
         token = "ethereum.usdt"
         mtoken = "violas.vUSDT"
+    [[token_info.mapping]]
+        token = "ethereum.wbtc"
+        mtoken = "violas.vWBTC"
 
 #violas <-> libra token map
 #violas coin:VLSAAA map to libra coin:BBB:  VLSAAA(violas chain) -uniswap-> LBRBBB(violas chain) -map-> BBB(libra chain)
