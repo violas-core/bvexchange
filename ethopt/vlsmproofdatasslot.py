@@ -40,15 +40,15 @@ class vlsmproofdatasslot():
         return self._functions.transferProof(token_address, datas)
 
     def raw_transfer_proof_state_with_addr(self, address, sequence, state):
-        if isinstance(state, str)
+        if isinstance(state, str):
             return self._functions.upAUSState(address, sequence, state)
-        else
+        else:
             return self._functions.upAUUState(address, sequence, state)
 
     def raw_transfer_proof_state_with_version(self, version, state):
-        if isinstance(state, str)
+        if isinstance(state, str):
             return self._functions.upUSState(version, state)
-        else
+        else:
             return self._functions.upUUState(version, state)
 
     def manage_role_state(self, address):

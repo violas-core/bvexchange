@@ -149,6 +149,9 @@ class ethproxy():
             dataproof.configs.set_config(key, address)
         return address
 
+    def local_contract_info(self):
+        json_print(contract_codes)
+
     def __get_contract_address_with_name(self, vmpslot, name):
         key = f"{name}_address"
         address = dataproof.configs(key)
@@ -395,6 +398,6 @@ class ethproxy():
 
 def main():
     client = clientproxy.connect("")
-    json_print(client.get_latest_version())
+    client.local_contract_info();
 if __name__ == "__main__":
     main()
