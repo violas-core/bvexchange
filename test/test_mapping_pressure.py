@@ -61,7 +61,7 @@ name = "testmapping"
 logger = log.logger.getLogger(name)
 class Tokens(Enum):
     VIOLAS_BTC = "vBTC"
-    VIOLAS_USDT = "vUSDT"
+    VIOLAS_USDT = "VUSDT"
     BTC_BTC  = "BTC"
     ETHEREUM_USDT = "usdt"
 

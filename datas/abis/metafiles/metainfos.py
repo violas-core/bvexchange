@@ -4,9 +4,9 @@ import os
 import typing
 
 abi_files = {
-        "main" : "ViolasMProofMain.abi",
-        "datas": "ViolasMProofDatas.abi",
-        "state": "ViolasMProofState.abi"
+        "main" : "ViolasMProofMain.json",
+        "datas": "ViolasMProofDatas.json",
+        "state": "ViolasMProofState.json"
         }
 contract_conf_files = {
         "internal" : "vlscontract_internal.json",
@@ -33,7 +33,8 @@ def load_abi_address(module : MOUDLE, chain_type : CHAIN):
 
     abi_data = ""
     with open(abis_file, "r") as fs:
-        abi_data = fs.read();
+        confs   = json.load(fs)
+        abi_data = confs["abi"]
     
     with open(conf_file, "r") as fs:
         confs   = json.load(fs)

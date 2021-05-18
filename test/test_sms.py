@@ -30,7 +30,7 @@ def test_smsclient():
     #ret = client.send_message("+8618601999980", f"testclient:{time.strftime('%Y-%m-%d_%H:%M:%S', time.localtime())}")
     books = stmanage.get_addressbook("msg")
     for item in books:
-        ret = client.send_message(item["mobile"], f"vUSDT#Mint#v{item['mobile'][:8]}", item["lang"])
+        ret = client.send_message(item["mobile"], f"VUSDT#Mint#v{item['mobile'][:8]}", item["lang"])
         print(ret)
 
 def test_post():

@@ -32,7 +32,7 @@ token_min_amount = {
         }
 
 default_funds_address = "00000000000000000042524746554e44"
-#token_list = ["VLS", "vUSDT", "vBTC"]
+#token_list = ["VLS", "VUSDT", "VBTC"]
 token_list = []
 opt_list = ["e2vm", "v2em", "v2bm", "b2vm"]
 
