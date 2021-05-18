@@ -10,7 +10,7 @@ db_echo=false
 
 #syncing proof flag ; default true
 #false state is no-safe
-syncing_mod = true
+syncing_mod = false
 
 #true : get decimals contract-datas ... info from ethereum chain, 
 #false: get from local contract abi files; default: false. 
@@ -37,7 +37,7 @@ exchange_async = true
 
 #connect ethereum chain config
 [[ethereum_nodes]]
-    host = "https://kovan.infura.io/v3/2645261bd8844d0c9ac042c84606502d"
+    host = "https://kovan.infura.io/v3/e1ac6790237a4044bff3b676bae7e257"
     name = "ethereum 1"
 
 #connect violas chain config
@@ -67,7 +67,7 @@ exchange_async = true
 [db_default]
     host = "127.0.0.1"
     port = 6378
-    password = "violas"
+    password = "af955c1d62a74a7543235dbb7fa46ed98948d2041dff67dfdb636a54e84f91fb"
     step = 100
 
 [[db_list]]
@@ -443,7 +443,7 @@ exchange_async = true
 [[address_book]]
     mobile = "+8613811939280"
     lang = "ch"
-    interval = 1
+    interval = 3600
     type = "msg"
 
 [[sms_templete]]
