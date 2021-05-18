@@ -501,7 +501,8 @@ class violasclient(baseobject):
         @return array of transaction
         '''
         try:
-            datas = self.__client.get_account_transactions(address, int(start), int(limit), include_events)
+            (_, addr) = self.split_full_address(address).datas
+            datas = self.__client.get_account_transactions(addr, int(start), int(limit), include_events)
             ret = result(error.SUCCEED, "", datas)
         except Exception as e:
             ret = parse_except(e)

@@ -149,6 +149,9 @@ class ethproxy():
             dataproof.configs.set_config(key, address)
         return address
 
+    def local_contract_info(self):
+        json_print(contract_codes)
+
     def __get_contract_address_with_name(self, vmpslot, name):
         key = f"{name}_address"
         address = dataproof.configs(key)
@@ -306,6 +309,9 @@ class ethproxy():
 
         return balances
 
+    def account_is_exists(self, address):
+        return self.tokens[VLSMPROOF_DATAS_NAME].address_is_exists(address)
+
     def get_sequence_number(self, address):
         return self.tokens[VLSMPROOF_DATAS_NAME].proof_address_sequence(address)
 
@@ -369,6 +375,7 @@ class ethproxy():
                     "sender": metadata[4],
                     "receiver":self.tokens_address[VLSMPROOF_MAIN_NAME],
                     "amount": metadata[5],
+                    "fee": metadata[7],
                     "token_owner": metadata[3],
                     "sequence_number":metadata[1],
                     "version":start,
@@ -391,6 +398,6 @@ class ethproxy():
 
 def main():
     client = clientproxy.connect("")
-    json_print(client.get_latest_version())
+    client.local_contract_info();
 if __name__ == "__main__":
     main()
