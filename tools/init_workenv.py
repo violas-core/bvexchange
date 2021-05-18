@@ -143,7 +143,7 @@ def init_args(pargs):
     pargs.append("help", "show arg list.")
     pargs.append("conf", "config file path name. default:bvexchange.toml, find from . and /etc/bvexchange/", True, "toml file", priority = 5)
     pargs.append("wallet", "inpurt wallet file or mnemonic", True, "file name/mnemonic", priority = 13, argtype = parseargs.argtype.STR)
-    pargs.append("token_list", f"inpurt support token list. \"\": get tokens from configure file, if not use this arg, use default: {token_list}.", True, optional_arglist = json.dumps(stmanage.get_support_token_id("violas")), priority = 13, callback = use_tokens)
+    pargs.append("token_list", f"inpurt support token list. \"\": get tokens from configure file, if not use this arg, use default: {token_list}.", True, optional_arglist = json.dumps(stmanage.get_support_token_id("violas")) if stmanage.is_loaded_conf() else "args from conf file", priority = 13, callback = use_tokens)
     pargs.append("opt_list", f"inpurt support mods list. \"\": get opts(dtypes) from configure file, if not use this arg, use default:{opt_list}.", True, optional_arglist = json.dumps(stmanage.get_support_dtypes()), priority = 13, callback = use_opts)
     pargs.append(init_all, "init all address.")
     pargs.append(init_one, "init target address")
@@ -187,6 +187,9 @@ def run(argc, argv, exit = True):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
             chain = arg_list[0]
+        elif pargs.is_matched(opt, ["help"]):
+            pargs.show_args()
+            return
         elif pargs.is_matched(opt, ["conf"]):
             if len(arg_list) != 1:
                 pargs.exit_error_opt(opt)
