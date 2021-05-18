@@ -284,9 +284,16 @@ class ethclient(baseobject):
             ret = parse_except(e)
         return ret
 
+    def address_is_exists(self, address):
+        try:
+            state = self.__client.account_is_exists(address)
+            ret = result(error.SUCCEED, "", state)
+        except Exception as e:
+            ret = parse_except(e)
+        return ret
+
     def get_address_sequence(self, address):
         try:
-            print(address)
             num = self.__client.get_sequence_number(address)
             ret = result(error.SUCCEED, "", num)
         except Exception as e:

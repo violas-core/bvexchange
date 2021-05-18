@@ -27,6 +27,7 @@
 
     </head>
     <body background="">
+
         <form class = "info">
             <p>...</p>
         </form>
@@ -34,10 +35,20 @@
             <p>token on ethereum/diem chain </p>
         </form>
         <form action="/faucet/" method="post" class="main">
-            <p><input name = "chain" list="chain_names" size = 10 value="{{chain}}"><input name="address" size = 75 value="{{ address }}"><button type="subbmit">submit</button></p>
+            <p>
+                <input name = "chain" list="chain_names" size = 10 value="{{chain}}">
+                <input name = "token" list="token_list" size = 10 value="{{token}}">
+                <input name="address" size = 75 value="{{ address }}">
+                <button type="subbmit">submit</button>
+            </p>
             <datalist id = "chain_names">
                 <option value = "ethereum"></option>
                 <option value = "diem"></option>
+            </datalist>
+            <datalist id = "token_list">
+                {% for token_id in token_list %}
+                <p><option value = {{token_id}}></option></p>
+                {%  endfor %}
             </datalist>
         </form>
         <form class = "message" >

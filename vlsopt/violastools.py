@@ -477,12 +477,12 @@ def init_args(pargs):
     pargs.append(get_metadata, "get the blockchain / ledger metadata")
 
     #swap opt
-    pargs.append(show_swap_registered_tokens, "show registered tokens for module.")
-    pargs.append(swap, "swap violas chain token.")
-    pargs.append(check_is_swap_address, "check address is swap address.")
-    pargs.append(swap_get_output_amount, "get swap out amount .")
-    pargs.append(swap_get_liquidity_balances, "get swap liquidity balances .")
-    pargs.append(swap_remove_liquidity, "remover swap liquidity .")
+    #pargs.append(show_swap_registered_tokens, "show registered tokens for module.")
+    #pargs.append(swap, "swap violas chain token.")
+    #pargs.append(check_is_swap_address, "check address is swap address.")
+    #pargs.append(swap_get_output_amount, "get swap out amount .")
+    #pargs.append(swap_get_liquidity_balances, "get swap liquidity balances .")
+    #pargs.append(swap_remove_liquidity, "remover swap liquidity .")
 
     #violas server
     pargs.append(create_child_vasp_account_from_server, "create child vasp account from violas server, you are't owner of parent vasp")

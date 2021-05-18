@@ -60,9 +60,9 @@ from dataproof import dataproof
 name = "testmapping"
 logger = log.logger.getLogger(name)
 class Tokens(Enum):
-    VIOLAS_BTC = "vBTC"
-    VIOLAS_USDT = "vUSDT"
-    VIOLAS_WBTC= "vWBTC"
+    VIOLAS_BTC = "VBTC"
+    VIOLAS_USDT = "VUSDT"
+    VIOLAS_WBTC= "VWBTC"
     BTC_BTC  = "BTC"
     ETHEREUM_USDT = "usdt"
     ETHEREUM_WBTC= "wbtc"
@@ -176,9 +176,16 @@ def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = T
         assert ret.state == error.SUCCEED, f"get {token_id} min amount failed"
         amount = max(2000000, ret.datas)
 
-        ret = eclient.get_address_sequence(from_address)
+        ret = eclient.address_is_exists(from_address)
         assert ret.state == error.SUCCEED, ret.message
-        sequence = ret.datas
+        found = ret.datas
+
+        if found:
+            ret = eclient.get_address_sequence(from_address)
+            assert ret.state == error.SUCCEED, ret.message
+            sequence = ret.datas
+        else: 
+            sequence = -1
 
         ret = eclient.allowance(from_address, to_address, token_id)
         assert ret.state == error.SUCCEED, ret.message
@@ -401,7 +408,7 @@ def test_b2vm():
     auth, to_addr = split_full_address(vls_btc_receiver)
     map_tran_id = f"{to_addr}_{sequence}"
     vclient._logger.debug(f'''
-    vBTC receiver = {vls_btc_receiver}
+    VBTC receiver = {vls_btc_receiver}
     from address = {from_address}
     to address = {to_address}
     map amount : {map_amount} satoshi == {map_amount / 100} {Tokens.VIOLAS_BTC.value}
