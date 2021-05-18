@@ -60,7 +60,7 @@ from dataproof import dataproof
 name = "testmapping"
 logger = log.logger.getLogger(name)
 class Tokens(Enum):
-    VIOLAS_BTC = "vBTC"
+    VIOLAS_BTC = "VBTC"
     VIOLAS_USDT = "VUSDT"
     BTC_BTC  = "BTC"
     ETHEREUM_USDT = "usdt"
@@ -262,7 +262,7 @@ def test_b2vm():
     auth, to_addr = split_full_address(vls_btc_receiver)
     map_tran_id = f"{to_addr}_{sequence}"
     vclient._logger.debug(f'''
-    vBTC receiver = {vls_btc_receiver}
+    VBTC receiver = {vls_btc_receiver}
     from address = {from_address}
     to address = {to_address}
     map amount : {map_amount} satoshi == {map_amount / 100} {Tokens.VIOLAS_BTC.value}
