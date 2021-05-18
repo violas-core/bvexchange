@@ -66,6 +66,7 @@ def show_token_list(module):
     ret = client.get_token_list(module)
     assert ret.state == error.SUCCEED, "get tokens failed."
     json_print(ret.datas)
+    return ret
 
 def show_all_token_list():
     logger.debug(f"start show_all_token_list()")
@@ -73,9 +74,10 @@ def show_all_token_list():
     ret = client.get_token_list()
     assert ret.state == error.SUCCEED, "get tokens failed."
     json_print(ret.datas)
+    return ret
 
 def mint_coin(address, amount, token_id, module = None):
-    logger.debug("start min_coin({address}, {amount}, {token_id}, {module})")
+    logger.debug(f"start min_coin({address}, {amount}, {token_id}, {module})")
     client = get_violasclient()
     wallet = get_violaswallet()
 
@@ -83,6 +85,33 @@ def mint_coin(address, amount, token_id, module = None):
     assert ret.state == error.SUCCEED, "mint_coin failed."
 
     print(client.get_balance(address, token_id, module).datas)
+    return ret
+
+def get_token_list(vclient, stmanage):
+    global token_list
+    if not token_list or len(token_list) <= 0:
+        token_list = stmanage.get_support_token_id(chain)
+    for token_id in token_list:
+        assert vclient.token_id_effective(token_id).datas, f"token id: {token_id} is invalid." 
+    return token_list
+
+def init_funds_account(min_amount):
+    min_amount = int(min_amount)
+    client = get_violasclient()
+    wallet = get_violaswallet()
+
+    address = "00000000000000000042524746554e44"
+    ret = client.get_token_list();
+    tokens = ret.datas
+    for token_id in tokens:
+        if token_id in ("XDX", "VLS", "XUS"): continue;
+        cur_amount = client.get_balance(address, token_id).datas
+        cur_amount = int(cur_amount)
+        if (cur_amount < min_amount):
+            mint_coin(address, min_amount - cur_amount, token_id)
+            assert ret.state == error.SUCCEED, f"mint_coin {token_id} failed."
+    get_balances(address)
+
 
 def bind_token_id(address, token_id, gas_token_id):
     logger.debug(f"start bind_token_id({address}, {token_id}, {gas_token_id}")
@@ -97,6 +126,7 @@ def bind_token_id(address, token_id, gas_token_id):
     ret = client.bind_token_id(account, token_id, gas_token_id)
     assert ret.state == error.SUCCEED
     print(client.get_account_state(address).datas)
+    return ret
 
 def send_coin(from_address, to_address, amount, token_id, module = None, data = None):
     wallet = get_violaswallet()
@@ -112,24 +142,28 @@ def send_coin(from_address, to_address, amount, token_id, module = None, data = 
     ret = client.send_coin(account, to_address, amount, token_id, module, data)
     assert ret.state == error.SUCCEED, ret.message
     print(f"cur balance :{client.get_balance(account.address, token_id, module).datas}")
+    return ret
 
 def get_balance(address, token_id):
     logger.debug(f"start get_balance address= {address} token_id= {token_id}")
     client = get_violasclient()
     ret = client.get_balance(address, token_id, None)
     logger.debug("balance: {0}".format(ret.datas))
+    return ret
 
 def get_balances(address):
     logger.debug(f"start get_balances address= {address}")
     client = get_violasclient()
     ret = client.get_balances(address)
     logger.debug("balance: {0}".format(ret.datas))
+    return ret
 
 def get_latest_version():
     logger.debug(f"start get_latest_version")
     client = get_violasclient()
     ret = client.get_latest_transaction_version()
     logger.debug("latest version: {0}".format(ret.datas))
+    return ret
 
 def __show_transactions(datas, datatype):
     if datas is None or len(datas) == 0:
@@ -167,6 +201,7 @@ def get_transactions(start_version, limit = 1, fetch_event = True, datatype = "f
         return
 
     __show_transactions(ret.datas, datatype)
+    return ret
 
 def get_account_transactions(address, start, limit = 1, fetch_event = True, datatype = "filter"):
     '''
@@ -185,24 +220,28 @@ def get_account_transactions(address, start, limit = 1, fetch_event = True, data
         return
 
     __show_transactions(ret.datas, datatype)
+    return ret
 
 def get_address_version(address):
     logger.debug(f"start get_address_version({address})")
     client = get_violasclient()
     ret = client.get_address_version(address)
     logger.debug("version: {0}".format(ret.datas))
+    return ret
 
 def get_address_sequence(address):
     logger.debug(f"start get_address_sequence({address})")
     client = get_violasclient()
     ret = client.get_address_sequence(address)
     logger.debug("version: {0}".format(ret.datas))
+    return ret
 
 def get_transaction_version(address, sequence):
     logger.debug(f"start get_transaction_version({address}, {sequence})")
     client = get_violasclient()
     ret = client.get_transaction_version(address, sequence)
     logger.debug("version: {0}".format(ret.datas))
+    return ret
 
 def create_child_vasp_account(parent_vasp_address, child_address, auth_key_prefix):
     logger.debug(f"start create_child_vasp_account({parent_vasp_address}, {child_address}, {auth_key_prefix})")
@@ -213,22 +252,26 @@ def create_child_vasp_account(parent_vasp_address, child_address, auth_key_prefi
 
     ret = client.create_child_vasp_account(parent_vasp_account, child_address, auth_key_prefix)
     logger.debug("result: {0}".format(ret.datas))
+    return ret
 
 def get_events(key, start = 0, limit = 10):
     client = get_violasclient()
     ret = client.get_events(key, start, limit)
     print(ret.datas)
+    return ret
 
 def get_events_with_proof(key, start = 0, limit = 10):
     client = get_violasclient()
     ret = client.get_events_with_proof(key, start, limit)
     print(ret.datas)
+    return ret
 
 def get_metadata(version = None):
     client = get_violasclient()
     ret = client.get_metadata(version)
     print(type(ret.datas))
     json_print(ret.datas.to_json())
+    return ret
 
 def decode_address(address, chain_id = 2):
     wallet = get_violaswallet()
@@ -455,6 +498,7 @@ def init_args(pargs):
     #client
     pargs.append(bind_token_id, "bind address to token_id.")
     pargs.append(mint_coin, "mint some(amount) token(module) to target address.")
+    pargs.append(init_funds_account, "[test] init funds account.")
     pargs.append(send_coin, "send token(coin) to target address")
     pargs.append(get_balance, "get address's token(module) amount.")
     pargs.append(get_balances, "get address's tokens.")
