@@ -7,6 +7,7 @@ sys.path.append("..")
 import setting as config_setting
 
 DATAS_ROOT_PATH = "datas_root_path"
+DATAS_DB_PATH   = "datas_db_path"
 _default_value = {}
 class dataproof():
     ADDRS_SPLIT = ","
@@ -95,9 +96,9 @@ class configdatas(dataproof):
         self.set_default_value("gas", {"violas": 0})
         self.set_default_value("cmd_listen", {"host":"127.0.0.1", "port": 8055, "authkey":b"violas bridge communication"})
         self.set_default_value(DATAS_ROOT_PATH, "./datas/")
+        self.set_default_value(DATAS_DB_PATH, "./datas/localdbs/")
 
     def __getattr__(self, name):
-        print(f"{name}----")
         if name == "setting":
             return config_setting.setting
 

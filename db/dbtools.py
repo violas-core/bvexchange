@@ -32,22 +32,18 @@ from dataproof import dataproof
 name = "dbtools"
 logger = log.logger.getLogger(name)
 def get_localdb(id):
-    return localdb(name, f"{id}.db", datas_path())
-
-def datas_path():
-    project_path = root_path()
-    datas_path = os.path.join(project_path, dataproof.configs("datas_root_path")) 
-    path = os.path.abspath(os.path.join(datas_path, "."))
-    return path
+    return localdb(name, f"{id}.db", create = False, path = db_files_path())
 
 def db_files_path():
-    path = os.path.abspath(os.path.join(datas_path(), localdb.cache_name()))
+    project_path = root_path()
+    datas_path = os.path.join(project_path, dataproof.configs(dataproof.DATAS_DB_PATH)) 
+    path = os.path.abspath(os.path.join(datas_path, "."))
     print(path)
     return path
 
 def db_ids():
     file_names = os.listdir(db_files_path())
-    ids = [name.replace(".db", "") for name in file_names]
+    ids = [name.replace(".db", "") for name in file_names if name.endswith(".db")]
     json_print(ids)
     return ids
 
