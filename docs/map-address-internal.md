@@ -20,7 +20,7 @@ v1.0.1
 * VUSDT : violas token of usdt
 
 ## Support mapping type
-* BTC -> vBTC
+* BTC -> VBTC
 * VBTC -> BTC
 * usdt -> VUSDT
 * VUSDT -> usdt
@@ -32,8 +32,8 @@ v1.0.1
  ustd     | 0x6f08730dA8e7de49a4064d2217c6B68d7E61E727 | contract | kovan(ethereum) | call approve
  proof    | 0xc6aC75b3B3f6E48Ac1228a34C2732d1F0b9BF934 | contract | kovan(ethereum) | call transferProof
  map-ERC20| 00000000000000000042524755534454           | DD       | violas          | receiver address of mapping: map-coin -> ethereum erc20 token
- map-BTC  | 0000000000000000004252472d425443           | DD       | violas          | receiver address of mapping: vBTC -> BTC 
- map-vBTC | 2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB        | address  | bitcoin         | receiver address of mapping: BTC -> vBTC
+ map-BTC  | 0000000000000000004252472d425443           | DD       | violas          | receiver address of mapping: VBTC -> BTC 
+ map-VBTC | 2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB        | address  | bitcoin         | receiver address of mapping: BTC -> VBTC
  funds    | 00000000000000000042524746554e44           | DD       | violas          | funds manager
  
 
