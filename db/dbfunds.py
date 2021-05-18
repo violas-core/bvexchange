@@ -70,7 +70,7 @@ class dbfunds(baseobject):
     def __init_db(self, dbfile, create = True, path = None):
         db_echo = False
 
-        path = os.path.abspath(os.path.join(path, "localdbs")) if path else "."
+        path = path if path else "."
         if path is not None:
             if not os.path.exists(path):
                 os.makedirs(path)

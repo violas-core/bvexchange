@@ -140,9 +140,10 @@ class exbase(baseobject):
         self.append_property("swap_module", kwargs.get("swap_module"))
         self.append_property("swap_owner", kwargs.get("swap_owner"))
 
-        self.append_property("db", localdb(self.name(), f"{self.from_chain}_{self.dtype}.db"), dataproof.configs("datas_root_path"))
+        print(f"+++++++++++++ set_local_workspace+++++++++++++++++++++")
+        self.append_property("db", localdb(self.name(), f"{self.from_chain}_{self.dtype}.db", path = dataproof.configs(dataproof.DATAS_DB_PATH)))
         self.append_property("funds_address", kwargs.get("funds"))
-        self.append_property("db_funds", localfunds(self.name(), f"request_funds.db", dataproof.configs("datas_root_path")))
+        self.append_property("db_funds", localfunds(self.name(), f"request_funds.db", path = dataproof.configs(dataproof.DATAS_DB_PATH)))
 
         for ttype in trantype:
             if ttype == trantype.UNKOWN:
