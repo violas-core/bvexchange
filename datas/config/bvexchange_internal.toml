@@ -302,7 +302,8 @@ exchange_async = true
         chain = "violas"
 
     [[address_list.receiver]]
-        address = "0x8FC1392F990A9EFfB5B9Ac5A49e2790B4B091EC8"
+        #vlsmproofmain address
+        address = "0xc6aC75b3B3f6E48Ac1228a34C2732d1F0b9BF934"
         type = "e2vm"
         chain = "ethereum"
 
