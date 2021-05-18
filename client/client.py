@@ -86,6 +86,10 @@ def __md_initworkenv():
     from tools import init_workenv
     __use_module("initworkenv", init_workenv)
 
+def __md_dbtools():
+    from db import dbtools
+    __use_module("dbtools", dbtools)
+
 def use(module = None):
     START_SYMBOL = "__md_"
     support_module = [key[len(START_SYMBOL):] for key in globals() if key.startswith(START_SYMBOL)]
