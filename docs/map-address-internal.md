@@ -15,15 +15,15 @@ v1.0.1
 
 ## Tokens
 * BTC : bitcoin token
-* vBTC : violas token of BTC
+* VBTC : violas token of BTC
 * usdt : ethereum erc20 token (USDT)
-* vUSDT : violas token of usdt
+* VUSDT : violas token of usdt
 
 ## Support mapping type
 * BTC -> vBTC
-* vBTC -> BTC
-* usdt -> vUSDT
-* vUSDT -> usdt
+* VBTC -> BTC
+* usdt -> VUSDT
+* VUSDT -> usdt
 
 ## receiver or contract address list
 
