@@ -70,6 +70,7 @@ class dblocal(baseobject):
         BFAILED     = 80    #burn mtoken failed
         BSUCCEED    = 81    #burn mtoken succeed
         CONTINUE    = 100
+        MANUALSTOP  = 125   #manual stop
         COMPLETE    = 128   #change state is confirmed
     
     #exc_traceback_objle : info
@@ -93,6 +94,10 @@ class dblocal(baseobject):
     @init_state.setter
     def init_state(self, value):
         self._inited = value
+
+    @classmethod
+    def cache_name(self):
+        return "localdbs"
 
     def __init_db(self, dbfile, create = True, path = None):
         db_echo = False

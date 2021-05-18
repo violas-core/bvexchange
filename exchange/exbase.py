@@ -142,7 +142,7 @@ class exbase(baseobject):
 
         self.append_property("db", localdb(self.name(), f"{self.from_chain}_{self.dtype}.db"), dataproof.configs("datas_root_path"))
         self.append_property("funds_address", kwargs.get("funds"))
-        self.append_property("db_funds", localfunds(self.name(), f"request_funds.db"))
+        self.append_property("db_funds", localfunds(self.name(), f"request_funds.db", dataproof.configs("datas_root_path")))
 
         for ttype in trantype:
             if ttype == trantype.UNKOWN:
