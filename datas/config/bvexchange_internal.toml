@@ -113,7 +113,7 @@ exchange_async = true
         [token_info.tokens.diem]
             token = ['XUS']
         [token_info.tokens.ethereum]
-            token = ["usdt", "wbtc"]
+            token = ["usdt", "wbtc", "hbtc", "renbtc", "usdc", "busd", "dai", "weth", "uni", "sushi", "link", "comp", "aave", "bnb", "wfil"]
         [token_info.tokens.btc]
             token = ["BTC"]
 
