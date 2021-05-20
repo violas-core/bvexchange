@@ -14,7 +14,8 @@
 		"upgrade": false,
 		"params": [],
 		"manager": [
-			"0x49999B466D7d139f88E8eFea87A6D4D227Fb243e"
+			"0x49999B466D7d139f88E8eFea87A6D4D227Fb243e",
+			"0x9F0b251F152dd4adc9df1493DE2f7005f8b1b433"
 		]
 	},
 	"main": {
