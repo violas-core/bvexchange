@@ -60,12 +60,16 @@ from dataproof import dataproof
 name = "testmapping"
 logger = log.logger.getLogger(name)
 class Tokens(Enum):
-    VIOLAS_BTC = "VBTC"
-    VIOLAS_USDT = "VUSDT"
-    VIOLAS_WBTC= "VWBTC"
-    BTC_BTC  = "BTC"
-    ETHEREUM_USDT = "usdt"
-    ETHEREUM_WBTC= "wbtc"
+    VIOLAS_BTC      = "VBTC"
+    VIOLAS_USDT     = "VUSDT"
+    VIOLAS_WBTC     = "VWBTC"
+    VIOLAS_HBTC     = "VHBTC"
+    VIOLAS_WFIL     = "VWFIL"
+    BTC_BTC         = "BTC"
+    ETHEREUM_USDT   = "usdt"
+    ETHEREUM_WBTC   = "wbtc"
+    ETHEREUM_HBTC   = "hbtc"
+    ETHEREUM_WFIL   = "wfil"
 
 def get_token_name(chain, token):
     return Tokens[f"{chain.upper()}_{token.upper()}"].value
@@ -135,6 +139,12 @@ def test_e2vm_usdt():
 def test_e2vm_wbtc():
     test_e2vm(Tokens.ETHEREUM_WBTC.value, Tokens.VIOLAS_WBTC.value)
 
+def test_e2vm_hbtc():
+    test_e2vm(Tokens.ETHEREUM_HBTC.value, Tokens.VIOLAS_HBTC.value)
+
+def test_e2vm_wfil():
+    test_e2vm(Tokens.ETHEREUM_WFIL.value, Tokens.VIOLAS_WFIL.value)
+
 @output_args_func
 def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = Tokens.VIOLAS_USDT.value):
 
@@ -157,7 +167,7 @@ def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = T
 
 
     vclient._logger.debug(f'''
-    vls receiver = {vls_receiver}
+    vls receiver({violas_token_name} payee) = {vls_receiver}
     from address = {from_address}
     to address = {to_address}
     vls_e2vm_senders  = {vls_e2vm_senders}
@@ -298,7 +308,7 @@ def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = T
                             print(f'''
                             mapping succeed. 
                             check violas transaction: 
-                            violas receiver = {vls_receiver} 
+                            violas receiver(payee) = {vls_receiver} 
                             violas version = {new_version} 
                             violas map amount = {tran_amount}({violas_token_name})
                             ethereum version = {version}
@@ -315,6 +325,12 @@ def test_v2em_vusdt():
     
 def test_v2em_vwbtc():
     test_v2em(map_token_id = Tokens.VIOLAS_WBTC.value, eth_token_name = Tokens.ETHEREUM_WBTC.value)
+
+def test_v2em_vhbtc():
+    test_v2em(map_token_id = Tokens.VIOLAS_HBTC.value, eth_token_name = Tokens.ETHEREUM_HBTC.value)
+    
+def test_v2em_vwfil():
+    test_v2em(map_token_id = Tokens.VIOLAS_WFIL.value, eth_token_name = Tokens.ETHEREUM_WFIL.value)
 
 @output_args_func
 def test_v2em(map_token_id = Tokens.VIOLAS_USDT.value, eth_token_name = Tokens.ETHEREUM_USDT.value):
