@@ -107,7 +107,7 @@ exchange_async = true
     [token_info.tokens]
         [token_info.tokens.violas]
             token = ["VLS"] 
-            mtoken = ["VBTC", "VUSDT", "VWBTC", "VHBTC", "VRNBTC", "VUSDC", "BUSD", "VDAI", "VWETH", "VUNI", "VSUSHI", "VLINK", "VCOMP", "VAAVE", "VBNB", "VWFIL"]
+            mtoken = ["VBTC", "VUSDT", "VWBTC", "VHBTC", "VRNBTC", "VUSDC", "VBUSD", "VDAI", "VWETH", "VUNI", "VSUSHI", "VLINK", "VCOMP", "VAAVE", "VBNB", "VWFIL"]
         [token_info.tokens.libra]
             token = []
         [token_info.tokens.diem]
