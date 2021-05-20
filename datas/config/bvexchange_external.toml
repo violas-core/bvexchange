@@ -458,7 +458,7 @@ exchange_async = true
     type = "msg"
 
 [[sms_templete]]
-    data = "【Violas】您有一条来自 ssss 的数据请求需要处理 。"
+    data = "【Violas】您有一条来自 Essss 的数据请求需要处理 。"
     replace = "ssss"
     lang = "ch"
 
