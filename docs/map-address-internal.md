@@ -4,26 +4,27 @@
 
 ## Overview
 
-support chain: ethereum btc violas
-bitcoin : testnet
+support chain:  ethereum btc violas
+bitcoin :       testnet
 ethereum chainid: 42(kovan)
-violas: internal chain
+violas:         internal chain
 
 ## Version
 
 v1.0.1
 
 ## Tokens
-* BTC : bitcoin token
-* VBTC : violas token of BTC
-* usdt : ethereum erc20 token (USDT)
-* VUSDT : violas token of usdt
+* BTC :         bitcoin token
+* VBTC :        violas token of BTC
+* [tokenname]:  ethereum erc20 token (USDT)
+* VUSDT :       violas token of usdt
 
 ## Support mapping type
-* BTC -> VBTC
-* VBTC -> BTC
-* usdt -> VUSDT
-* VUSDT -> usdt
+* BTC   -> VBTC
+* VBTC  -> BTC
+* erc20 -> VERC20
+### erc20 list
+[erc20 tokens](https://github.com/palliums-developers/violas-sol/blob/work/jsons/tokens/erc20_tokens_internal.md)
 
 ## receiver or contract address list
 
@@ -36,5 +37,4 @@ v1.0.1
  map-VBTC | 2N2YasTUdLbXsafHHmyoKUYcRRicRPgUyNB        | address  | bitcoin         | receiver address of mapping: BTC -> VBTC
  funds    | 00000000000000000042524746554e44           | DD       | violas          | funds manager
  
-
 
