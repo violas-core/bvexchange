@@ -59,20 +59,25 @@ from dataproof import dataproof
 
 name = "testmapping"
 logger = log.logger.getLogger(name)
-class Tokens(Enum):
-    VIOLAS_BTC      = "VBTC"
-    VIOLAS_USDT     = "VUSDT"
-    VIOLAS_WBTC     = "VWBTC"
-    VIOLAS_HBTC     = "VHBTC"
-    VIOLAS_WFIL     = "VWFIL"
-    BTC_BTC         = "BTC"
-    ETHEREUM_USDT   = "usdt"
-    ETHEREUM_WBTC   = "wbtc"
-    ETHEREUM_HBTC   = "hbtc"
-    ETHEREUM_WFIL   = "wfil"
+class TokenList():
+    def __init__(self):
 
+        for ttype in trantype:
+            if ttype in [trantype.SMS]:
+                return
+
+            for token in stmanage.get_support_token_id(ttype):
+                map_token = stmanage.get_token_map(token)
+                if map_token:
+                    setattr(self, "{}_{}".format(ttype.name, token.upper()), token)
+
+    def get_token_name(self, chian, token):
+        return getattr(self, f"{chain.upper()}_{token.upper()}")
+
+
+Tokens = None
 def get_token_name(chain, token):
-    return Tokens[f"{chain.upper()}_{token.upper()}"].value
+    return Tokens.get_token_name(chain, token)
 
 '''
 violas or libra client
@@ -133,20 +138,63 @@ def get_tran_id(dtype, datas):
 def is_time_in(start_time, max_work_time):
     return start_time + max_work_time >= int(time.time())
 
+def __test_e2vm(src_token):
+    test_e2vm(src_token, stmanage.get_token_map(src_token))
+
+def test_e2vm_all():
+    for token in stmanage.get_support_token_id(trantype.ETHEREUM):
+        map_token = stmanage.get_token_map(token)
+        if map_token:
+            logger.debug("*******************e2vm(token=" + token ")*************************")
+            __test_e2vm(token)
+
 def test_e2vm_usdt():
-    test_e2vm(Tokens.ETHEREUM_USDT.value, Tokens.VIOLAS_USDT.value)
+    __test_e2vm(Tokens.ETHEREUM_USDT)
 
 def test_e2vm_wbtc():
-    test_e2vm(Tokens.ETHEREUM_WBTC.value, Tokens.VIOLAS_WBTC.value)
+    __test_e2vm(Tokens.ETHEREUM_WBTC)
 
 def test_e2vm_hbtc():
-    test_e2vm(Tokens.ETHEREUM_HBTC.value, Tokens.VIOLAS_HBTC.value)
+    __test_e2vm(Tokens.ETHEREUM_HBTC)
+
+def test_e2vm_aave():
+    __test_e2vm(Tokens.ETHEREUM_AAVE)
+
+def test_e2vm_bnb():
+    __test_e2vm(Tokens.ETHEREUM_BNB)
+
+def test_e2vm_busd():
+    __test_e2vm(Tokens.ETHEREUM_BUSD)
+
+def test_e2vm_comp():
+    __test_e2vm(Tokens.ETHEREUM_COMP)
+
+def test_e2vm_dai():
+    __test_e2vm(Tokens.ETHEREUM_DAI)
+
+def test_e2vm_link():
+    __test_e2vm(Tokens.ETHEREUM_LINK)
+
+def test_e2vm_renbtc():
+    __test_e2vm(Tokens.ETHEREUM_RENBTC)
+
+def test_e2vm_sushi():
+    __test_e2vm(Tokens.ETHEREUM_SUSHI)
+
+def test_e2vm_uni():
+    __test_e2vm(Tokens.ETHEREUM_UNI)
+
+def test_e2vm_usdc():
+    __test_e2vm(Tokens.ETHEREUM_USDC)
+
+def test_e2vm_weth():
+    __test_e2vm(Tokens.ETHEREUM_WETH)
 
 def test_e2vm_wfil():
-    test_e2vm(Tokens.ETHEREUM_WFIL.value, Tokens.VIOLAS_WFIL.value)
+    __test_e2vm(Tokens.ETHEREUM_WFIL)
 
 @output_args_func
-def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = Tokens.VIOLAS_USDT.value):
+def test_e2vm(eth_token_name, violas_token_name):
 
     ewallet = get_ethwallet()
     eclient = get_ethclient()
@@ -320,20 +368,23 @@ def test_e2vm(eth_token_name = Tokens.ETHEREUM_USDT.value, violas_token_name = T
                             continue
                         assert is_time_in(start_time, max_work_time),  f"time out, check bridge server is working...tran_tran_id = {tran_tran_id}"
 
+def __test_v2em(src_token):
+    test_v2em(src_token, stmanage.get_token_map(src_token))
+
 def test_v2em_vusdt():
-    test_v2em(map_token_id = Tokens.VIOLAS_USDT.value, eth_token_name = Tokens.ETHEREUM_USDT.value)
+    __test_v2em(Tokens.VIOLAS_VUSDT)
     
 def test_v2em_vwbtc():
-    test_v2em(map_token_id = Tokens.VIOLAS_WBTC.value, eth_token_name = Tokens.ETHEREUM_WBTC.value)
+    __test_v2em(Tokens.VIOLAS_VWBTC)
 
 def test_v2em_vhbtc():
-    test_v2em(map_token_id = Tokens.VIOLAS_HBTC.value, eth_token_name = Tokens.ETHEREUM_HBTC.value)
+    __test_v2em(Tokens.VIOLAS_VHBTC)
     
 def test_v2em_vwfil():
-    test_v2em(map_token_id = Tokens.VIOLAS_WFIL.value, eth_token_name = Tokens.ETHEREUM_WFIL.value)
+    __test_v2em(Tokens.VIOLAS_VWFIL)
 
 @output_args_func
-def test_v2em(map_token_id = Tokens.VIOLAS_USDT.value, eth_token_name = Tokens.ETHEREUM_USDT.value):
+def test_v2em(map_token_id, eth_token_name):
     ewallet = get_ethwallet()
     eclient = get_ethclient()
     vclient = get_violasclient()
@@ -427,7 +478,7 @@ def test_b2vm():
     VBTC receiver = {vls_btc_receiver}
     from address = {from_address}
     to address = {to_address}
-    map amount : {map_amount} satoshi == {map_amount / 100} {Tokens.VIOLAS_BTC.value}
+    map amount : {map_amount} satoshi == {map_amount / 100} {Tokens.VIOLAS_BTC}
     vls_btc_sender  = {vls_btc_sender}
     tran_id ={map_tran_id}
             ''')
@@ -437,10 +488,10 @@ def test_b2vm():
     sender_start_sequence = ret.datas
 
     #mark currenct BTC amount
-    ret = vclient.get_balance(vls_btc_receiver, Tokens.VIOLAS_BTC.value, None)
-    assert ret.state == error.SUCCEED, f"get balance({vls_btc_receiver}, {Tokens.VIOLAS_BTC.value}) failed. {ret.message}"
+    ret = vclient.get_balance(vls_btc_receiver, Tokens.VIOLAS_BTC, None)
+    assert ret.state == error.SUCCEED, f"get balance({vls_btc_receiver}, {Tokens.VIOLAS_BTC}) failed. {ret.message}"
     before_btc_amount = ret.datas
-    vclient._logger.debug(f"{vls_btc_receiver} have {before_btc_amount} {Tokens.VIOLAS_BTC.value}")
+    vclient._logger.debug(f"{vls_btc_receiver} have {before_btc_amount} {Tokens.VIOLAS_BTC}")
 
     btc_amount = amountconver(map_amount, amountconver.amounttype.BTC).amount(amountconver.amounttype.BTC)
     auth, addr = split_full_address(vls_btc_receiver)
@@ -518,8 +569,8 @@ def test_b2vm():
                 check violas address: 
                     version = {new_version}, 
                     receiver = {vls_btc_receiver}, 
-                    {Tokens.BTC_BTC.value} amount = {map_amount}"
-                    {Tokens.VIOLAS_BTC.value} amount = {tran_amount}"
+                    {Tokens.BTC_BTC} amount = {map_amount}"
+                    {Tokens.VIOLAS_BTC} amount = {tran_amount}"
                     
                 ''')
                 return
@@ -620,9 +671,15 @@ def signal_stop(signal, frame):
 def work_continue():
     return _work_continue
 
+def test_can_mapping_tokens():
+    json_print(Tokens.__dict__)
+
 def setup():
     stmanage.set_conf_env("../bvexchange.toml")
 
+    global Tokens
+    Tokens = TokenList()
+    print("xxxxxxxxxxxxxxxx")
     signal.signal(signal.SIGINT, signal_stop)
     signal.signal(signal.SIGTSTP, signal_stop)
     signal.signal(signal.SIGTERM, signal_stop)
